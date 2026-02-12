@@ -8,6 +8,9 @@ import { useState } from "react";
 const navLinks = [
   { label: "Hjem", href: "/" },
   { label: "Søg shelters", href: "/soeg" },
+  { label: "Om os", href: "/om-os" },
+  { label: "Blog", href: "/blog" },
+  { label: "Kontakt", href: "/kontakt" },
 ];
 
 export function Navbar() {
@@ -25,19 +28,25 @@ export function Navbar() {
             ShelterDK
           </Link>
           <div className="hidden md:flex md:items-center md:gap-8">
-            {navLinks.map(({ label, href }) => (
-              <Link
-                key={href}
-                href={href}
-                className={`text-sm font-medium transition-colors ${
-                  pathname === href
-                    ? "text-accent"
-                    : "text-primary/80 hover:text-accent"
-                }`}
-              >
-                {label}
-              </Link>
-            ))}
+            {navLinks.map(({ label, href }) => {
+              const isActive =
+                href === "/"
+                  ? pathname === "/"
+                  : pathname === href || pathname.startsWith(href + "/");
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`text-sm font-medium transition-colors ${
+                    isActive
+                      ? "text-accent"
+                      : "text-primary/80 hover:text-accent"
+                  }`}
+                >
+                  {label}
+                </Link>
+              );
+            })}
           </div>
           <button
             className="md:hidden text-primary"
@@ -50,20 +59,26 @@ export function Navbar() {
 
         {mobileMenuOpen && (
           <div className="md:hidden pb-4 space-y-2">
-            {navLinks.map(({ label, href }) => (
-              <Link
-                key={href}
-                href={href}
-                onClick={() => setMobileMenuOpen(false)}
-                className={`block px-2 py-2 text-sm font-medium rounded-md transition-colors ${
-                  pathname === href
-                    ? "text-accent bg-accent/10"
-                    : "text-primary/80 hover:text-accent hover:bg-primary/5"
-                }`}
-              >
-                {label}
-              </Link>
-            ))}
+            {navLinks.map(({ label, href }) => {
+              const isActive =
+                href === "/"
+                  ? pathname === "/"
+                  : pathname === href || pathname.startsWith(href + "/");
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block px-2 py-2 text-sm font-medium rounded-md transition-colors ${
+                    isActive
+                      ? "text-accent bg-accent/10"
+                      : "text-primary/80 hover:text-accent hover:bg-primary/5"
+                  }`}
+                >
+                  {label}
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>
