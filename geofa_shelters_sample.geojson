@@ -1,0 +1,27 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "navn": "Eksempel Shelter 1",
+        "beskrivelse": "Prøvedata. Muldtoilet i nærheden."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [10.2, 56.15]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Eksempel Shelter 2",
+        "description": "Sample data for test."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [12.5, 55.67]
+      }
+    }
+  ]
+}

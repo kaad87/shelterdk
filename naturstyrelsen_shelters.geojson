@@ -1,0 +1,3947 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Naturstyrelsen - Book shelters, lejrpladser og ly",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/",
+        "address": "sted",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.5467477,
+          55.6999384
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Åremyr",
+        "description": "Lejrpladsen er forbeholdt større grupper (15 og flere) fra foreninger og lign. som skal booke pladsen via linket nedenfor (max to overnatninger). Hvis pladsen ikke er booket, er man velkommen til at benytte den efter først-til-mølle princippet.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/aaremyr/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/aaremyr/",
+        "address": "Bolsterbjergvej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.9047915,
+          55.132744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Aars Skov - Lejrplads",
+        "description": "Lejrpladsen ligger nord for Aars by ved Svenstrupvej i nyopført skov fra medio 1980.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/aars-skov-lejrplads/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/aars-skov-lejrplads/",
+        "address": "Svenstrupvej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.4900903,
+          55.69646
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Åsevang, Shelterplads Nord",
+        "description": "Shelter med plads til 5-6 personer",
+        "source_url": "https://book.naturstyrelsen.dk/sted/aasevang-shelterplads-nord/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/aasevang-shelterplads-nord/",
+        "address": "Furesø",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.4089396,
+          55.801089
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Åsevang, Shelterplads Syd",
+        "description": "Ved shelteret findes bålplads med grill og et borde-bænkesæt. Der ligger en shelter mere på pladsen, som kan bookes seperat.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/aasevang-shelterplads-syd/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/aasevang-shelterplads-syd/",
+        "address": "Furesø",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.4089396,
+          55.801089
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Aborren",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/aborren/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/aborren/",
+        "address": "aborren",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.3613792,
+          56.0031245
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ask Yggdrasil shelter",
+        "description": "Shelteret ligger ca. 100 m. fra naturlegepladsen. Der er plads til ca. 25 overnattende personer. Der er adgang til shelterpladsen fra Naturlegepladsen. Der kan parkeres på naturlegepladsens p-plads. Den må ikke køres i skove ind til shelterpladsen. Der er vand og toilet samt brænde ved Naturlegepladsen. Shelterpladsen skal efterlades opryddet, herunder bålstedet, og alt affald skal bringes med ud af skoven. Husk at slukke bålet inden du forlader shelterpladsen!",
+        "source_url": "https://book.naturstyrelsen.dk/sted/ask-yggdrasil-shelter/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/ask-yggdrasil-shelter/",
+        "address": "ask yggdrasil",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.549077,
+          55.6999228
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Avnstrup shelteren",
+        "description": "Stor handicapvenlig shelter med sammenbygget bålhus, beliggende i kanten af skoven med udsigt til skoven og de store græsarealer. I bålhuset er et godt ildsted med grill og med bænke rundt langs væggene. Bænkene er udformet så det er muligt at køre til med kørestol. Sovedelen af shelteren er indrettet med 2 skinner i loftet så det er muligt for bevægelseshæmmede at komme ind på sovepladserne. Man skal selv medbringe sejl til skinnesystemet. Sheltergulvet er desuden indrettet med en ekstra plade ",
+        "source_url": "https://book.naturstyrelsen.dk/sted/avnstrup-shelteren/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/avnstrup-shelteren/",
+        "address": "avnstrup shelteren",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.8957307,
+          55.5578464
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bakkely Skov Shelterplads, Vemmelev",
+        "description": "To shelters beliggende på åben plads ved lille sø midt i Bakkely Skov. Shelterpladsen skal bookes, hvis man vil være sikker på overnatningsmulighed. Bålplads med fast grill. Toilet samt vandhane ved skovstuen ved Bakkelygaard. Der kan samles lidt brænde omkring pladsen, men vil man være sikker på tørt brænde, bør man selv medbringe dette. Der kan opsættes enkelte supplerende telte ved shelterne uden forudgående booking. Der kan ligge 4-6 personer i hvert shelter.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/bakkely-skov-shelterplads-vemmelev/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/bakkely-skov-shelterplads-vemmelev/",
+        "address": "lille sø",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.5149449,
+          55.4811571
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ballesbækgård shelterplads",
+        "description": "På pladsen er der 3 shelters, bålsted m. grillrist samt multtoilet. Lejrpladsen er indrettet på et større græsareal 200 m fra Ballesbækgård på sydsiden af Rørbæk Sø. Pladsen er delvist omgivet af træer og støder op til et mindre hedeareal. Her er også mulighed for at slå telte op. Pladsen ligger et par hundrede meter fra bredden af Rørbæk Sø.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/ballesbaekgaard-shelterplads/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/ballesbaekgaard-shelterplads/",
+        "address": "ballesbaekgaard",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.3629896,
+          55.9277042
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Blokhus Klitplantage - lejrplads Th. Henriksens Vej",
+        "description": "Pladsen ligger på skovvejen Th. Henriksensvej og er en lille slette omgivet af gamle skovfyr. Der er 4 sheltere i det ene hjørne af pladsen med plads til ca. 6 personer i hvert shelter. Der er plads til rigtig mange telte og man kan fordele sig i de andre hjørner af pladsen hvis man gerne vil ligge lidt for sig selv. Pladsen kan kun bookes af grupper som f.eks. skoleklasser eller spejdergrupper. Pladsen kan, når der ikke er booket, bruges efter princippet \"først til mølle\". Ryk sammen så der er ",
+        "source_url": "https://book.naturstyrelsen.dk/sted/blokhus-klitplantage-lejrplads-th-henriksens-vej/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/blokhus-klitplantage-lejrplads-th-henriksens-vej/",
+        "address": "1200 meter",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.7945658,
+          55.8403109
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bognæs Skov, Tuse Næs",
+        "description": "Lejrpladsen er dejligt beliggende ved vandet ca. 1½ km fra P-pladsen.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/bognaes-skov-tuse-naes/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/bognaes-skov-tuse-naes/",
+        "address": "bognaes skov tuse naes",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.7694592,
+          55.7495904
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Brasenkas shelterplads",
+        "description": "På en lille halvø i Borre sø, Brasenkas, ligger denne lille shelterplads med udsigt til Borre sø og Paradiset.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/brasenkas-shelterplads/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/brasenkas-shelterplads/",
+        "address": "brasenkas",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.5925594,
+          56.1252538
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Dolmosen shelterplads",
+        "description": "Pladsen er i nærheden af Ringkøbingvej syd for Lemvig.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/dolmosen-shelterplads/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/dolmosen-shelterplads/",
+        "address": "dolmosen",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.3002974,
+          56.4668617
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Drenderup Shelterplads",
+        "description": "Bålhus med integrerede shelters med plads til 15 personer beliggende midt i Drenderup Skov. Med bål-/grillplads samt bord-bænksæt under tag.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/drenderup-shelterplads/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/drenderup-shelterplads/",
+        "address": "drenderup",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.3445033,
+          55.4088429
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Edens Have i Hellebæk Skov",
+        "description": "Her finder du en overnatningsplads med plads til ca. 20 overnattende personer i to sammenbyggede sheltere. Det er desuden tilladt at slå et par mindre telte op.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/edens-have-i-hellebaek-skov/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/edens-have-i-hellebaek-skov/",
+        "address": "Skindersøvej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.5253266,
+          56.0486519
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Egernet og Flagermusen sheltere",
+        "description": "Shelterpladsen ligger midt i Kelleris Hegn. Den består af to sheltere med plads til hhv. 2-3 og 4-6 overnattende, et bålsted med grillriste og 4 små bænke, samt et bordebænkesæt. Det er tilladt at slå et par mindre telte op.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/egernet-og-flagermusen-sheltere/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/egernet-og-flagermusen-sheltere/",
+        "address": "Kelleris Hegn",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.5101293,
+          55.9899588
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Eghjorten, Vikinghuset",
+        "description": "Vikinghuset ligge ca. 100 m. fra naturlegepladsen. Der er plads til ca. 30 overnattende personer. Der er adgang til huset fra naturlegepladsen. Der kan parkeres på naturlegepladsens p-plads. Den må ikke køres i skove ind til pladsen. Der er vand og toilet samt brænde ved Naturlegepladsen. Pladsen skal efterlades opryddet, herunder bålstedet, og alt affald skal bringes med ud af skoven. Husk at slukke bålet inden du forlader pladsen!",
+        "source_url": "https://book.naturstyrelsen.dk/sted/eghjorten-vikinghuset/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/eghjorten-vikinghuset/",
+        "address": "eghjorten vikinghuset",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.351677,
+          55.9566576
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Enehøje Shelter - Grøn",
+        "description": "Shelteren ligger på øen Enehøje i Nakskov Fjord. Bemærk man skal selv kunne transportere sig til og fra øen ved at sejle derud eller booke en tur med Postbåden. Tag hensyn til dyrelivet på øen og følg lokale adgangsregler, som beskrevet på skiltningen ved landgangsbroen. Teltning og overnatning er kun tilladt på selve shelterpladsen. Medbring gerne selv brænde og ellers må man samle drivtømmer eller tørre kviste i skovbunden. Der er vandpost ved den røde lade, men vinterlukket for vandet fra okt",
+        "source_url": "https://book.naturstyrelsen.dk/sted/enehoeje-shelter-groen/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/enehoeje-shelter-groen/",
+        "address": "Nakskov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.1493517,
+          54.8304979
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Enehøje Shelter - kan benyttes uden forudgående booking",
+        "description": "Shelterpladsen ligger på øen Enehøje i Nakskov Fjord.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/enehoeje-shelter-kan-benyttes-uden-forudgaaende-booking/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/enehoeje-shelter-kan-benyttes-uden-forudgaaende-booking/",
+        "address": "Nakskov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.1493517,
+          54.8304979
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Enehøje Shelter - Rød",
+        "description": "Shelteren ligger på øen Enehøje i Nakskov Fjord. Bemærk man skal selv kunne transportere sig til og fra øen ved at sejle derud eller booke en tur med Postbåden. Tag hensyn til dyrelivet på øen og følg lokale adgangsregler, som beskrevet på skiltningen ved landgangsbroen. Teltning og overnatning er kun tilladt på selve shelterpladsen. Medbring gerne selv brænde og ellers må man samle drivtømmer eller tørre kviste i skovbunden. Der er vandpost ved den røde lade, men vinterlukket for vandet fra okt",
+        "source_url": "https://book.naturstyrelsen.dk/sted/enehoeje-shelter-roed/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/enehoeje-shelter-roed/",
+        "address": "Nakskov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.1493517,
+          54.8304979
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Engblommen og Firlingen Sheltere",
+        "description": "Den primitive overnatningsplads består af 2 minishelter med bålsted og en lille bænk. Der er mulighed at slå et par mindre telte op indenfor 20 meter af shelteren. Der er plads til 2-3 overnattende per shelter.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/engblommen-og-firlingen-sheltere/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/engblommen-og-firlingen-sheltere/",
+        "address": "Kratvej 2, 3550 Slangerup",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.200681,
+          55.860585
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ermelunden, Lejrplads",
+        "description": "Lejrpladser er forbeholdt grupper på over 15 personer og derover. Dette er også et kriterie for at kunne booke lejrpladsen.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/ermelunden-lejrplads/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/ermelunden-lejrplads/",
+        "address": "ermelunden",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.5335931,
+          55.7700884
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Fagerhatten shelter",
+        "description": "Fagerhatten shelteren ligger i Stenholtsvang, tæt på Hillerød, med fin udsigt over et mose område, hvor der er dejlig lyst og god mulighed for aftensol. Der er plads til 2 personer, måske 3 hvis man ligger tæt. Der er et lille bålsted og en bænk.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/fagerhatten-shelter/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/fagerhatten-shelter/",
+        "address": "fagerhatten",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.343193,
+          55.953712
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ferup Sø - Shelter 2",
+        "description": "Shelterplads tæt ved Troldhedestien og med flot udsigt over Ferup sø.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/ferup-soe-shelter-2/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/ferup-soe-shelter-2/",
+        "address": "Egtvedvej 132, 6000 Kolding",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.418683,
+          55.538648
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ferup Sø - Shelter 3",
+        "description": "Shelterplads tæt ved Troldhedestien og med flot udsigt over Ferup sø.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/ferup-soe-shelter-3/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/ferup-soe-shelter-3/",
+        "address": "Egtvedvej 132, 6000 Kolding",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.418683,
+          55.538648
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Fluesnapperen shelter",
+        "description": "Den primitive overnatningsplads består af 1 minishelter med bålsted og en lille bænk. Der er mulighed at slå et par mindre telte op indenfor 20 meter af shelteren. Der er plads til 2-3 overnattende i shelteren.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/fluesnapperen-shelter/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/fluesnapperen-shelter/",
+        "address": "fluesnapperen",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.2588274,
+          56.0286045
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Flyvestation Værløse, Handikapshelter Herkules",
+        "description": "Overnatningsshelter udstyret med skinne og lift, så man kan løftes fra kørestol og ind i shelteret. Du skal selv medbringe hejseværk, løftebøjle og løftesejl/sele. Shelter og lift benyttes på eget ansvar.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/flyvestation-vaerloese-handikapshelter-herkules/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/flyvestation-vaerloese-handikapshelter-herkules/",
+        "address": "3500 Værløse",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.383333,
+          55.783333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Flyvestation Værløse, Shelter Catalina",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/flyvestation-vaerloese-shelter-catalina/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/flyvestation-vaerloese-shelter-catalina/",
+        "address": "3500 Værløse",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.383333,
+          55.783333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Flyvestation Værløse, Shelter Dakota",
+        "description": "Overnatningsshelter beliggende på lejrplads. Ved shelteret er der bålring med grillrist samt bord-bænkesæt. Ved lejrpladsen er der primitivt lokum og vandpost.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/flyvestation-vaerloese-shelter-dakota/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/flyvestation-vaerloese-shelter-dakota/",
+        "address": "3500 Værløse",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.383333,
+          55.783333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Folehave, lejrplads",
+        "description": "Her findes borde og bænke, samt 2 bålsteder med grill.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/folehave-lejrplads/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/folehave-lejrplads/",
+        "address": "folehave",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.276741,
+          55.4878174
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Fugletårn med shelter i Klosterheden Plantage",
+        "description": "Fugletårnet ligger på Jagtvej overfor Den Sandede Brandlinie.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/fugletaarn-med-shelter-i-klosterheden-plantage/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/fugletaarn-med-shelter-i-klosterheden-plantage/",
+        "address": "Klosterheden Plantage",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.4214222,
+          56.4628112
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Fur, Shelterplads på Nordfur",
+        "description": "Her finder du 2 shelters med plads til 8 personer i hver. På pladsen er der borde/bænkesæt.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/fur-shelterplads-paa-nordfur/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/fur-shelterplads-paa-nordfur/",
+        "address": "Rødstenvej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.0038236,
+          56.8413807
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Gå-Nu-Nat shelter",
+        "description": "Lejrpladsen er beliggende i den østlige del af plantagen på Nebelgaard-tomten, ca. 1 km sydøst for badepladsen ved Nors Sø.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/gaa-nu-nat-shelter/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/gaa-nu-nat-shelter/",
+        "address": "Nors Sø",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.6078421,
+          57.0338205
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ganløse Eged, shelterplads med to shelters",
+        "description": "Vælg denne plads, hvis I er en lidt større gruppe (10-12) der har brug for 2 shelters. Andre har også ret til at bruge en evt. tom shelter eller slå et telt op på pladsen. Udover shelterne findes på pladsen en bålplads med grill og to borde-bænkesæt.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/ganloese-eged-shelterplads-med-to-shelters/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/ganloese-eged-shelterplads-med-to-shelters/",
+        "address": "Lyngevej 97, 3660 Stenløse",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.260746,
+          55.813825
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Geel Skov, Shelterplads ved Birkedalsvej",
+        "description": "Shelter med plads til 5-6 personer",
+        "source_url": "https://book.naturstyrelsen.dk/sted/geel-skov-shelterplads-ved-birkedalsvej/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/geel-skov-shelterplads-ved-birkedalsvej/",
+        "address": "Birkedalsvej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.4861353,
+          55.805425
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Gludsted Plantage, shelterplads ved Trotylsøen (shelter 1)",
+        "description": "Shelterpladsen ligger ved Hampen Søvej nær en lille sø, Trotylsøen, i et tilplantet sandflugtsområde, Gludsted Sande, i den sydlige del af Gludsted Plantage. Plantagen er med sine 3400 ha en af landets største. Plantagen ligger lige før Hærvejen ved Hjøllund, hvor der er kro og indkøbsmuligheder.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/gludsted-plantage-shelterplads-ved-trotylsoeen-shelter-1/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/gludsted-plantage-shelterplads-ved-trotylsoeen-shelter-1/",
+        "address": "Gludstedvej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.2467308,
+          56.0791858
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Gludsted Plantage, shelterplads ved Trotylsøen (shelter 2)",
+        "description": "Shelterplads ved Trotylsøen i den centrale del af Gludsted Plantage",
+        "source_url": "https://book.naturstyrelsen.dk/sted/gludsted-plantage-shelterplads-ved-trotylsoeen-shelter-2/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/gludsted-plantage-shelterplads-ved-trotylsoeen-shelter-2/",
+        "address": "Gludstedvej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.2467308,
+          56.0791858
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Gribskov, Helledes Bakke",
+        "description": "Shelterpladsen ligger i 3 gamle grusgrave i Gribskov, ca. 500 m. nord for Gadevang. Der er 3 mindre sheltere med plads til ca. 10 overnattende personer. Derudover findes der teltpladser nær ved, hvor der kan der slås ca. 5 mindre telte op.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/gribskov-helledes-bakke/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/gribskov-helledes-bakke/",
+        "address": "Gribskov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.3288121,
+          56.0429851
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Gribskov, Multebjerg Shelterplads",
+        "description": "Pladsen består af 4 sheltere med 2 bålsteder og med plads til at slå et par mindre telte op. Der er plads til 18 overnattende i shelteren.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/gribskov-multebjerg-shelterplads/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/gribskov-multebjerg-shelterplads/",
+        "address": "Gribskov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.3288121,
+          56.0429851
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Gulspurven shelter",
+        "description": "Den primitive overnatningsplads består af 1 minishelter med bålsted og en lille bænk. Der er mulighed at slå et par mindre telte op indenfor 20 meter af shelteren. Der er plads til 2-3 overnattende i shelteren.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/gulspurven-shelter/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/gulspurven-shelter/",
+        "address": "gulspurven",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.0596,
+          55.9631969
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Halkær Voldsted, Shelterplads",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/halkaer-voldsted-shelterplads/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/halkaer-voldsted-shelterplads/",
+        "address": "halkaer voldsted",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.5779256,
+          56.9172029
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Hareskovene, Jonstrup Vang, lejrplads ved Vangehus",
+        "description": "Lejrplads med 1 bålsted. Beliggende ca. 100 m fra Ballerupvej bag brændehandlen Vangehus i ældre bøgeskov.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/hareskovene-jonstrup-vang-lejrplads-ved-vangehus/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/hareskovene-jonstrup-vang-lejrplads-ved-vangehus/",
+        "address": "Vangehus",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.9604494,
+          55.4121868
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Hareskovene, lejrplads med shelter i Åsevang",
+        "description": "Lejrplads med shelter, med plads til ca. 24 personer, beliggende på eng i skoven med skrænt ned til Furesøen. 1 grillplads,1 bålplads og primitivt toilet uden vand. Husk selv at medbringe toiletpapir og vådservietter.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/hareskovene-lejrplads-med-shelter-i-aasevang/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/hareskovene-lejrplads-med-shelter-i-aasevang/",
+        "address": "Åsevang",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.410685,
+          55.7766721
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Hastrup Plantage - shelter 4",
+        "description": "Shelter 4 ligger i en gruppe af 2 sheltere i Hastrup Skov. Hver shelter har plads til 5-6 personer. De har en fælles bålplads og grill.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/hastrup-plantage-shelter-4/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/hastrup-plantage-shelter-4/",
+        "address": "Hastrup Skov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.2551941,
+          55.943895
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Hastrup Plantage - shelter 5",
+        "description": "Shelter 5 ligger i en gruppe af 2 sheltere i Hastrup Skov. Hver shelter har plads til 5-6 personer. De har en fælles bålplads og grill.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/hastrup-plantage-shelter-5/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/hastrup-plantage-shelter-5/",
+        "address": "Hastrup Skov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.2551941,
+          55.943895
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Hawskoven 1",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/hawskoven-1/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/hawskoven-1/",
+        "address": "hawskoven 1",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.6358176,
+          57.1189431
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Hawskoven 2",
+        "description": "Pladsen er beliggende i Hawskoven, øst for Kai Lindbergs Gade og nord for Industrivangen.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/hawskoven-2/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/hawskoven-2/",
+        "address": "hawskoven 2",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.6359771,
+          57.11891
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Hawskoven 3",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/hawskoven-3/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/hawskoven-3/",
+        "address": "hawskoven 3",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.6368412,
+          57.1187175
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Hawskoven 4",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/hawskoven-4/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/hawskoven-4/",
+        "address": "hawskoven 4",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.6375845,
+          57.1187037
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Hawskoven 5",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/hawskoven-5/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/hawskoven-5/",
+        "address": "hawskoven 5",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.6374675,
+          57.1185243
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Hawskoven 6",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/hawskoven-6/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/hawskoven-6/",
+        "address": "hawskoven 6",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.6376916,
+          57.1184561
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Hegnede rundshelter",
+        "description": "Den store runde shelter ligger i en lysning i en nyere skov. Det er et lysåbent skovlandskab med hyggelige græsstier rundt i området, mange frugttræer og græssende dyr på engene. Der er bålplads, picnicplads og det er tilladt at samle tørt brænde i skovbunden, men lad venligst de levende træer være i fred og medbring eventuelt selv tørt brænde. Der er adgang til vand og toilet ved Trehøjevej 10.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/hegnede-rundshelter/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/hegnede-rundshelter/",
+        "address": "Trehøjevej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.054423,
+          56.518094
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Herkulesmyren shelter",
+        "description": "Den primitive overnatningsplads består af 1 minishelter med bålsted og en lille bænk. Der er mulighed at slå et par mindre telte op indenfor 20 meter af shelteren. Der er plads til 2-3 overnattende i shelteren.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/herkulesmyren-shelter/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/herkulesmyren-shelter/",
+        "address": "herkulesmyren",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.073836,
+          56.0416249
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Honningsvampen shelter",
+        "description": "Honningsvampen shelteren ligger i Danstrup Hegn mellem Helsingør og Fredensborg. I shelteren er der plads til 2 personer, måske 3 hvis man ligger tæt. Der er et lille bålsted og en bænk med en fin udsigt ud over en lille sø.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/honningsvampen-shelter/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/honningsvampen-shelter/",
+        "address": "honningsvampen",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.4477915,
+          55.9998126
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Hoppes Shelterplads",
+        "description": "Stort bålhus med grill i midten samt indbyggede shelterpladser. Bålhuset ligger i kanten af en lille skovlund i den unge Hoppes Skov og tæt på Svanemosen. Plads til 25 sovende gæster. Borde og bænke i tørvejr.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/hoppes-shelterplads/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/hoppes-shelterplads/",
+        "address": "hoppes",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9076676,
+          56.3928326
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Hornbæk Plantage Shelterplads",
+        "description": "Shelterpladen ligge ca. 200 m. fra stranden syd for Nordre Strandvej. Der er plads til ca. 4 overnattende personer i hver shelter. Det er tilladt at slå et par mindre telte op. Der er ca. 500 m. til shelterpladsen fra p-pladse ved Sandagerhusvej, og ca. 300 m. fra p-pladsen ved stranden. Den må ikke køres i skove ind til shelterpladsen. Shelterpladsen skal efterlades oprydet, herunder også bålstedet, og alt affald skal bringes med ud af skoven. Vand og brænde skal man selv medbringe. Det er till",
+        "source_url": "https://book.naturstyrelsen.dk/sted/hornbaek-plantage-shelterplads/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/hornbaek-plantage-shelterplads/",
+        "address": "hornbaek plantage",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.4912956,
+          56.0877067
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Husby shelterplads - Shelter 1",
+        "description": "På pladsen er der 2 shelters, 2 borde/bænkesæt og grill/bålplads.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/husby-shelterplads-shelter-1/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/husby-shelterplads-shelter-1/",
+        "address": "6990 Ulfborg",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.3166504,
+          56.2723603
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Husby shelterplads - Shelter 2",
+        "description": "På pladsen er der 2 shelters, 2 borde/bænkesæt og grill/bålplads.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/husby-shelterplads-shelter-2/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/husby-shelterplads-shelter-2/",
+        "address": "6990 Ulfborg",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.3166504,
+          56.2723603
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Husby shelterplads - shelter 3",
+        "description": "På pladsen er der 2 små 3-personers shelters. Pladsen er beliggende tæt på den nationale cykelrute Vestkystruten, der følger Græmvej og Bundgårdsvej",
+        "source_url": "https://book.naturstyrelsen.dk/sted/husby-shelterplads-shelter-3/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/husby-shelterplads-shelter-3/",
+        "address": "6990 Ulfborg",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.3166504,
+          56.2723603
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Husby shelterplads - shelter 4",
+        "description": "På pladsen er der 2 små 3-personers shelters. Pladsen er beliggende tæt på den nationale cykelrute Vestkystruten, der følger Græmvej og Bundgårdsvej",
+        "source_url": "https://book.naturstyrelsen.dk/sted/husby-shelterplads-shelter-4/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/husby-shelterplads-shelter-4/",
+        "address": "6990 Ulfborg",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.3166504,
+          56.2723603
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Hvidbjerg",
+        "description": "Pladsen er beliggende ved den gamle planteskole, ca. 300 m sydvest for Hvidbjerghus.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/hvidbjerg/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/hvidbjerg/",
+        "address": "hvidbjerg",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.5271072,
+          56.6486331
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Hvinanden shelter",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/hvinanden-shelter/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/hvinanden-shelter/",
+        "address": "hvinanden",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.3680129,
+          56.0233612
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Hvinningdal grusgrav",
+        "description": "Der er opstillet 2 shelters med plads til ca. 8 personer i hver. Der der findes bålsted, drikkevand, træ til brænde (medbring selv sav eller økse) og muldtoilet på pladsen.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/hvinningdal-grusgrav/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/hvinningdal-grusgrav/",
+        "address": "hvinningdal grusgrav",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.4802843,
+          56.1723149
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Hyllinge lejrplads, Fodsporet",
+        "description": "Lejrplads med 4 sheltere for større grupper med plads til ca. 24 deltagere. Lejrpladsen skal bookes hvis gruppen er minimum 15 personer, hvis du vil være sikker på overnatningsmulighed. Max. 4 døgn. Der er også mulighed for supplerende teltning på pladsen. Lejrpladsen er beliggende umiddelbart nord for Hyllinge by. Du kommer til lejrpladsen ved at køre ned for enden af Hyllinge Stationsvej til en lille P-plads. Det er her du skal parkere, hvis du kommer i bil (IKKE smalle villaveje i byen) Herfr",
+        "source_url": "https://book.naturstyrelsen.dk/sted/hyllinge-lejrplads-fodsporet/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/hyllinge-lejrplads-fodsporet/",
+        "address": "hyllinge lejrplads fodsporet",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.6020455,
+          55.2600873
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Hytten i kratskoven",
+        "description": "Hytten i Kratskoven ligger lige syd for Naturcenter vestamager inde i fårefolden. Her er der en bålplads, som kan bruges til at lave alverdens retter over bål. I forårsmånederne kan du hakke friske brændenæller og bage dem i en snobrødsdej. Det er også et godt sted at fange insekter med et net eller gå på opdagelse efter gule engmyre.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/hytten-i-kratskoven/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/hytten-i-kratskoven/",
+        "address": "kratskoven",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.2958515,
+          56.4263354
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Hytten ved Storehøj",
+        "description": "Hytten ved Storehøj ligger ligger gemt i krattet ved Kanonvej. Herfra er det nemt at gå over til Storehøj og søen derved. Storehøj er et super sted at opleve de fugle, der holder til i søen og i rørskoven. Alle kan tage en tur på den nye bro ud i søen gennem tagrør til de to fugleskjul. Hele sommeren svinger svalerne sig i luften, blishønsene skriger og gæssene græsser.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/hytten-ved-storehoej/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/hytten-ved-storehoej/",
+        "address": "Storehøj",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.5315075,
+          55.9893344
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Jægersborg Hegn, Shelter \"Den Hemmelige\"",
+        "description": "Ved shelteret findes bålplads med grill og et borde-bænkesæt.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/jaegersborg-hegn-shelter-den-hemmelige/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/jaegersborg-hegn-shelter-den-hemmelige/",
+        "address": "jaegersborg hegn shelter den hemmelige",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.5561374,
+          55.8290304
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Jægersborg Hegn, Terrassen, Shelter nærmest Bøllemosen",
+        "description": "Shelter med plads til 5-6 personer",
+        "source_url": "https://book.naturstyrelsen.dk/sted/jaegersborg-hegn-terrassen-shelter-naermest-boellemosen/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/jaegersborg-hegn-terrassen-shelter-naermest-boellemosen/",
+        "address": "Skodsborgvej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.5354077,
+          55.8148415
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Jamborettepladsen shelterplads, Shelter 1",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/jamborettepladsen-shelterplads-shelter-1/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/jamborettepladsen-shelterplads-shelter-1/",
+        "address": "Rold Skov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.7832117,
+          56.8037749
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kalvebod Fælled, Fasanskoven, shelter ved Birkedammen",
+        "description": "Udover shelteret findes bålplads med grill og et evt. et borde-bænkesæt.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/kalvebod-faelled-fasanskoven-shelter-ved-birkedammen/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/kalvebod-faelled-fasanskoven-shelter-ved-birkedammen/",
+        "address": "Birkedammen",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.883379,
+          56.832832
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kalvebod Fælled, Pinseskoven, Lejrplads Viben",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/kalvebod-faelled-pinseskoven-lejrplads-viben/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/kalvebod-faelled-pinseskoven-lejrplads-viben/",
+        "address": "Frieslandsvej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.5716103,
+          55.5814901
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kalvebod Fælled, Pinseskoven, shelter nær Svenskeholmvej",
+        "description": "Udover shelteret findes bålplads med grill og evt. et borde-bænkesæt.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/kalvebod-faelled-pinseskoven-shelter-naer-svenskeholmvej/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/kalvebod-faelled-pinseskoven-shelter-naer-svenskeholmvej/",
+        "address": "Svenskeholmvej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.5330336,
+          55.606448
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kalvebod Fælled, Pinseskoven, shelter ved Ellevehøjevej",
+        "description": "Udover shelteret findes bålplads med grill og et borde-bænkesæt.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/kalvebod-faelled-pinseskoven-shelter-ved-ellevehoejevej/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/kalvebod-faelled-pinseskoven-shelter-ved-ellevehoejevej/",
+        "address": "Ellevehøjevej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.5517406,
+          55.5822851
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kalvebod Fælled, Pinseskoven, shelter ved Hejresøen",
+        "description": "Udover shelteret findes bålplads med grillrist og et bord til madlavning.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/kalvebod-faelled-pinseskoven-shelter-ved-hejresoeen/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/kalvebod-faelled-pinseskoven-shelter-ved-hejresoeen/",
+        "address": "Hejresøen",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.5603765,
+          55.5767048
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kalvebod Fælled, Pinseskoven, shelter ved Kanalvej",
+        "description": "Udover shelteret findes bålplads med grill og et borde-bænkesæt.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/kalvebod-faelled-pinseskoven-shelter-ved-kanalvej/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/kalvebod-faelled-pinseskoven-shelter-ved-kanalvej/",
+        "address": "Kanalvej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.5083313,
+          55.7723548
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kalvebod Fælled, Pinseskoven, shelter ved Ottehøjevej",
+        "description": "Udover shelteret findes bålplads med grill og bænke omkring.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/kalvebod-faelled-pinseskoven-shelter-ved-ottehoejevej/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/kalvebod-faelled-pinseskoven-shelter-ved-ottehoejevej/",
+        "address": "Ottehøjevej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.5571214,
+          55.5961531
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kirstinelyst - Shelter nr. 1",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/kirstinelyst-shelter-nr-1/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/kirstinelyst-shelter-nr-1/",
+        "address": "kirstinelyst shelter",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.1848902,
+          55.6585949
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Klosterheden, Moselyst",
+        "description": "Dejlig plads lige ned til en lille sø hvor der må fiskes. Der er 1 shelter med plads til 6 personer, brændeskur (sav/kløv selv), bål- og grillplads samt borde/bænke. Desuden er der et multtoilet. Fra Vilhlemsborgvej drejes ind i Klosterheden Plantage, følg grusvejen ca. 200 m og drej til venstre mod p-pladsen på grøn rute. Fra p-pladsen følges grøn rute ca. 200 m til fods, her finder du shelterpladsen. (Vilhelmsborgvej 166, 7620 Lemvig).",
+        "source_url": "https://book.naturstyrelsen.dk/sted/klosterheden-moselyst/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/klosterheden-moselyst/",
+        "address": "7620 Lemvig",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.2920969,
+          56.5411843
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kongelunden, Shelter Længestehøj",
+        "description": "Ved shelteret findes bålplads med grill og et borde-bænkesæt.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/kongelunden-shelter-laengestehoej/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/kongelunden-shelter-laengestehoej/",
+        "address": "Kalvebodvej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.5891025,
+          55.5692935
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kongskilde Shelterplads ved Møllebækken",
+        "description": "Shelterpladsen skal bookes, hvis man vil være sikker på overnatningsmulighed. Max 2 overnatninger. Der må gerne opstilles supplerende telte på pladsen uden forudgående booking. Booking gælder alene shelterne. Adgang til pladsen sker fra Kongskilde Naturcenters P-plads, Skælskørvej 34, 4180 Sorø. Herfra er der knap 1 kilometer til fods. Der er et primitivt toilet på pladsen, og brænde må samles i skovbunden. Vand kan hentes ved Kongskilde Naturcenter. Toilettet er på bagsiden af centeret. Her er ",
+        "source_url": "https://book.naturstyrelsen.dk/sted/kongskilde-shelterplads-ved-moellebaekken/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/kongskilde-shelterplads-ved-moellebaekken/",
+        "address": "Skælskørvej 34, 4180 Sorø",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.539235,
+          55.376412
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Krogenlund, lejrplads ved Hetting Mose",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/krogenlund-lejrplads-ved-hetting-mose/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/krogenlund-lejrplads-ved-hetting-mose/",
+        "address": "Buresø",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.2317099,
+          55.8144429
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lejrplads med shelter 1 - Holmeskoven",
+        "description": "Lejrpladsen i Holmeskoven er placeret i en lille lysning i skoven. Der er to sheltere og en bålplads.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/lejrplads-med-shelter-1-holmeskoven/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/lejrplads-med-shelter-1-holmeskoven/",
+        "address": "Søndergade 90, 5591 Gelsted",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.965216,
+          55.390511
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lejrplads med shelter 1 - Kasmose Skov",
+        "description": "Lejrpladsen i Kasmose Skov er beliggende i den urørte del af Kasmose Skov. På pladsen er to 5-persons shelters, der er placeret på toppen af klinten med udsigt ud over Lillebælt. Fra klinten er det muligt at se til Trelle Næs i Jylland. Skoven er ejet af Naturstyrelsen og har været udlagt som urørt skov siden begyndelsen af 1990érne.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/lejrplads-med-shelter-1-kasmose-skov/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/lejrplads-med-shelter-1-kasmose-skov/",
+        "address": "Kasmose Skov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.8290985,
+          55.552108
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lejrplads med shelter 1 - Vestre Stigtehave",
+        "description": "Lejrplads med shelter nr. 1 - Vestre Stigtehave, der ligger ved siden af Shelter nr. 2. Der er plads til to voksne i hvert shelter. Begge shelters er af typen \"Skrubben\", og de to shelters er ét af de Blå Støttepunkter ved Det Sydfynske Øhav. Shelterne er bygget i samarbejde med Geopark det Sydfynske Øhav.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/lejrplads-med-shelter-1-vestre-stigtehave/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/lejrplads-med-shelter-1-vestre-stigtehave/",
+        "address": "5953 Tranekær",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.8470786,
+          54.9974289
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lejrplads med shelter 2 - Kasmose Skov",
+        "description": "Lejrpladsen i Kasmose Skov er beliggende i den urørte del af Kasmose Skov. På pladsen er der to 5-persons shelters, der er placeret på toppen af klinten med udsigt ud over Lillebælt. Fra klinten er det muligt at se til Trelle Næs i Jylland. Skoven er ejet af Naturstyrelsen og har været udlagt som urørt skov siden begyndelsen af 1990érne.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/lejrplads-med-shelter-2-kasmose-skov/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/lejrplads-med-shelter-2-kasmose-skov/",
+        "address": "Kasmose Skov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.8290985,
+          55.552108
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lejrplads med Shelter 2 - Vestre Stigtehave",
+        "description": "Lejrplads med shelter nr. 2 - Vestre Stigtehave, der ligger ved siden af Shelter nr. 1. Der er plads til to voksne i hvert shelter. Begge shelters er af typen \"Skrubben\", og de to shelters er ét af de Blå Støttepunkter ved Det Sydfynske Øhav. Shelterne er bygget i samarbejde med Geopark det Sydfynske Øhav.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/lejrplads-med-shelter-2-vestre-stigtehave/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/lejrplads-med-shelter-2-vestre-stigtehave/",
+        "address": "5953 Tranekær",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.8470786,
+          54.9974289
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lejrplads Sjørup Skov - shelter nr. 1 (bookbar)",
+        "description": "Mindre plads nær lille sø i Sjørup Skov. Overnatningspladsen ligger i skoven på østsiden af en eng i Sjørup Skov. Vandhane er placeret i skovkanten nær shelterne. 0,5 km til indkøb i Sjørup. Vejforklaring: Overnatningspladsen ligger lige syd for Sjørup By. I vejkrydset Holstebrovej (A16) og Vestre Skivevej (186) køres mod Kjelleup. Herefter vælges første skovvej (kaldet \"Resenvej\") på vestsiden af Skivevej, ca. 50 m syd for vejkrydset. Fra den lille p-plads ved indkørslen til \"Resenvej\" er der s",
+        "source_url": "https://book.naturstyrelsen.dk/sted/lejrplads-sjoerup-skov-shelter-nr-1-bookbar/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/lejrplads-sjoerup-skov-shelter-nr-1-bookbar/",
+        "address": "lille sø",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.5149449,
+          55.4811571
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lejrplads Stendal Plantage - Shelter nr. 1",
+        "description": "Stendal Plantage ligger i et kuperet terræn i et område, hvor den jyske højderyg flader ud mod den tidligere Alhede. Pladsen er omkranset af skov.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/lejrplads-stendal-plantage-shelter-nr-1/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/lejrplads-stendal-plantage-shelter-nr-1/",
+        "address": "Jagtjunkervej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.2824289,
+          56.3121967
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lejrplads Stendal Plantage - Shelter nr. 2",
+        "description": "Stendal Plantage ligger i et kuperet terræn i et område, hvor den jyske højderyg flader ud mod den tidligere Alhede. Pladsen er omkranset af skov.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/lejrplads-stendal-plantage-shelter-nr-2/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/lejrplads-stendal-plantage-shelter-nr-2/",
+        "address": "Jagtjunkervej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.2824289,
+          56.3121967
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lejrplads Stendal Plantage - Shelter nr. 3",
+        "description": "Stendal Plantage ligger i et kuperet terræn i et område, hvor den jyske højderyg flader ud mod den tidligere Alhede. Pladsen er omkranset af skov.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/lejrplads-stendal-plantage-shelter-nr-3/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/lejrplads-stendal-plantage-shelter-nr-3/",
+        "address": "Jagtjunkervej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.2824289,
+          56.3121967
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lejrplads Stendal Plantage - Shelter nr. 4",
+        "description": "Stendal Plantage ligger i et kuperet terræn i et område, hvor den jyske højderyg flader ud mod den tidligere Alhede. Pladsen er omkranset af skov.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/lejrplads-stendal-plantage-shelter-nr-4/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/lejrplads-stendal-plantage-shelter-nr-4/",
+        "address": "Jagtjunkervej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.2824289,
+          56.3121967
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lejrplads Stubbe Sø - shelter nr. 1 (bookbar)",
+        "description": "To shelters med plads til ca. 5-6 personer i hvert. Den ene shelter kan reserveres - den anden kan ikke. Den sidste benyttes efter \"først til mølle\" princippet. Der er ikke drikkevand i nærheden. Der er et multtoilet ved shelterne. Der er en bålplads foran shelterne. Der er ikke særlig mange tørre kviste og grene i området. Nogle gange er der brænde på stedet, men hvis du vil være helt sikker skal du selv tage brænde med. Ikke langt fra shelterne ligger der et fugletårn, hvor du kan opleve fugle",
+        "source_url": "https://book.naturstyrelsen.dk/sted/lejrplads-stubbe-soe-shelter-nr-1-bookbar/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/lejrplads-stubbe-soe-shelter-nr-1-bookbar/",
+        "address": "Stubbe Sø",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.6917755,
+          56.2556805
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lejrplads \"Teltet\" i Hornet",
+        "description": "Teltet er beregnet til større arrangementer og kan kun benyttes via bookingsystemet.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/lejrplads-teltet-i-hornet/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/lejrplads-teltet-i-hornet/",
+        "address": "Hornet",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.5029264,
+          56.4876987
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lejrplads Udkæret",
+        "description": "Overnatningspladsen er åben for alle både til overnatning og hygge om bålet. Brug og ophold er gratis.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/lejrplads-udkaeret/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/lejrplads-udkaeret/",
+        "address": "Springbakkevej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.8817183,
+          55.1064191
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lejrplads ved Naturcenter Harrild Hede",
+        "description": "Lejrpladsen er beliggende på sydsiden af Holtum Å og ca. 300 meter fra Naturcenter Harrild Hede.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/lejrplads-ved-naturcenter-harrild-hede/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/lejrplads-ved-naturcenter-harrild-hede/",
+        "address": "Naturcenter Harrild Hede",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.1740996,
+          56.0040419
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lejrpladsen ved Hollænderhus, Nordlangeland",
+        "description": "Lejrpladsen ligger i en lysning i skoven umiddelbart nordvest for Hollænderhus ved Houvej i Vestre Stigtehave. Der er plads til ca. 30 personer på lejrpladsen. Der er en p-plads ved Houvej lidt nord for Hollænderhus. Der er offentligt, handicapvenligt toilet i Hollænderhus (1 sæde). Der kan tappes drikkevand fra en hane under håndvasken på det offentlige toilet. Håndvasken må ikke benyttes til opvask og rengøring af udstyr. Der er bålplads på lejrpladsen, men brugerne skal selv sørge for brænde.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/lejrpladsen-ved-hollaenderhus-nordlangeland/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/lejrpladsen-ved-hollaenderhus-nordlangeland/",
+        "address": "Houvej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.2242615,
+          57.0734622
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lille Hareskov, lejrpladsen Gisselfeldengen",
+        "description": "Lejrpladsen er beliggende på Gisselfeldengen i Lille Hareskov. Der er plads til ca. 100 overnattende i telt på engen.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/lille-hareskov-lejrpladsen-gisselfeldengen/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/lille-hareskov-lejrpladsen-gisselfeldengen/",
+        "address": "Lille Hareskov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.3890257,
+          55.7681547
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lodbjerg Fyr",
+        "description": "Lejrpladsen er beliggende nord for Lodbjerg Fyr.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/lodbjerg-fyr/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/lodbjerg-fyr/",
+        "address": "lodbjerg fyr",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.2627145,
+          56.8234447
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lystbæk Lejrplads",
+        "description": "Lystbækgård ligger ved vejkrydset Torstedvej/Kronhedevej. Drej ind ved gården og følg grusvejen og hold til højre og efter ca. 100 m ligger pladsen til højre for vejen. Der er etableret overdækket bålplads med grill, hvor der må tændes bål, der er mulighed for selv at save/flække brænde. Den overdækkede bålplads er bygget sammen med et shelter med plads til ca. 20 pers. Drikkevand findes installeret i en \"pæl\" ved indgangen til pladsen. Ved indkørslen til lejrpladsen er der toiletter og badefaci",
+        "source_url": "https://book.naturstyrelsen.dk/sted/lystbaek-lejrplads/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/lystbaek-lejrplads/",
+        "address": "lystbaek",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.37802,
+          56.24134
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Mikkels Hus",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/mikkels-hus/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/mikkels-hus/",
+        "address": "mikkels hus",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.7101941,
+          57.3715636
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Mirabellen Shelter",
+        "description": "Der kan ikke køres til shelteren. Er man i bil, skal der parkeres ved Ramløse Havn, hvorefter man til fods skal følge stien mod øst.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/mirabellen-shelter/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/mirabellen-shelter/",
+        "address": "mirabellen",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.1186764,
+          56.0007492
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Møns Klint Shelter - 1",
+        "description": "Primitiv overnatningsplads med 4 sheltere, som ligger samlet omkring en central bålplads.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/moens-klint-shelter-1/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/moens-klint-shelter-1/",
+        "address": "Stengårdsvej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.4917192,
+          55.4832511
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Møns Klint Shelter - 2",
+        "description": "Primitiv overnatningsplads med 4 sheltere, som ligger samlet omkring en central bålplads.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/moens-klint-shelter-2/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/moens-klint-shelter-2/",
+        "address": "Stengårdsvej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.4917192,
+          55.4832511
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Møns Klint Shelter - 3",
+        "description": "Primitiv overnatningsplads med 4 sheltere, som ligger samlet omkring en central bålplads.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/moens-klint-shelter-3/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/moens-klint-shelter-3/",
+        "address": "Stengårdsvej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.4917192,
+          55.4832511
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Møns Klint Shelter - 4",
+        "description": "Primitiv overnatningsplads med 4 sheltere, som ligger samlet omkring en central bålplads.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/moens-klint-shelter-4/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/moens-klint-shelter-4/",
+        "address": "Stengårdsvej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.4917192,
+          55.4832511
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Nøffelskoven shelter, bålhytte og amfiteater",
+        "description": "Pladsen er beregnet til større grupper og især velegnet til institutioner med henblik på undervisning. Der er flere smukke udskårne træfigurer rundt omkring i skoven. Shelterne kan rumme ca. 30 personer. Der er ikke ledningsvand eller toilet på pladsen. Brænde skal medbringes. P-plads ved Møllevej. Pladsen skal bookes over Naturstyrelsens bookingsystem.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/noeffelskoven-shelter-baalhytte-og-amfiteater/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/noeffelskoven-shelter-baalhytte-og-amfiteater/",
+        "address": "Møllevej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.1907137,
+          55.4958468
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Nordskov, Korsdalshus pladsen",
+        "description": "Pladsen (ca.1/2 ha.) ligger midt i Nordskov og etableret på tomten efter en nedlagt skovløberbolig. Pladsen kan bruges af grupper og skal bookes forinden (min. 15 personer). Der er adgang til vand fra 1. april til ca. uge 42. Der findes borde/bænkesæt, en stor bålplads med grillrist (og siddepladser omkring bålet) og et muldtoilet. Brænde kan samles i skovbunden i form af nedfaldne grene og dødt ved. Og eventuel brænde (hugst) på pladsen kan anvendes. Biler ingen adgang.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/nordskov-korsdalshus-pladsen/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/nordskov-korsdalshus-pladsen/",
+        "address": "Nordskov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.4288952,
+          55.2550711
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Nordskoven Shelterplads",
+        "description": "To sheltere med god udsigt over åbne arealer og nyplantet skov. Shelterne kan bookes mens pladsen må frit benyttes til telte uden forudgående booking. På pladsen er også bålplads og borde/bænkesæt. Da skoven er helt nyplantet, er det en fordel selv at medbringe brænde. Der er ikke vand på pladsen, men et primitivt toilet på P-pladsen ved Højstrupvej 5.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/nordskoven-shelterplads/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/nordskoven-shelterplads/",
+        "address": "nordskoven",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.982902,
+          55.9069092
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Nordstjernen (bookbar)- Handicapvenligt shelter på Nordhus shelterplads",
+        "description": "Der er to handicapvenlige shelters på pladsen - Polaris og Nordstjernen. Nordstjernen kan bookes ved at følge linket her på siden, mens Polaris kan benyttes efter først-til-mølle-princippet.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/nordstjernen-bookbar-handicapvenligt-shelter-paa-nordhus-shelterplads/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/nordstjernen-bookbar-handicapvenligt-shelter-paa-nordhus-shelterplads/",
+        "address": "3782 Klemensker",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.8063219,
+          55.1741032
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Nyvang, lejrplads med 3 sheltere - kørestolstilgængelig",
+        "description": "Lejrpladsen har 3 sheltere med samlet plads til op til 15 personer. Der er bålsted med grillrist.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/nyvang-lejrplads-med-3-sheltere-koerestolstilgaengelig/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/nyvang-lejrplads-med-3-sheltere-koerestolstilgaengelig/",
+        "address": "Farumvej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.3051202,
+          55.8139237
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Odderdam Shelter",
+        "description": "Pladsen ligger idyllisk med udsigt Odderdam. Der er desuden en primitiv lejrplads tæt på shelterpladsen med separat bålplads.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/odderdam-shelter/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/odderdam-shelter/",
+        "address": "odderdam",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.5594821,
+          56.1532621
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Østerskov ved Midtvej",
+        "description": "Pladsen er beliggende i Silkeborg Østerskov, på vandreruten Århus-Silkeborg nedenfor Karoline Amalies Høj. På pladsen er der bålplads samt muldtoilet.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/oesterskov-ved-midtvej/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/oesterskov-ved-midtvej/",
+        "address": "Midtvej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.7052484,
+          55.8530764
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Østre Gåsekær",
+        "description": "Beliggende på næs ud i Borresø, især velegnet til \"sejlende\" grupper. På pladsen er der bålsted og muldtoilet. Der vil som regel findes lav-selv-brænde, i form af stammer man kan save op. Medbring selv sav og økse. Formålet med det leverede brænde er at skåne den urørte skov, der omgiver pladsen. Vi anbefaler max. 35 overnattende personer.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/oestre-gaasekaer/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/oestre-gaasekaer/",
+        "address": "Borresø",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.583513,
+          56.1295892
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ormstrup shelterplads",
+        "description": "Pladsen ligger nord for Blåbjerg Plantage som er en del af Stråsø",
+        "source_url": "https://book.naturstyrelsen.dk/sted/ormstrup-shelterplads/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/ormstrup-shelterplads/",
+        "address": "ormstrup",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.6458837,
+          56.3273341
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ræven shelter",
+        "description": "Ræven shelteren ligger i Stenholtsvang tæt på Hillerød. Der er plads til to personer, måske tre hvis man ligger lidt tæt. Der er en bænk og et lille bålsted. Shelteren ligger ved et lille mosehul, hvor der til tider står vand. Området er fyldt med ny bevoksning af både birk og eg. Stedet er ikke egnet for gangbesværede eller kørestolsbrugere, da det er svært at komme til grundet bevoksningen.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/raeven-shelter/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/raeven-shelter/",
+        "address": "raeven",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.6645107,
+          56.3304965
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ravnereden i Grønholt Vang",
+        "description": "Shelteren ligge i det sydvestlige hjørne af Grønholt Vang. Der er plads til ca. 14 overnattende personer. Det er tilladt at slå et par mindre telte op. Fra Grønholt trinbræt ved Grønholtvangen er der ca. 5 minutters gang til pladsen. Der er en mindre p-plads ved indgangen til skoven fra Grønholtvangen. Den må ikke køres i skove ind til shelterpladsen. Vand og brænde skal man selv medbringe. Det er tilladt at samle grene i skovbunden til brænde. Shelterpladsen skal efterlades opryddet, herunder b",
+        "source_url": "https://book.naturstyrelsen.dk/sted/ravnereden-i-groenholt-vang/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/ravnereden-i-groenholt-vang/",
+        "address": "Grønholt Vang",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.3862626,
+          55.9563512
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ravnholm, 2 shelters ved Marens Hulvej",
+        "description": "På pladsen finder du to shelters med plads til 5-6 personer i hver.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/ravnholm-2-shelters-ved-marens-hulvej/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/ravnholm-2-shelters-ved-marens-hulvej/",
+        "address": "Kulsviervej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.5143165,
+          55.7868419
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ravnsholt, lejrpladsen Mørkebakke",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/ravnsholt-lejrpladsen-moerkebakke/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/ravnsholt-lejrpladsen-moerkebakke/",
+        "address": "Bregnerød Skovvej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.3558506,
+          55.856477
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ravnsholt, shelter ved Kulster Bakke",
+        "description": "Udover shelteret findes bålplads med grill og et borde-bænkesæt.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/ravnsholt-shelter-ved-kulster-bakke/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/ravnsholt-shelter-ved-kulster-bakke/",
+        "address": "Kulster Bakke",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.3613377,
+          55.8604412
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Rold Skov, Jamborettepladsen 1",
+        "description": "Jamborettepladsen er den største lejrpladser i Rold Skov. Lejrpladsen ligger nord for Mossø. Indkørsel kun fra Turistvejen der går ned til St. Økssø. Her er plads til 4 grupper med minimum 15 deltagere i max 4 døgn. Der er multtoilet samt flere vandposter",
+        "source_url": "https://book.naturstyrelsen.dk/sted/rold-skov-jamborettepladsen-1/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/rold-skov-jamborettepladsen-1/",
+        "address": "Rold Skov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.7832117,
+          56.8037749
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Rold Skov, Jamborettepladsen 2",
+        "description": "Jamborettepladsen er den største lejrpladser i Rold Skov. Lejrpladsen ligger nord for Mossø. Indkørsel kun fra Turistvejen der går ned til St. Økssø. Her er plads til 4 grupper med minimum 15 deltagere i max 4 døgn. Der er multtoilet samt flere vandposter",
+        "source_url": "https://book.naturstyrelsen.dk/sted/rold-skov-jamborettepladsen-2/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/rold-skov-jamborettepladsen-2/",
+        "address": "Rold Skov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.7832117,
+          56.8037749
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Rold Skov, Jamborettepladsen 3",
+        "description": "Jamborettepladsen er den største lejrpladser i Rold Skov. Lejrpladsen ligger nord for Mossø. Indkørsel kun fra Turistvejen der går ned til St. Økssø. Her er plads til 4 grupper med minimum 15 deltagere i max 4 døgn. Der er multtoilet samt flere vandposter",
+        "source_url": "https://book.naturstyrelsen.dk/sted/rold-skov-jamborettepladsen-3/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/rold-skov-jamborettepladsen-3/",
+        "address": "Rold Skov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.7832117,
+          56.8037749
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Rold Skov, Jamborettepladsen 4",
+        "description": "Jamborettepladsen er den største lejrpladser i Rold Skov. Lejrpladsen ligger nord for Mossø. Indkørsel kun fra Turistvejen der går ned til St. Økssø. Her er plads til 4 grupper med minimum 15 deltagere i max 4 døgn. Der er multtoilet samt flere vandposter",
+        "source_url": "https://book.naturstyrelsen.dk/sted/rold-skov-jamborettepladsen-4/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/rold-skov-jamborettepladsen-4/",
+        "address": "Rold Skov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.7832117,
+          56.8037749
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Rold Skov Shelter",
+        "description": "Shelter i gl. bøgeskov ved bredden af Rold Sø. Plads til 6-8 personer. På pladsen er bålplads og bord/bænke.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/rold-skov-shelter/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/rold-skov-shelter/",
+        "address": "rold skov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.7832117,
+          56.8037749
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Rold Skov, shelterplads ved Mosskovpavillonen - Shelter nr. 1",
+        "description": "Under trækronerne i skoven tæt ved Mosskovpavillionen og kun 700 m fra St. Økssø ligger en dejlig shelterplads.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/rold-skov-shelterplads-ved-mosskovpavillonen-shelter-nr-1/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/rold-skov-shelterplads-ved-mosskovpavillonen-shelter-nr-1/",
+        "address": "Mosskovpavillonen",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.875709,
+          56.802622
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Rold Skov, shelterplads ved Mosskovpavillonen - shelter nr. 2",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/rold-skov-shelterplads-ved-mosskovpavillonen-shelter-nr-2/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/rold-skov-shelterplads-ved-mosskovpavillonen-shelter-nr-2/",
+        "address": "Mosskovpavillonen",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.875709,
+          56.802622
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Rold Skov, shelterplads ved Mosskovpavillonen - Shelter nr. 3",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/rold-skov-shelterplads-ved-mosskovpavillonen-shelter-nr-3/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/rold-skov-shelterplads-ved-mosskovpavillonen-shelter-nr-3/",
+        "address": "Mosskovpavillonen",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.875709,
+          56.802622
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Rold Skov, Urskoven, shelter 1 - kan bookes",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/rold-skov-urskoven-shelter-1-kan-bookes/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/rold-skov-urskoven-shelter-1-kan-bookes/",
+        "address": "Rold Skov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.7832117,
+          56.8037749
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Rude Skov, lejrplads Femsølyng",
+        "description": "Lejrpladsen er beregnet til større organiserede grupper, eksempelvis foreninger, skoler og institutioner. Pladsen kan bookes til overnatning af grupper på min. 15 personer. Lejrpladsen kan højst bookes for 4 overnatninger.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/rude-skov-lejrplads-femsoelyng/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/rude-skov-lejrplads-femsoelyng/",
+        "address": "Hørsholm Kongevej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.4939282,
+          55.8599534
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Rude Skov, Shelters Store Stubbesø",
+        "description": "Vælg denne plads, hvis I er en gruppe, der har brug for 2 shelters, dvs. at I er en gruppe på 10-12 personer. Andre har også ret til at bruge en evt. tom shelter eller slå et telt op på pladsen.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/rude-skov-shelters-store-stubbesoe/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/rude-skov-shelters-store-stubbesoe/",
+        "address": "2025 og",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.5422152,
+          55.8100752
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Rygård Overdrev, shelter ved Oksemosen",
+        "description": "Ved shelteret findes bålplads med grill og et borde-bænkesæt.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/rygaard-overdrev-shelter-ved-oksemosen/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/rygaard-overdrev-shelter-ved-oksemosen/",
+        "address": "Oksemosen",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.4925655,
+          55.826387
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ryget Skov, shelter ved Farum sø",
+        "description": "Udover shelteret findes bålplads med grill og et borde-bænkesæt. Bålplads ligger 15 m øst for shelteret lige ved søbredden. Der er et landgangssted ved shelteren, så der er nem adgang med båd eller kano.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/ryget-skov-shelter-ved-farum-soe/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/ryget-skov-shelter-ved-farum-soe/",
+        "address": "Farum sø",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.363265,
+          55.8027657
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sårup",
+        "description": "Lejrpladsen er beliggende i den nordlige del af plantagen, ved Peter Odgårds Plads, i en gammel grusgrav.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/saarup/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/saarup/",
+        "address": "saarup",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0862807,
+          55.2095446
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sandhytten - Bålhytte i Blykobbe Plantage",
+        "description": "Bålhytten ligger lige ud til P-pladsen ved Sandegårdsvej i Blykobbe Plantage/Nordskoven.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/sandhytten-baalhytte-i-blykobbe-plantage/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/sandhytten-baalhytte-i-blykobbe-plantage/",
+        "address": "Haslevej 105A, 3700 Rønne",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.711864,
+          55.127417
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sebberup Skov Shelter",
+        "description": "Shelter på gammel gårdtomt midt i den nye skovrejsning i Sebberup Skov.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/sebberup-skov-shelter/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/sebberup-skov-shelter/",
+        "address": "sebberup skov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.7150918,
+          55.8028408
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelter 1 - Sollerup Skov",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelter-1-sollerup-skov/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelter-1-sollerup-skov/",
+        "address": "Sollerupvej 24, 5600 Faaborg",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.287433,
+          55.146677
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelter 2 - Sollerup Skov",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelter-2-sollerup-skov/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelter-2-sollerup-skov/",
+        "address": "Sollerupvej 24, 5600 Faaborg",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.287433,
+          55.146677
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelter 3 - Sollerup Skov",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelter-3-sollerup-skov/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelter-3-sollerup-skov/",
+        "address": "Sollerupvej 24, 5600 Faaborg",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.287433,
+          55.146677
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelter 4 - Sollerup Skov",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelter-4-sollerup-skov/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelter-4-sollerup-skov/",
+        "address": "Sollerupvej 24, 5600 Faaborg",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.287433,
+          55.146677
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelter, Blå Port",
+        "description": "Shelteren ligger ca. 50 m. fra søbredden, i nordenden af Esrum sø. Der er plads til ca. 25 overnattende personer. Det er tilladt at slå et par mindre telte op. Der er ca. 1 km til shelteren fra p-pladsen ved Frederiksværkvej. Du må gå eller cykle til pladsen, men ikke køre med bil eller knallert eller med anden motor i skoven ind til shelterpladsen. Vand og brænde skal du selv medbringe. Det er tilladt at samle grene i skovbunden til brænde, men du kan ikke være sikker på der er noget i nærheden",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelter-blaa-port/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelter-blaa-port/",
+        "address": "Frederiksværkvej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.0650049,
+          55.8461574
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelter i Toftegårdsskoven",
+        "description": "Ved shelteret er et borde-bænkesæt samt en bålsted med rist - du er velkommen til at samle dødt ved i skovbunden.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelter-i-toftegaardsskoven/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelter-i-toftegaardsskoven/",
+        "address": "Toftegårdsskoven",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.5043356,
+          54.8576842
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelter i True Skov",
+        "description": "I en lysning i True Skovs \"Lille Amerika\" ligger Koglen. En shelter, formet som en gigantisk kogle, hvor der er plads til fire overnattende personer. Shelteren skal bookes, hvis man vil være sikker på overnatningsmulighed.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelter-i-true-skov/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelter-i-true-skov/",
+        "address": "True Skov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0771001,
+          56.1804326
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelter i Vinderød Skov",
+        "description": "Shelteren benyttes til daglig som base for Frederiksværk Skoles udeundervisning og er forbeholdet skolens aktiviteter alle hverdage i tidsrummet 8.00 - 17.00. Hvis vi ikke er her, er I selvfølgelig meget velkommen til at slå jer ned. Er I en institution i kommunen, der gerne vil benytte pladsen i tidsrummet, hvor den er forbeholdt Frederiksværk Skole, er I velkomne til at ringe til skolen og lave en aftale på tlf.: 4772 1566. I weekenden og på hverdage efter kl. 17.00, er der mulighed for andre ",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelter-i-vinderoed-skov/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelter-i-vinderoed-skov/",
+        "address": "Vinderød Skov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.017201,
+          55.9866124
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelter Lunden",
+        "description": "Lejrplads med shelter, der har plads til ca. 6 voksne, bålplads med grill og et bord med bænke.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelter-lunden/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelter-lunden/",
+        "address": "shelter lunden",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.7254601,
+          54.7341269
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelter Ravnedalen",
+        "description": "Området græsses af kvæg, geder og får.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelter-ravnedalen/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelter-ravnedalen/",
+        "address": "Borrelyngvej 58, 3770 Allinge",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.764909,
+          55.259531
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelter Solbjerg Skov",
+        "description": "Shelter på primitiv overnatningsplads i den relativt unge \"Solbjerg Skov\".",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelter-solbjerg-skov/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelter-solbjerg-skov/",
+        "address": "Gammel Horsensvej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0912027,
+          56.0604628
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelter ved Husby Badesø - shelter 2",
+        "description": "Shelterpladsen er beliggende med udsigt over Husby Badesø - også kaldet Skavemosen - 500 m fra Vesterhavet. Shelterne ligger i tilknytning til parkeringspladsen, hvor der også er mulighed for vand og toilet i april-oktober.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelter-ved-husby-badesoe-shelter-2/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelter-ved-husby-badesoe-shelter-2/",
+        "address": "Husby Badesø",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.1361267,
+          56.2902825
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelteren ved Nyruphus, Nyrup Hegn",
+        "description": "Shelteren ligge i Nyrup Hegn ved Nyruphus, Kongevejen 270C, 3060 Espergærde. Der er plads til ca. 25 overnattende personer. Det er tilladt at slå et par mindre telte op. Der er adgang til shelterpladsen fra Nyruphus, hvor der er gode parkeringsforhold. Den må ikke køres i skove ind til shelterpladsen. Der er vand ved Nyruphus. Toilette ved Nyruphus kan benyttes i dagtimerne mellem kl. 10 -17. Brænde skal man selv medbringe. Det er tilladt at samle grene i skovbunden til brænde. Shelterpladsen sk",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelteren-ved-nyruphus-nyrup-hegn/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelteren-ved-nyruphus-nyrup-hegn/",
+        "address": "3060 Espergærde",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.5529633,
+          55.9907777
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelterplads Damagre, Fussingø - shelter nr. 1 (bookbar)",
+        "description": "Shelterpladsen ligger i Indskovene ved Fussingø, i nærheden af Fussing Vandmølle.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelterplads-damagre-fussingoe-shelter-nr-1-bookbar/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelterplads-damagre-fussingoe-shelter-nr-1-bookbar/",
+        "address": "Vasevej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.8148099,
+          55.3297258
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelterplads Damagre, Fussingø - shelter nr. 2 (bookbar)",
+        "description": "Shelterne ligger i kanten af skoven, ud mod åbent areal mod øst.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelterplads-damagre-fussingoe-shelter-nr-2-bookbar/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelterplads-damagre-fussingoe-shelter-nr-2-bookbar/",
+        "address": "Vasevej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.8148099,
+          55.3297258
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelterplads Damagre, Fussingø - shelter nr. 3 (bookbar)",
+        "description": "Shelterne ligger i kanten af skoven, ud mod åbent areal mod øst.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelterplads-damagre-fussingoe-shelter-nr-3-bookbar/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelterplads-damagre-fussingoe-shelter-nr-3-bookbar/",
+        "address": "Vasevej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.8148099,
+          55.3297258
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelterplads Fruerhøj ved Gammel Landevej",
+        "description": "Shelteret er opført med støtte fra A.P. Møller Fonden.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelterplads-fruerhoej-ved-gammel-landevej/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelterplads-fruerhoej-ved-gammel-landevej/",
+        "address": "Gammel Landevej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.1501193,
+          56.2897042
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelterplads Himmelev Skov",
+        "description": "I Himmelev Skov ligger der to shelter ved siden af hinanden med hver sin bålplads med grill og borde-bænkesæt. Shelterne ligger i en lille granbevoksning ikke langt fra Himmelev Bæk, og sydøst for Nævlinge Sø. Shelterne skal bookes og retter sig mod grupper på i alt ca. otte-ti personer i alt, fire/seks i hver shelter. Når man booker shelterpladsen booker man begge shelterne. Man må ikke slå telt op ved siden af shelterne.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelterplads-himmelev-skov/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelterplads-himmelev-skov/",
+        "address": "Himmelev Skov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.1256408,
+          55.6661992
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelterplads Hyllested Bjerge - shelter nr. 1 (bookbar)",
+        "description": "Shelterplads Hyllested Bjerge - shelter nr. 1 (bookbar)",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelterplads-hyllested-bjerge-shelter-nr-1-bookbar/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelterplads-hyllested-bjerge-shelter-nr-1-bookbar/",
+        "address": "Brønhøjvej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.7520151,
+          56.2758057
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelterplads i Annebjerg Skov",
+        "description": "I Annebjerg Skov ligger der et shelter med en bålplads med grill. Shelteret ligger på en bakke i en lysning i skoven. I shelteret er der plads til ca. fire personer. Shelteret skal bookes, hvilket kan ske tre måneder frem i tiden, og max to døgn ad gangen. Shelteret er placeret i en fri teltningsskov, hvilket betyder, at der gerne må slås telt op ved siden af shelteret og andre steder i skoven. For opsætning af telt gælder reglerne om, at det kun er tilladt at overnatte én nat på samme sted, man",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelterplads-i-annebjerg-skov/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelterplads-i-annebjerg-skov/",
+        "address": "Egebjergvej 172, 4500 Nykøbing Sjælland",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.6678252,
+          55.9129226
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelterplads i Feldborg Nørreskov",
+        "description": "Shelterpladsen har 5 shelters, grillplads og multtoilet.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelterplads-i-feldborg-noerreskov/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelterplads-i-feldborg-noerreskov/",
+        "address": "Feldborg Nørreskov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.8363473,
+          56.390872
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelterplads i Grevinge Skov",
+        "description": "I Grevinge Skov ligger der et shelter med en bålplads med grill. Shelteret ligger i en lysning i skoven, hvor der tidligere har ligget et hus. I shelteret er der plads til ca. fire personer. Shelteret skal bookes, hvilket kan ske tre måneder frem i tiden, og max to døgn ad gangen. Shelteret er placeret i en fri teltningsskov, hvilket betyder, at der gerne må slås telt op ved siden af shelteret og andre steder i skoven. For opsætning af telt gælder reglerne om, at det kun er tilladt at overnatte ",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelterplads-i-grevinge-skov/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelterplads-i-grevinge-skov/",
+        "address": "Grevinge Skov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.6013356,
+          55.8224352
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelterplads i Klosterskov Nord",
+        "description": "I Klosterskov Nord ligger der et shelter med en bålplads med grill. Shelteret ligger i en lysning i skoven, blot 50 meter fra en stor bålhytte med grill og bordebænkesæt. I shelteret er der plads til fire personer. Shelteret skal bookes, hvilket kan ske 3 måneder frem i tiden, og max to døgn ad gangen. Shelteret er placeret i en fri teltningsskov, hvilket betyder, at der gerne må slås telt op ved siden af shelteret. For opsætning af telt gælder reglerne om, at det kun er tilladt at overnatte én ",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelterplads-i-klosterskov-nord/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelterplads-i-klosterskov-nord/",
+        "address": "Klosterskov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.0064908,
+          55.5236202
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelterplads i Knebel Plantage - shelter nr. 2 (bookbar)",
+        "description": "Shelterpladsen ligger i Knebel Plantage lidt øst for Knebel By. Mols Bjerge ligger lidt mod øst.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelterplads-i-knebel-plantage-shelter-nr-2-bookbar/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelterplads-i-knebel-plantage-shelter-nr-2-bookbar/",
+        "address": "Knebel Plantage",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.5187634,
+          56.2154521
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelterplads i Knebel Plantage - shelter nr. 3 (bookbar)",
+        "description": "Shelterpladsen ligger i Knebel Plantage lidt øst for Knebel By. Mols Bjerge ligger lidt mod øst.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelterplads-i-knebel-plantage-shelter-nr-3-bookbar/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelterplads-i-knebel-plantage-shelter-nr-3-bookbar/",
+        "address": "Knebel Plantage",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.5187634,
+          56.2154521
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelterplads i Løvbakkerne - shelter 1",
+        "description": "To nye shelters som kan bookes enkeltvis.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelterplads-i-loevbakkerne-shelter-1/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelterplads-i-loevbakkerne-shelter-1/",
+        "address": "Løvbakkerne",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.948145,
+          56.1772256
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelterplads i Løvbakkerne - shelter 2",
+        "description": "2 nye shelters som kan bookes enkeltvis.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelterplads-i-loevbakkerne-shelter-2/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelterplads-i-loevbakkerne-shelter-2/",
+        "address": "Løvbakkerne",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.948145,
+          56.1772256
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelterplads i Skablund Skov, shelter 1",
+        "description": "Centralt i Skablund skov ligger denne overnatningsplads med to sheltere. Der kan overnatte fem personer i hver shelter.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelterplads-i-skablund-skov-shelter-1/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelterplads-i-skablund-skov-shelter-1/",
+        "address": "Skablund Skov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0473113,
+          55.8840325
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelterplads i Tune Skov",
+        "description": "Shelteret har plads til 4-6 personer. Hedebostien løber lige forbi området med shelteret. Shelterpladsen er åben for alle både til overnatning og hygge om bålet. Brug og ophold er gratis. Shelteret skal bookes på udinaturen.dk. Her kan du også se, om pladsen er booket af andre. Hvis shelterpladsen er booket, kan du finde alternative overnatningspladser og områder med fri teltning på udinaturen.dk. Har du ikke taget det bookede shelter i brug før kl. 20, bortfalder fortrinsretten, og andre må ben",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelterplads-i-tune-skov/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelterplads-i-tune-skov/",
+        "address": "Tune Skov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.1695698,
+          55.5827898
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelterplads i Vindum Skov - Shelter nr. 1 (bookbar)",
+        "description": "Lille shelterplads med to shelters midt i Vindum Skov. Den ene shelter kan bookes, den anden fungerer efter \"først til mølle\" princippet. Vandreruten \"Lille Enemærke\" løber omkring pladsen og ikke langt herfra kan man også opleve Store Enemærke. Begge er gamle bøgeskove, som udgør dele af Vindum Skov. Du kan finde parkeringsmuligheder ved Horsdalvej nær Sønder Rindvej en lille kilometer fra pladsen. Herfra er der vejvisning via skovstier til shelterpladsen.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelterplads-i-vindum-skov-shelter-nr-1-bookbar/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelterplads-i-vindum-skov-shelter-nr-1-bookbar/",
+        "address": "Vindum Skov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.5512533,
+          56.3942081
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelterplads ved Haunstrup Brunkulslejer - shelter 1",
+        "description": "Shelter med plads til 6 personer",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelterplads-ved-haunstrup-brunkulslejer-shelter-1/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelterplads-ved-haunstrup-brunkulslejer-shelter-1/",
+        "address": "Haunstrup Brunkulslejer",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.8257269,
+          56.1014562
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelterplads ved Haunstrup Brunkulslejer - shelter 2",
+        "description": "Shelter med plads til 6 personer",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelterplads-ved-haunstrup-brunkulslejer-shelter-2/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelterplads-ved-haunstrup-brunkulslejer-shelter-2/",
+        "address": "Haunstrup Brunkulslejer",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.8257269,
+          56.1014562
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelterplads ved Spidsbjergvej - shelter 1",
+        "description": "Shelterpladsen har 2 shelters med plads til 6 personer. Pladsen ligger i tilknytning til Vestkystruten og Spidsbjerg Skovlegeplads.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelterplads-ved-spidsbjergvej-shelter-1/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelterplads-ved-spidsbjergvej-shelter-1/",
+        "address": "Spidsbjergvej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.1356726,
+          56.3169458
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelterplads ved Spidsbjergvej - shelter 2",
+        "description": "Shelterpladsen har 2 shelters med plads til 6 personer. Pladsen ligger i tilknytning til Vestkystruten og Spidsbjerg Skovlegeplads.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelterplads-ved-spidsbjergvej-shelter-2/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelterplads-ved-spidsbjergvej-shelter-2/",
+        "address": "Spidsbjergvej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.1356726,
+          56.3169458
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelterplads ved Tinkerdal besøgssted - shelter 1",
+        "description": "Shelter til mindre grupper ved besøgsstedet Tinkerdal i den vestlige del af Feldborg Nørreskov.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelterplads-ved-tinkerdal-besoegssted-shelter-1/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelterplads-ved-tinkerdal-besoegssted-shelter-1/",
+        "address": "Tinkerdal besøgssted",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.8374617,
+          56.3910965
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelterplads ved Tinkerdal besøgssted - shelter 2",
+        "description": "Shelter til mindre grupper ved besøgsstedet Tinkerdal i den vestlige del af Feldborg Nørreskov.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelterplads-ved-tinkerdal-besoegssted-shelter-2/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelterplads-ved-tinkerdal-besoegssted-shelter-2/",
+        "address": "Tinkerdal besøgssted",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.8374617,
+          56.3910965
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shelters ved Julsø",
+        "description": "To shelters på teltpladsen som ligger ned til stranden ved Julsø.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/shelters-ved-julsoe/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/shelters-ved-julsoe/",
+        "address": "Julsø",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.6737038,
+          56.1191851
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Skagen Klitplantage - Lejrpladsen ved Vestre Opsyn",
+        "description": "Lejrpladsen i den sydlige del af Skagen Klitplantage ligger nær opsynsboligen Vestre Opsyn.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/skagen-klitplantage-lejrpladsen-ved-vestre-opsyn/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/skagen-klitplantage-lejrpladsen-ved-vestre-opsyn/",
+        "address": "Frederikshavnsvej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.5084533,
+          57.3647229
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Skalsbjerg/Sludstrup bålhytte, Fodsporet",
+        "description": "Bålhytten ligger på bevokset areal ud til Fodsporet ved Skalsbjergvej 28A. I samme bevoksning ligger også en lejrplads med 4 sheltere, adgang til drikkevand samt toilet med adgang for kørestolsbrugere. Du kan ikke forvente, at der kan samles brænde på pladserne. Medbring derfor selv brænde eller grillbriketter.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/skalsbjerg-sludstrup-baalhytte-fodsporet/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/skalsbjerg-sludstrup-baalhytte-fodsporet/",
+        "address": "Skalsbjergvej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.3892758,
+          55.3559858
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Skarven shelter",
+        "description": "Idyllisk beliggende shelter (ved navn Skarven) med tilhørende bålplads på bredden af Esrum sø med udsyn til søens fuglereservat.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/skarven-shelter/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/skarven-shelter/",
+        "address": "skarven",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.5073949,
+          54.8573874
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Skeldekobbel lejrplads",
+        "description": "Lejrpladsen ligger lige nord for Skelde Kobbelskov, tæt på kysten. Pladsen er ret stor, og kan rumme ca. 500 personer, hvilket gør, at der er flere grupper, der kan booke pladsen samtidig. Der er toiletter og drikkevand på pladsen i sommerhalvåret. Pladsen skal bookes over Naturstyrelsens bookingsystem.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/skeldekobbel-lejrplads/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/skeldekobbel-lejrplads/",
+        "address": "skeldekobbel",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.7389701,
+          54.8589817
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Skibelund Shelterplads",
+        "description": "Shelterplads med 3 shelters med udsigt direkte til Lillebælt og som nabo til Solkær Enge. Shelterne har plads til 20-25 personer og med fælles grillplads.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/skibelund-shelterplads/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/skibelund-shelterplads/",
+        "address": "skibelund",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.6398388,
+          55.4363729
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Skøjteløberen Shelterplads",
+        "description": "Shelteren ligge i øst enden af Ullerup Skov ved lille sø. Der er plads til ca. 14 overnattende personer. Det er tilladt at slå et par mindre telte op. Der er adgang til shelterpladsen fra Torupvej, hvor der er en lille p-plads med plads til 2 biler. Der må ikke køres i skove ind til shelterpladsen. Shelterpladsen skal efterlades opryddet, herunder også bålstedet, og alt affald skal bringes med ud af skoven. Vand og brænde skal man selv medbringe. Det er tilladt at samle grene i skovbunden til br",
+        "source_url": "https://book.naturstyrelsen.dk/sted/skoejteloeberen-shelterplads/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/skoejteloeberen-shelterplads/",
+        "address": "lille sø",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.5149449,
+          55.4811571
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Skovbasen ved Ebberøddam",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/skovbasen-ved-ebberoeddam/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/skovbasen-ved-ebberoeddam/",
+        "address": "Ebberøddam",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.4643884,
+          55.8423155
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Slagslunde Skov, shelterplads med to shelters",
+        "description": "Vælg denne plads, hvis I er en gruppe, der har brug for 2 shelters, dvs. at I er en gruppe på 10-12 personer. Andre har også ret til at bruge en evt. tom shelter eller slå et telt op på pladsen. Udover shelterne findes bålplads med grill og to borde-bænkesæt.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/slagslunde-skov-shelterplads-med-to-shelters/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/slagslunde-skov-shelterplads-med-to-shelters/",
+        "address": "Gulbjergvej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.2197731,
+          55.8018763
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Slotved Skov - shelter",
+        "description": "Her er ét shelter med plads til ca. 6 personer og en grill. Shelteret kan bookes af alle. Hvis det ikke er booket må det bruges efter princippet \"først til mølle\". Ryk sammen så der er plads til flere. Det er ikke tilladt at telte eller på anden måde opsætte tarp, hængekøje eller andet med snore/reb, da dyrene i dyrehaven kan komme til skade. Stedet er beregnet til den stille bruger, der gerne vil nyde morgen- og aftenstemningen i dyrehaven. Pladsen ligger ca. 100 meter syd for hovedparkeringspl",
+        "source_url": "https://book.naturstyrelsen.dk/sted/slotved-skov-shelter/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/slotved-skov-shelter/",
+        "address": "slotved skov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.1691028,
+          57.4750521
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Søllerød Kirkeskov, Shelter ved Kalvemosen",
+        "description": "Ved shelteret findes bålplads med grill og et borde-bænkesæt.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/soelleroed-kirkeskov-shelter-ved-kalvemosen/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/soelleroed-kirkeskov-shelter-ved-kalvemosen/",
+        "address": "Kalvemosen",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.5078471,
+          55.8219553
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Søskoven, Graverhus",
+        "description": "Lejrpladsen ligger ca. 1,5 km. fra Gillelejevej ved Esrum sø. Der er plads til ca. 20 telte. Der må kun laves bål på de etableret bålsteder. Den må ikke køres ind i skoven til lejrpladsen. Der er vand i nordenden af lejrpladsen, ved hegnet til Skovløberhuset. Brænde skal man selv medbringe. Det er tilladt at samle grene i skovbunden til brænde. Lejrpladsen skal efterlades opryddet, herunder bålstedet, og alt affald skal bringes med ud af skoven. Husk at slukke bålet inden du forlader lejrpladsen",
+        "source_url": "https://book.naturstyrelsen.dk/sted/soeskoven-graverhus/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/soeskoven-graverhus/",
+        "address": "Esrum sø",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.3793525,
+          56.0008449
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sortspætten shelter",
+        "description": "Sortspætten shelteren ligger i det nordlige Tisvildehegn. Shelteren ligger i en yngre birkebevoksning på den ene side og på den anden side er der et større åbent areal, så der er god udsigt fra hytten. Der vil også være gode muligheder for aftensol på stedet. Der er plads til to personer, måske tre hvis man ligger lidt tæt. Der er en bænk og et lille bålsted.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/sortspaetten-shelter/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/sortspaetten-shelter/",
+        "address": "sortspaetten",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.4419691,
+          55.2299845
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Stampemarken, Shelter med plads til 5-6",
+        "description": "Ved shelteret findes bålplads med grill og et borde-bænkesæt.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/stampemarken-shelter-med-plads-til-5-6/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/stampemarken-shelter-med-plads-til-5-6/",
+        "address": "Svenskevej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.5500331,
+          55.807091
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Stor Lejrplads Sollerup Skov",
+        "description": "Lejrpladsen er en større græsplæne inde i Sollerup Skov.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/stor-lejrplads-sollerup-skov/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/stor-lejrplads-sollerup-skov/",
+        "address": "Sollerup Skov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.2722086,
+          55.1490847
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Store Hareskov, Lejrplads nær Hareskov Station",
+        "description": "Lejrpladser er forbeholdt grupper på 15 personer og derover. Dette er også et kriterie for at kunne booke lejrpladsen.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/store-hareskov-lejrplads-naer-hareskov-station/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/store-hareskov-lejrplads-naer-hareskov-station/",
+        "address": "Hareskov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.4079689,
+          55.7652202
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Stråsø Plantage, Ulborggård Lejrplads",
+        "description": "Fra Ulfborg køres af Lystlundvej og Paradisvej til pladsen (Paradisvej, 6990 Ulfborg). På pladsen er der grill/bålplads samt bord/bænke og et skovtoilet. Vandhane er installeret i en pæl på pladsen.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/straasoe-plantage-ulborggaard-lejrplads/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/straasoe-plantage-ulborggaard-lejrplads/",
+        "address": "6990 Ulfborg",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.3166504,
+          56.2723603
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Strandkær Strand - Shelter (bookbar)",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/strandkaer-strand-shelter-bookbar/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/strandkaer-strand-shelter-bookbar/",
+        "address": "strandkaer strand shelter",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.5848235,
+          56.2185675
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Svalekliren shelter",
+        "description": "Svalekliren shelteren ligger i Store Dyrehave Syd, tæt på Allerød. I selve shelteren er der plads til 2 personer, måske 3 hvis man ligger lidt tæt. Der er en lille bænk og et bålsted på stedet. Svalekliren ligger lidt stille bag noget bevoksning med god udsigt, hvor der er rigtig fine muligheder for god aftensol.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/svalekliren-shelter/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/svalekliren-shelter/",
+        "address": "svalekliren",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.3761913,
+          55.9075475
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tanghytten - Shelter i Blykobbe Plantage",
+        "description": "Overnatningspladsen er åben for alle både til overnatning og hygge om bålet. Brug og ophold er gratis.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/tanghytten-shelter-i-blykobbe-plantage/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/tanghytten-shelter-i-blykobbe-plantage/",
+        "address": "Kulvejen 3, 3700 Rønne.",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.708205,
+          55.141904
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Teglværksskoven shelterplads",
+        "description": "Shelter på primitiv overnatningsplads med bålplads og borde/bænkesæt.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/teglvaerksskoven-shelterplads/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/teglvaerksskoven-shelterplads/",
+        "address": "teglvaerksskoven",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.4663676,
+          57.4511916
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Terkelskov, Shelterplads",
+        "description": "Shelter med plads til 5-6 personer",
+        "source_url": "https://book.naturstyrelsen.dk/sted/terkelskov-shelterplads/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/terkelskov-shelterplads/",
+        "address": "terkelskov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.3131924,
+          55.8189085
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tinkerdal Shelterplads",
+        "description": "Stor shelterplads til 30 personer ved besøgsstedet Tinkerdal i den vestligste del af Feldborg Nørreskov. Besøgsstedet Tinkerdal indeholder desuden skovlegeplads, grillhytte forhindringsbane og hundeskov.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/tinkerdal-shelterplads/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/tinkerdal-shelterplads/",
+        "address": "tinkerdal",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.8374617,
+          56.3910965
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tønballe Shelterplads",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/toenballe-shelterplads/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/toenballe-shelterplads/",
+        "address": "Tønballe Skov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0604127,
+          55.8106955
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tokkekøb Hegn, Lejrpladsen ved Lergraven",
+        "description": "Lejrplads med tre shelters med plads til 15-18 personer",
+        "source_url": "https://book.naturstyrelsen.dk/sted/tokkekoeb-hegn-lejrpladsen-ved-lergraven/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/tokkekoeb-hegn-lejrpladsen-ved-lergraven/",
+        "address": "Lergraven",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9193827,
+          57.0215524
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tokkekøb Hegn, Shelterplads ved Store Donse Dam",
+        "description": "Shelter med plads til 5-6 personer.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/tokkekoeb-hegn-shelterplads-ved-store-donse-dam/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/tokkekoeb-hegn-shelterplads-ved-store-donse-dam/",
+        "address": "Store Donse Dam",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.4012943,
+          55.8971179
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tornby Klitplantage - Lejrpladsen",
+        "description": "Lejrpladsen ligger i Tornby Klitplantage ud til skovvejen Plantørvej i tilknytning til Vestkystruten (National cykelrute nr. 1) og Nordsøstien. På lejrpladsen kan der overnattes i shelter eller telte, laves mad over bål og andre aktiviteter. Pladsen kan kun bookes af grupper som f.eks. skoleklasser eller spejdergrupper. Pladsen kan, når der ikke er booket, bruges efter princippet \"først til mølle\". Ryk sammen så der er plads til flere. På pladsen er der borde/bænkesæt og bålsted med grillrist. D",
+        "source_url": "https://book.naturstyrelsen.dk/sted/tornby-klitplantage-lejrpladsen/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/tornby-klitplantage-lejrpladsen/",
+        "address": "tornby klitplantage lejrpladsen",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9151074,
+          57.5409485
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tornskaden shelter",
+        "description": "Tornskaden shelteren ligger midt i Gribskov, tæt på Gribsø. I shelteren er der plads til to personer, måske tre hvis man ligger lidt tæt. Shelteren ligger oppe på en bakke, hvor der er rigtig fin natur. I områder er der lidt åbent, men der er dejlig fred og ro uden nogle store veje i nærheden, så man kommer til at ligge uforstyrret lige midt i naturen. Foran shelteren er der også et lille bålsted.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/tornskaden-shelter/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/tornskaden-shelter/",
+        "address": "tornskaden",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.4566128,
+          55.1219106
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tranehytten",
+        "description": "Der er plads til 46 personer i bålhytten.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/tranehytten/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/tranehytten/",
+        "address": "tranehytten",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.4088891,
+          55.6551579
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Troldanden shelter",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/troldanden-shelter/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/troldanden-shelter/",
+        "address": "troldanden",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.3689968,
+          56.0208768
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Trompethatten shelter",
+        "description": "Den primitive overnatningsplads består af 1 minishelter med bålsted og en lille bænk. Der er mulighed at slå et par mindre telte op indenfor 20 meter af shelteren. Der er plads til 2-3 overnattende i shelteren.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/trompethatten-shelter/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/trompethatten-shelter/",
+        "address": "trompethatten",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.3622016,
+          56.0213592
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tved",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/tved/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/tved/",
+        "address": "tved",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.4350054,
+          56.1962
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Tvorup vest shelterplads",
+        "description": "Tvorup vest shelterplads består af 4 shelters.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/tvorup-vest-shelterplads/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/tvorup-vest-shelterplads/",
+        "address": "tvorup vest",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.4074558,
+          56.9649069
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Uggeløse Skov nord, shelter",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/uggeloese-skov-nord-shelter/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/uggeloese-skov-nord-shelter/",
+        "address": "Uggeløse Skov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.2165608,
+          55.836125
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Vandkalven Shelterplads i Tisvilde Hegn",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/vandkalven-shelterplads-i-tisvilde-hegn/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/vandkalven-shelterplads-i-tisvilde-hegn/",
+        "address": "Tisvilde Hegn",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.0492379,
+          56.0379593
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Vandrefalken og Vandremuslingen shelters",
+        "description": "Vandrefalken og Vandremuslingen shelters ligger i Grønnesse Skov, lige op af den knap 53 km lange Halsinoen vandrerute. Et perfekt sted at overnatte for trætte vandrere, eller andre, der ønsker en nat i det fri. Den primitive overnatningsplads består af to shelters med et fælles bålsted omgivet af fire bænke. Der er mulighed at slå et par mindre telte op indenfor 20 meter af shelteren. Der er plads til 2-3 overnattende i hver shelter.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/vandrefalken-og-vandremuslingen-shelters/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/vandrefalken-og-vandremuslingen-shelters/",
+        "address": "Grønnesse Skov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.9215501,
+          55.9555357
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Vendehalsen shelter",
+        "description": "Den primitive overnatningsplads består af 1 minishelter med bålsted og en lille bænk. Der er mulighed at slå et par mindre telte op indenfor 20 meter af shelteren. Der er plads til 2-3 overnattende i shelteren.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/vendehalsen-shelter/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/vendehalsen-shelter/",
+        "address": "vendehalsen",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.2145353,
+          55.3801402
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Vestskoven, lejrplads med shelter ved Tusculanum",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/vestskoven-lejrplads-med-shelter-ved-tusculanum/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/vestskoven-lejrplads-med-shelter-ved-tusculanum/",
+        "address": "Tusculanum",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.3033201,
+          55.6867503
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Vestskoven, lejrplads og madpakkehus ved Kridtbjerg",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/vestskoven-lejrplads-og-madpakkehus-ved-kridtbjerg/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/vestskoven-lejrplads-og-madpakkehus-ved-kridtbjerg/",
+        "address": "Kridtbjerg",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.3531608,
+          55.7035389
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Vestskoven, shelter ved Bymosevej",
+        "description": "Shelter til 5-6 personer.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/vestskoven-shelter-ved-bymosevej/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/vestskoven-shelter-ved-bymosevej/",
+        "address": "Bymosevej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.5133839,
+          55.6679414
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Vilsted Sø, Holmen",
+        "description": "Her ligger 2 shelters og et multtoilet. Vi har opsat borde/bænke som også kan benyttes, hvis du er kørestolsbruger.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/vilsted-soe-holmen/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/vilsted-soe-holmen/",
+        "address": "Sjørupvej",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.3215295,
+          56.3489905
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Vilsted Sø, Shelterplads ved Ranum Søhus",
+        "description": "Vilsted Sø 1, 9681 Ranum",
+        "source_url": "https://book.naturstyrelsen.dk/sted/vilsted-soe-shelterplads-ved-ranum-soehus/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/vilsted-soe-shelterplads-ved-ranum-soehus/",
+        "address": "9681 Ranum",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.2296384,
+          56.8967933
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Vipstjerten shelter",
+        "description": "Vipstjerten shelteren ligger i Gribskov Vest i Strøgårdsvang. Shelteren ligger i en gammel grusgrav, i et stille og rolig område. Der er plads til to personer, måske tre hvis i ligger tæt. Shelteren ligger ud til en fin mose og har en dejlig udsigt. Rig på dyreliv og natur. Der er et bålsted og en lille bænk.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/vipstjerten-shelter/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/vipstjerten-shelter/",
+        "address": "vipstjerten",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.2654358,
+          55.9809926
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Virkethus Lejrplads med stort shelter, Hannenov Skov",
+        "description": "Stor shelter samt plads til telte, tæt på picnicplads mellem gamle specielle træarter, da her tidligere var forstplanteskole. Lejrpladsen skal bookes for grupper på minimum 15 personer. Mindre grupper kan benytte pladsen uden forudgående booking. Grupper, som har booket lejrpladsen har fortrinsret til shelteren. Max. 4 døgn. Bålpladser samt borde/bænke forefindes på pladsen. Toilet og vand ved det grønne forsamlingshus Virkethus. Virkethus er beliggende på Virketvej 39 i Hannenov Skov, 4863 Eski",
+        "source_url": "https://book.naturstyrelsen.dk/sted/virkethus-lejrplads-med-stort-shelter-hannenov-skov/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/virkethus-lejrplads-med-stort-shelter-hannenov-skov/",
+        "address": "4863 Eskilstrup",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.8840358,
+          54.8568436
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Vrangeskov",
+        "description": "Pladsen er beliggende ca. 60 m nord for vejen mellem Haraldsted og Valsømagle i den gamle grusgrav. Medbring selv brænde/grillkul. Sluk ilden, når bålet forlades. Der ikke vand på pladsen, og der kan ikke hentes vand hos naboerne. P-plads med adgang til shelterpladsen ligger skråt overfor indkørslen til det gamle traktørsted.",
+        "source_url": "https://book.naturstyrelsen.dk/sted/vrangeskov/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/vrangeskov/",
+        "address": "vrangeskov",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.7984798,
+          55.4904693
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Zeppelin 2 Shelter 1",
+        "description": "",
+        "source_url": "https://book.naturstyrelsen.dk/sted/zeppelin-2-shelter-1/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/zeppelin-2-shelter-1/",
+        "address": "zeppelin 2 shelter 1",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.8520849,
+          54.9534553
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Zeppelin 2, shelter 2",
+        "description": "Pladsen ligger tæt på Tønder, der er en bålhytte på pladsen",
+        "source_url": "https://book.naturstyrelsen.dk/sted/zeppelin-2-shelter-2/",
+        "booking_url": "https://book.naturstyrelsen.dk/sted/zeppelin-2-shelter-2/",
+        "address": "zeppelin 2 shelter 2",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.852,
+          54.9533979
+        ]
+      }
+    }
+  ]
+}

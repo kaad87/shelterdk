@@ -1,0 +1,255 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "CityShelter Svendborg - Book en shelter",
+        "description": "",
+        "source_url": "https://bookenshelter.dk/shelterplads/cityshelter-svendborg/",
+        "booking_url": "https://bookenshelter.dk/shelterplads/cityshelter-svendborg/",
+        "image_urls": [
+          "https://bookenshelter.dk/fyn/wp-content/uploads/2020/05/cityshelter-svendborg1-001-1024x539.jpg"
+        ],
+        "address": "5700 Svendborg",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.6084725,
+          55.0636625
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Brunebjerg Shelterplads - Book en shelter",
+        "description": "",
+        "source_url": "https://bookenshelter.dk/shelterplads/brunebjerg-shelterplads/",
+        "booking_url": "https://bookenshelter.dk/shelterplads/brunebjerg-shelterplads/",
+        "image_urls": []
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9191875,
+          55.2610625
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Møllegårdsskoven Shelterplads - Book en shelter",
+        "description": "",
+        "source_url": "https://bookenshelter.dk/shelterplads/moellegaardsskoven-shelterplads/",
+        "booking_url": "https://bookenshelter.dk/shelterplads/moellegaardsskoven-shelterplads/",
+        "image_urls": []
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0318125,
+          55.3715625
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Nellemose Shelterplads - Book en shelter",
+        "description": "",
+        "source_url": "https://bookenshelter.dk/shelterplads/nellemose-shelterplads/",
+        "booking_url": "https://bookenshelter.dk/shelterplads/nellemose-shelterplads/",
+        "image_urls": []
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0761975,
+          55.1760027
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sandager Næs shelterplads - Book en shelter",
+        "description": "",
+        "source_url": "https://bookenshelter.dk/shelterplads/sandager-naes-shelterplads/",
+        "booking_url": "https://bookenshelter.dk/shelterplads/sandager-naes-shelterplads/",
+        "image_urls": []
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.8796875,
+          55.3343125
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Spejdergrydens shelterplads i Trunderupskoven - Book en shelter",
+        "description": "",
+        "source_url": "https://bookenshelter.dk/shelterplads/spejdergrydens-shelterplads-i-trunderupskoven/",
+        "booking_url": "https://bookenshelter.dk/shelterplads/spejdergrydens-shelterplads-i-trunderupskoven/",
+        "image_urls": []
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.1403125,
+          55.2253125
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Trunderup Sø shelterpladsen - Book en shelter",
+        "description": "",
+        "source_url": "https://bookenshelter.dk/shelterplads/shelterpladsen-ved-trunderup-soe/",
+        "booking_url": "https://bookenshelter.dk/shelterplads/shelterpladsen-ved-trunderup-soe/",
+        "image_urls": []
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.1470625,
+          55.2231875
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Indkøb Håstrup - Book en shelter",
+        "description": "",
+        "source_url": "https://bookenshelter.dk/shelterplads/haastrup/indkoeb-haastrup/",
+        "booking_url": "https://bookenshelter.dk/shelterplads/haastrup/indkoeb-haastrup/",
+        "image_urls": [],
+        "address": "5600 Fåborg",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.2502781,
+          55.1049738
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Vejstrup Ådal - Book en shelter",
+        "description": "",
+        "source_url": "https://bookenshelter.dk/shelterplads/vejstrup-aadal/",
+        "booking_url": "https://bookenshelter.dk/shelterplads/vejstrup-aadal/",
+        "image_urls": [
+          "https://bookenshelter.dk/fyn/wp-content/uploads/2018/06/1-shelter-vejstrup-aadal-001-e1615372515264.jpg"
+        ],
+        "address": "Nyborgvej 518, 5881 Skårup",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.706964,
+          55.09953
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ravnebanke Skov - Book en shelter",
+        "description": "",
+        "source_url": "https://bookenshelter.dk/shelterplads/ravnebanke-skov/",
+        "booking_url": "https://bookenshelter.dk/shelterplads/ravnebanke-skov/",
+        "image_urls": [
+          "https://bookenshelter.dk/fyn/wp-content/uploads/2018/08/trae-ravnebanke-1.jpg",
+          "https://bookenshelter.dk/fyn/wp-content/uploads/2018/08/trae-ravnebanke-2.jpg",
+          "https://bookenshelter.dk/fyn/wp-content/uploads/2018/08/skaermbillede-2023-10-06-110516.png"
+        ],
+        "address": "5474 Veflinge",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.1595318,
+          55.4707843
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Klakkebjerg Shelterplads - Book en shelter",
+        "description": "",
+        "source_url": "https://bookenshelter.dk/shelterplads/klakkebjerg-shelterplads/",
+        "booking_url": "https://bookenshelter.dk/shelterplads/klakkebjerg-shelterplads/",
+        "image_urls": []
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.9755625,
+          55.3730625
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ærø, Sjoen - Book en shelter",
+        "description": "",
+        "source_url": "https://bookenshelter.dk/shelterplads/aeroe-sjoen/",
+        "booking_url": "https://bookenshelter.dk/shelterplads/aeroe-sjoen/",
+        "image_urls": [
+          "https://bookenshelter.dk/fyn/wp-content/uploads/2020/11/shelterplads-ved-sjoen-foto-bjoerg-dalheim-1024x577.jpg",
+          "https://bookenshelter.dk/fyn/wp-content/uploads/2020/11/shelterplads-ved-sjoen-toilet-foto-bjoerg-dalheim-1024x582.jpg",
+          "https://bookenshelter.dk/fyn/wp-content/uploads/2020/11/shelterplads-ved-sjoen-omraadet-foto-bjoerg-dalheim-1024x575.jpg"
+        ],
+        "address": "5970 Ærøskøbing",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.411167,
+          54.8896647
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Baagø - &quot;Heksens Hule&quot; - Book en shelter",
+        "description": "",
+        "source_url": "https://bookenshelter.dk/shelterplads/baagoe-heksens-hule/",
+        "booking_url": "https://bookenshelter.dk/shelterplads/baagoe-heksens-hule/",
+        "image_urls": [
+          "https://bookenshelter.dk/fyn/wp-content/uploads/2019/11/heksens-hule-baagoe-2-1024x542.jpg",
+          "https://bookenshelter.dk/fyn/wp-content/uploads/2019/11/heksens-hule-baagoe-1-1024x597.jpg",
+          "https://bookenshelter.dk/fyn/wp-content/uploads/2019/11/shelterforhaeng-baagoe.jpg",
+          "https://bookenshelter.dk/fyn/wp-content/uploads/2019/11/baagoe-heksens-hule-2-1024x498.jpg"
+        ],
+        "address": "1500 meter",
+        "geocoded": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.7945658,
+          55.8403109
+        ]
+      }
+    }
+  ]
+}
