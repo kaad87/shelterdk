@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Sæt shelters.region til Jylland, Sjælland, Fyn eller Øerne ud fra shelters.kommune.
+Sæt shelters.region til Jylland, Sjælland eller Fyn ud fra shelters.kommune.
 
 Så "Udforsk efter region" på forsiden og filtrering på /soeg virker.
 Kræver: .env med NEXT_PUBLIC_SUPABASE_URL og NEXT_PUBLIC_SUPABASE_ANON_KEY.
@@ -27,7 +27,7 @@ for p in (os.path.join(_script_dir, ".env"), os.path.join(_script_dir, ".env.loc
                         k, _, v = line.partition("=")
                         os.environ.setdefault(k.strip(), v.strip())
 
-# Landsdel: Jylland, Sjælland, Fyn, Øerne (som i UI-dropdown)
+# Landsdel: Jylland, Sjælland, Fyn (Øerne er lagt ind under Sjælland)
 # Nøgler normaliseres: lowercase, fjern " kommune", " regionskommune", " by"
 def _n(s: str) -> str:
     if not s:
@@ -60,12 +60,10 @@ _add("Fyn",
      "Middelfart", "Nordfyns", "Nordfyn", "Nyborg", "Odense", "Svendborg", "Ærø",
      "Bogense", "Otterup")
 
-# Øerne – Bornholm, Lolland, Falster, Møn m.fl.
-_add("Øerne",
+# Sjælland – inkl. Bornholm, Lolland, Falster, Møn (tidligere "Øerne") + Region Sjælland + Hovedstaden
+_add("Sjælland",
      "Bornholm", "Rønne", "Lolland", "Guldborgsund", "Nakskov", "Maribo",
      "Nykøbing Falster", "Nykøbing", "Stege", "Møn", "Lolland Falster")
-
-# Sjælland – Region Sjælland (uden Lolland/Falster/Møn) + Hovedstaden (uden Bornholm)
 _add("Sjælland",
      "Faxe", "Greve", "Holbæk", "Kalundborg", "Køge", "Lejre", "Næstved",
      "Odsherred", "Ringsted", "Slagelse", "Solrød", "Sorø", "Stevns", "Vordingborg",
@@ -87,7 +85,7 @@ def kommune_to_landsdel(kommune: Optional[str]) -> Optional[str]:
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Sæt region fra kommune (Jylland/Sjælland/Fyn/Øerne)")
+    ap = argparse.ArgumentParser(description="Sæt region fra kommune (Jylland/Sjælland/Fyn)")
     ap.add_argument("--dry-run", action="store_true", help="Vis kun hvad der ville blive opdateret")
     args = ap.parse_args()
 

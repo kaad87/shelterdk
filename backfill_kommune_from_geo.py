@@ -70,8 +70,13 @@ def kommune_to_by(val: str) -> str:
     return t
 
 
-def reverse_geocode(lat: float, lon: float) -> Optional[str]:
-    """Hent by/kommune for (lat, lon) via Nominatim. Returner by-navn (konverterer kommune til by)."""
+def reverse_geocode(lat: float, lon: float) -> tuple[Optional[str], Optional[str]]:
+    """
+    Hent præcist sted (place) og kommune for (lat, lon) via Nominatim.
+    place = landsby/by (village, town, city, hamlet, locality) – til visning.
+    kommune = kommunenavn (municipality, county) – til filtrering.
+    Returnerer (place, kommune); begge konverteres til by-navn hvor relevant.
+    """
     try:
         r = requests.get(
             NOMINATIM_URL,
@@ -82,19 +87,28 @@ def reverse_geocode(lat: float, lon: float) -> Optional[str]:
         r.raise_for_status()
         data = r.json()
         addr = data.get("address") or {}
-        for key in ("city", "town", "village", "municipality", "county", "state_district"):
+        place = None
+        for key in ("village", "town", "city", "hamlet", "locality", "suburb"):
             val = (addr.get(key) or "").strip()
-            if not val:
+            if not val or val.lower() in ("danmark", "denmark") or re.match(r"^\d+$", val):
                 continue
-            if val.lower() in ("danmark", "denmark"):
+            place = kommune_to_by(val)
+            break
+        kommune = None
+        for key in ("municipality", "county", "state_district"):
+            val = (addr.get(key) or "").strip()
+            if not val or val.lower() in ("danmark", "denmark") or re.match(r"^\d+$", val):
                 continue
-            if re.match(r"^\d+$", val):
-                continue
-            return kommune_to_by(val)
-        return None
+            kommune = kommune_to_by(val)
+            break
+        if not kommune and place:
+            kommune = place
+        elif not place and kommune:
+            place = None
+        return (place, kommune)
     except Exception as e:
         print(f"  Nominatim fejl: {e}")
-        return None
+        return (None, None)
 
 
 # Matcher kommune-navn der bør konverteres til by (fx "X Kommune", "X Regionskommune").
@@ -109,6 +123,11 @@ def main():
         action="store_true",
         help="Konverter eksisterende kommune-navne til by-navne i DB (fx 'Bornholms Regionskommune' → 'Rønne')",
     )
+    ap.add_argument(
+        "--refresh-place",
+        action="store_true",
+        help="Udfyld place (præcist stednavn) for shelters der har location og kommune – kør efter migration 013.",
+    )
     args = ap.parse_args()
 
     url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
@@ -120,13 +139,20 @@ def main():
     supabase: Client = create_client(url, key)
 
     # Hent ALLE shelters (Supabase returnerer max 1000 per request – paginer)
+    select_cols = "id, title, location, kommune"
+    try:
+        r0 = supabase.table("shelters").select("id, place").limit(1).execute()
+        if r0.data and "place" in (r0.data[0] or {}):
+            select_cols = "id, title, location, kommune, place"
+    except Exception:
+        pass
     all_rows = []
     page_size = 1000
     offset = 0
     while True:
         r = (
             supabase.table("shelters")
-            .select("id, title, location, kommune")
+            .select(select_cols)
             .range(offset, offset + page_size - 1)
             .execute()
         )
@@ -135,6 +161,42 @@ def main():
         if len(chunk) < page_size:
             break
         offset += page_size
+
+    if args.refresh_place:
+        need_place = []
+        for row in all_rows:
+            loc = row.get("location")
+            if not loc:
+                continue
+            lon, lat = parse_point(loc)
+            if lon is None or lat is None:
+                continue
+            place = (row.get("place") or "").strip()
+            if place:
+                continue
+            kommune = (row.get("kommune") or "").strip()
+            if not kommune:
+                continue
+            need_place.append({"id": row["id"], "title": row.get("title") or "", "lat": lat, "lon": lon})
+        print(f"Shelters med kommune men uden place: {len(need_place)}")
+        if not need_place:
+            print("Ingen shelters behøver place-opdatering.")
+            return 0
+        print(f"Henter præcist stednavn for {len(need_place)} shelter(s) (ca. {len(need_place) * RATE_LIMIT_S:.0f} sek)...")
+        if args.dry_run:
+            print("(dry-run – ingen opdateringer)")
+        updated = 0
+        for i, s in enumerate(need_place):
+            place, kommune = reverse_geocode(s["lat"], s["lon"])
+            if place and place != (kommune or ""):
+                if not args.dry_run:
+                    supabase.table("shelters").update({"place": place}).eq("id", s["id"]).execute()
+                updated += 1
+                print(f"  [{i+1}/{len(need_place)}] {s['title'][:50]} → place={place}")
+            if i < len(need_place) - 1:
+                time.sleep(RATE_LIMIT_S)
+        print(f"Færdig. Opdateret {updated} shelter(s) med place.")
+        return 0
 
     if args.convert_to_by:
         # Konverter kommune → by for rækker der stadig har "X Kommune" / "X Regionskommune"
@@ -182,17 +244,21 @@ def main():
         print("Ingen shelters mangler kommune (eller har allerede gyldig kommune).")
         return 0
 
-    print(f"Finder by for {len(missing)} shelter(s) via Nominatim (ca. {len(missing) * RATE_LIMIT_S:.0f} sek)...")
+    print(f"Finder place og kommune for {len(missing)} shelter(s) via Nominatim (ca. {len(missing) * RATE_LIMIT_S:.0f} sek)...")
     if args.dry_run:
         print("(dry-run – ingen opdateringer)")
     updated = 0
     for i, s in enumerate(missing):
-        name = reverse_geocode(s["lat"], s["lon"])
-        if name:
+        place, kommune = reverse_geocode(s["lat"], s["lon"])
+        if kommune:
+            payload = {"kommune": kommune}
+            if place and place != kommune:
+                payload["place"] = place
             if not args.dry_run:
-                supabase.table("shelters").update({"kommune": name}).eq("id", s["id"]).execute()
+                supabase.table("shelters").update(payload).eq("id", s["id"]).execute()
             updated += 1
-            print(f"  [{i+1}/{len(missing)}] {s['title'][:50]} → {name}")
+            disp = f"{place}, {kommune}" if (place and place != kommune) else kommune
+            print(f"  [{i+1}/{len(missing)}] {s['title'][:50]} → {disp}")
         else:
             print(f"  [{i+1}/{len(missing)}] {s['title'][:50]} → (ingen by fundet)")
         if i < len(missing) - 1:

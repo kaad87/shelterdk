@@ -3,11 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SearchBar } from "@/components/SearchBar";
 import { ShelterCard } from "@/components/ShelterCard";
-import { ShelterMap } from "@/components/ShelterMap";
+import { ShelterMap, type MapBounds } from "@/components/ShelterMap";
 import type { Shelter } from "@/types/shelter";
 import type { SoegFilters } from "@/lib/soeg-db";
 
-type ViewMode = "list" | "map";
+type ViewMode = "list" | "map" | "split";
 
 interface SoegContentProps {
   initialShelters: Shelter[];
@@ -28,15 +28,25 @@ export function SoegContent({
 }: SoegContentProps) {
   const [shelters, setShelters] = useState<Shelter[]>(initialShelters);
   const [hasMore, setHasMore] = useState(initialHasMore);
-  const [nextPage, setNextPage] = useState(2);
+  const [nextPage, setNextPage] = useState(
+    initialShelters.length >= 1000 ? Math.floor(1000 / 24) + 1 : 2
+  );
   const [loading, setLoading] = useState(false);
   const [view, setView] = useState<ViewMode>(initialView);
+  const [listDisplayCount, setListDisplayCount] = useState(
+    initialView === "split" ? Math.min(24, initialShelters.length) : initialShelters.length
+  );
   const sentinelRef = useRef<HTMLDivElement>(null);
   const loadingRef = useRef(false);
 
   useEffect(() => {
     setView(initialView);
-  }, [initialView]);
+    if (initialView === "split") {
+      setListDisplayCount((c) => Math.min(c, Math.min(24, initialShelters.length)));
+    } else {
+      setListDisplayCount(initialShelters.length);
+    }
+  }, [initialView, initialShelters.length]);
 
   const loadMore = useCallback(async () => {
     if (loadingRef.current || loading || !hasMore) return;
@@ -54,16 +64,43 @@ export function SoegContent({
       const data = await res.json();
       const more: Shelter[] = data.shelters ?? [];
       const moreHasMore = Boolean(data.hasMore);
-      setShelters((prev) => [...prev, ...more]);
+      setShelters((prev) => {
+        const ids = new Set(prev.map((s) => s.id));
+        const newOnes = more.filter((s) => !ids.has(s.id));
+        return newOnes.length ? [...prev, ...newOnes] : prev;
+      });
       setHasMore(moreHasMore);
       setNextPage((p) => p + 1);
+      if (view === "split") {
+        setListDisplayCount((c) => c + more.length);
+      }
     } finally {
       loadingRef.current = false;
       setLoading(false);
     }
   }, [loading, hasMore, nextPage, initialRegion, initialQuery, initialFilters]);
 
-  // IntersectionObserver: load næste side når sentinel kommer i view (listevisning)
+  // IntersectionObserver: split – afslør flere fra listen (op til shelters.length) eller hent næste side
+  useEffect(() => {
+    if (view !== "split") return;
+    const el = sentinelRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (!entries[0]?.isIntersecting || loadingRef.current) return;
+        if (listDisplayCount < shelters.length) {
+          setListDisplayCount((c) => Math.min(c + 24, shelters.length));
+        } else if (hasMore) {
+          loadMore();
+        }
+      },
+      { rootMargin: "100px", threshold: 0 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [view, listDisplayCount, shelters.length, hasMore, loadMore]);
+
+  // IntersectionObserver: kun liste-view – load næste side
   useEffect(() => {
     if (view !== "list" || !hasMore || loading) return;
     const el = sentinelRef.current;
@@ -78,16 +115,41 @@ export function SoegContent({
     return () => obs.disconnect();
   }, [view, hasMore, loading, loadMore]);
 
-  // Kortvisning: indlæs alle resterende sider så kortet viser alle shelters (safety cap 5000)
-  useEffect(() => {
-    if (view !== "map" || !hasMore || loading || loadingRef.current) return;
-    if (shelters.length >= 5000) return;
-    loadMore();
-  }, [view, hasMore, loading, shelters.length, loadMore]);
+  // Kort får 1000 ved indlæsning; flere tilføjes ved zoom via fetchByBounds (merge).
 
   const handleViewChange = useCallback((v: ViewMode) => {
     setView(v);
   }, []);
+
+  const fetchByBounds = useCallback(
+    async (bounds: MapBounds) => {
+      const params: Record<string, string> = {
+        minLat: String(bounds.south),
+        maxLat: String(bounds.north),
+        minLon: String(bounds.west),
+        maxLon: String(bounds.east),
+      };
+      if (initialFilters?.billede) params.billede = "1";
+      if (initialFilters?.anmeldelser) params.anmeldelser = "1";
+      if (initialFilters?.bookbar) params.bookbar = "1";
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/soeg?${new URLSearchParams(params)}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const list: Shelter[] = data.shelters ?? [];
+        setShelters((prev) => {
+          const byId = new Map(prev.map((s) => [s.id, s]));
+          for (const s of list) byId.set(s.id, s);
+          const merged = [...byId.values()];
+          return merged.length > 5000 ? merged.slice(0, 5000) : merged;
+        });
+      } finally {
+        setLoading(false);
+      }
+    },
+    [initialFilters]
+  );
 
   return (
     <div className="space-y-8">
@@ -104,12 +166,37 @@ export function SoegContent({
         <p className="text-primary/70 py-8">
           Ingen shelters fundet. Prøv at ændre region eller søgetekst.
         </p>
+      ) : view === "split" ? (
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr,minmax(380px,45%)] gap-0 min-h-[70vh] -mx-4 sm:-mx-6 lg:-mx-8">
+          <div className="overflow-y-auto lg:max-h-[calc(100vh-12rem)] lg:pr-4">
+            <p className="text-primary/70 text-sm mb-4 sticky top-0 bg-background/95 py-2 z-10">
+              {shelters.length} shelter{shelters.length !== 1 ? "s" : ""} i Danmark
+              {(hasMore || listDisplayCount < shelters.length) && " · scroll for flere"}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6">
+              {shelters.slice(0, listDisplayCount).map((shelter) => (
+                <ShelterCard key={shelter.id} shelter={shelter} />
+              ))}
+            </div>
+            <div ref={sentinelRef} className="h-4 flex items-center justify-center">
+              {loading && (
+                <span className="text-primary/60 text-sm">Indlæser flere…</span>
+              )}
+            </div>
+          </div>
+          <div className="hidden lg:block sticky top-24 self-start rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[420px] h-[calc(100vh-8rem)] max-h-[720px]">
+            <ShelterMap shelters={shelters} className="w-full h-full" onBoundsChange={fetchByBounds} />
+          </div>
+        </div>
       ) : view === "map" ? (
         <>
           <p className="text-primary/70 text-sm">
             Viser {shelters.length} shelter{shelters.length !== 1 ? "s" : ""} på kortet
+            {loading && " · opdaterer…"}
           </p>
-          <ShelterMap shelters={shelters} className="w-full" />
+          <div className="rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[800px] h-[85vh] max-h-[1400px]">
+            <ShelterMap shelters={shelters} className="w-full h-full" onBoundsChange={fetchByBounds} />
+          </div>
         </>
       ) : (
         <>

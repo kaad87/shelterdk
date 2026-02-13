@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { MapPin, Star, X } from "lucide-react";
+import { ShelterPhotoUpload } from "@/components/ShelterPhotoUpload";
 
 interface ShelterGalleryProps {
   /** Alle billeder, inkl. hero-billedet som første element. Tom array = vis "Ingen billede"-placeholder. */
@@ -11,6 +12,9 @@ interface ShelterGalleryProps {
   rating?: number | null;
   ratingsTotal?: number | null;
   region?: string | null;
+  /** Når sat og der ikke er billeder, vises upload-formular inde i placeholder. */
+  slug?: string;
+  shelterId?: string;
 }
 
 export function ShelterGallery({
@@ -19,11 +23,15 @@ export function ShelterGallery({
   rating,
   ratingsTotal,
   region,
+  slug,
+  shelterId,
 }: ShelterGalleryProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [mainImageFailed, setMainImageFailed] = useState(false);
   const hasImages = urls.length > 0;
   const mainImageUrl = hasImages ? urls[0] : null;
   const galleryUrls = hasImages ? urls.slice(1) : [];
+  const showMainImage = mainImageUrl && !mainImageFailed;
 
   // Tastaturstyring, når lightbox er åben
   useEffect(() => {
@@ -55,27 +63,36 @@ export function ShelterGallery({
   return (
     <>
       {/* Hero: billede eller "Ingen billede"-placeholder */}
-      <div className="relative min-h-[280px] aspect-[4/3] rounded-xl overflow-hidden bg-primary mb-6">
-        {mainImageUrl ? (
+      <div className="relative w-full min-h-[280px] aspect-[4/3] rounded-xl overflow-hidden bg-primary mb-6 isolate">
+        {showMainImage ? (
           <button
             type="button"
             onClick={() => setLightboxIndex(0)}
-            className="absolute inset-0"
+            className="absolute inset-0 z-0"
             aria-label="Vis hovedbilledet i fuld størrelse"
           >
             <Image
-              src={mainImageUrl}
+              src={mainImageUrl!}
               alt={title}
               fill
               className="object-cover"
               sizes="(max-width: 1024px) 100vw, 896px"
               priority
               unoptimized
+              onError={() => setMainImageFailed(true)}
             />
           </button>
+        ) : slug && shelterId ? (
+          <div className="absolute inset-0 z-0">
+            <ShelterPhotoUpload
+              shelterId={shelterId}
+              slug={slug}
+              variant="inline"
+            />
+          </div>
         ) : (
           <div
-            className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white/80"
+            className="absolute inset-0 z-0 flex flex-col items-center justify-center gap-3 text-white/80"
             aria-hidden
           >
             <svg
@@ -96,7 +113,7 @@ export function ShelterGallery({
           </div>
         )}
 
-        <div className="pointer-events-none absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-primary/90 to-transparent">
+        <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 p-6 bg-gradient-to-t from-primary/90 to-transparent">
           <h1 className="font-serif text-2xl md:text-3xl font-bold text-white">
             {title}
           </h1>
@@ -128,20 +145,20 @@ export function ShelterGallery({
       {galleryUrls.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-8">
           {galleryUrls.slice(0, 4).map((url, i) => (
-          <button
-            key={url}
-            type="button"
+            <button
+              key={url}
+              type="button"
               onClick={() => setLightboxIndex(i + 1)}
-            className="relative aspect-square rounded-xl overflow-hidden bg-primary focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
-            aria-label={`Vis billede ${i + 1} i fuld størrelse`}
-          >
-            <Image
-              src={url}
-              alt={`${title} – billede ${i + 2}`}
-              fill
-              className="object-cover transition-transform hover:scale-105"
-              sizes="(max-width: 640px) 50vw, 25vw"
-              unoptimized
+              className="relative w-full aspect-square min-h-0 rounded-xl overflow-hidden bg-primary focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
+              aria-label={`Vis billede ${i + 1} i fuld størrelse`}
+            >
+              <Image
+                src={url}
+                alt={`${title} – billede ${i + 2}`}
+                fill
+                className="object-cover transition-transform hover:scale-105"
+                sizes="(max-width: 640px) 50vw, 25vw"
+                unoptimized
               />
             </button>
           ))}

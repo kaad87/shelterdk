@@ -14,6 +14,8 @@ import {
 import { createPublicClient } from "@/utils/supabase/server-public";
 import { ShelterGallery } from "@/components/ShelterGallery";
 import { ShelterLocationMap } from "@/components/ShelterLocationMap";
+import { ShelterFaq } from "@/components/ShelterFaq";
+import { getShelterFaqItems, faqToJsonLd } from "@/lib/faq";
 import type { Metadata } from "next";
 import type { Shelter } from "@/types/shelter";
 import {
@@ -30,6 +32,8 @@ import {
   isShelterPlace,
   stripHtml,
   isBookable,
+  getToilet,
+  getPetsAllowed,
 } from "@/lib/shelter-detail";
 
 interface PageProps {
@@ -39,9 +43,9 @@ interface PageProps {
 export const dynamic = "force-dynamic";
 
 const SHELTER_SELECT_DETAIL =
-  "id, title, slug, description, location, image_url, image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, region, kommune, geofa_raw";
+  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, region, kommune, place, toilet, geofa_raw";
 const SHELTER_SELECT_DETAIL_FALLBACK =
-  "id, title, slug, description, location, image_url, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, region, geofa_raw";
+  "id, title, slug, description, location, image_url, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, region, geofa_raw";
 
 async function getShelterBySlug(slug: string): Promise<Shelter | null> {
   const supabase = createPublicClient();
@@ -145,6 +149,19 @@ export default async function ShelterPage({ params }: PageProps) {
   const bookingUrl =
     rawBookingUrl && /^https?:\/\//i.test(rawBookingUrl) ? rawBookingUrl : null;
 
+  const toilet = getToilet(shelter);
+  const petsAllowed = getPetsAllowed(shelter);
+  const shelterFaqItems = getShelterFaqItems(shelter.title, {
+    toilet,
+    bookable: isBookable(shelter),
+    bookingUrl,
+    petsAllowed,
+  });
+  const shelterFaqJsonLd =
+    shelterFaqItems.length > 0
+      ? JSON.stringify(faqToJsonLd(shelterFaqItems))
+      : undefined;
+
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
@@ -180,6 +197,8 @@ export default async function ShelterPage({ params }: PageProps) {
               rating={showReviews ? shelter.google_rating : null}
               ratingsTotal={showReviews ? shelter.google_user_ratings_total : null}
               region={city}
+              slug={slug}
+              shelterId={shelter.id}
             />
 
             {/* Quick facts – icon + label (Landfolk/Airbnb) */}
@@ -310,6 +329,12 @@ export default async function ShelterPage({ params }: PageProps) {
                 )}
               </section>
             )}
+
+            {/* FAQ – Q&A format for SEO / Perplexity / ChatGPT */}
+            <ShelterFaq
+              items={shelterFaqItems}
+              jsonLd={shelterFaqJsonLd}
+            />
 
             {/* Kort */}
             {coords && (

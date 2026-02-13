@@ -5,51 +5,23 @@ import { Suspense } from "react";
 import { unstable_noStore } from "next/cache";
 import { FrontPageShelterGrid } from "@/components/FrontPageShelterGrid";
 import { SearchBar } from "@/components/SearchBar";
+import { ShelterMap } from "@/components/ShelterMap";
 import { createPublicClient } from "@/utils/supabase/server-public";
 import type { Shelter } from "@/types/shelter";
 import { isShelterPlace } from "@/lib/shelter-detail";
+import { getSheltersPage } from "@/lib/soeg-db";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "ShelterDK – Find dit næste shelter",
-  description:
-    "Udforsk shelters i hele Danmark. Find overnatningspladser i naturen med kort, billeder og anmeldelser.",
-};
-
-const regions = [
-  {
-    name: "Jylland",
-    href: "/soeg?region=Jylland",
-    image:
-      "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=800&q=80&auto=format&fit=crop",
-  },
-  {
-    name: "Sjælland",
-    href: "/soeg?region=Sjælland",
-    image:
-      "https://images.unsplash.com/photo-1562843025-6e9c7260b005?w=800&q=80&auto=format&fit=crop",
-  },
-  {
-    name: "Fyn",
-    href: "/soeg?region=Fyn",
-    image:
-      "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80&auto=format&fit=crop",
-  },
-  {
-    name: "Øerne",
-    href: "/soeg?region=Øerne",
-    image:
-      "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&q=80&auto=format&fit=crop",
-  },
-];
+const FRONT_PAGE_MAP_SIZE = 1000;
+const FRONT_PAGE_SHELTER_LIMIT = 8;
+const FRONT_PAGE_FETCH_BUFFER = 24;
 
 const SHELTER_SELECT =
-  "id, title, slug, description, location, image_url, google_rating, google_user_ratings_total, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, geofa_raw";
+  "id, title, slug, description, location, image_url, google_rating, google_user_ratings_total, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, geofa_raw, display_score";
 const SHELTER_SELECT_FALLBACK =
   "id, title, slug, description, location, image_url, google_rating, google_user_ratings_total, google_place_name, booking_url, duplicate_of_shelter_id, region, geofa_raw";
 
-/** Domæner vi tillider for forsidens billeder (samme som next.config images). Udelad shelters med image_url fra andre domæner. */
 const ALLOWED_IMAGE_HOSTS = new Set([
   "dynamic-media-cdn.tripadvisor.com",
   "cdn.campanyon.com",
@@ -81,6 +53,7 @@ async function getPrimaryShelters(limit: number): Promise<Shelter[]> {
         .from("shelters")
         .select(select)
         .is("duplicate_of_shelter_id", null)
+        .order("display_score", { ascending: false, nullsFirst: false })
         .order("title", { ascending: true })
         .limit(limit * 10);
 
@@ -90,41 +63,36 @@ async function getPrimaryShelters(limit: number): Promise<Shelter[]> {
       .neq("image_url", "");
 
     if (!err1 && withImage && withImage.length > 0) {
-      list = (withImage as Shelter[]) ?? [];
-      if (list.length > 0 && process.env.NODE_ENV === "development") {
-        const first = list[0] as Record<string, unknown>;
-        console.log("[shelters] first row kommune:", first?.kommune ?? "(missing)");
-      }
+      list = (withImage as unknown as Shelter[]) ?? [];
     } else {
       const { data, error } = await base(SHELTER_SELECT)
         .not("image_url", "is", null)
         .neq("image_url", "");
-      if (!error && data) list = (data as Shelter[]) ?? [];
+      if (!error && data) list = (data as unknown as Shelter[]) ?? [];
       else if (error?.code === "42703") {
-        if (process.env.NODE_ENV === "development")
-          console.warn("[shelters] kommune column missing (42703), using fallback select");
         const { data: fallbackData } = await base(SHELTER_SELECT_FALLBACK)
           .not("image_url", "is", null)
           .neq("image_url", "");
-        if (fallbackData?.length) list = fallbackData as Shelter[];
+        if (fallbackData?.length) list = fallbackData as unknown as Shelter[];
         else {
           const { data: d } = await base(SHELTER_SELECT_FALLBACK)
             .not("image_url", "is", null)
             .neq("image_url", "");
-          if (d?.length) list = d as Shelter[];
+          if (d?.length) list = d as unknown as Shelter[];
         }
       } else if (error) console.error("Supabase error:", error);
     }
-    // Forsiden: kun shelters med billede fra tillidte domæner
     list = list.filter(
       (s) => (s.image_url ?? "").trim() !== "" && isAllowedImageUrl(s.image_url)
     );
     const hasImageAndReviews = (s: Shelter) =>
       isShelterPlace(s.google_place_name ?? null) &&
       ((s.google_user_ratings_total ?? 0) > 0 || s.google_rating != null);
-    // Forsiden viser KUN shelters der har BÅDE billede OG anmeldelser
     list = list.filter(hasImageAndReviews);
     const sorted = [...list].sort((a, b) => {
+      const aScore = a.display_score ?? 0;
+      const bScore = b.display_score ?? 0;
+      if (bScore !== aScore) return bScore - aScore;
       const aTotal = a.google_user_ratings_total ?? 0;
       const bTotal = b.google_user_ratings_total ?? 0;
       if (bTotal !== aTotal) return bTotal - aTotal;
@@ -137,11 +105,39 @@ async function getPrimaryShelters(limit: number): Promise<Shelter[]> {
   }
 }
 
-const FRONT_PAGE_SHELTER_LIMIT = 12;
-const FRONT_PAGE_FETCH_BUFFER = 24; // Kun shelters med billede+anmeldelser; buffer til at erstatte defekte billeder
+export const metadata: Metadata = {
+  title: "ShelterDK – Find dit næste shelter",
+  description:
+    "Udforsk shelters i hele Danmark. Find overnatningspladser i naturen med kort, billeder og anmeldelser.",
+};
+
+const regions = [
+  {
+    name: "Jylland",
+    href: "/soeg?region=Jylland",
+    image:
+      "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=800&q=80&auto=format&fit=crop",
+  },
+  {
+    name: "Sjælland",
+    href: "/soeg?region=Sjælland",
+    image:
+      "https://images.unsplash.com/photo-1562843025-6e9c7260b005?w=800&q=80&auto=format&fit=crop",
+  },
+  {
+    name: "Fyn",
+    href: "/soeg?region=Fyn",
+    image:
+      "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80&auto=format&fit=crop",
+  },
+];
 
 export default async function HomePage() {
-  const shelters = await getPrimaryShelters(FRONT_PAGE_FETCH_BUFFER);
+  unstable_noStore();
+  const [shelters, { shelters: mapShelters }] = await Promise.all([
+    getPrimaryShelters(FRONT_PAGE_FETCH_BUFFER),
+    getSheltersPage(null, null, 1, FRONT_PAGE_MAP_SIZE),
+  ]);
 
   return (
     <>
@@ -179,12 +175,28 @@ export default async function HomePage() {
         </section>
       )}
 
+      <section className="pt-8 pb-16 bg-background">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <h2 className="font-serif text-3xl font-bold text-primary mb-4 text-center">
+            Kort over Danmarks shelters
+          </h2>
+          <div className="rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[560px] h-[75vh] max-h-[960px]">
+            <ShelterMap shelters={mapShelters} className="w-full h-full" />
+          </div>
+          <p className="text-center mt-4">
+            <Link href="/soeg" className="text-accent font-medium hover:underline">
+              Søg shelters med liste og kort →
+            </Link>
+          </p>
+        </div>
+      </section>
+
       <section className="py-16 bg-background">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="font-serif text-3xl font-bold text-primary mb-8 text-center">
             Udforsk efter region
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {regions.map((region) => (
               <Link
                 key={region.href + region.name}

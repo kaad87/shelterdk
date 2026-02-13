@@ -14,8 +14,16 @@ export interface Shelter {
   google_place_name?: string | null;
   duplicate_of_shelter_id: string | null;
   region?: string | null;
-  /** By/kommune (fx fra GeoFA beliggenhedskommune). */
+  /** By/kommune (fx fra GeoFA) – bruges til filtrering. */
   kommune?: string | null;
+  /** Præcist stednavn (landsby, by) fra reverse geocoding – bruges til visning når sat. */
+  place?: string | null;
+  /** Godkendte brugeruploadede billed-URL'er. */
+  user_image_urls?: string[] | null;
+  /** Beregnet score til rangering (billeder + anmeldelser). */
+  display_score?: number | null;
+  /** Toilet på pladsen: flush, mulch, none, unknown. */
+  toilet?: "flush" | "mulch" | "none" | "unknown" | null;
   geofa_raw?: Record<string, unknown> | null;
   created_at?: string;
   updated_at?: string;

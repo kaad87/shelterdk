@@ -1,8 +1,18 @@
 import { createPublicClient } from "@/utils/supabase/server-public";
 import type { Shelter } from "@/types/shelter";
+import { getLocationCoords, getDisplayScore, hasAnyImage } from "@/lib/shelter-detail";
+
+/** Sorter shelters: billede først, derefter score (billeder + anmeldelser), derefter titel. */
+function sortByImageAndScore(a: Shelter, b: Shelter): number {
+  const aHas = hasAnyImage(a) ? 1 : 0;
+  const bHas = hasAnyImage(b) ? 1 : 0;
+  if (bHas !== aHas) return bHas - aHas;
+  const diff = (b.display_score ?? getDisplayScore(b)) - (a.display_score ?? getDisplayScore(a));
+  return diff !== 0 ? diff : (a.title || "").localeCompare(b.title || "");
+}
 
 const SHELTER_SELECT =
-  "id, title, slug, description, location, image_url, google_rating, google_user_ratings_total, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, geofa_raw";
+  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, geofa_raw, display_score";
 const SHELTER_SELECT_FALLBACK =
   "id, title, slug, description, location, image_url, google_rating, google_user_ratings_total, google_place_name, booking_url, duplicate_of_shelter_id, region, geofa_raw";
 
@@ -19,28 +29,39 @@ export interface SoegFilters {
   bookbar?: boolean;
 }
 
+/** Bounding box for kortvisning – hent shelters inden for det synlige område. */
+export interface MapBbox {
+  minLat: number;
+  maxLat: number;
+  minLon: number;
+  maxLon: number;
+}
+
+const BBOX_FETCH_LIMIT = 2000;
+
 /**
- * Hent én side shelters med valgfri region, søgetekst og filtre.
- * Bruges af søgesiden og API-route til paginering.
+ * Hent én side shelters med valgfri region, søgetekst, filtre og bbox.
+ * Ved bbox hentes op til BBOX_FETCH_LIMIT og filtreres efter koordinater (location).
  */
 export async function getSheltersPage(
   region: string | null,
   q: string | null,
   page: number,
   pageSize: number = SOEG_PAGE_SIZE,
-  filters?: SoegFilters | null
+  filters?: SoegFilters | null,
+  bbox?: MapBbox | null
 ): Promise<SoegPageResult> {
   const supabase = createPublicClient();
-  const from = (page - 1) * pageSize;
-  const toInclusive = from + pageSize - 1; // range(inclusive, inclusive) → præcis pageSize rækker
+  const useBbox = bbox && [bbox.minLat, bbox.maxLat, bbox.minLon, bbox.maxLon].every((n) => Number.isFinite(n));
+  const from = useBbox ? 0 : (page - 1) * pageSize;
+  const toInclusive = useBbox ? BBOX_FETCH_LIMIT - 1 : from + pageSize - 1;
 
-  // Prioriter: 1) med billede (image_url ikke null), 2) med anmeldelser (google_user_ratings_total), 3) titel
+  // Rangering: display_score (billeder + anmeldelser), derefter titel
   let query = supabase
     .from("shelters")
     .select(SHELTER_SELECT)
     .is("duplicate_of_shelter_id", null)
-    .order("image_url", { ascending: true, nullsFirst: false })
-    .order("google_user_ratings_total", { ascending: false, nullsFirst: false })
+    .order("display_score", { ascending: false, nullsFirst: false })
     .order("title", { ascending: true });
 
   if (region && region.trim()) {
@@ -63,7 +84,25 @@ export async function getSheltersPage(
     query = query.not("booking_url", "is", null).neq("booking_url", "");
   }
 
-  const { data, error } = await query.range(from, toInclusive);
+  let { data, error } = await query.range(from, toInclusive);
+
+  if (!error && data && useBbox && bbox) {
+    const list: Shelter[] = [];
+    for (const row of data as Shelter[]) {
+      const coords = getLocationCoords(row);
+      if (!coords) continue;
+      if (
+        coords.lat >= bbox.minLat &&
+        coords.lat <= bbox.maxLat &&
+        coords.lon >= bbox.minLon &&
+        coords.lon <= bbox.maxLon
+      ) {
+        list.push(row);
+      }
+    }
+    list.sort(sortByImageAndScore);
+    return { shelters: list, hasMore: false };
+  }
 
   if (error?.code === "42703") {
     let fallbackQuery = supabase
@@ -93,7 +132,23 @@ export async function getSheltersPage(
       fallbackQuery = fallbackQuery.not("booking_url", "is", null).neq("booking_url", "");
     }
     const { data: fallbackData } = await fallbackQuery.range(from, toInclusive);
-    const list = ((fallbackData as Shelter[]) ?? []).slice(0, pageSize);
+    let list = (fallbackData as Shelter[]) ?? [];
+    if (useBbox && bbox) {
+      list = list.filter((row) => {
+        const coords = getLocationCoords(row);
+        if (!coords) return false;
+        return (
+          coords.lat >= bbox.minLat &&
+          coords.lat <= bbox.maxLat &&
+          coords.lon >= bbox.minLon &&
+          coords.lon <= bbox.maxLon
+        );
+      });
+      list.sort(sortByImageAndScore);
+      return { shelters: list, hasMore: false };
+    }
+    list = list.slice(0, pageSize);
+    list.sort(sortByImageAndScore);
     return {
       shelters: list,
       hasMore: list.length >= pageSize,
@@ -105,7 +160,8 @@ export async function getSheltersPage(
     return { shelters: [], hasMore: false };
   }
 
-  const list = ((data as Shelter[]) ?? []).slice(0, pageSize);
+  let list = ((data as Shelter[]) ?? []).slice(0, pageSize);
+  list = [...list].sort(sortByImageAndScore);
   return {
     shelters: list,
     hasMore: list.length >= pageSize,

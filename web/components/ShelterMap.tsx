@@ -15,6 +15,13 @@ export interface ShelterWithCoords extends Shelter {
   _coords: { lat: number; lon: number };
 }
 
+export interface MapBounds {
+  north: number;
+  south: number;
+  east: number;
+  west: number;
+}
+
 function getSheltersWithCoords(shelters: Shelter[]): ShelterWithCoords[] {
   return shelters
     .map((s) => {
@@ -32,7 +39,7 @@ const MapInner = dynamic(
       "react-leaflet"
     );
     const L = await import("leaflet");
-    const { useEffect } = await import("react");
+    const { useEffect, useRef } = await import("react");
     const Link = (await import("next/link")).default;
     const { isValidImageUrl } = await import("@/lib/shelter-detail");
 
@@ -48,8 +55,11 @@ const MapInner = dynamic(
 
     function FitBounds({ items }: { items: { lat: number; lon: number }[] }) {
       const map = useMap();
+      const hasFittedRef = useRef(false);
       useEffect(() => {
         if (items.length === 0) return;
+        if (hasFittedRef.current) return;
+        hasFittedRef.current = true;
         if (items.length === 1) {
           map.setView([items[0].lat, items[0].lon], 12);
         } else {
@@ -62,10 +72,52 @@ const MapInner = dynamic(
       return null;
     }
 
+    function BoundsReporter({
+      onBoundsChange,
+    }: {
+      onBoundsChange?: (bounds: MapBounds) => void;
+    }) {
+      const map = useMap();
+      const initialFitDoneRef = { current: false };
+      useEffect(() => {
+        if (!onBoundsChange) return;
+        let timeout: ReturnType<typeof setTimeout> | null = null;
+        const handler = () => {
+          if (timeout) clearTimeout(timeout);
+          timeout = setTimeout(() => {
+            timeout = null;
+            if (!initialFitDoneRef.current) {
+              initialFitDoneRef.current = true;
+              return;
+            }
+            const b = map.getBounds();
+            if (b.isValid()) {
+              onBoundsChange({
+                north: b.getNorth(),
+                south: b.getSouth(),
+                east: b.getEast(),
+                west: b.getWest(),
+              });
+            }
+          }, 400);
+        };
+        map.on("moveend", handler);
+        map.on("zoomend", handler);
+        return () => {
+          if (timeout) clearTimeout(timeout);
+          map.off("moveend", handler);
+          map.off("zoomend", handler);
+        };
+      }, [map, onBoundsChange]);
+      return null;
+    }
+
     return function Inner({
       sheltersWithCoords,
+      onBoundsChange,
     }: {
       sheltersWithCoords: ShelterWithCoords[];
+      onBoundsChange?: (bounds: MapBounds) => void;
     }) {
       const points = useMemo(
         () => sheltersWithCoords.map((s) => s._coords),
@@ -83,6 +135,7 @@ const MapInner = dynamic(
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           <FitBounds items={points} />
+          <BoundsReporter onBoundsChange={onBoundsChange} />
           {sheltersWithCoords.map((shelter) => (
             <Marker
               key={shelter.id}
@@ -130,9 +183,11 @@ const MapInner = dynamic(
 interface ShelterMapProps {
   shelters: Shelter[];
   className?: string;
+  /** Kaldes når brugeren pan/zoomer – bruges til at hente shelters i det synlige område. */
+  onBoundsChange?: (bounds: MapBounds) => void;
 }
 
-export function ShelterMap({ shelters, className = "" }: ShelterMapProps) {
+export function ShelterMap({ shelters, className = "", onBoundsChange }: ShelterMapProps) {
   const withCoords = getSheltersWithCoords(shelters);
 
   if (withCoords.length === 0) {
@@ -150,7 +205,7 @@ export function ShelterMap({ shelters, className = "" }: ShelterMapProps) {
 
   return (
     <div className={"rounded-xl overflow-hidden border border-primary/10 " + className}>
-      <MapInner sheltersWithCoords={withCoords} />
+      <MapInner sheltersWithCoords={withCoords} onBoundsChange={onBoundsChange} />
     </div>
   );
 }

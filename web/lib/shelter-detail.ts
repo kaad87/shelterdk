@@ -84,7 +84,10 @@ function kommuneToBy(value: string): string {
   return t;
 }
 
+/** By/stedsnavn til visning – foretrækker præcist sted (place), ellers kommune eller GeoFA. */
 export function getCity(shelter: Shelter): string | null {
+  const place = shelter.place && typeof shelter.place === "string" ? shelter.place.trim() : null;
+  if (isValidCityName(place)) return place;
   const fromKommune = shelter.kommune && typeof shelter.kommune === "string" ? shelter.kommune.trim() : null;
   if (isValidCityName(fromKommune)) return kommuneToBy(fromKommune!);
   const raw = RAW(shelter);
@@ -148,6 +151,35 @@ export function getWater(shelter: Shelter): boolean | null {
   const v = (getStr(RAW(shelter), "vandhane") || "").toLowerCase();
   if (v.includes("ja")) return true;
   if (v.includes("nej")) return false;
+  return null;
+}
+
+/** Toilet på pladsen: fra DB-kolonne eller ukendt. */
+export function getToilet(
+  shelter: Shelter
+): "flush" | "mulch" | "none" | "unknown" | null {
+  const t = shelter.toilet;
+  if (t === "flush" || t === "mulch" || t === "none" || t === "unknown")
+    return t;
+  return null;
+}
+
+/** Må man have hund/dyr med? Udledt af geofa_raw eller beskrivelse. */
+export function getPetsAllowed(shelter: Shelter): boolean | null {
+  const raw = RAW(shelter);
+  const petKeys = ["hunde_tilladt", "hund", "dyr", "pets", "husdyr"];
+  for (const key of petKeys) {
+    const v = getStr(raw, key);
+    if (!v) continue;
+    const lower = v.toLowerCase();
+    if (lower.includes("ja")) return true;
+    if (lower.includes("nej")) return false;
+  }
+  const desc = (getLongDescription(shelter) || "").toLowerCase();
+  if (desc.includes("hund") || desc.includes("dyr")) {
+    if (desc.includes(" tilladt") || desc.includes(" må ") || (desc.includes("ja") && desc.includes("medbring"))) return true;
+    if (desc.includes("ikke tilladt") || desc.includes("ingen hund")) return false;
+  }
   return null;
 }
 
@@ -240,9 +272,38 @@ export function getPhotoUrls(shelter: Shelter): string[] {
   if (Array.isArray(urls)) {
     for (const url of urls) add(url);
   }
+  const userUrls = shelter.user_image_urls;
+  if (Array.isArray(userUrls)) {
+    for (const url of userUrls) add(url);
+  }
   const raw = RAW(shelter);
   for (const k of GEOFA_PHOTO_KEYS) add(raw[k] as string | undefined);
   return out;
+}
+
+/**
+ * Har shelter mindst ét gyldigt billede (image_url, image_urls eller user_image_urls)?
+ */
+export function hasAnyImage(shelter: Shelter): boolean {
+  if (isValidImageUrl(shelter.image_url)) return true;
+  if (Array.isArray(shelter.image_urls) && shelter.image_urls.length > 0) return true;
+  if (Array.isArray(shelter.user_image_urls) && shelter.user_image_urls.length > 0) return true;
+  return false;
+}
+
+/**
+ * Beregn display_score til rangering (samme formel som DB: billeder * 100 + min(anmeldelser, 500)).
+ * Brug til sortering når DB-score mangler eller for at sikre korrekt rækkefølge.
+ */
+export function getDisplayScore(shelter: Shelter): number {
+  let imageCount = isValidImageUrl(shelter.image_url) ? 1 : 0;
+  if (Array.isArray(shelter.image_urls)) imageCount += shelter.image_urls.length;
+  if (Array.isArray(shelter.user_image_urls)) imageCount += shelter.user_image_urls.length;
+  const reviews = Math.min(
+    500,
+    Math.max(0, Number(shelter.google_user_ratings_total) || 0)
+  );
+  return imageCount * 100 + reviews;
 }
 
 /** Om det matchede Google-stednavn indeholder "shelter" – vis rating/anmeldelser kun da. */

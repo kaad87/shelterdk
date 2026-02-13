@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     "Se alle shelters i Danmark. Filtrer efter region, søg efter område og se listen eller kortvisning.",
 };
 
-type ViewMode = "list" | "map";
+type ViewMode = "list" | "map" | "split";
 
 interface SoegPageProps {
   searchParams: Promise<{ region?: string; q?: string; view?: string; billede?: string; anmeldelser?: string; bookbar?: string }>;
@@ -35,11 +35,13 @@ export default async function SoegPage({ searchParams }: SoegPageProps) {
   const params = await searchParams;
   const region = params.region ?? null;
   const q = params.q ?? null;
-  const viewParam = (params.view ?? "list").toLowerCase();
-  const view: ViewMode = viewParam === "map" ? "map" : "list";
+  const viewParam = (params.view ?? "split").toLowerCase();
+  const view: ViewMode =
+    viewParam === "map" ? "map" : viewParam === "list" ? "list" : "split";
   const filters = parseFilters(params);
 
-  const initialPageSize = view === "map" ? MAP_VIEW_PAGE_SIZE : SOEG_PAGE_SIZE;
+  const initialPageSize =
+    view === "map" || view === "split" ? MAP_VIEW_PAGE_SIZE : SOEG_PAGE_SIZE;
   const { shelters: initialShelters, hasMore: initialHasMore } =
     await getSheltersPage(region, q, 1, initialPageSize, Object.keys(filters).length ? filters : undefined);
 

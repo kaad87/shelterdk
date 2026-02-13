@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ChevronDown, List, MapPin, SlidersHorizontal, X } from "lucide-react";
+import { ChevronDown, LayoutGrid, List, MapPin, SlidersHorizontal, X } from "lucide-react";
 import type { SoegFilters } from "@/lib/soeg-db";
 
 const REGIONS = [
@@ -10,10 +10,9 @@ const REGIONS = [
   { value: "Jylland", label: "Jylland" },
   { value: "Sjælland", label: "Sjælland" },
   { value: "Fyn", label: "Fyn" },
-  { value: "Øerne", label: "Øerne" },
 ] as const;
 
-type ViewMode = "list" | "map";
+type ViewMode = "list" | "map" | "split";
 
 const FILTER_OPTIONS: { key: keyof SoegFilters; label: string }[] = [
   { key: "billede", label: "Med billede" },
@@ -43,7 +42,7 @@ export function SearchBar({
   initialRegion,
   initialQuery,
   initialFilters = {},
-  view = "list",
+  view = "split",
   onViewChange,
   className = "",
 }: SearchBarProps) {
@@ -124,7 +123,9 @@ export function SearchBar({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const initialView: ViewMode = mode === "search" ? view : "list";
+    // Ved søgning (region eller by) vis altid liste + kort, som når man vælger region
+    const hasSearch = region || query.trim();
+    const initialView: ViewMode = hasSearch ? "split" : (mode === "search" ? view : "split");
     const url = buildSoegUrl(region, query, initialView);
     router.push(url);
   };
@@ -135,6 +136,15 @@ export function SearchBar({
       router.push(buildSoegUrl(region, query, "list"), { scroll: false });
     } else {
       router.push(buildSoegUrl(region, query, "list"));
+    }
+  };
+
+  const handleViewSplit = () => {
+    if (mode === "search") {
+      onViewChange?.("split");
+      router.push(buildSoegUrl(region, query, "split"), { scroll: false });
+    } else {
+      router.push(buildSoegUrl(region, query, "split"));
     }
   };
 
@@ -152,7 +162,7 @@ export function SearchBar({
       const next = { ...filters, [key]: checked || undefined };
       setFilters(next);
       setFilterOpen(false);
-      const url = buildSoegUrl(region, query, mode === "search" ? view : "list", next);
+      const url = buildSoegUrl(region, query, mode === "search" ? view : "split", next);
       router.push(url);
     },
     [filters, region, query, view, mode, buildSoegUrl, router]
@@ -214,7 +224,7 @@ export function SearchBar({
               setSuggestOpen(false);
               setSuggestIndex(-1);
               inputRef.current?.blur();
-              const url = buildSoegUrl(region, by, mode === "search" ? view : "list", mode === "search" ? filters : undefined);
+              const url = buildSoegUrl(region, by, mode === "search" ? view : "split", mode === "search" ? filters : undefined);
               router.push(url);
             } else if (e.key === "Escape") {
               setSuggestOpen(false);
@@ -261,7 +271,7 @@ export function SearchBar({
                     setSuggestOpen(false);
                     setSuggestions([]);
                     inputRef.current?.blur();
-                    const url = buildSoegUrl(region, by, mode === "search" ? view : "list", mode === "search" ? filters : undefined);
+                    const url = buildSoegUrl(region, by, mode === "search" ? view : "split", mode === "search" ? filters : undefined);
                     router.push(url);
                   }}
                   className={`px-4 py-2.5 text-sm cursor-pointer ${i === suggestIndex ? "bg-accent/15 text-primary" : "text-primary hover:bg-primary/5"}`}
@@ -326,35 +336,49 @@ export function SearchBar({
         </div>
       )}
 
-      {/* Liste / Kort – både på forsiden og på søgesiden (Glamp‑style) */}
+      {/* Liste / Liste+kort / Kort – Airbnb-inspireret */}
       <div className="flex rounded-r-xl overflow-hidden border-l border-primary/10 flex-shrink-0">
         <button
           type="button"
           onClick={handleViewList}
-          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+          className={`flex items-center gap-2 px-3 py-3 text-sm font-medium transition-colors ${
             view === "list"
               ? "bg-primary/15 text-primary"
               : "bg-white text-primary/70 hover:bg-primary/5"
           }`}
           aria-pressed={view === "list"}
-          aria-label="Vis som liste"
+          aria-label="Kun liste"
         >
           <List className="w-4 h-4" />
-          Liste
+          <span className="hidden md:inline">Liste</span>
+        </button>
+        <button
+          type="button"
+          onClick={handleViewSplit}
+          className={`flex items-center gap-2 px-3 py-3 text-sm font-medium transition-colors ${
+            view === "split"
+              ? "bg-primary/15 text-primary"
+              : "bg-white text-primary/70 hover:bg-primary/5"
+          }`}
+          aria-pressed={view === "split"}
+          aria-label="Liste og kort"
+        >
+          <LayoutGrid className="w-4 h-4" />
+          <span className="hidden md:inline">Liste + kort</span>
         </button>
         <button
           type="button"
           onClick={handleViewMap}
-          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+          className={`flex items-center gap-2 px-3 py-3 text-sm font-medium transition-colors ${
             view === "map"
               ? "bg-primary/15 text-primary"
               : "bg-white text-primary/70 hover:bg-primary/5"
           }`}
           aria-pressed={view === "map"}
-          aria-label="Vis på kort"
+          aria-label="Kun kort"
         >
           <MapPin className="w-4 h-4" />
-          Kort
+          <span className="hidden md:inline">Kort</span>
         </button>
       </div>
     </form>
