@@ -6,9 +6,13 @@
   --primary: #2c3e50;
   --accent: #c5a059;
   --background: #f9fafb;
+  /* Safe area for notched phones */
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 body {
   background-color: var(--background);
+  padding-bottom: var(--safe-area-inset-bottom);
 }
 

@@ -1,8 +1,15 @@
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
-import { createPublicClient } from "@/utils/supabase/server-public";
-import { getShelterFaqItems, faqToJsonLd } from "@/lib/faq";
-import type { Shelter } from "@/types/shelter";
+import {
+  getShelterBySlugInSilo,
+  getReviews,
+  getRegionKommunePairs,
+  getMunicipalitiesInRegion,
+  getSheltersForStaticParams,
+  slugifySegment,
+  NO_KOMMUNE_SLUG,
+} from "@/lib/danmark-silo";
+import { segmentSlugToName } from "@/lib/slug";
 import {
   getLongDescription,
   getPhotoUrls,
@@ -20,60 +27,27 @@ import {
   getToilet,
   getPetsAllowed,
 } from "@/lib/shelter-detail";
-import { slugifySegment } from "@/lib/slug";
-import { NO_KOMMUNE_SLUG } from "@/lib/danmark-silo";
+import { getShelterFaqItems, faqToJsonLd } from "@/lib/faq";
 import { ShelterDetailContent } from "@/components/ShelterDetailContent";
 
 interface PageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ region: string; municipality: string; shelter_slug: string }>;
 }
 
-const SHELTER_SELECT_DETAIL =
-  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, region, kommune, place, toilet, geofa_raw";
-const SHELTER_SELECT_DETAIL_FALLBACK =
-  "id, title, slug, description, location, image_url, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, region, geofa_raw";
+export const dynamicParams = false;
 
-async function getShelterBySlug(slug: string): Promise<Shelter | null> {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from("shelters")
-    .select(SHELTER_SELECT_DETAIL)
-    .eq("slug", slug)
-    .single();
-  if (!error && data) return data as Shelter;
-  if (error?.code === "42703") {
-    const { data: fallback } = await supabase
-      .from("shelters")
-      .select(SHELTER_SELECT_DETAIL_FALLBACK)
-      .eq("slug", slug)
-      .single();
-    if (fallback) return fallback as Shelter;
-  }
-  return null;
+export async function generateStaticParams() {
+  const shelters = await getSheltersForStaticParams();
+  return shelters.map(({ region, kommune, slug }) => ({
+    region: slugifySegment(region),
+    municipality: kommune ? slugifySegment(kommune) : NO_KOMMUNE_SLUG,
+    shelter_slug: slug,
+  }));
 }
 
-async function getReviews(googlePlaceId: string | null) {
-  if (!googlePlaceId) return [];
-  const supabase = createPublicClient();
-  const { data } = await supabase
-    .from("google_place_reviews")
-    .select("author_name, rating, text, relative_time_description")
-    .eq("google_place_id", googlePlaceId)
-    .order("time", { ascending: false })
-    .limit(5);
-  return (data || []) as {
-    author_name: string | null;
-    rating: number | null;
-    text: string | null;
-    relative_time_description: string | null;
-  }[];
-}
-
-export async function generateMetadata({
-  params,
-}: PageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const shelter = await getShelterBySlug(slug);
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { shelter_slug } = await params;
+  const { shelter } = await getShelterBySlugInSilo(shelter_slug);
   if (!shelter) return { title: "Shelter ikke fundet" };
 
   const longDesc = getLongDescription(shelter);
@@ -94,18 +68,32 @@ export async function generateMetadata({
   };
 }
 
-export default async function ShelterPage({ params }: PageProps) {
-  const { slug } = await params;
-  const shelter = await getShelterBySlug(slug);
+export default async function DanmarkShelterPage({ params }: PageProps) {
+  const { region: regionSlug, municipality: municipalitySlug, shelter_slug } = await params;
 
+  const { shelter, region: shelterRegion, kommune: shelterKommune } = await getShelterBySlugInSilo(shelter_slug);
   if (!shelter) notFound();
 
-  const region = (shelter.region ?? "").trim();
-  const kommune = shelter.kommune && String(shelter.kommune).trim() ? String(shelter.kommune).trim() : null;
-  if (region) {
-    const regionSlug = slugifySegment(region);
-    const municipalitySlug = kommune ? slugifySegment(kommune) : NO_KOMMUNE_SLUG;
-    redirect(`/danmark/${regionSlug}/${municipalitySlug}/${slug}`);
+  const pairs = await getRegionKommunePairs();
+  const regions = [...new Set(pairs.map((p) => p.region))];
+  const regionName = segmentSlugToName(regionSlug, regions);
+  const municipalities = regionName ? await getMunicipalitiesInRegion(regionName) : [];
+  const municipalityName =
+    municipalitySlug === NO_KOMMUNE_SLUG
+      ? null
+      : segmentSlugToName(municipalitySlug, municipalities);
+
+  const expectedRegionSlug = shelterRegion ? slugifySegment(shelterRegion) : null;
+  const expectedMunicipalitySlug = shelterKommune
+    ? slugifySegment(shelterKommune)
+    : NO_KOMMUNE_SLUG;
+
+  if (
+    expectedRegionSlug &&
+    expectedMunicipalitySlug &&
+    (regionSlug !== expectedRegionSlug || municipalitySlug !== expectedMunicipalitySlug)
+  ) {
+    redirect(`/danmark/${expectedRegionSlug}/${expectedMunicipalitySlug}/${shelter_slug}`);
   }
 
   const [reviews] = await Promise.all([
@@ -151,17 +139,21 @@ export default async function ShelterPage({ params }: PageProps) {
   const shelterFaqJsonLd =
     shelterFaqItems.length > 0 ? JSON.stringify(faqToJsonLd(shelterFaqItems)) : undefined;
 
+  const displayRegionName = regionName ?? shelterRegion ?? "Danmark";
+  const displayMunicipalityName = municipalityName ?? shelterKommune ?? "Ukendt kommune";
+
   const breadcrumbs = [
     { label: "Hjem", href: "/" },
     { label: "Søg shelters", href: "/soeg" },
-    ...(city ? [{ label: city, href: undefined }] : []),
+    { label: displayRegionName, href: `/danmark/${regionSlug}` },
+    { label: displayMunicipalityName, href: `/danmark/${regionSlug}/${municipalitySlug}` },
     { label: shelter.title },
-  ].filter((b): b is { label: string; href?: string } => typeof b.label === "string");
+  ];
 
   return (
     <ShelterDetailContent
       shelter={shelter}
-      slug={slug}
+      slug={shelter_slug}
       breadcrumbs={breadcrumbs}
       city={city}
       showReviews={showReviews}

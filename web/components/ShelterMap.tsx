@@ -11,6 +11,13 @@ import "leaflet/dist/leaflet.css";
 const DEFAULT_CENTER: [number, number] = [56.2639, 9.5018]; // Danmark
 const DEFAULT_ZOOM = 7;
 
+/** Regionsspecifik startposition for at undgå at vise hele Danmark når filter er sat. */
+const REGION_CENTER_ZOOM: Record<string, { center: [number, number]; zoom: number }> = {
+  Jylland: { center: [56.2, 9.2], zoom: 8 },
+  Fyn: { center: [55.3, 10.4], zoom: 9 },
+  Sjælland: { center: [55.7, 12.0], zoom: 8 },
+};
+
 export interface ShelterWithCoords extends Shelter {
   _coords: { lat: number; lon: number };
 }
@@ -115,18 +122,24 @@ const MapInner = dynamic(
     return function Inner({
       sheltersWithCoords,
       onBoundsChange,
+      initialCenter,
+      initialZoom,
     }: {
       sheltersWithCoords: ShelterWithCoords[];
       onBoundsChange?: (bounds: MapBounds) => void;
+      initialCenter?: [number, number];
+      initialZoom?: number;
     }) {
       const points = useMemo(
         () => sheltersWithCoords.map((s) => s._coords),
         [sheltersWithCoords]
       );
+      const center = initialCenter ?? DEFAULT_CENTER;
+      const zoom = initialZoom ?? DEFAULT_ZOOM;
       return (
         <MapContainer
-          center={DEFAULT_CENTER}
-          zoom={DEFAULT_ZOOM}
+          center={center}
+          zoom={zoom}
           className="h-full w-full rounded-xl z-0 min-h-[400px]"
           scrollWheelZoom
         >
@@ -185,9 +198,19 @@ interface ShelterMapProps {
   className?: string;
   /** Kaldes når brugeren pan/zoomer – bruges til at hente shelters i det synlige område. */
   onBoundsChange?: (bounds: MapBounds) => void;
+  /** Ved region-filter (Jylland, Fyn, Sjælland) zoomes kortet ind på regionen i stedet for hele Danmark. */
+  initialRegion?: string | null;
 }
 
-export function ShelterMap({ shelters, className = "", onBoundsChange }: ShelterMapProps) {
+export function ShelterMap({
+  shelters,
+  className = "",
+  onBoundsChange,
+  initialRegion,
+}: ShelterMapProps) {
+  const regionView = initialRegion ? REGION_CENTER_ZOOM[initialRegion] : undefined;
+  const initialCenter = regionView?.center;
+  const initialZoom = regionView?.zoom;
   const withCoords = getSheltersWithCoords(shelters);
 
   if (withCoords.length === 0) {
@@ -205,7 +228,12 @@ export function ShelterMap({ shelters, className = "", onBoundsChange }: Shelter
 
   return (
     <div className={"rounded-xl overflow-hidden border border-primary/10 " + className}>
-      <MapInner sheltersWithCoords={withCoords} onBoundsChange={onBoundsChange} />
+      <MapInner
+        sheltersWithCoords={withCoords}
+        onBoundsChange={onBoundsChange}
+        initialCenter={initialCenter}
+        initialZoom={initialZoom}
+      />
     </div>
   );
 }

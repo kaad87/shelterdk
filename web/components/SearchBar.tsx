@@ -174,17 +174,18 @@ export function SearchBar({
     <form
       onSubmit={handleSubmit}
       className={
-        "flex flex-row items-stretch gap-2 bg-white rounded-2xl shadow-lg border border-primary/5 px-2.5 py-2.5 sm:px-3 sm:py-3 overflow-visible " +
+        "flex flex-col sm:flex-row sm:items-stretch gap-2 sm:gap-2 bg-white rounded-2xl shadow-lg border border-primary/5 p-3 sm:px-3 sm:py-3 overflow-visible " +
         className
       }
     >
-      {/* Region – Glampdk-style dropdown */}
-      <div className="relative sm:border-r border-primary/10">
+      {/* Region + søgefelt */}
+      <div className="flex flex-col sm:flex-row flex-1 min-w-0 gap-2 sm:gap-0 sm:border-r border-primary/10">
+      <div className="relative flex-shrink-0 sm:border-r-0">
         <select
           name="region"
           value={region}
           onChange={(e) => setRegion(e.target.value)}
-          className="w-full sm:w-auto min-w-[180px] appearance-none bg-accent/15 text-primary font-medium py-3.5 pl-4 pr-10 sm:py-3 sm:pr-9 text-sm rounded-l-xl sm:rounded-none focus:outline-none focus:ring-2 focus:ring-accent/50 cursor-pointer"
+          className="w-full sm:w-auto min-w-0 sm:min-w-[160px] appearance-none bg-accent/15 text-primary font-medium py-3.5 pl-4 pr-10 text-base sm:text-sm rounded-xl sm:rounded-l-xl sm:rounded-r-none focus:outline-none focus:ring-2 focus:ring-accent/50 cursor-pointer touch-manipulation"
           aria-label="Vælg region"
         >
           {REGIONS.map((r) => (
@@ -232,7 +233,7 @@ export function SearchBar({
             }
           }}
           placeholder="Indtast område eller by"
-          className="w-full py-3.5 sm:py-3 pl-4 pr-9 text-primary placeholder:text-primary/50 bg-transparent border-0 focus:outline-none focus:ring-0 text-sm"
+          className="w-full py-3.5 pl-4 pr-9 text-primary placeholder:text-primary/50 bg-transparent border-0 focus:outline-none focus:ring-0 text-base sm:text-sm touch-manipulation"
           aria-label="Søg efter område eller by"
           aria-autocomplete="list"
           aria-expanded={suggestOpen}
@@ -274,7 +275,7 @@ export function SearchBar({
                     const url = buildSoegUrl(region, by, mode === "search" ? view : "split", mode === "search" ? filters : undefined);
                     router.push(url);
                   }}
-                  className={`px-4 py-2.5 text-sm cursor-pointer ${i === suggestIndex ? "bg-accent/15 text-primary" : "text-primary hover:bg-primary/5"}`}
+                  className={`px-4 py-3 sm:py-2.5 text-base sm:text-sm cursor-pointer touch-manipulation ${i === suggestIndex ? "bg-accent/15 text-primary" : "text-primary hover:bg-primary/5 active:bg-primary/10"}`}
                 >
                   {by}
                 </li>
@@ -284,13 +285,13 @@ export function SearchBar({
         )}
       </div>
 
-      {/* Filter-knap (kun på søgesiden) */}
+      {/* Filter + view toggles (search mode) - samlet række på mobile */}
       {mode === "search" && (
-        <div className="hidden sm:block relative border-l border-primary/10 flex-shrink-0" ref={filterPanelRef}>
+        <div className="relative flex items-stretch border-t sm:border-t-0 border-primary/10 pt-2 sm:pt-0 sm:border-l flex-shrink-0 gap-0" ref={filterPanelRef}>
           <button
             type="button"
             onClick={() => setFilterOpen((open) => !open)}
-            className={`flex items-center justify-center w-12 h-full min-h-[44px] text-primary transition-colors ${
+            className={`flex items-center justify-center w-12 h-12 sm:min-h-[44px] text-primary transition-colors touch-manipulation ${
               filterOpen || filters.billede || filters.anmeldelser || filters.bookbar
                 ? "bg-primary/10 text-primary"
                 : "text-primary/50 hover:bg-primary/5 hover:text-primary/70"
@@ -333,15 +334,11 @@ export function SearchBar({
               </div>
             </>
           )}
-        </div>
-      )}
-
-      {/* Liste / Liste+kort / Kort – Airbnb-inspireret */}
-      <div className="flex rounded-r-xl overflow-hidden border-l border-primary/10 flex-shrink-0">
+        <div className="flex items-stretch rounded-lg sm:rounded-r-xl overflow-hidden border border-primary/10 sm:border-0 flex-shrink-0 ml-auto">
         <button
           type="button"
           onClick={handleViewList}
-          className={`flex items-center gap-2 px-3 py-3 text-sm font-medium transition-colors ${
+          className={`flex items-center justify-center gap-1.5 sm:gap-2 flex-1 sm:flex-initial px-4 py-3 sm:px-3 min-h-[48px] sm:min-h-0 text-sm font-medium transition-colors touch-manipulation ${
             view === "list"
               ? "bg-primary/15 text-primary"
               : "bg-white text-primary/70 hover:bg-primary/5"
@@ -349,13 +346,13 @@ export function SearchBar({
           aria-pressed={view === "list"}
           aria-label="Kun liste"
         >
-          <List className="w-4 h-4" />
+          <List className="w-4 h-4 shrink-0" />
           <span className="hidden md:inline">Liste</span>
         </button>
         <button
           type="button"
           onClick={handleViewSplit}
-          className={`flex items-center gap-2 px-3 py-3 text-sm font-medium transition-colors ${
+          className={`flex items-center justify-center gap-1.5 sm:gap-2 flex-1 sm:flex-initial px-4 py-3 sm:px-3 min-h-[48px] sm:min-h-0 text-sm font-medium transition-colors touch-manipulation ${
             view === "split"
               ? "bg-primary/15 text-primary"
               : "bg-white text-primary/70 hover:bg-primary/5"
@@ -363,13 +360,13 @@ export function SearchBar({
           aria-pressed={view === "split"}
           aria-label="Liste og kort"
         >
-          <LayoutGrid className="w-4 h-4" />
+          <LayoutGrid className="w-4 h-4 shrink-0" />
           <span className="hidden md:inline">Liste + kort</span>
         </button>
         <button
           type="button"
           onClick={handleViewMap}
-          className={`flex items-center gap-2 px-3 py-3 text-sm font-medium transition-colors ${
+          className={`flex items-center justify-center gap-1.5 sm:gap-2 flex-1 sm:flex-initial px-4 py-3 sm:px-3 min-h-[48px] sm:min-h-0 text-sm font-medium transition-colors touch-manipulation ${
             view === "map"
               ? "bg-primary/15 text-primary"
               : "bg-white text-primary/70 hover:bg-primary/5"
@@ -377,10 +374,12 @@ export function SearchBar({
           aria-pressed={view === "map"}
           aria-label="Kun kort"
         >
-          <MapPin className="w-4 h-4" />
+          <MapPin className="w-4 h-4 shrink-0" />
           <span className="hidden md:inline">Kort</span>
         </button>
       </div>
+        </div>
+      )}
     </form>
   );
 }

@@ -129,6 +129,8 @@ export function SoegContent({
         minLon: String(bounds.west),
         maxLon: String(bounds.east),
       };
+      if (initialRegion != null && initialRegion !== "") params.region = initialRegion;
+      if (initialQuery != null && initialQuery !== "") params.q = initialQuery;
       if (initialFilters?.billede) params.billede = "1";
       if (initialFilters?.anmeldelser) params.anmeldelser = "1";
       if (initialFilters?.bookbar) params.bookbar = "1";
@@ -148,7 +150,7 @@ export function SoegContent({
         setLoading(false);
       }
     },
-    [initialFilters]
+    [initialRegion, initialQuery, initialFilters]
   );
 
   return (
@@ -168,7 +170,7 @@ export function SoegContent({
         </p>
       ) : view === "split" ? (
         <div className="grid grid-cols-1 lg:grid-cols-[1fr,minmax(380px,45%)] gap-0 min-h-[70vh] -mx-4 sm:-mx-6 lg:-mx-8">
-          <div className="overflow-y-auto lg:max-h-[calc(100vh-12rem)] lg:pr-4">
+          <div className="overflow-y-auto lg:max-h-[calc(100vh-12rem)] lg:pr-4 order-2 lg:order-1">
             <p className="text-primary/70 text-sm mb-4 sticky top-0 bg-background/95 py-2 z-10">
               {shelters.length} shelter{shelters.length !== 1 ? "s" : ""} i Danmark
               {(hasMore || listDisplayCount < shelters.length) && " · scroll for flere"}
@@ -184,8 +186,13 @@ export function SoegContent({
               )}
             </div>
           </div>
-          <div className="hidden lg:block sticky top-24 self-start rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[420px] h-[calc(100vh-8rem)] max-h-[720px]">
-            <ShelterMap shelters={shelters} className="w-full h-full" onBoundsChange={fetchByBounds} />
+          <div className="lg:sticky lg:top-24 lg:self-start rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[280px] sm:min-h-[360px] lg:min-h-[420px] h-[50vh] sm:h-[60vh] lg:h-[calc(100vh-8rem)] lg:max-h-[720px] order-1 lg:order-2 mb-6 lg:mb-0">
+            <ShelterMap
+              shelters={shelters}
+              className="w-full h-full"
+              onBoundsChange={fetchByBounds}
+              initialRegion={initialRegion}
+            />
           </div>
         </div>
       ) : view === "map" ? (
@@ -194,8 +201,13 @@ export function SoegContent({
             Viser {shelters.length} shelter{shelters.length !== 1 ? "s" : ""} på kortet
             {loading && " · opdaterer…"}
           </p>
-          <div className="rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[800px] h-[85vh] max-h-[1400px]">
-            <ShelterMap shelters={shelters} className="w-full h-full" onBoundsChange={fetchByBounds} />
+          <div className="rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[400px] sm:min-h-[500px] md:min-h-[700px] h-[70vh] sm:h-[80vh] md:h-[85vh] max-h-[1400px]">
+            <ShelterMap
+              shelters={shelters}
+              className="w-full h-full"
+              onBoundsChange={fetchByBounds}
+              initialRegion={initialRegion}
+            />
           </div>
         </>
       ) : (

@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import { DM_Sans, Playfair_Display } from "next/font/google";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -18,6 +19,12 @@ const playfair = Playfair_Display({
 
 export const dynamic = "force-dynamic";
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://shelterdk.dk"),
   title: {
@@ -36,7 +43,9 @@ export default function RootLayout({
   return (
     <html lang="da" className={`${dmSans.variable} ${playfair.variable}`}>
       <body className="min-h-screen flex flex-col font-sans antialiased bg-background">
-        <Navbar />
+        <Suspense fallback={<header className="h-16 border-b border-primary/10" />}>
+          <Navbar />
+        </Suspense>
         <main className="flex-1">{children}</main>
         <Footer />
       </body>

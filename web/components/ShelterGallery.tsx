@@ -63,7 +63,7 @@ export function ShelterGallery({
   return (
     <>
       {/* Hero: billede eller "Ingen billede"-placeholder */}
-      <div className="relative w-full min-h-[280px] aspect-[4/3] rounded-xl overflow-hidden bg-primary mb-6 isolate">
+        <div className="relative w-full min-h-[200px] sm:min-h-[280px] aspect-[4/3] rounded-xl overflow-hidden bg-primary mb-6 isolate">
         {showMainImage ? (
           <button
             type="button"

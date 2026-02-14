@@ -50,36 +50,39 @@ export function Navbar() {
             })}
           </div>
           <button
-            className="md:hidden text-primary"
+            className="md:hidden flex items-center justify-center w-12 h-12 -mr-2 text-primary touch-manipulation"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle menu"
+            aria-label={mobileMenuOpen ? "Luk menu" : "Åbn menu"}
+            aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
 
         {mobileMenuOpen && (
-          <div className="md:hidden pb-4 space-y-2">
-            {navLinks.map(({ label, href }) => {
-              const isActive =
-                href === "/"
-                  ? pathname === "/"
-                  : pathname === href || pathname.startsWith(href + "/");
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`block px-2 py-2 text-sm font-medium rounded-md transition-colors ${
-                    isActive
-                      ? "text-accent bg-accent/10"
-                      : "text-primary/80 hover:text-accent hover:bg-primary/5"
-                  }`}
-                >
-                  {label}
-                </Link>
-              );
-            })}
+          <div className="md:hidden pb-4 pt-2 -mx-4 px-4 border-t border-primary/10 mt-2">
+            <div className="flex flex-col gap-1">
+              {navLinks.map(({ label, href }) => {
+                const isActive =
+                  href === "/"
+                    ? pathname === "/"
+                    : pathname === href || pathname.startsWith(href + "/");
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`block py-3 px-4 text-base font-medium rounded-lg transition-colors touch-manipulation -mx-2 ${
+                      isActive
+                        ? "text-accent bg-accent/10"
+                        : "text-primary/80 hover:text-accent hover:bg-primary/5 active:bg-primary/10"
+                    }`}
+                  >
+                    {label}
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>

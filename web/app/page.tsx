@@ -141,14 +141,14 @@ export default async function HomePage() {
 
   return (
     <>
-      <section className="relative bg-gradient-to-br from-primary via-primary/95 to-primary/90 text-white min-h-[420px] flex flex-col justify-end">
+      <section className="relative bg-gradient-to-br from-primary via-primary/95 to-primary/90 text-white min-h-[320px] sm:min-h-[380px] md:min-h-[420px] flex flex-col justify-end">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1920&q=80&auto=format&fit=crop')] bg-cover bg-center opacity-25" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 md:py-24 w-full">
           <div className="max-w-3xl mb-10">
-            <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
+            <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
               Find dit næste shelter i Danmark
             </h1>
-            <p className="text-lg md:text-xl text-white/90 mb-8">
+            <p className="text-base sm:text-lg md:text-xl text-white/90 mb-8">
               Udforsk Danmarks shelters – ét samlet kort over naturovernatning fra
               Geofa, Naturstyrelsen, Book en Shelter og flere.
             </p>
@@ -180,7 +180,7 @@ export default async function HomePage() {
           <h2 className="font-serif text-3xl font-bold text-primary mb-4 text-center">
             Kort over Danmarks shelters
           </h2>
-          <div className="rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[560px] h-[75vh] max-h-[960px]">
+          <div className="rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[320px] sm:min-h-[400px] md:min-h-[560px] h-[60vh] sm:h-[70vh] md:h-[75vh] max-h-[960px]">
             <ShelterMap shelters={mapShelters} className="w-full h-full" />
           </div>
           <p className="text-center mt-4">

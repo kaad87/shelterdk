@@ -42,12 +42,12 @@ export function Footer() {
             <h3 className="font-semibold text-white text-sm uppercase tracking-wider mb-4">
               Sider
             </h3>
-            <ul className="space-y-3">
+            <ul className="space-y-2">
               {footerLinks.map(({ label, href }) => (
                 <li key={href}>
                   <Link
                     href={href}
-                    className="text-white/75 hover:text-accent hover:underline text-sm transition-colors"
+                    className="inline-block py-2 -my-2 text-white/75 hover:text-accent hover:underline text-sm transition-colors touch-manipulation"
                   >
                     {label}
                   </Link>
@@ -61,14 +61,14 @@ export function Footer() {
             <h3 className="font-semibold text-white text-sm uppercase tracking-wider mb-4">
               Eksterne ressourcer
             </h3>
-            <ul className="space-y-3">
+            <ul className="space-y-2">
               {externalLinks.map(({ label, href, desc }) => (
                 <li key={href}>
                   <a
                     href={href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-white/75 hover:text-accent text-sm transition-colors group"
+                    className="inline-flex items-center gap-1.5 py-2 -my-2 text-white/75 hover:text-accent text-sm transition-colors group touch-manipulation"
                   >
                     {label}
                     <ExternalLink size={12} className="opacity-60 group-hover:opacity-100" aria-hidden />

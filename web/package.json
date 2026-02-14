@@ -7,6 +7,7 @@
     "dev:3002": "next dev -p 3002 -H 127.0.0.1",
     "build": "next build",
     "start": "next start",
+    "start:3008": "next start -p 3008",
     "lint": "next lint"
   },
   "dependencies": {

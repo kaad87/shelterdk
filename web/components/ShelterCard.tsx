@@ -11,6 +11,8 @@ interface ShelterCardProps {
   shelter: Shelter;
   /** Kaldes når billedet ikke kan indlæses – bruges på forsiden for at skjule kort med defekte billeder. */
   onImageError?: () => void;
+  /** Overstyring af link-URL (fx silo: /danmark/region/kommune/slug). */
+  href?: string;
 }
 
 const PLACEHOLDER_IMAGE =
@@ -67,7 +69,7 @@ function FrontPageCardImage({
   );
 }
 
-export function ShelterCard({ shelter, onImageError }: ShelterCardProps) {
+export function ShelterCard({ shelter, onImageError, href }: ShelterCardProps) {
   const [imageFailed, setImageFailed] = useState(false);
   const imageUrl = isValidImageUrl(shelter.image_url) && !imageFailed
     ? (shelter.image_url ?? "").trim()
@@ -82,10 +84,12 @@ export function ShelterCard({ shelter, onImageError }: ShelterCardProps) {
     getCity(shelter) ||
     (shelter.region && shelter.region !== "Danmark" ? shelter.region : null);
 
+  const linkHref = href ?? `/shelter/${shelter.slug}`;
+
   return (
     <Link
-      href={`/shelter/${shelter.slug}`}
-      className="group block overflow-hidden rounded-xl bg-white shadow-sm transition-transform duration-300 hover:scale-[1.02] md:hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
+      href={linkHref}
+      className="group block overflow-hidden rounded-xl bg-white shadow-sm transition-transform duration-300 hover:scale-[1.02] md:hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 active:scale-[0.98] touch-manipulation"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-primary/10">
         {onImageError ? (
