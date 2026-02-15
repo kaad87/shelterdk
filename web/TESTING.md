@@ -18,6 +18,8 @@ npm run test:watch  # Kør tests i watch-mode (genkører ved ændringer)
 - `lib/soeg-filters.ts` – `filterSheltersByRegion` (regionfiltrering på Jylland/Sjælland-sider)
 - `lib/slug.ts` – `slugifySegment`, `segmentSlugToName`
 - `lib/relative-time-da.ts` – `formatRelativeTimeDa`
+- `components/CookieBanner.tsx` – samtykkevalg, gem i localStorage, vis GTM kun ved accept
+- `app/api/collect/route.ts` – returner 204 ved accept, send page_view til GA4 ved necessary
 
 ## Pre-commit hook
 

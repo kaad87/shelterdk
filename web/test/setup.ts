@@ -1,3 +1,5 @@
+import "@testing-library/jest-dom/vitest";
+
 /** Vitest setup – mock browser APIs som jsdom ikke har. */
 class MockIntersectionObserver implements IntersectionObserver {
   readonly root: Element | null = null;
