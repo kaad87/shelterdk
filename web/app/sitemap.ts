@@ -12,8 +12,32 @@ const BATCH_SIZE = 1000;
 
 type SitemapEntry = MetadataRoute.Sitemap[number];
 
-/** Hent alle shelters (region, kommune, slug) med paginering – understøtter 2000+. */
-async function getAllSheltersForSitemap(): Promise<
+const STATIC_PAGES: Array<{
+  path: string;
+  changeFrequency: "daily" | "weekly" | "monthly";
+  priority: number;
+}> = [
+  { path: "", changeFrequency: "daily", priority: 1 },
+  { path: "/soeg", changeFrequency: "weekly", priority: 0.9 },
+  { path: "/shelter-med-toilet", changeFrequency: "weekly", priority: 0.85 },
+  { path: "/shelter-med-vand", changeFrequency: "weekly", priority: 0.85 },
+  { path: "/faq", changeFrequency: "monthly", priority: 0.8 },
+  { path: "/privacy", changeFrequency: "monthly", priority: 0.5 },
+  { path: "/blog", changeFrequency: "weekly", priority: 0.7 },
+  { path: "/om-os", changeFrequency: "monthly", priority: 0.7 },
+  { path: "/kontakt", changeFrequency: "monthly", priority: 0.7 },
+];
+
+function entry(
+  url: string,
+  changeFrequency: "daily" | "weekly" | "monthly",
+  priority: number
+): SitemapEntry {
+  return { url, lastModified: new Date(), changeFrequency, priority };
+}
+
+/** Shelters med region (Jylland, Fyn, Sjælland) – bruger /danmark/[region]/[kommune]/[slug]. */
+async function getSheltersWithRegion(): Promise<
   { region: string; kommune: string | null; slug: string }[]
 > {
   const supabase = createPublicClient();
@@ -27,12 +51,13 @@ async function getAllSheltersForSitemap(): Promise<
       .is("duplicate_of_shelter_id", null)
       .not("region", "is", null)
       .neq("region", "")
+      .neq("region", "Danmark")
       .not("slug", "is", null)
       .order("id")
       .range(offset, offset + BATCH_SIZE - 1);
 
     if (error) {
-      console.error("Supabase error (sitemap shelters):", error);
+      console.error("Supabase error (sitemap shelters with region):", error);
       break;
     }
 
@@ -53,98 +78,89 @@ async function getAllSheltersForSitemap(): Promise<
   return out;
 }
 
+/** Shelters uden region eller med region "Danmark" – bruger /shelter/[slug]. */
+async function getSheltersWithoutRegion(): Promise<string[]> {
+  const supabase = createPublicClient();
+  const out: string[] = [];
+  let offset = 0;
+
+  while (true) {
+    const { data, error } = await supabase
+      .from("shelters")
+      .select("region, slug")
+      .is("duplicate_of_shelter_id", null)
+      .or("region.is.null,region.eq.,region.eq.Danmark")
+      .not("slug", "is", null)
+      .order("id")
+      .range(offset, offset + BATCH_SIZE - 1);
+
+    if (error) {
+      console.error("Supabase error (sitemap shelters without region):", error);
+      break;
+    }
+
+    const rows = (data as { region: string | null; slug: string }[]) ?? [];
+    for (const row of rows) {
+      const slug = (row.slug || "").trim();
+      if (!slug) continue;
+      out.push(slug);
+    }
+
+    if (rows.length < BATCH_SIZE) break;
+    offset += BATCH_SIZE;
+  }
+
+  return out;
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries: SitemapEntry[] = [];
 
-  // Static pages
-  entries.push({
-    url: BASE_URL,
-    lastModified: new Date(),
-    changeFrequency: "daily" as const,
-    priority: 1,
-  });
-  entries.push({
-    url: `${BASE_URL}/om-os`,
-    lastModified: new Date(),
-    changeFrequency: "monthly" as const,
-    priority: 0.7,
-  });
-  entries.push({
-    url: `${BASE_URL}/kontakt`,
-    lastModified: new Date(),
-    changeFrequency: "monthly" as const,
-    priority: 0.7,
-  });
-  entries.push({
-    url: `${BASE_URL}/soeg`,
-    lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.9,
-  });
-  entries.push({
-    url: `${BASE_URL}/faq`,
-    lastModified: new Date(),
-    changeFrequency: "monthly" as const,
-    priority: 0.8,
-  });
-  entries.push({
-    url: `${BASE_URL}/blog`,
-    lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.7,
-  });
-  entries.push({
-    url: `${BASE_URL}/shelter-med-toilet`,
-    lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.85,
-  });
-  entries.push({
-    url: `${BASE_URL}/shelter-med-vand`,
-    lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.85,
-  });
+  // Statiske sider
+  for (const { path, changeFrequency, priority } of STATIC_PAGES) {
+    entries.push(entry(`${BASE_URL}${path || "/"}`, changeFrequency, priority));
+  }
 
-  // Region pages: /danmark/[region]
+  // Regioner: /danmark/[region]
   const regions = await getDistinctRegions();
   for (const region of regions) {
     const regionSlug = slugifySegment(region);
     if (!regionSlug) continue;
-    entries.push({
-      url: `${BASE_URL}/danmark/${regionSlug}`,
-      lastModified: new Date(),
-      changeFrequency: "weekly" as const,
-      priority: 0.8,
-    });
+    entries.push(
+      entry(`${BASE_URL}/danmark/${regionSlug}`, "weekly", 0.8)
+    );
   }
 
-  // Municipality pages: /danmark/[region]/[municipality]
+  // Kommuner: /danmark/[region]/[municipality]
   const pairs = await getRegionKommunePairs();
   for (const { region, kommune } of pairs) {
     const regionSlug = slugifySegment(region);
     const municipalitySlug = kommune ? slugifySegment(kommune) : NO_KOMMUNE_SLUG;
     if (!regionSlug || !municipalitySlug) continue;
-    entries.push({
-      url: `${BASE_URL}/danmark/${regionSlug}/${municipalitySlug}`,
-      lastModified: new Date(),
-      changeFrequency: "weekly" as const,
-      priority: 0.75,
-    });
+    entries.push(
+      entry(`${BASE_URL}/danmark/${regionSlug}/${municipalitySlug}`, "weekly", 0.75)
+    );
   }
 
-  // Shelter pages: /danmark/[region]/[municipality]/[slug]
-  const shelters = await getAllSheltersForSitemap();
-  for (const { region, kommune, slug } of shelters) {
+  // Shelters i regioner: /danmark/[region]/[municipality]/[slug]
+  const sheltersWithRegion = await getSheltersWithRegion();
+  for (const { region, kommune, slug } of sheltersWithRegion) {
     const regionSlug = slugifySegment(region);
     const municipalitySlug = kommune ? slugifySegment(kommune) : NO_KOMMUNE_SLUG;
     if (!regionSlug || !municipalitySlug || !slug) continue;
-    entries.push({
-      url: `${BASE_URL}/danmark/${regionSlug}/${municipalitySlug}/${slug}`,
-      lastModified: new Date(),
-      changeFrequency: "weekly" as const,
-      priority: 0.6,
-    });
+    entries.push(
+      entry(
+        `${BASE_URL}/danmark/${regionSlug}/${municipalitySlug}/${slug}`,
+        "weekly",
+        0.6
+      )
+    );
+  }
+
+  // Shelters uden region: /shelter/[slug]
+  const slugsWithoutRegion = await getSheltersWithoutRegion();
+  for (const slug of slugsWithoutRegion) {
+    entries.push(entry(`${BASE_URL}/shelter/${slug}`, "weekly", 0.6));
   }
 
   return entries;
