@@ -41,8 +41,10 @@ Før deploy: **Site settings** → **Environment variables** → **Add a variabl
 |-----------------------------|--------------------------------|----------------------|
 | `NEXT_PUBLIC_SUPABASE_URL`  | Din Supabase-projekt-URL       | Fx `https://xxx.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Din Supabase anon key     | Fra Supabase Dashboard → Settings → API |
+| `GA4_MEASUREMENT_ID`        | (valgfri) G-XXXXXXXXXX         | Til server-side page_view for "Kun nødvendige" |
+| `GA4_API_SECRET`            | (valgfri) API secret           | GA4 → Data streams → Measurement Protocol API secrets |
 
-Gem ændringerne.
+Gem ændringerne. Uden GA4-variablerne virker cookiebanneren stadig; du får bare ikke server-side statistik for dem, der vælger kun nødvendige.
 
 ---
 
@@ -110,3 +112,9 @@ I Netlify UI (Build settings):
 ### API-routes returnerer 404
 - Next.js-pluginnet håndterer `/api/*` – tjek at `@netlify/plugin-nextjs` bruges
 - Kør en ny deploy efter plugin-ændringer
+
+### Chrome: net::ERR_SOCKET_CONNECT_ERROR (Safari virker)
+- **Prøv uden www:** Åbn `https://shelterdk.dk` (ikke www) i Chrome. Virker det, er fejlen begrænset til `www.shelterdk.dk`.
+- **Netlify Domain management:** Tjek at både `shelterdk.dk` og `www.shelterdk.dk` er tilføjet og at DNS er verificeret. Med Netlify DNS skal både apex og www pege på Netlify.
+- **IPv6:** Chrome prøver nogle gange IPv6 først; hvis netværket har dårlig IPv6, kan forbindelsen fejle. Prøv fra et andet netværk eller på en anden enhed.
+- **Redirect:** I `web/netlify.toml` er der en 301-redirect fra `https://www.shelterdk.dk` til `https://shelterdk.dk`, så kanonisk URL er uden www. Brug `https://shelterdk.dk` i links og bogmærker.

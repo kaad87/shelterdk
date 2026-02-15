@@ -8,5 +8,12 @@
 [build.environment]
   NODE_VERSION = "20"
 
+# www → apex så én kanonisk URL (Chrome har nogle gange socket-problem på www)
+[[redirects]]
+  from = "https://www.shelterdk.dk/*"
+  to = "https://shelterdk.dk/:splat"
+  status = 301
+  force = true
+
 [[plugins]]
   package = "@netlify/plugin-nextjs"
