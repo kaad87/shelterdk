@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { MapPin, Star, X } from "lucide-react";
 import { ShelterPhotoUpload } from "@/components/ShelterPhotoUpload";
+import { ShelterPlaceholder } from "@/components/ShelterPlaceholder";
 
 interface ShelterGalleryProps {
   /** Alle billeder, inkl. hero-billedet som første element. Tom array = vis "Ingen billede"-placeholder. */
@@ -78,7 +79,6 @@ export function ShelterGallery({
               className="object-cover"
               sizes="(max-width: 1024px) 100vw, 896px"
               priority
-              unoptimized
               onError={() => setMainImageFailed(true)}
             />
           </button>
@@ -91,25 +91,8 @@ export function ShelterGallery({
             />
           </div>
         ) : (
-          <div
-            className="absolute inset-0 z-0 flex flex-col items-center justify-center gap-3 text-white/80"
-            aria-hidden
-          >
-            <svg
-              className="w-16 h-16 text-white/60"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-            <span className="text-sm font-medium">Ingen billede</span>
+          <div className="absolute inset-0 z-0">
+            <ShelterPlaceholder className="h-full w-full" size="default" />
           </div>
         )}
 
@@ -158,17 +141,9 @@ export function ShelterGallery({
                 fill
                 className="object-cover transition-transform hover:scale-105"
                 sizes="(max-width: 640px) 50vw, 25vw"
-                unoptimized
               />
             </button>
           ))}
-          {galleryUrls.length > 4 && (
-            <div className="col-span-2 sm:col-span-4 flex items-center justify-center rounded-xl bg-primary/10 py-4">
-              <span className="text-primary/80 text-sm font-medium">
-                + {galleryUrls.length - 4} billeder i GeoFA
-              </span>
-            </div>
-          )}
         </div>
       )}
 

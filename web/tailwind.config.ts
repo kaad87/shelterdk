@@ -15,8 +15,8 @@ const config: Config = {
         "muted-foreground": "#6B7280",
       },
       fontFamily: {
-        serif: ["var(--font-playfair)", "serif"],
-        sans: ["var(--font-dm-sans)", "sans-serif"],
+        serif: ["Playfair Display", "Georgia", "serif"],
+        sans: ["DM Sans", "system-ui", "sans-serif"],
       },
     },
   },

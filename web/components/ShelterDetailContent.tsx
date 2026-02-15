@@ -15,8 +15,10 @@ import {
 import { ShelterGallery } from "@/components/ShelterGallery";
 import { ShelterLocationMap } from "@/components/ShelterLocationMap";
 import { ShelterFaq } from "@/components/ShelterFaq";
+import { ShelterFacts } from "@/components/ShelterFacts";
 import type { Shelter } from "@/types/shelter";
 import type { FaqItem } from "@/lib/faq";
+import { formatRelativeTimeDa } from "@/lib/relative-time-da";
 
 export interface BreadcrumbLink {
   label: string;
@@ -28,6 +30,8 @@ interface ShelterDetailContentProps {
   slug: string;
   breadcrumbs: BreadcrumbLink[];
   city: string | null;
+  /** Bålplads – når data findes. */
+  firewood?: boolean | null;
   showReviews: boolean;
   allPhotoUrls: string[];
   displayDescription: string | null;
@@ -48,6 +52,7 @@ interface ShelterDetailContentProps {
     rating: number | null;
     text: string | null;
     relative_time_description: string | null;
+    time: string | null;
   }[];
   coords: { lat: number; lon: number } | null;
 }
@@ -58,6 +63,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
     slug,
     breadcrumbs,
     city,
+    firewood = null,
     showReviews,
     allPhotoUrls,
     displayDescription,
@@ -190,7 +196,8 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                   {reviews.map((r, i) => (
                     <li
                       key={i}
-                      className="rounded-xl border border-primary/10 bg-white/50 p-5"
+                      className="rounded-xl border border-primary/10 bg-white/50 p-5 notranslate"
+                      translate="no"
                     >
                       <div className="flex items-center gap-2 mb-2">
                         {r.rating != null && (
@@ -204,9 +211,9 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                             {r.author_name}
                           </span>
                         )}
-                        {r.relative_time_description && (
+                        {(r.time || r.relative_time_description) && (
                           <span className="text-primary/60 text-sm">
-                            · {r.relative_time_description}
+                            · {r.time ? formatRelativeTimeDa(new Date(r.time)) : r.relative_time_description}
                           </span>
                         )}
                       </div>
@@ -282,7 +289,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                 </p>
               ) : (
                 <p className="text-primary/80 text-center py-2">
-                  Bookning er ikke tilgængelig for dette shelter.
+                  Booking er ikke tilgængelig for dette shelter.
                 </p>
               )}
               {showReviews && shelter.google_rating != null && (
@@ -328,6 +335,13 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                 </ul>
               </div>
             )}
+
+            <div className="rounded-2xl border border-primary/10 bg-white shadow-sm p-6">
+              <h2 className="font-serif text-lg font-bold text-primary mb-3">
+                Fakta
+              </h2>
+              <ShelterFacts shelter={shelter} coords={coords} firewood={firewood} />
+            </div>
           </aside>
         </div>
       </div>

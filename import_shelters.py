@@ -76,19 +76,117 @@ GEOFA_SQL_URL = "https://geofa.geodanmark.dk/api/v2/sql/fkg?format=geojson"
 
 def detect_toilet_status(description, facilities):
     """
-    Scanner tekst for toilet-keywords.
+    Scanner tekst for toilet-keywords (beskrivelse + GeoFA/Naturstyrelsen-felter).
     Returnerer: 'flush', 'mulch', 'none', eller 'unknown'
     """
     full_text = (str(description) + " " + str(facilities)).lower()
 
-    if "træk og slip" in full_text or "wc" in full_text or "vandskyllende" in full_text:
+    # Vandskyllende / moderne toilet
+    if (
+        "træk og slip" in full_text
+        or "vandskyllende" in full_text
+        or "wc" in full_text
+        or "offentligt toilet" in full_text
+        or "handicapvenligt toilet" in full_text
+        or "toilet med adgang for kørestolsbrugere" in full_text
+        or ("toiletter og" in full_text and "drikkevand" in full_text)
+        or ("toiletter" in full_text and "drikkevand" in full_text and "ikke" not in full_text[:full_text.find("toiletter") + 20])
+    ):
         return "flush"
-    elif "muldtoilet" in full_text or "tørkloset" in full_text or "das" in full_text or "primitivt toilet" in full_text:
-        return "mulch"
-    elif "ingen toilet" in full_text or "medbring spade" in full_text:
+
+    # Ingen toilet
+    if (
+        "ingen toilet" in full_text
+        or "ikke toilet" in full_text
+        or "ikke ledningsvand eller toilet" in full_text
+        or "ikke vand eller toilet" in full_text
+        or "medbring spade" in full_text
+        or "der er ikke toilet" in full_text
+    ):
         return "none"
-    else:
-        return "unknown"
+
+    # Muldtoilet / tørkloset / primitivt (prioritet efter mulch-typiske udtryk)
+    mulch_patterns = [
+        "muldtoilet",
+        "multtoilet",  # typo – hyppig i Naturstyrelsen
+        "tørkloset",
+        "tørklosetter",
+        "skovtoilet",
+        "primitivt toilet",
+        "primitivt lokum",
+        "mulch-toilet",
+    ]
+    for p in mulch_patterns:
+        if p in full_text:
+            return "mulch"
+
+    # "vand og toilet" / "toilet og vand" – ofte flush når det er ved center/plads
+    if "vand og toilet" in full_text or "toilet og vand" in full_text or "toilet samt vand" in full_text:
+        if "uden vand" in full_text or "uden vandskyl" in full_text:
+            return "mulch"
+        return "flush"
+
+    # Generelt toilet nævnt – ofte mulch på shelterpladser
+    if (
+        "der er toilet" in full_text
+        or "der er et toilet" in full_text
+        or "et toilet på" in full_text
+        or "toilet på pladsen" in full_text
+        or "adgang til toilet" in full_text
+        or "mulighed for vand og toilet" in full_text
+        or "toiletter og drikkevand" in full_text
+        or ("toilet" in full_text and "i nærheden" in full_text)
+    ):
+        # "vand og toilet" / ved center = ofte flush
+        if "vand og toilet" in full_text or "toiletter og drikkevand" in full_text:
+            return "flush"
+        return "mulch"
+
+    return "unknown"
+
+
+def detect_water_status(description, facilities):
+    """
+    Afgør om der er vand på pladsen (vandhane/drikkevand).
+    Bruger GeoFA-feltet vandhane (ja/nej) og evt. beskrivelsestekst.
+    Returnerer: True, False eller None (ukendt).
+    """
+    full_text = (str(description) + " " + str(facilities)).lower()
+    # GeoFA: eksplicit vandhane
+    if isinstance(facilities, dict):
+        vh = (facilities.get("vandhane") or "").strip().lower()
+        if "ja" in vh:
+            return True
+        if "nej" in vh:
+            return False
+    # Beskrivelse: ingen vand
+    if (
+        "uden vand" in full_text
+        or "ingen vand" in full_text
+        or "ikke vand" in full_text
+        or "ikke adgang til vand" in full_text
+        or "medbring vand" in full_text
+        or "medbring eget vand" in full_text
+    ):
+        return False
+    # Beskrivelse: vand til stede
+    if (
+        "drikkevand" in full_text
+        or "vandhane" in full_text
+        or "vand på pladsen" in full_text
+        or "adgang til vand" in full_text
+        or "vand tilgængeligt" in full_text
+        or "vand ved" in full_text
+        or "toiletter og drikkevand" in full_text
+        or "vand og toilet" in full_text
+        or "toilet og vand" in full_text
+    ):
+        # Undtag når det tydeligt siger "uden"
+        if "uden vand" in full_text or "ingen vand" in full_text:
+            return False
+        return True
+    return None
+
 
 def _get_prop(props, *keys):
     """Hent første forekomst af en af keys (GeoFA bruger bl.a. danske feltnavne)."""
@@ -227,6 +325,7 @@ def import_shelters():
             "facilitetbeskrivelse",
         ) or ""
         toilet_status = detect_toilet_status(description, props)
+        water_status = detect_water_status(description, props)
 
         # Billeder: saml alle ikke-tomme foto/geofafoto-URL'er fra GeoFA.
         # Spring over Cookiebot-tracking/placeholder (1.gif) – det er ikke rigtige billeder.
@@ -317,6 +416,7 @@ def import_shelters():
             "region": "Danmark",
             "kommune": kommune,
             "toilet": toilet_status,
+            "water": water_status,
             "access": "public",
             "mode": "first_come",
             "source_id": str(_get_prop(props, "objekt_id", "id", "objectid", "fkg_id") or feature.get("id", "geofa")),

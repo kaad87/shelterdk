@@ -2,6 +2,8 @@ import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import {
   getShelterBySlugInSilo,
+  getShelterBySlugIncludingDuplicates,
+  getCanonicalShelterForRedirect,
   getReviews,
   getRegionKommunePairs,
   getMunicipalitiesInRegion,
@@ -29,12 +31,16 @@ import {
 } from "@/lib/shelter-detail";
 import { getShelterFaqItems, faqToJsonLd } from "@/lib/faq";
 import { ShelterDetailContent } from "@/components/ShelterDetailContent";
+import { ShelterSchema } from "@/components/seo/ShelterSchema";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
+import { NearbyShelters } from "@/components/NearbyShelters";
 
 interface PageProps {
   params: Promise<{ region: string; municipality: string; shelter_slug: string }>;
 }
 
-export const dynamicParams = false;
+// true = tillad on-demand rendering af shelters der ikke var med ved sidste build
+export const dynamicParams = true;
 
 export async function generateStaticParams() {
   const shelters = await getSheltersForStaticParams();
@@ -46,7 +52,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { shelter_slug } = await params;
+  const { region: regionSlug, municipality: municipalitySlug, shelter_slug } = await params;
   const { shelter } = await getShelterBySlugInSilo(shelter_slug);
   if (!shelter) return { title: "Shelter ikke fundet" };
 
@@ -56,10 +62,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     longDesc?.slice(0, 160) ||
     fallbackDesc ||
     `Shelter: ${shelter.title}. Overnatning i naturen i Danmark.`;
+  const canonicalPath = `/danmark/${regionSlug}/${municipalitySlug}/${shelter_slug}`;
 
   return {
     title: `${shelter.title} | ShelterDK`,
     description,
+    alternates: { canonical: `https://shelterdk.dk${canonicalPath}` },
     openGraph: {
       title: `${shelter.title} | ShelterDK`,
       description,
@@ -71,8 +79,26 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function DanmarkShelterPage({ params }: PageProps) {
   const { region: regionSlug, municipality: municipalitySlug, shelter_slug } = await params;
 
-  const { shelter, region: shelterRegion, kommune: shelterKommune } = await getShelterBySlugInSilo(shelter_slug);
-  if (!shelter) notFound();
+  let result = await getShelterBySlugInSilo(shelter_slug);
+  if (!result.shelter) {
+    // Fallback: slug kan matche en duplicate – redirect til kanonisk shelter
+    const fallback = await getShelterBySlugIncludingDuplicates(shelter_slug);
+    if (!fallback.shelter) notFound();
+    const dupId = (fallback.shelter as { duplicate_of_shelter_id?: string | null }).duplicate_of_shelter_id;
+    if (dupId) {
+      const canonical = await getCanonicalShelterForRedirect(dupId);
+      if (canonical) {
+        const regionSlug = slugifySegment(canonical.region);
+        const municipalitySlug = canonical.kommune ? slugifySegment(canonical.kommune) : NO_KOMMUNE_SLUG;
+        redirect(`/danmark/${regionSlug}/${municipalitySlug}/${canonical.slug}`);
+      }
+      // Duplicate uden funden kanonisk – undgå loop
+      notFound();
+    }
+    // Ikke-duplicate: vis på /shelter (har evt. ikke region)
+    redirect(`/shelter/${shelter_slug}`);
+  }
+  const { shelter, region: shelterRegion, kommune: shelterKommune } = result;
 
   const pairs = await getRegionKommunePairs();
   const regions = [...new Set(pairs.map((p) => p.region))];
@@ -126,8 +152,19 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
       ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(shelter.title)}&query_place_id=${encodeURIComponent(shelter.google_place_id)}`
       : null;
   const rawBookingUrl = shelter.booking_url?.trim() || null;
-  const bookingUrl =
+  let bookingUrl =
     rawBookingUrl && /^https?:\/\//i.test(rawBookingUrl) ? rawBookingUrl : null;
+  // Fallback: Naturstyrelsen-shelters uden booking_url – prøv book.naturstyrelsen.dk/sted/{slug}
+  if (!bookingUrl && isBookable(shelter)) {
+    const o = (owner || "").toLowerCase();
+    const c = (contact || "").toLowerCase();
+    if (o.includes("naturstyrelsen") || c.includes("nst.dk")) {
+      const derived = shelter_slug.replace(/-[0-9]+$/, "");
+      if (derived) {
+        bookingUrl = `https://book.naturstyrelsen.dk/sted/${derived}/`;
+      }
+    }
+  }
   const toilet = getToilet(shelter);
   const petsAllowed = getPetsAllowed(shelter);
   const shelterFaqItems = getShelterFaqItems(shelter.title, {
@@ -150,10 +187,18 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
     { label: shelter.title },
   ];
 
+  const breadcrumbSchemaItems: { label: string; href?: string }[] = breadcrumbs.map((b) =>
+    b.href ? { label: b.label, href: b.href } : { label: b.label }
+  );
+  const canonicalPath = `/danmark/${regionSlug}/${municipalitySlug}/${shelter_slug}`;
+
   return (
-    <ShelterDetailContent
-      shelter={shelter}
-      slug={shelter_slug}
+    <>
+      <ShelterSchema shelter={shelter} canonicalPath={canonicalPath} />
+      <BreadcrumbSchema items={breadcrumbSchemaItems} />
+      <ShelterDetailContent
+        shelter={shelter}
+        slug={shelter_slug}
       breadcrumbs={breadcrumbs}
       city={city}
       showReviews={showReviews}
@@ -173,6 +218,15 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
       shelterFaqJsonLd={shelterFaqJsonLd}
       reviews={reviews}
       coords={coords}
-    />
+      />
+      {coords && (
+        <NearbyShelters
+          lat={coords.lat}
+          lng={coords.lon}
+          excludeId={shelter.id}
+          limit={5}
+        />
+      )}
+    </>
   );
 }

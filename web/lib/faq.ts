@@ -33,7 +33,7 @@ export const GLOBAL_FAQS: FaqItem[] = [
   {
     question: "Er der toilet på shelterpladser i Danmark?",
     answer:
-      "Det varierer. Nogle pladser har vandskyllende toilet, andre muldtoilet eller tørklosetter, og nogle har slet ikke toilet – så skal man medbringe spade eller bruge nærliggende offentlige toiletter. På hver shelterside angives toilettype når data findes.",
+      "Det varierer. Nogle pladser har vandskyllende toilet, andre muldtoilet eller tørklosetter, og nogle har slet ikke toilet – så skal man medbringe spade eller bruge nærliggende offentlige toiletter. Se vores liste over shelters med toilet for at finde pladser med denne facilitet. På hver shelterside angives toilettype når data findes.",
   },
   {
     question: "Må man have hund med til shelter?",

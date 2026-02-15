@@ -1,4 +1,16 @@
 /** @type {import('next').NextConfig} */
+// Supabase storage-host fra miljø (brugeruploadede billeder)
+const supabaseHost =
+  typeof process.env.NEXT_PUBLIC_SUPABASE_URL === "string"
+    ? (() => {
+        try {
+          return new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname;
+        } catch {
+          return null;
+        }
+      })()
+    : null;
+
 const nextConfig = {
   images: {
     remotePatterns: [
@@ -34,6 +46,35 @@ const nextConfig = {
         protocol: "https",
         hostname: "mapcentia-www.s3-eu-west-1.amazonaws.com",
       },
+      {
+        protocol: "https",
+        hostname: "geofa.geodanmark.dk",
+      },
+      {
+        protocol: "https",
+        hostname: "udinaturen.dk",
+      },
+      {
+        protocol: "https",
+        hostname: "kortservice2.vejle.dk",
+      },
+      {
+        protocol: "http",
+        hostname: "apps.aalborgkommune.dk",
+      },
+      {
+        protocol: "https",
+        hostname: "apps.aalborgkommune.dk",
+      },
+      {
+        protocol: "http",
+        hostname: "webkort.esbjergkommune.dk",
+      },
+      {
+        protocol: "https",
+        hostname: "webkort.esbjergkommune.dk",
+      },
+      ...(supabaseHost ? [{ protocol: "https", hostname: supabaseHost }] : []),
     ],
   },
 };

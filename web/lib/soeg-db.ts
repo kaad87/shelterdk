@@ -12,9 +12,9 @@ function sortByImageAndScore(a: Shelter, b: Shelter): number {
 }
 
 const SHELTER_SELECT =
-  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, geofa_raw, display_score";
+  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, water, geofa_raw, display_score";
 const SHELTER_SELECT_FALLBACK =
-  "id, title, slug, description, location, image_url, google_rating, google_user_ratings_total, google_place_name, booking_url, duplicate_of_shelter_id, region, geofa_raw";
+  "id, title, slug, description, location, image_url, google_rating, google_user_ratings_total, google_place_name, booking_url, duplicate_of_shelter_id, region, water, geofa_raw";
 
 export const SOEG_PAGE_SIZE = 24;
 
@@ -119,7 +119,7 @@ export async function getSheltersPage(
       const term = q.trim().replace(/"/g, '""');
       const pattern = `"%${term}%"`;
       fallbackQuery = fallbackQuery.or(
-        `title.ilike.${pattern},region.ilike.${pattern}`
+        `title.ilike.${pattern},region.ilike.${pattern},kommune.ilike.${pattern}`
       );
     }
     if (filters?.billede) {

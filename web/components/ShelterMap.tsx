@@ -4,8 +4,19 @@ import dynamic from "next/dynamic";
 import { useMemo } from "react";
 import type { Shelter } from "@/types/shelter";
 import { getLocationCoords } from "@/lib/shelter-detail";
+import { slugifySegment } from "@/lib/slug";
 
-// Leaflet CSS – kun på client
+const NO_KOMMUNE_SLUG = "ukendt-kommune";
+
+function getShelterHref(shelter: Shelter): string {
+  const r = (shelter.region || "").trim();
+  if (!r || r === "Danmark") return `/shelter/${shelter.slug}`;
+  const regionSlug = slugifySegment(r);
+  const m = shelter.kommune ? slugifySegment(shelter.kommune) : NO_KOMMUNE_SLUG;
+  return `/danmark/${regionSlug}/${m}/${shelter.slug}`;
+}
+
+// Leaflet CSS – indlæses med kort-chunk
 import "leaflet/dist/leaflet.css";
 
 const DEFAULT_CENTER: [number, number] = [56.2639, 9.5018]; // Danmark
@@ -17,6 +28,19 @@ const REGION_CENTER_ZOOM: Record<string, { center: [number, number]; zoom: numbe
   Fyn: { center: [55.3, 10.4], zoom: 9 },
   Sjælland: { center: [55.7, 12.0], zoom: 8 },
 };
+
+/** Bounding boxes for regioner – bruges til at filtrere pins efter koordinater (da region-felt kan være forkert i DB). */
+const REGION_BOUNDS: Record<string, { minLat: number; maxLat: number; minLon: number; maxLon: number }> = {
+  Jylland: { minLat: 54.5, maxLat: 57.8, minLon: 8.0, maxLon: 10.2 },
+  Fyn: { minLat: 55.0, maxLat: 55.7, minLon: 9.9, maxLon: 10.8 },
+  Sjælland: { minLat: 54.5, maxLat: 56.2, minLon: 10.7, maxLon: 13.0 },
+};
+
+function isInRegionBounds(lat: number, lon: number, region: string): boolean {
+  const b = REGION_BOUNDS[region];
+  if (!b) return true;
+  return lat >= b.minLat && lat <= b.maxLat && lon >= b.minLon && lon <= b.maxLon;
+}
 
 export interface ShelterWithCoords extends Shelter {
   _coords: { lat: number; lon: number };
@@ -47,7 +71,6 @@ const MapInner = dynamic(
     );
     const L = await import("leaflet");
     const { useEffect, useRef } = await import("react");
-    const Link = (await import("next/link")).default;
     const { isValidImageUrl } = await import("@/lib/shelter-detail");
 
     // Fix default marker-ikon (Next/Leaflet)
@@ -124,11 +147,13 @@ const MapInner = dynamic(
       onBoundsChange,
       initialCenter,
       initialZoom,
+      getHref,
     }: {
       sheltersWithCoords: ShelterWithCoords[];
       onBoundsChange?: (bounds: MapBounds) => void;
       initialCenter?: [number, number];
       initialZoom?: number;
+      getHref: (s: Shelter) => string;
     }) {
       const points = useMemo(
         () => sheltersWithCoords.map((s) => s._coords),
@@ -156,8 +181,8 @@ const MapInner = dynamic(
               icon={icon}
             >
               <Popup closeButton={false}>
-                <Link
-                  href={`/shelter/${shelter.slug}`}
+                <a
+                  href={getHref(shelter)}
                   className="block p-1 min-w-[180px] text-primary no-underline hover:opacity-90"
                 >
                   {isValidImageUrl(shelter.image_url) && (
@@ -182,7 +207,7 @@ const MapInner = dynamic(
                   <span className="text-sm text-accent font-medium mt-2 inline-block">
                     Se shelter →
                   </span>
-                </Link>
+                </a>
               </Popup>
             </Marker>
           ))}
@@ -211,7 +236,14 @@ export function ShelterMap({
   const regionView = initialRegion ? REGION_CENTER_ZOOM[initialRegion] : undefined;
   const initialCenter = regionView?.center;
   const initialZoom = regionView?.zoom;
-  const withCoords = getSheltersWithCoords(shelters);
+  const toDisplay = initialRegion?.trim()
+    ? shelters.filter((s) => (s.region || "").trim() === initialRegion.trim())
+    : shelters;
+  let withCoords = getSheltersWithCoords(toDisplay);
+  if (initialRegion?.trim() && REGION_BOUNDS[initialRegion.trim()]) {
+    const r = initialRegion.trim();
+    withCoords = withCoords.filter((s) => isInRegionBounds(s._coords.lat, s._coords.lon, r));
+  }
 
   if (withCoords.length === 0) {
     return (
@@ -233,6 +265,7 @@ export function ShelterMap({
         onBoundsChange={onBoundsChange}
         initialCenter={initialCenter}
         initialZoom={initialZoom}
+        getHref={getShelterHref}
       />
     </div>
   );

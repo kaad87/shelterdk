@@ -284,6 +284,7 @@ export function SearchBar({
           </ul>
         )}
       </div>
+      </div>
 
       {/* Filter + view toggles (search mode) - samlet række på mobile */}
       {mode === "search" && (

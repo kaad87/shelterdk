@@ -112,12 +112,13 @@ def place_details(api_key: str, place_id: str):
     """Hent Place Details. Returnerer dict med place_id, name, lat, lng, rating, user_ratings_total, photos, raw_json."""
     url = "https://maps.googleapis.com/maps/api/place/details/json"
     fields = "place_id,name,geometry,rating,user_ratings_total,reviews,photos,url,website"
-    # reviews_no_translations=true sikrer at vi får anmeldelser i deres
-    # originale sprog (fx dansk), ikke automatisk oversat til engelsk.
+    # language=da + reviews_no_translations=true: anmeldelser i originalsprog (fx dansk),
+    # ikke oversat til engelsk. Uden disse returnerer API ofte engelske oversættelser.
     params = {
         "place_id": place_id,
         "fields": fields,
         "key": api_key,
+        "language": "da",
         "reviews_no_translations": "true",
     }
     time.sleep(REQUEST_DELAY_S)
@@ -187,10 +188,21 @@ def main():
     supabase = create_client(url, key)
 
     # Shelters med koordinater; evt. udelad dem der allerede har match
+    # Paginer (Supabase default = max 1000 rækker)
     select_cols = "id,title,location,google_place_id"
-    r = supabase.table("shelters").select(select_cols).execute()
+    BATCH = 1000
+    all_rows = []
+    offset = 0
+    while True:
+        r = supabase.table("shelters").select(select_cols).range(offset, offset + BATCH - 1).execute()
+        rows = r.data or []
+        all_rows.extend(rows)
+        if len(rows) < BATCH:
+            break
+        offset += BATCH
+
     shelters = []
-    for row in r.data or []:
+    for row in all_rows:
         lon, lat = parse_point(row.get("location"))
         if lon is None or lat is None:
             continue

@@ -3,6 +3,8 @@ import { MapPin, Tent, ExternalLink } from "lucide-react";
 
 const footerLinks = [
   { label: "Søg shelters", href: "/soeg" },
+  { label: "Shelter med toilet", href: "/shelter-med-toilet" },
+  { label: "Shelter med vand", href: "/shelter-med-vand" },
   { label: "FAQ", href: "/faq" },
   { label: "Om os", href: "/om-os" },
   { label: "Blog", href: "/blog" },

@@ -9,6 +9,7 @@ create table if not exists public.shelters (
   location text,
   region text default 'Danmark',
   toilet text check (toilet in ('flush', 'mulch', 'none', 'unknown')),
+  water boolean,
   access text default 'public',
   mode text default 'first_come',
   source_id text,

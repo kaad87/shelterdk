@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { getSheltersPage, SOEG_PAGE_SIZE, type SoegFilters, type MapBbox } from "@/lib/soeg-db";
+import { filterSheltersByRegion } from "@/lib/soeg-filters";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +33,7 @@ export async function GET(request: NextRequest) {
       ? { minLat, maxLat, minLon, maxLon }
       : undefined;
 
-  const { shelters, hasMore } = await getSheltersPage(
+  let { shelters, hasMore } = await getSheltersPage(
     region,
     q,
     page,
@@ -40,6 +41,8 @@ export async function GET(request: NextRequest) {
     Object.keys(filters).length ? filters : undefined,
     bbox
   );
+
+  if (region) shelters = filterSheltersByRegion(shelters, region);
 
   return Response.json({ shelters, hasMore });
 }

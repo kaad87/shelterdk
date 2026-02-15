@@ -6,6 +6,7 @@ import { ShelterCard } from "@/components/ShelterCard";
 import { ShelterMap, type MapBounds } from "@/components/ShelterMap";
 import type { Shelter } from "@/types/shelter";
 import type { SoegFilters } from "@/lib/soeg-db";
+import { filterSheltersByRegion } from "@/lib/soeg-filters";
 
 type ViewMode = "list" | "map" | "split";
 
@@ -26,7 +27,9 @@ export function SoegContent({
   initialFilters = {},
   view: initialView,
 }: SoegContentProps) {
-  const [shelters, setShelters] = useState<Shelter[]>(initialShelters);
+  const [shelters, setShelters] = useState<Shelter[]>(() =>
+    filterSheltersByRegion(initialShelters, initialRegion)
+  );
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [nextPage, setNextPage] = useState(
     initialShelters.length >= 1000 ? Math.floor(1000 / 24) + 1 : 2
@@ -62,12 +65,15 @@ export function SoegContent({
       const res = await fetch(`/api/soeg?${new URLSearchParams(params)}`);
       if (!res.ok) return;
       const data = await res.json();
-      const more: Shelter[] = data.shelters ?? [];
+      let more: Shelter[] = filterSheltersByRegion(data.shelters ?? [], initialRegion);
       const moreHasMore = Boolean(data.hasMore);
       setShelters((prev) => {
         const ids = new Set(prev.map((s) => s.id));
         const newOnes = more.filter((s) => !ids.has(s.id));
-        return newOnes.length ? [...prev, ...newOnes] : prev;
+        const merged = newOnes.length ? [...prev, ...newOnes] : prev;
+        return initialRegion?.trim()
+          ? filterSheltersByRegion(merged, initialRegion)
+          : merged;
       });
       setHasMore(moreHasMore);
       setNextPage((p) => p + 1);
@@ -139,11 +145,11 @@ export function SoegContent({
         const res = await fetch(`/api/soeg?${new URLSearchParams(params)}`);
         if (!res.ok) return;
         const data = await res.json();
-        const list: Shelter[] = data.shelters ?? [];
+        let list: Shelter[] = filterSheltersByRegion(data.shelters ?? [], initialRegion);
         setShelters((prev) => {
           const byId = new Map(prev.map((s) => [s.id, s]));
           for (const s of list) byId.set(s.id, s);
-          const merged = [...byId.values()];
+          const merged = filterSheltersByRegion([...byId.values()], initialRegion);
           return merged.length > 5000 ? merged.slice(0, 5000) : merged;
         });
       } finally {
@@ -172,7 +178,8 @@ export function SoegContent({
         <div className="grid grid-cols-1 lg:grid-cols-[1fr,minmax(380px,45%)] gap-0 min-h-[70vh] -mx-4 sm:-mx-6 lg:-mx-8">
           <div className="overflow-y-auto lg:max-h-[calc(100vh-12rem)] lg:pr-4 order-2 lg:order-1">
             <p className="text-primary/70 text-sm mb-4 sticky top-0 bg-background/95 py-2 z-10">
-              {shelters.length} shelter{shelters.length !== 1 ? "s" : ""} i Danmark
+              {shelters.length} shelter{shelters.length !== 1 ? "s" : ""}{" "}
+              {initialRegion?.trim() ? `i ${initialRegion.trim()}` : "i Danmark"}
               {(hasMore || listDisplayCount < shelters.length) && " · scroll for flere"}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6">

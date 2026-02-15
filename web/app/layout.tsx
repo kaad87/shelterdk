@@ -1,23 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
-import { DM_Sans, Playfair_Display } from "next/font/google";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import "./globals.css";
-
-const dmSans = DM_Sans({
-  subsets: ["latin"],
-  variable: "--font-dm-sans",
-  display: "swap",
-});
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
-  display: "swap",
-});
-
-export const dynamic = "force-dynamic";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -33,6 +18,7 @@ export const metadata: Metadata = {
   },
   description:
     "Find og udforsk shelters i hele Danmark. Se billeder, anmeldelser og praktisk info for overnatning i naturen.",
+  other: { google: "notranslate" },
 };
 
 export default function RootLayout({
@@ -41,7 +27,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="da" className={`${dmSans.variable} ${playfair.variable}`}>
+    <html lang="da">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body className="min-h-screen flex flex-col font-sans antialiased bg-background">
         <Suspense fallback={<header className="h-16 border-b border-primary/10" />}>
           <Navbar />

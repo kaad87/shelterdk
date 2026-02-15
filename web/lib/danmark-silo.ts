@@ -12,10 +12,10 @@ import type { Shelter } from "@/types/shelter";
 import { getLocationCoords, getDisplayScore, hasAnyImage } from "@/lib/shelter-detail";
 
 const SHELTER_SELECT =
-  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, geofa_raw, display_score";
+  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, water, geofa_raw, display_score";
 
 const SHELTER_SELECT_DETAIL =
-  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, region, kommune, place, toilet, geofa_raw";
+  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, region, kommune, place, toilet, water, geofa_raw";
 
 function sortByImageAndScore(a: Shelter, b: Shelter): number {
   const aHas = hasAnyImage(a) ? 1 : 0;
@@ -252,13 +252,13 @@ export async function getSheltersInMunicipality(
 
 /** Reviews for a Google Place (for shelter detail page). */
 export async function getReviews(googlePlaceId: string | null): Promise<
-  { author_name: string | null; rating: number | null; text: string | null; relative_time_description: string | null }[]
+  { author_name: string | null; rating: number | null; text: string | null; relative_time_description: string | null; time: string | null }[]
 > {
   if (!googlePlaceId) return [];
   const supabase = createPublicClient();
   const { data } = await supabase
     .from("google_place_reviews")
-    .select("author_name, rating, text, relative_time_description")
+    .select("author_name, rating, text, relative_time_description, time")
     .eq("google_place_id", googlePlaceId)
     .order("time", { ascending: false })
     .limit(5);
@@ -267,6 +267,7 @@ export async function getReviews(googlePlaceId: string | null): Promise<
     rating: number | null;
     text: string | null;
     relative_time_description: string | null;
+    time: string | null;
   }[];
 }
 
@@ -293,6 +294,51 @@ export async function getShelterBySlugInSilo(slug: string): Promise<{
     region: (row.region ?? "").trim() || null,
     kommune: row.kommune && String(row.kommune).trim() ? String(row.kommune).trim() : null,
   };
+}
+
+/** Get shelter by slug inkl. duplicates. Til brug ved fallback – hvis slug matcher en duplicate, returnerer vi den. */
+export async function getShelterBySlugIncludingDuplicates(slug: string): Promise<{
+  shelter: Shelter | null;
+  region: string | null;
+  kommune: string | null;
+}> {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("shelters")
+    .select(`${SHELTER_SELECT_DETAIL}, duplicate_of_shelter_id`)
+    .eq("slug", slug)
+    .single();
+
+  if (error || !data) {
+    return { shelter: null, region: null, kommune: null };
+  }
+  const row = data as Shelter & { region?: string; kommune?: string | null };
+  return {
+    shelter: row as Shelter,
+    region: (row.region ?? "").trim() || null,
+    kommune: row.kommune && String(row.kommune).trim() ? String(row.kommune).trim() : null,
+  };
+}
+
+/** Hent kanonisk shelter (fra duplicate_of_shelter_id) med region/kommune/slug til silo-URL. */
+export async function getCanonicalShelterForRedirect(
+  duplicateOfId: string
+): Promise<{ region: string; kommune: string | null; slug: string } | null> {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("shelters")
+    .select("region, kommune, slug")
+    .eq("id", duplicateOfId)
+    .is("duplicate_of_shelter_id", null)
+    .single();
+
+  if (error || !data) return null;
+  const row = data as { region: string | null; kommune: string | null; slug: string };
+  const region = (row.region ?? "").trim();
+  const slug = (row.slug ?? "").trim();
+  if (!region || !slug) return null;
+  const kommune = row.kommune && String(row.kommune).trim() ? String(row.kommune).trim() : null;
+  return { region, kommune, slug };
 }
 
 export { slugifySegment };

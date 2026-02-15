@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
-import { unstable_noStore } from "next/cache";
+import { WebSiteSchema } from "@/components/seo/WebSiteSchema";
 import { FrontPageShelterGrid } from "@/components/FrontPageShelterGrid";
 import { SearchBar } from "@/components/SearchBar";
 import { ShelterMap } from "@/components/ShelterMap";
@@ -11,7 +11,7 @@ import type { Shelter } from "@/types/shelter";
 import { isShelterPlace } from "@/lib/shelter-detail";
 import { getSheltersPage } from "@/lib/soeg-db";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600; // ISR: revalider forsiden hver time
 
 const FRONT_PAGE_MAP_SIZE = 1000;
 const FRONT_PAGE_SHELTER_LIMIT = 8;
@@ -45,7 +45,6 @@ function isAllowedImageUrl(url: string | null | undefined): boolean {
 }
 
 async function getPrimaryShelters(limit: number): Promise<Shelter[]> {
-  unstable_noStore();
   try {
     const supabase = createPublicClient();
     const base = (select: string) =>
@@ -133,14 +132,22 @@ const regions = [
 ];
 
 export default async function HomePage() {
-  unstable_noStore();
-  const [shelters, { shelters: mapShelters }] = await Promise.all([
-    getPrimaryShelters(FRONT_PAGE_FETCH_BUFFER),
-    getSheltersPage(null, null, 1, FRONT_PAGE_MAP_SIZE),
-  ]);
+  let shelters: Shelter[] = [];
+  let mapShelters: Shelter[] = [];
+  try {
+    const [s, m] = await Promise.all([
+      getPrimaryShelters(FRONT_PAGE_FETCH_BUFFER),
+      getSheltersPage(null, null, 1, FRONT_PAGE_MAP_SIZE),
+    ]);
+    shelters = s;
+    mapShelters = m.shelters ?? [];
+  } catch (err) {
+    console.error("Forside: kunne ikke hente shelters:", err);
+  }
 
   return (
     <>
+      <WebSiteSchema />
       <section className="relative bg-gradient-to-br from-primary via-primary/95 to-primary/90 text-white min-h-[320px] sm:min-h-[380px] md:min-h-[420px] flex flex-col justify-end">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1920&q=80&auto=format&fit=crop')] bg-cover bg-center opacity-25" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 md:py-24 w-full">

@@ -23,15 +23,18 @@ import {
 import { slugifySegment } from "@/lib/slug";
 import { NO_KOMMUNE_SLUG } from "@/lib/danmark-silo";
 import { ShelterDetailContent } from "@/components/ShelterDetailContent";
+import { ShelterSchema } from "@/components/seo/ShelterSchema";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
+import { NearbyShelters } from "@/components/NearbyShelters";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
 const SHELTER_SELECT_DETAIL =
-  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, region, kommune, place, toilet, geofa_raw";
+  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, region, kommune, place, toilet, water, geofa_raw";
 const SHELTER_SELECT_DETAIL_FALLBACK =
-  "id, title, slug, description, location, image_url, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, region, geofa_raw";
+  "id, title, slug, description, location, image_url, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, region, water, geofa_raw";
 
 async function getShelterBySlug(slug: string): Promise<Shelter | null> {
   const supabase = createPublicClient();
@@ -57,7 +60,7 @@ async function getReviews(googlePlaceId: string | null) {
   const supabase = createPublicClient();
   const { data } = await supabase
     .from("google_place_reviews")
-    .select("author_name, rating, text, relative_time_description")
+    .select("author_name, rating, text, relative_time_description, time")
     .eq("google_place_id", googlePlaceId)
     .order("time", { ascending: false })
     .limit(5);
@@ -66,6 +69,7 @@ async function getReviews(googlePlaceId: string | null) {
     rating: number | null;
     text: string | null;
     relative_time_description: string | null;
+    time: string | null;
   }[];
 }
 
@@ -86,6 +90,7 @@ export async function generateMetadata({
   return {
     title: `${shelter.title} | ShelterDK`,
     description,
+    alternates: { canonical: `https://shelterdk.dk/shelter/${slug}` },
     openGraph: {
       title: `${shelter.title} | ShelterDK`,
       description,
@@ -138,8 +143,19 @@ export default async function ShelterPage({ params }: PageProps) {
       ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(shelter.title)}&query_place_id=${encodeURIComponent(shelter.google_place_id)}`
       : null;
   const rawBookingUrl = shelter.booking_url?.trim() || null;
-  const bookingUrl =
+  let bookingUrl =
     rawBookingUrl && /^https?:\/\//i.test(rawBookingUrl) ? rawBookingUrl : null;
+  // Fallback: Naturstyrelsen-shelters uden booking_url – prøv book.naturstyrelsen.dk/sted/{slug}
+  if (!bookingUrl && isBookable(shelter)) {
+    const o = (owner || "").toLowerCase();
+    const c = (contact || "").toLowerCase();
+    if (o.includes("naturstyrelsen") || c.includes("nst.dk")) {
+      const derived = slug.replace(/-[0-9]+$/, "");
+      if (derived) {
+        bookingUrl = `https://book.naturstyrelsen.dk/sted/${derived}/`;
+      }
+    }
+  }
   const toilet = getToilet(shelter);
   const petsAllowed = getPetsAllowed(shelter);
   const shelterFaqItems = getShelterFaqItems(shelter.title, {
@@ -158,8 +174,14 @@ export default async function ShelterPage({ params }: PageProps) {
     { label: shelter.title },
   ].filter((b): b is { label: string; href?: string } => typeof b.label === "string");
 
+  const breadcrumbSchemaItems: { label: string; href?: string }[] = breadcrumbs.map((b) =>
+    b.href ? { label: b.label, href: b.href } : { label: b.label }
+  );
   return (
-    <ShelterDetailContent
+    <>
+      <ShelterSchema shelter={shelter} canonicalPath={`/shelter/${slug}`} />
+      <BreadcrumbSchema items={breadcrumbSchemaItems} />
+      <ShelterDetailContent
       shelter={shelter}
       slug={slug}
       breadcrumbs={breadcrumbs}
@@ -181,6 +203,15 @@ export default async function ShelterPage({ params }: PageProps) {
       shelterFaqJsonLd={shelterFaqJsonLd}
       reviews={reviews}
       coords={coords}
-    />
+      />
+      {coords && (
+        <NearbyShelters
+          lat={coords.lat}
+          lng={coords.lon}
+          excludeId={shelter.id}
+          limit={5}
+        />
+      )}
+    </>
   );
 }

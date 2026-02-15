@@ -6,6 +6,7 @@ import Link from "next/link";
 import { MapPin, Star } from "lucide-react";
 import type { Shelter } from "@/types/shelter";
 import { getCity, isShelterPlace, isValidImageUrl } from "@/lib/shelter-detail";
+import { ShelterPlaceholder } from "@/components/ShelterPlaceholder";
 
 interface ShelterCardProps {
   shelter: Shelter;
@@ -14,9 +15,6 @@ interface ShelterCardProps {
   /** Overstyring af link-URL (fx silo: /danmark/region/kommune/slug). */
   href?: string;
 }
-
-const PLACEHOLDER_IMAGE =
-  "https://placehold.co/600x400/f9fafb/2c3e50?text=Shelter";
 
 const IMAGE_LOAD_TIMEOUT_MS = 2500;
 
@@ -71,9 +69,8 @@ function FrontPageCardImage({
 
 export function ShelterCard({ shelter, onImageError, href }: ShelterCardProps) {
   const [imageFailed, setImageFailed] = useState(false);
-  const imageUrl = isValidImageUrl(shelter.image_url) && !imageFailed
-    ? (shelter.image_url ?? "").trim()
-    : PLACEHOLDER_IMAGE;
+  const hasValidImage = isValidImageUrl(shelter.image_url) && !imageFailed;
+  const imageUrl = hasValidImage ? (shelter.image_url ?? "").trim() : null;
   const loadedRef = useRef(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const showRating =
@@ -92,9 +89,14 @@ export function ShelterCard({ shelter, onImageError, href }: ShelterCardProps) {
       className="group block overflow-hidden rounded-xl bg-white shadow-sm transition-transform duration-300 hover:scale-[1.02] md:hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 active:scale-[0.98] touch-manipulation"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-primary/10">
-        {onImageError ? (
+        {!hasValidImage ? (
+          <ShelterPlaceholder
+            className="absolute inset-0"
+            size="compact"
+          />
+        ) : onImageError ? (
           <FrontPageCardImage
-            src={imageUrl}
+            src={imageUrl!}
             alt={shelter.title}
             onError={onImageError}
             timeoutRef={timeoutRef}
@@ -102,12 +104,11 @@ export function ShelterCard({ shelter, onImageError, href }: ShelterCardProps) {
           />
         ) : (
           <Image
-            src={imageUrl}
+            src={imageUrl!}
             alt={shelter.title}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover transition-transform duration-300 group-hover:scale-105"
-            unoptimized
             onError={() => setImageFailed(true)}
           />
         )}

@@ -11,6 +11,7 @@ Kræver: shelters fyldt (import_shelters.py), naturstyrelsen_raw fyldt (migratio
 import math
 import os
 import re
+from typing import Optional
 
 _script_dir = os.path.dirname(os.path.abspath(__file__))
 _env_path = os.path.join(_script_dir, ".env")
@@ -99,20 +100,35 @@ def main():
         return
 
     print(f"Matcher {len(nst_list)} Naturstyrelsen-punkter mod {len(shelters)} shelters (max {MAX_DISTANCE_M} m)...")
-    print("Sætter kun booking_url hvor shelter ikke allerede har én (Book en Shelter beholder forrang).")
+    print("Sætter booking_url fra Naturstyrelsen. Overskriver udinaturen.dk (generisk), beholder Book en Shelter.")
+
+    def should_overwrite(existing_url: Optional[str], nst_url: str) -> bool:
+        """True hvis vi skal sætte nst_url. Overskriv udinaturen.dk – book.naturstyrelsen.dk er mere præcist."""
+        if not (existing_url or "").strip():
+            return True
+        ex = (existing_url or "").lower()
+        if "udinaturen.dk" in ex and "book.naturstyrelsen.dk" in (nst_url or "").lower():
+            return True  # Naturstyrelsen-URL er mere specifik for disse shelters
+        if "book.naturstyrelsen.dk" in ex:
+            return False  # Allerede rigtigt
+        if "bookenshelter" in ex or "bookenshelter.dk" in ex:
+            return False  # Book en Shelter beholder forrang
+        return False  # Ukendt – behold eksisterende
 
     updated = 0
     for nst in nst_list:
         best_id = None
         best_dist = float("inf")
+        best_shelter = None
         for s in shelters:
             d = haversine_m(nst["lon"], nst["lat"], s["lon"], s["lat"])
             if d < best_dist and d <= MAX_DISTANCE_M:
-                if s.get("booking_url"):
-                    continue  # spring over – shelter har allerede booking_url
+                if not should_overwrite(s.get("booking_url"), nst.get("booking_url") or ""):
+                    continue  # spring over – har bedre/andet link
                 best_dist = d
                 best_id = s["id"]
-        if best_id and nst.get("booking_url"):
+                best_shelter = s
+        if best_id and nst.get("booking_url") and best_shelter:
             try:
                 supabase.table("shelters").update({"booking_url": nst["booking_url"]}).eq("id", best_id).execute()
                 updated += 1

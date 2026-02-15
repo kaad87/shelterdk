@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { unstable_noStore } from "next/cache";
 import { getSheltersPage, SOEG_PAGE_SIZE } from "@/lib/soeg-db";
 
 /** Ved kortvisning: max pr. request (Supabase typisk 1000). Resten hentes på client. */
 const MAP_VIEW_PAGE_SIZE = 1000;
 import { SoegContent } from "@/components/SoegContent";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300; // ISR: revalider søgesiden hvert 5. min
 
 export const metadata: Metadata = {
   title: "Søg shelters",
@@ -31,7 +30,6 @@ function parseFilters(params: SoegPageProps["searchParams"] extends Promise<infe
 }
 
 export default async function SoegPage({ searchParams }: SoegPageProps) {
-  unstable_noStore();
   const params = await searchParams;
   const region = params.region ?? null;
   const q = params.q ?? null;

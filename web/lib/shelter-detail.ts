@@ -42,8 +42,10 @@ export function getLongDescription(shelter: Shelter): string | null {
   return stripHtml(val);
 }
 
-/** Antal pladser (antal_pl). */
+/** Antal pladser – fra capacity-kolonne eller geofa_raw.antal_pl. */
 export function getCapacity(shelter: Shelter): number | null {
+  const cap = (shelter as { capacity?: number | null }).capacity;
+  if (cap != null && Number.isFinite(Number(cap))) return Number(cap);
   const v = RAW(shelter).antal_pl;
   if (v == null || v === "") return null;
   const n = Number(v);
@@ -146,8 +148,9 @@ export function getAccessDescription(shelter: Shelter): string | null {
   return getStr(RAW(shelter), "tilgaeng_beskriv", "tilgaeng_opl");
 }
 
-/** Vandhane. */
+/** Vand på pladsen (vandhane/drikkevand). Foretrækker DB-kolonnen water, ellers geofa_raw.vandhane. */
 export function getWater(shelter: Shelter): boolean | null {
+  if (shelter.water === true || shelter.water === false) return shelter.water;
   const v = (getStr(RAW(shelter), "vandhane") || "").toLowerCase();
   if (v.includes("ja")) return true;
   if (v.includes("nej")) return false;
