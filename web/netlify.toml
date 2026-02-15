@@ -1,0 +1,12 @@
+# Netlify deploy for ShelterDK (Next.js)
+# Når Base directory = web i Netlify UI, kører alt herfra.
+
+[build]
+  command = "npm run build"
+  # Publish udelades – @netlify/plugin-nextjs håndterer output
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

@@ -46,31 +46,15 @@ Gem ændringerne.
 
 ---
 
-## Trin 4: netlify.toml (anbefalet)
+## Trin 4: netlify.toml
 
-Opret `web/netlify.toml` i projektet, så Netlify bygger korrekt:
+`web/netlify.toml` findes allerede og konfigurerer Next.js-plugin osv.
 
-```toml
-[build]
-  base = "web"
-  command = "npm run build"
-  publish = ".next"
-
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
-```
-
-Alternativt kan du oprette filen i repo-roden:
-
-```toml
-[build]
-  base = "web"
-  command = "cd web && npm run build"
-  publish = "web/.next"
-
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
-```
+I Netlify UI (Build settings):
+- **Base directory:** `web`
+- **Package directory:** `web` (eller `web/`) – Netlify finder netlify.toml her
+- **Build command:** `npm run build` eller tom (bruger netlify.toml)
+- **Publish directory:** Prøv `.next` hvis feltet ikke kan tømmes – plugin håndterer output
 
 ---
 
