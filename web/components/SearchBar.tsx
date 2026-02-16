@@ -27,6 +27,8 @@ interface SearchBarProps {
   initialRegion?: string | null;
   /** Startværdi for søgetekst (fra URL). */
   initialQuery?: string | null;
+  /** Startværdi for område/area (fra URL, fx ?area=fyn). */
+  initialArea?: string | null;
   /** Kun ved mode="search": aktive filtre fra URL. */
   initialFilters?: SoegFilters;
   /** Kun ved mode="search": aktiv visning. */
@@ -41,6 +43,7 @@ export function SearchBar({
   mode,
   initialRegion,
   initialQuery,
+  initialArea,
   initialFilters = {},
   view = "split",
   onViewChange,
