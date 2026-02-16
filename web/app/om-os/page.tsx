@@ -3,9 +3,14 @@ import Link from "next/link";
 import { MapPin, Leaf, Compass } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Om os",
+  title: { absolute: "Om os | ShelterDK" },
   description:
     "ShelterDK samler shelters i hele Danmark – GeoFA, Naturstyrelsen, Book en Shelter og mere. Find overnatning i naturen på ét kort.",
+  openGraph: {
+    title: "Om os | ShelterDK",
+    description: "ShelterDK samler shelters i hele Danmark – GeoFA, Naturstyrelsen, Book en Shelter og mere. Find overnatning i naturen på ét kort.",
+    url: "/om-os",
+  },
 };
 
 export default function OmOsPage() {

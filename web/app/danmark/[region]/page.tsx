@@ -32,10 +32,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { region: regionSlug } = await params;
   const regions = await getDistinctRegions();
   const regionName = segmentSlugToName(regionSlug, regions);
-  if (!regionName) return { title: "Region ikke fundet" };
+  if (!regionName) return { title: { absolute: "Region ikke fundet" } };
+  const title = `Shelters i ${regionName} | ShelterDK`;
+  const description = `Find shelters og overnatningspladser i ${regionName}. Se kommuner, top shelters og book muligheder.`;
   return {
-    title: `Shelters i ${regionName} | ShelterDK`,
-    description: `Find shelters og overnatningspladser i ${regionName}. Se kommuner, top shelters og book muligheder.`,
+    title: { absolute: title },
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `/danmark/${regionSlug}`,
+    },
   };
 }
 

@@ -6,14 +6,16 @@ import { slugifySegment } from "@/lib/slug";
 import { ShelterCard } from "@/components/ShelterCard";
 import { ShelterMap } from "@/components/ShelterMap";
 
+const PAGE_TITLE = "Shelter med vand i Danmark – drikkevand og vandhane | ShelterDK";
 export const metadata: Metadata = {
-  title: "Shelter med vand i Danmark – drikkevand og vandhane",
+  title: { absolute: PAGE_TITLE },
   description:
     "Find shelters og overnatningspladser i Danmark hvor der er vand – vandhane eller drikkevand. Udforsk pladser med adgang til vand til naturovernatning.",
   openGraph: {
-    title: "Shelter med vand i Danmark | ShelterDK",
+    title: PAGE_TITLE,
     description:
       "Shelters med vand – vandhane eller drikkevand. Find overnatningspladser i naturen med adgang til vand.",
+    url: "/shelter-med-vand",
   },
 };
 

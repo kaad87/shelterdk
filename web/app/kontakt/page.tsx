@@ -2,9 +2,14 @@ import type { Metadata } from "next";
 import { Mail, MessageSquare } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Kontakt",
+  title: { absolute: "Kontakt | ShelterDK" },
   description:
     "Kontakt ShelterDK – spørgsmål, forslag eller fejlrapporter om shelters i Danmark.",
+  openGraph: {
+    title: "Kontakt | ShelterDK",
+    description: "Kontakt ShelterDK – spørgsmål, forslag eller fejlrapporter om shelters i Danmark.",
+    url: "/kontakt",
+  },
 };
 
 export default function KontaktPage() {

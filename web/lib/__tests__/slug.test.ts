@@ -17,10 +17,11 @@ describe("slugifySegment", () => {
     expect(slugifySegment("Nord Jylland")).toBe("nord-jylland");
   });
 
-  it("erstatter danske bogstaver", () => {
+  it("erstatter danske bogstaver (URL-venlige ae, oe, aa)", () => {
     expect(slugifySegment("Sjælland")).toBe("sjaelland");
-    expect(slugifySegment("København")).toBe("kobenhavn");
-    expect(slugifySegment("Århus")).toBe("arhus"); // å→a (ikke aa)
+    expect(slugifySegment("København")).toBe("koebenhavn");
+    expect(slugifySegment("Århus")).toBe("aarhus");
+    expect(slugifySegment("Nykøbing Mors")).toBe("nykoebing-mors");
   });
 
   it("fjerner andre specialtegn", () => {
@@ -38,5 +39,11 @@ describe("segmentSlugToName", () => {
 
   it("returnerer null for ukendt slug", () => {
     expect(segmentSlugToName("unknown", regions)).toBe(null);
+  });
+
+  it("accepterer ældre slug-form (ø→o, å→a) så gamle links virker", () => {
+    const withDanish = ["Nykøbing Mors", "København"];
+    expect(segmentSlugToName("nykoebing-mors", withDanish)).toBe("Nykøbing Mors");
+    expect(segmentSlugToName("nykobing-mors", withDanish)).toBe("Nykøbing Mors");
   });
 });

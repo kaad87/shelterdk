@@ -7,15 +7,17 @@ const BRAND = "ShelterDK";
 
 export const revalidate = 86400;
 
+const PAGE_TITLE = `Shelter efter område – Find naturovernatning i Danmark | ${BRAND}`;
 export const metadata: Metadata = {
-  title: `Shelter efter område – Find naturovernatning i Danmark | ${BRAND}`,
+  title: { absolute: PAGE_TITLE },
   description:
     "Udforsk shelters efter område: Fyn, Sjælland, Jylland. Se kort, billeder og book muligheder for naturovernatning.",
   openGraph: {
-    title: `Shelter efter område | ${BRAND}`,
+    title: PAGE_TITLE,
+    description: "Udforsk shelters efter område: Fyn, Sjælland, Jylland. Se kort, billeder og book muligheder for naturovernatning.",
     siteName: BRAND,
     type: "website",
-    url: "https://shelterdk.dk/omraade",
+    url: "/omraade",
   },
   alternates: { canonical: "https://shelterdk.dk/omraade" },
 };

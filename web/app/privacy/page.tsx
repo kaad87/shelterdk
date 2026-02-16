@@ -2,9 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Privatliv og cookies",
+  title: { absolute: "Privatliv og cookies | ShelterDK" },
   description:
     "Sådan bruger ShelterDK cookies og håndterer vi data. Nødvendige og valgfrie cookies, Google Tag Manager og dine valg.",
+  openGraph: {
+    title: "Privatliv og cookies | ShelterDK",
+    description: "Sådan bruger ShelterDK cookies og håndterer vi data. Nødvendige og valgfrie cookies og dine valg.",
+    url: "/privacy",
+  },
 };
 
 export default function PrivacyPage() {

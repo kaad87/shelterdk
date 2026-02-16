@@ -3,9 +3,14 @@ import Link from "next/link";
 import { Calendar } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Blog",
+  title: { absolute: "Blog | ShelterDK" },
   description:
     "Tips, guider og nyheder om shelters og naturovernatning i Danmark.",
+  openGraph: {
+    title: "Blog | ShelterDK",
+    description: "Tips, guider og nyheder om shelters og naturovernatning i Danmark.",
+    url: "/blog",
+  },
 };
 
 const posts = [

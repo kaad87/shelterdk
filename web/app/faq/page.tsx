@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 import { GLOBAL_FAQS, faqToJsonLd } from "@/lib/faq";
 
+const PAGE_TITLE = "Ofte stillede spørgsmål om shelters i Danmark | ShelterDK";
 export const metadata: Metadata = {
-  title: "Ofte stillede spørgsmål om shelters i Danmark",
+  title: { absolute: PAGE_TITLE },
   description:
     "Svar på de mest stillede spørgsmål om shelters: hvad er et shelter, hvor finder jeg dem, er de gratis, kan man booke, toilet og hund. Find shelters i hele Danmark på ShelterDK.",
   openGraph: {
-    title: "FAQ – Ofte stillede spørgsmål om shelters | ShelterDK",
+    title: PAGE_TITLE,
     description:
       "Svar på spørgsmål om shelters i Danmark – booking, toilet, hund, gratis overnatning og mere.",
+    url: "/faq",
   },
 };
 

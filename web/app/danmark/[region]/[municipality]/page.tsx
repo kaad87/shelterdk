@@ -34,16 +34,23 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const pairs = await getRegionKommunePairs(2);
   const regions = [...new Set(pairs.map((p) => p.region))];
   const regionName = segmentSlugToName(regionSlug, regions);
-  if (!regionName) return { title: "Region ikke fundet" };
+  if (!regionName) return { title: { absolute: "Region ikke fundet" } };
   const municipalities = await getMunicipalitiesInRegion(regionName, 2);
   const municipalityName =
     municipalitySlug === NO_KOMMUNE_SLUG
       ? "Ukendt kommune"
       : segmentSlugToName(municipalitySlug, municipalities);
-  if (!municipalityName) return { title: "Kommune ikke fundet" };
+  if (!municipalityName) return { title: { absolute: "Kommune ikke fundet" } };
+  const title = `Shelters i ${municipalityName}, ${regionName} | ShelterDK`;
+  const description = `Find shelters og overnatningspladser i ${municipalityName}, ${regionName}. Se pladser, booking og praktisk info.`;
   return {
-    title: `Shelters i ${municipalityName}, ${regionName} | ShelterDK`,
-    description: `Find shelters og overnatningspladser i ${municipalityName}, ${regionName}. Se pladser, booking og praktisk info.`,
+    title: { absolute: title },
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `/danmark/${regionSlug}/${municipalitySlug}`,
+    },
   };
 }
 

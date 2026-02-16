@@ -67,10 +67,17 @@ export async function generateMetadata({
 }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const post = posts[slug];
-  if (!post) return { title: "Indlæg ikke fundet" };
+  if (!post) return { title: { absolute: "Indlæg ikke fundet" } };
+  const title = `${post.title} | ShelterDK`;
+  const description = post.content.slice(0, 160).replace(/\n/g, " ");
   return {
-    title: post.title,
-    description: post.content.slice(0, 160).replace(/\n/g, " "),
+    title: { absolute: title },
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `/blog/${slug}`,
+    },
   };
 }
 

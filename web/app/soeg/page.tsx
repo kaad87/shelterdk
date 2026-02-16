@@ -11,9 +11,14 @@ import { SoegContent } from "@/components/SoegContent";
 export const revalidate = 300; // ISR: revalider søgesiden hvert 5. min
 
 const DEFAULT_METADATA: Metadata = {
-  title: "Søg shelters",
+  title: { absolute: "Søg shelters | ShelterDK" },
   description:
     "Se alle shelters i Danmark. Filtrer efter region, søg efter område og se listen eller kortvisning.",
+  openGraph: {
+    title: "Søg shelters | ShelterDK",
+    description: "Se alle shelters i Danmark. Filtrer efter region, søg efter område og se listen eller kortvisning.",
+    url: "/soeg",
+  },
 };
 
 export async function generateMetadata(props: { searchParams: Promise<{ area?: string }> }): Promise<Metadata> {
@@ -31,6 +36,7 @@ export async function generateMetadata(props: { searchParams: Promise<{ area?: s
     openGraph: {
       title: `Shelters i ${area.name} | ShelterDK`,
       description,
+      url: `/soeg?area=${encodeURIComponent(areaSlug.trim())}`,
     },
   };
 }

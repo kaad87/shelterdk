@@ -7,14 +7,16 @@ import { ShelterCard } from "@/components/ShelterCard";
 import { ShelterMap } from "@/components/ShelterMap";
 import { getToilet } from "@/lib/shelter-detail";
 
+const PAGE_TITLE = "Shelter med toilet i Danmark – vandskyllende og muldtoilet | ShelterDK";
 export const metadata: Metadata = {
-  title: "Shelter med toilet i Danmark – vandskyllende og muldtoilet",
+  title: { absolute: PAGE_TITLE },
   description:
     "Find shelters og overnatningspladser i Danmark hvor der er toilet – vandskyllende toilet eller muldtoilet. Udforsk pladser med faciliteter til naturovernatning.",
   openGraph: {
-    title: "Shelter med toilet i Danmark | ShelterDK",
+    title: PAGE_TITLE,
     description:
       "Shelters med toilet – vandskyllende eller muldtoilet. Find overnatningspladser i naturen med faciliteter.",
+    url: "/shelter-med-toilet",
   },
 };
 

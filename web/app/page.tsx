@@ -108,9 +108,14 @@ async function getPrimaryShelters(limit: number): Promise<Shelter[]> {
 }
 
 export const metadata: Metadata = {
-  title: "ShelterDK – Find dit næste shelter",
+  title: { absolute: "ShelterDK – Find dit næste shelter i Danmark" },
   description:
     "Udforsk shelters i hele Danmark. Find overnatningspladser i naturen med kort, billeder og anmeldelser.",
+  openGraph: {
+    title: "ShelterDK – Find dit næste shelter i Danmark",
+    description: "Udforsk shelters i hele Danmark. Find overnatningspladser i naturen med kort, billeder og anmeldelser.",
+    url: "https://shelterdk.dk",
+  },
 };
 
 const regions = [
