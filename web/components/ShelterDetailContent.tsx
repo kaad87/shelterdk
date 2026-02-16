@@ -48,6 +48,8 @@ interface ShelterDetailContentProps {
   mapUrl: string | null;
   googleMapsUrl: string | null;
   bookingUrl: string | null;
+  /** Når bookbar men ingen bookingUrl: 'naturstyrelsen' = link til book.naturstyrelsen.dk. */
+  bookingFallbackHint?: "naturstyrelsen" | null;
   isBookable: boolean;
   shelterFaqItems: FaqItem[];
   shelterFaqJsonLd: string | undefined;
@@ -82,6 +84,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
     mapUrl,
     googleMapsUrl,
     bookingUrl,
+    bookingFallbackHint = null,
     isBookable,
     shelterFaqItems,
     shelterFaqJsonLd,
@@ -293,16 +296,33 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                 </>
               ) : isBookable ? (
                 <p className="text-primary/80 text-center py-2">
-                  Shelteren kan ofte bookes på{" "}
-                  <a
-                    href="https://udinaturen.dk"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-accent underline hover:no-underline"
-                  >
-                    udinaturen.dk
-                  </a>
-                  .
+                  {bookingFallbackHint === "naturstyrelsen" ? (
+                    <>
+                      Søg eller book på{" "}
+                      <a
+                        href="https://book.naturstyrelsen.dk"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-accent underline hover:no-underline"
+                      >
+                        book.naturstyrelsen.dk
+                      </a>
+                      .
+                    </>
+                  ) : (
+                    <>
+                      Shelteren kan ofte bookes på{" "}
+                      <a
+                        href="https://udinaturen.dk"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-accent underline hover:no-underline"
+                      >
+                        udinaturen.dk
+                      </a>
+                      .
+                    </>
+                  )}
                 </p>
               ) : (
                 <p className="text-primary/80 text-center py-2">

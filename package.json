@@ -3,6 +3,12 @@
   "private": true,
   "scripts": {
     "backfill:municipality": "cd web && npm run backfill:municipality",
-    "backfill:municipality:alle": "cd web && npm run backfill:municipality:alle"
+    "backfill:municipality:alle": "cd web && npm run backfill:municipality:alle",
+    "check:booking-links": "node scripts/check-booking-links.js",
+    "check:booking-links:fix": "node scripts/check-booking-links.js --fix",
+    "check:booking-links:fix:dry": "node scripts/check-booking-links.js --fix --dry-run",
+    "match:booking-urls": "node scripts/match-booking-urls-from-naturstyrelsen.js",
+    "match:booking-urls:apply": "node scripts/match-booking-urls-from-naturstyrelsen.js --apply",
+    "match:booking-urls:apply:empty": "node scripts/match-booking-urls-from-naturstyrelsen.js --apply --only-empty"
   }
 }

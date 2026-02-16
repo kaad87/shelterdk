@@ -15,7 +15,13 @@
     "test:e2e": "playwright test",
     "test:coverage": "vitest run --coverage",
     "backfill:municipality": "node ../scripts/backfill-municipality-dawa.js",
-    "backfill:municipality:alle": "node ../scripts/backfill-municipality-dawa.js --alle"
+    "backfill:municipality:alle": "node ../scripts/backfill-municipality-dawa.js --alle",
+    "check:booking-links": "node ../scripts/check-booking-links.js",
+    "check:booking-links:fix": "node ../scripts/check-booking-links.js --fix",
+    "check:booking-links:fix:dry": "node ../scripts/check-booking-links.js --fix --dry-run",
+    "match:booking-urls": "node ../scripts/match-booking-urls-from-naturstyrelsen.js",
+    "match:booking-urls:apply": "node ../scripts/match-booking-urls-from-naturstyrelsen.js --apply",
+    "match:booking-urls:apply:empty": "node ../scripts/match-booking-urls-from-naturstyrelsen.js --apply --only-empty"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.0",

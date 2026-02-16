@@ -188,19 +188,14 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
       ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(shelter.title)}&query_place_id=${encodeURIComponent(shelter.google_place_id)}`
       : null;
   const rawBookingUrl = shelter.booking_url?.trim() || null;
-  let bookingUrl =
+  const bookingUrl =
     rawBookingUrl && /^https?:\/\//i.test(rawBookingUrl) ? rawBookingUrl : null;
-  // Fallback: Naturstyrelsen-shelters uden booking_url – prøv book.naturstyrelsen.dk/sted/{slug}
-  if (!bookingUrl && isBookable(shelter)) {
-    const o = (owner || "").toLowerCase();
-    const c = (contact || "").toLowerCase();
-    if (o.includes("naturstyrelsen") || c.includes("nst.dk")) {
-      const derived = shelter_slug.replace(/-[0-9]+$/, "");
-      if (derived) {
-        bookingUrl = `https://book.naturstyrelsen.dk/sted/${derived}/`;
-      }
-    }
-  }
+  const bookingFallbackHint =
+    !bookingUrl &&
+    isBookable(shelter) &&
+    ((owner || "").toLowerCase().includes("naturstyrelsen") || (contact || "").toLowerCase().includes("nst.dk"))
+      ? "naturstyrelsen"
+      : null;
   const toilet = getToilet(shelter);
   const petsAllowed = getPetsAllowed(shelter);
   const shelterFaqItems = getShelterFaqItems(shelter.title, {
@@ -258,6 +253,7 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
       mapUrl={mapUrl}
       googleMapsUrl={googleMapsUrl}
       bookingUrl={bookingUrl}
+      bookingFallbackHint={bookingFallbackHint}
       isBookable={isBookable(shelter)}
       shelterFaqItems={shelterFaqItems}
       shelterFaqJsonLd={shelterFaqJsonLd}
