@@ -18,7 +18,14 @@ import { isShelterPlace } from "@/lib/shelter-detail";
 export const revalidate = 86400; // ISR: cache og revalider forsiden hver 24. time (hurtig TTFB)
 
 const FRONT_PAGE_SHELTER_LIMIT = 4;
-const FRONT_PAGE_FETCH_BUFFER = 24;
+
+/** Udvalgte shelters på forsiden (i denne rækkefølge). */
+const FEATURED_SHELTER_SLUGS = [
+  "shelter-og-stjernekiggertarn-ved-slaggardbanke-97136",
+  "shelter-i-true-skov-10055",
+  "logismose-10073",
+  "tipi-og-shelters-i-frugtplantagen-11780",
+] as const;
 
 const SHELTER_SELECT =
   "id, title, slug, description, location, image_url, google_rating, google_user_ratings_total, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, geofa_raw, display_score";
@@ -44,6 +51,40 @@ function isAllowedImageUrl(url: string | null | undefined): boolean {
     return ALLOWED_IMAGE_HOSTS.has(host);
   } catch {
     return false;
+  }
+}
+
+/** Henter de fire udvalgte forsideshelters i fast rækkefølge. */
+async function getFeaturedShelters(): Promise<Shelter[]> {
+  try {
+    const supabase = createPublicClient();
+    const slugs = [...FEATURED_SHELTER_SLUGS];
+    const { data, error } = await supabase
+      .from("shelters")
+      .select(SHELTER_SELECT)
+      .is("duplicate_of_shelter_id", null)
+      .in("slug", slugs);
+
+    if (error) {
+      if (error.code === "42703") {
+        const { data: fallback } = await supabase
+          .from("shelters")
+          .select(SHELTER_SELECT_FALLBACK)
+          .is("duplicate_of_shelter_id", null)
+          .in("slug", slugs);
+        if (!fallback?.length) return [];
+        const bySlug = new Map((fallback as unknown as Shelter[]).map((s) => [s.slug, s]));
+        return slugs.map((slug) => bySlug.get(slug)).filter(Boolean) as Shelter[];
+      }
+      console.error("Supabase featured shelters:", error);
+      return [];
+    }
+    const list = (data as unknown as Shelter[]) ?? [];
+    const bySlug = new Map(list.map((s) => [s.slug, s]));
+    return slugs.map((slug) => bySlug.get(slug)).filter(Boolean) as Shelter[];
+  } catch (err) {
+    console.error("Error fetching featured shelters:", err);
+    return [];
   }
 }
 
@@ -180,14 +221,14 @@ const POPULAR_AREAS = [
 ];
 
 export default async function HomePage() {
-  let shelters: Shelter[] = [];
+  let featuredShelters: Shelter[] = [];
   try {
-    shelters = await getPrimaryShelters(FRONT_PAGE_FETCH_BUFFER);
+    featuredShelters = await getFeaturedShelters();
   } catch (err) {
-    console.error("Forside: kunne ikke hente shelters:", err);
+    console.error("Forside: kunne ikke hente udvalgte shelters:", err);
   }
-  // Initiale markers på kortet (samme top-shelters som grid); ved pan/zoom hentes viewport-data via API
-  const mapShelters = shelters.slice(0, 100);
+  // Forside-grid: de fire udvalgte. Kortet viser samme fire som initiale markers (ved pan/zoom hentes viewport-data via API).
+  const mapShelters = featuredShelters;
 
   return (
     <>
@@ -216,7 +257,7 @@ export default async function HomePage() {
         </div>
       </header>
 
-      {shelters.length > 0 && (
+      {featuredShelters.length > 0 && (
         <section
           className="py-16 bg-background"
           id="udforsk-shelters"
@@ -227,7 +268,7 @@ export default async function HomePage() {
               Udforsk shelters
             </h2>
             <FrontPageShelterGrid
-              shelters={shelters}
+              shelters={featuredShelters}
               maxVisible={FRONT_PAGE_SHELTER_LIMIT}
             />
           </div>

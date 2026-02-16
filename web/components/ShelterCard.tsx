@@ -141,9 +141,10 @@ export function ShelterCard({ shelter, onImageError, href, priority }: ShelterCa
             <span className="truncate">{city}</span>
           </p>
         )}
-        {shelter.booking_url && (
-          <p className="mt-2 text-sm font-medium text-accent">Bookbar</p>
-        )}
+        {/* Reserver plads så alle kort har samme højde uanset bookbar */}
+        <p className="mt-2 min-h-[1.25rem] text-sm font-medium text-accent">
+          {shelter.booking_url && "Bookbar"}
+        </p>
       </div>
     </Link>
   );
