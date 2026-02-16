@@ -18,23 +18,29 @@ import {
   stripHtml,
   isBookable,
   getToilet,
+  getWater,
   getPetsAllowed,
+  isValidImageUrl,
 } from "@/lib/shelter-detail";
 import { slugifySegment } from "@/lib/slug";
 import { NO_KOMMUNE_SLUG } from "@/lib/danmark-silo";
+import { getAreaBySlug } from "@/lib/area-db";
 import { ShelterDetailContent } from "@/components/ShelterDetailContent";
 import { ShelterSchema } from "@/components/seo/ShelterSchema";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
-import { NearbyShelters } from "@/components/NearbyShelters";
+import { NearbySheltersWithinRadius } from "@/components/NearbySheltersWithinRadius";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
+/** ISR: cache side og revalider i baggrunden hver 24. time for hurtig TTFB. */
+export const revalidate = 86400;
+
 const SHELTER_SELECT_DETAIL =
-  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, region, kommune, place, toilet, water, geofa_raw";
+  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, region, kommune, place, toilet, water, geofa_raw, area_slug";
 const SHELTER_SELECT_DETAIL_FALLBACK =
-  "id, title, slug, description, location, image_url, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, region, water, geofa_raw";
+  "id, title, slug, description, location, image_url, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, region, water, geofa_raw, area_slug";
 
 async function getShelterBySlug(slug: string): Promise<Shelter | null> {
   const supabase = createPublicClient();
@@ -73,6 +79,25 @@ async function getReviews(googlePlaceId: string | null) {
   }[];
 }
 
+/** Byg en kort SEO-beskrivelse ud fra shelterets faciliteter. */
+function buildDescriptionFromFacilities(shelter: Shelter): string {
+  const region = (shelter.region ?? "").trim() || "Danmark";
+  const parts: string[] = [];
+  const toilet = getToilet(shelter);
+  const water = getWater(shelter);
+  if (toilet === "flush") parts.push("toilet");
+  else if (toilet === "mulch") parts.push("komposttoilet");
+  if (water === true) parts.push("vand");
+  if (isBookable(shelter)) parts.push("bookbar");
+  const facilityStr =
+    parts.length > 0 ? ` Med ${parts.join(", ")}.` : "";
+  const longDesc = getLongDescription(shelter);
+  const fallbackDesc = stripHtml(shelter.description)?.slice(0, 120) || null;
+  const extra =
+    longDesc?.slice(0, 120) || fallbackDesc || "Overnatning i naturen.";
+  return `${shelter.title} – book shelter i ${region}.${facilityStr} ${extra}`.slice(0, 160);
+}
+
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
@@ -80,21 +105,31 @@ export async function generateMetadata({
   const shelter = await getShelterBySlug(slug);
   if (!shelter) return { title: "Shelter ikke fundet" };
 
-  const longDesc = getLongDescription(shelter);
-  const fallbackDesc = stripHtml(shelter.description)?.slice(0, 160) || null;
-  const description =
-    longDesc?.slice(0, 160) ||
-    fallbackDesc ||
-    `Shelter: ${shelter.title}. Overnatning i naturen i Danmark.`;
+  const region = (shelter.region ?? "").trim() || "Danmark";
+  const title = `${shelter.title} - Book shelter i ${region}`;
+  const description = buildDescriptionFromFacilities(shelter);
+
+  const photoUrls = getPhotoUrls(shelter);
+  const ogImage =
+    photoUrls.length > 0 && isValidImageUrl(photoUrls[0])
+      ? photoUrls[0]
+      : shelter.image_url && isValidImageUrl(shelter.image_url)
+        ? shelter.image_url
+        : undefined;
 
   return {
-    title: `${shelter.title} | ShelterDK`,
+    title: { absolute: title },
     description,
     alternates: { canonical: `https://shelterdk.dk/shelter/${slug}` },
     openGraph: {
-      title: `${shelter.title} | ShelterDK`,
+      title,
       description,
       siteName: "ShelterDK",
+      type: "website",
+      url: `https://shelterdk.dk/shelter/${slug}`,
+      ...(ogImage && {
+        images: [{ url: ogImage, width: 1200, height: 630, alt: shelter.title }],
+      }),
     },
   };
 }
@@ -113,8 +148,10 @@ export default async function ShelterPage({ params }: PageProps) {
     redirect(`/danmark/${regionSlug}/${municipalitySlug}/${slug}`);
   }
 
-  const [reviews] = await Promise.all([
+  const areaSlug = (shelter as { area_slug?: string | null }).area_slug?.trim() || null;
+  const [reviews, area] = await Promise.all([
     getReviews(shelter.google_place_id ?? null),
+    areaSlug ? getAreaBySlug(areaSlug) : Promise.resolve(null),
   ]);
 
   const placeName = shelter.google_place_name ?? null;
@@ -167,12 +204,19 @@ export default async function ShelterPage({ params }: PageProps) {
   const shelterFaqJsonLd =
     shelterFaqItems.length > 0 ? JSON.stringify(faqToJsonLd(shelterFaqItems)) : undefined;
 
-  const breadcrumbs = [
-    { label: "Hjem", href: "/" },
-    { label: "Søg shelters", href: "/soeg" },
-    ...(city ? [{ label: city, href: undefined }] : []),
-    { label: shelter.title },
-  ].filter((b): b is { label: string; href?: string } => typeof b.label === "string");
+  const breadcrumbs = area
+    ? [
+        { label: "Forside", href: "/" },
+        { label: "Områder", href: "/omraade" },
+        { label: area.name, href: `/omraade/${areaSlug}` },
+        { label: shelter.title },
+      ]
+    : [
+        { label: "Hjem", href: "/" },
+        { label: "Søg shelters", href: "/soeg" },
+        ...(city ? [{ label: city, href: undefined }] : []),
+        { label: shelter.title },
+      ].filter((b): b is { label: string; href?: string } => typeof b.label === "string");
 
   const breadcrumbSchemaItems: { label: string; href?: string }[] = breadcrumbs.map((b) =>
     b.href ? { label: b.label, href: b.href } : { label: b.label }
@@ -186,6 +230,8 @@ export default async function ShelterPage({ params }: PageProps) {
       slug={slug}
       breadcrumbs={breadcrumbs}
       city={city}
+      areaSlug={area ? areaSlug : undefined}
+      areaName={area?.name ?? undefined}
       showReviews={showReviews}
       allPhotoUrls={allPhotoUrls}
       displayDescription={displayDescription}
@@ -204,14 +250,11 @@ export default async function ShelterPage({ params }: PageProps) {
       reviews={reviews}
       coords={coords}
       />
-      {coords && (
-        <NearbyShelters
-          lat={coords.lat}
-          lng={coords.lon}
-          excludeId={shelter.id}
-          limit={5}
-        />
-      )}
+      <NearbySheltersWithinRadius
+        shelterId={shelter.id}
+        limit={5}
+        coords={coords}
+      />
     </>
   );
 }

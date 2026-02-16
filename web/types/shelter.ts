@@ -31,4 +31,6 @@ export interface Shelter {
   updated_at?: string;
   /** Ved liste-hent: navn på matchet Google-sted (for at vise rating kun ved klart match). */
   google_places?: { name: string | null } | null;
+  /** SEO-område (matcher areas.slug) – bruges til brødkrummer og område-landingssider. */
+  area_slug?: string | null;
 }

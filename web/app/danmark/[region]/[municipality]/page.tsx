@@ -18,6 +18,9 @@ interface PageProps {
 
 export const dynamicParams = false;
 
+/** ISR: cache og revalider hver 24. time. */
+export const revalidate = 86400;
+
 export async function generateStaticParams() {
   const pairs = await getRegionKommunePairs(2);
   return pairs.map(({ region, kommune }) => ({
@@ -94,7 +97,10 @@ export default async function DanmarkMunicipalityPage({ params }: PageProps) {
             Shelters i {displayName}
           </h1>
           <p className="text-primary/80 text-lg">
-            {shelters.length} shelter{shelters.length !== 1 ? "s" : ""} i {displayName}, {regionName}.
+            {shelters.length} shelter{shelters.length !== 1 ? "s" : ""} i {displayName}, {regionName}.{" "}
+            <Link href="/omraade" className="text-accent font-medium hover:underline">
+              Shelter efter område
+            </Link>
           </p>
         </header>
 

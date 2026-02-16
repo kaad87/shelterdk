@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import { useMemo } from "react";
 import type { Shelter } from "@/types/shelter";
 import { getLocationCoords } from "@/lib/shelter-detail";
@@ -108,7 +109,6 @@ const MapInner = dynamic(
       onBoundsChange?: (bounds: MapBounds) => void;
     }) {
       const map = useMap();
-      const initialFitDoneRef = { current: false };
       useEffect(() => {
         if (!onBoundsChange) return;
         let timeout: ReturnType<typeof setTimeout> | null = null;
@@ -116,10 +116,6 @@ const MapInner = dynamic(
           if (timeout) clearTimeout(timeout);
           timeout = setTimeout(() => {
             timeout = null;
-            if (!initialFitDoneRef.current) {
-              initialFitDoneRef.current = true;
-              return;
-            }
             const b = map.getBounds();
             if (b.isValid()) {
               onBoundsChange({
@@ -186,13 +182,13 @@ const MapInner = dynamic(
                   className="block p-1 min-w-[180px] text-primary no-underline hover:opacity-90"
                 >
                   {isValidImageUrl(shelter.image_url) && (
-                    <div className="w-full aspect-video rounded overflow-hidden bg-primary/10 mb-2">
-                      <img
+                    <div className="w-full aspect-video rounded overflow-hidden bg-primary/10 mb-2 relative">
+                      <Image
                         src={(shelter.image_url || "").trim()}
-                        alt=""
-                        className="w-full h-full object-cover"
+                        alt={`Billede af ${shelter.title}`}
                         width={240}
                         height={135}
+                        className="w-full h-full object-cover"
                       />
                     </div>
                   )}
@@ -245,7 +241,7 @@ export function ShelterMap({
     withCoords = withCoords.filter((s) => isInRegionBounds(s._coords.lat, s._coords.lon, r));
   }
 
-  if (withCoords.length === 0) {
+  if (withCoords.length === 0 && !onBoundsChange) {
     return (
       <div
         className={

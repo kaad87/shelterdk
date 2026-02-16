@@ -74,7 +74,7 @@ export function ShelterGallery({
           >
             <Image
               src={mainImageUrl!}
-              alt={title}
+              alt={`Billede af shelter ${title}`}
               fill
               className="object-cover"
               sizes="(max-width: 1024px) 100vw, 896px"
@@ -137,7 +137,7 @@ export function ShelterGallery({
             >
               <Image
                 src={url}
-                alt={`${title} – billede ${i + 2}`}
+                alt={`${title} – galleribillede ${i + 2}`}
                 fill
                 className="object-cover transition-transform hover:scale-105"
                 sizes="(max-width: 640px) 50vw, 25vw"
@@ -158,9 +158,11 @@ export function ShelterGallery({
           <span className="absolute top-4 right-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20">
             <X size={24} />
           </span>
-          <img
+          <Image
             src={urls[lightboxIndex]}
-            alt={`${title} – billede ${lightboxIndex + 2}`}
+            alt={`${title} – billede ${lightboxIndex + 1} i fuld størrelse`}
+            width={1200}
+            height={900}
             className="max-w-full max-h-[90vh] w-auto h-auto object-contain"
             onClick={(e) => e.stopPropagation()}
           />

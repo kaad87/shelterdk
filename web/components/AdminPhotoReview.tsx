@@ -189,7 +189,7 @@ export function AdminPhotoReview() {
                 {s.image_url ? (
                   <Image
                     src={s.image_url}
-                    alt=""
+                    alt={`Forslag til billede for ${s.shelter?.title ?? "shelter"}`}
                     fill
                     className="object-cover"
                     unoptimized

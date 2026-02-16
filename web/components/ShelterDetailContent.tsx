@@ -16,6 +16,7 @@ import { ShelterGallery } from "@/components/ShelterGallery";
 import { ShelterLocationMap } from "@/components/ShelterLocationMap";
 import { ShelterFaq } from "@/components/ShelterFaq";
 import { ShelterFacts } from "@/components/ShelterFacts";
+import { WeatherWidget } from "@/components/WeatherWidget";
 import type { Shelter } from "@/types/shelter";
 import type { FaqItem } from "@/lib/faq";
 import { formatRelativeTimeDa } from "@/lib/relative-time-da";
@@ -30,6 +31,9 @@ interface ShelterDetailContentProps {
   slug: string;
   breadcrumbs: BreadcrumbLink[];
   city: string | null;
+  /** Område til intern linking: "Se alle shelters i [område]" */
+  areaSlug?: string | null;
+  areaName?: string | null;
   /** Bålplads – når data findes. */
   firewood?: boolean | null;
   showReviews: boolean;
@@ -63,6 +67,8 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
     slug,
     breadcrumbs,
     city,
+    areaSlug = null,
+    areaName = null,
     firewood = null,
     showReviews,
     allPhotoUrls,
@@ -102,6 +108,17 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
             </span>
           ))}
         </nav>
+
+        {areaSlug && areaName && (
+          <p className="mb-4 text-sm text-primary/80">
+            <Link
+              href={`/omraade/${areaSlug}`}
+              className="text-accent font-medium hover:underline"
+            >
+              Se alle shelters i {areaName} →
+            </Link>
+          </p>
+        )}
 
         <div className="lg:grid lg:grid-cols-[1fr,340px] lg:gap-10 lg:items-start">
           <article className="min-w-0">
@@ -240,8 +257,6 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
               </section>
             )}
 
-            <ShelterFaq items={shelterFaqItems} jsonLd={shelterFaqJsonLd} />
-
             {coords && mapUrl && googleMapsUrl && (
               <section className="mb-10">
                 <h2 className="font-serif text-xl font-bold text-primary mb-4">
@@ -255,6 +270,8 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                 />
               </section>
             )}
+
+            <ShelterFaq items={shelterFaqItems} jsonLd={shelterFaqJsonLd} />
           </article>
 
           <aside className="lg:sticky lg:top-6 mt-8 lg:mt-0 space-y-4">
@@ -334,6 +351,10 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                   )}
                 </ul>
               </div>
+            )}
+
+            {coords && (
+              <WeatherWidget latitude={coords.lat} longitude={coords.lon} />
             )}
 
             <div className="rounded-2xl border border-primary/10 bg-white shadow-sm p-6">

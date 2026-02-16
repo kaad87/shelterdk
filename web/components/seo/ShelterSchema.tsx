@@ -5,6 +5,9 @@ import {
   getWater,
   getPhotoUrls,
   getLongDescription,
+  getAddress,
+  getCity,
+  getPayment,
   stripHtml,
 } from "@/lib/shelter-detail";
 
@@ -20,26 +23,30 @@ interface ShelterSchemaProps {
   shelter: Shelter;
   /** Canonical URL for this shelter (fx /danmark/region/kommune/slug). */
   canonicalPath?: string | null;
-  /** Use CivicStructure for fully public/civic shelters; default CampingPitch. */
-  useCivicStructure?: boolean;
+  /** Use LodgingBusiness; default Campground (schema.org subtype of LodgingBusiness). */
+  useLodgingBusiness?: boolean;
   /** When available (e.g. from geofa_raw), include firewood in amenityFeature. */
   firewood?: boolean | null;
 }
 
 /**
- * Renders JSON-LD script tag for a shelter so Google knows name, description,
- * coordinates, amenities (toilet, water, firewood), images and address.
+ * Renders JSON-LD script tag for a shelter (Campground or LodgingBusiness).
+ * Fulfills Google's structured data guidelines: name, description, geo, address, priceRange.
  */
 export function ShelterSchema({
   shelter,
   canonicalPath = null,
-  useCivicStructure = false,
+  useLodgingBusiness = false,
   firewood = null,
 }: ShelterSchemaProps) {
   const coords = getLocationCoords(shelter);
   const toilet = getToilet(shelter);
   const water = getWater(shelter);
   const images = getPhotoUrls(shelter);
+  const streetAddress = getAddress(shelter);
+  const locality = getCity(shelter) ?? shelter.kommune?.trim() ?? shelter.place?.trim() ?? null;
+  const region = (shelter.region ?? "").trim();
+  const payment = getPayment(shelter);
 
   const description =
     getLongDescription(shelter) ||
@@ -98,35 +105,50 @@ export function ShelterSchema({
     });
   }
 
-  const addressParts: string[] = [];
-  if (shelter.place?.trim()) addressParts.push(shelter.place.trim());
-  if (shelter.kommune?.trim()) addressParts.push(shelter.kommune.trim());
-  if (shelter.region?.trim() && shelter.region !== "Danmark")
-    addressParts.push(shelter.region.trim());
-  const address = addressParts.length > 0 ? addressParts.join(", ") : "Danmark";
+  // schema.org PostalAddress for Google
+  const addressObj: Record<string, string> = {
+    "@type": "PostalAddress",
+    addressCountry: "DK",
+  };
+  if (streetAddress) addressObj.streetAddress = streetAddress;
+  if (locality) addressObj.addressLocality = locality;
+  if (region && region !== "Danmark") addressObj.addressRegion = region;
+
+  // priceRange: "0" when free (Google-friendly)
+  const isFree =
+    !payment || (typeof payment === "string" && payment.toLowerCase().includes("nej"));
+  const priceRange = isFree ? "0" : undefined;
 
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
-    "@type": useCivicStructure ? "CivicStructure" : "CampingPitch",
+    "@type": useLodgingBusiness ? "LodgingBusiness" : "Campground",
     name,
-    ...(canonicalPath && { url: `${BASE_URL}${canonicalPath}` }),
     ...(description && { description }),
-    ...(coords && {
-      geo: {
-        "@type": "GeoCoordinates",
-        latitude: coords.lat,
-        longitude: coords.lon,
-      },
-    }),
+    ...(canonicalPath && { url: `${BASE_URL}${canonicalPath}` }),
+    geo:
+      coords ?
+        {
+          "@type": "GeoCoordinates",
+          latitude: coords.lat,
+          longitude: coords.lon,
+        }
+      : undefined,
+    address: addressObj,
+    ...(priceRange !== undefined && { priceRange }),
     ...(amenityFeatures.length > 0 && { amenityFeature: amenityFeatures }),
     ...(images.length > 0 && { image: images }),
-    address: address,
   };
+
+  // Remove undefined so JSON-LD is valid
+  const cleaned: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(schema)) {
+    if (v !== undefined && v !== null) cleaned[k] = v;
+  }
 
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(cleaned) }}
     />
   );
 }

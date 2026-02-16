@@ -14,6 +14,8 @@ interface ShelterCardProps {
   onImageError?: () => void;
   /** Overstyring af link-URL (fx silo: /danmark/region/kommune/slug). */
   href?: string;
+  /** Sæt for above-the-fold kort (fx forsiden) for hurtigere LCP. */
+  priority?: boolean;
 }
 
 const IMAGE_LOAD_TIMEOUT_MS = 2500;
@@ -24,12 +26,14 @@ function FrontPageCardImage({
   onError,
   timeoutRef,
   loadedRef,
+  priority,
 }: {
   src: string;
   alt: string;
   onError: () => void;
   timeoutRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null>;
   loadedRef: React.MutableRefObject<boolean>;
+  priority?: boolean;
 }) {
   const onErrorRef = useRef(onError);
   onErrorRef.current = onError;
@@ -46,28 +50,29 @@ function FrontPageCardImage({
     };
   }, [timeoutRef, loadedRef]);
 
-  const handleLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+  const handleLoad = () => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
     loadedRef.current = true;
-    const img = e.currentTarget;
-    if (img.naturalWidth === 0 || img.naturalHeight === 0) onErrorRef.current();
   };
 
   return (
-    <img
+    <Image
       src={src}
       alt={alt}
-      className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+      fill
+      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+      className="object-cover transition-transform duration-300 group-hover:scale-105"
       onError={() => onErrorRef.current()}
       onLoad={handleLoad}
+      priority={priority}
     />
   );
 }
 
-export function ShelterCard({ shelter, onImageError, href }: ShelterCardProps) {
+export function ShelterCard({ shelter, onImageError, href, priority }: ShelterCardProps) {
   const [imageFailed, setImageFailed] = useState(false);
   const hasValidImage = isValidImageUrl(shelter.image_url) && !imageFailed;
   const imageUrl = hasValidImage ? (shelter.image_url ?? "").trim() : null;
@@ -97,19 +102,21 @@ export function ShelterCard({ shelter, onImageError, href }: ShelterCardProps) {
         ) : onImageError ? (
           <FrontPageCardImage
             src={imageUrl!}
-            alt={shelter.title}
+            alt={`Billede af shelter ${shelter.title}`}
             onError={onImageError}
             timeoutRef={timeoutRef}
             loadedRef={loadedRef}
+            priority={priority}
           />
         ) : (
           <Image
             src={imageUrl!}
-            alt={shelter.title}
+            alt={`Billede af shelter ${shelter.title}`}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover transition-transform duration-300 group-hover:scale-105"
             onError={() => setImageFailed(true)}
+            priority={priority}
           />
         )}
         {showRating && (

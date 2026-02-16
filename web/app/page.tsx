@@ -1,20 +1,23 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { Suspense } from "react";
 import { WebSiteSchema } from "@/components/seo/WebSiteSchema";
 import { FrontPageShelterGrid } from "@/components/FrontPageShelterGrid";
 import { SearchBar } from "@/components/SearchBar";
-import { ShelterMap } from "@/components/ShelterMap";
 import { createPublicClient } from "@/utils/supabase/server-public";
+
+const MapComponent = dynamic(
+  () => import("@/components/MapComponent").then((m) => ({ default: m.MapComponent })),
+  { ssr: false }
+);
 import type { Shelter } from "@/types/shelter";
 import { isShelterPlace } from "@/lib/shelter-detail";
-import { getSheltersPage } from "@/lib/soeg-db";
 
-export const revalidate = 3600; // ISR: revalider forsiden hver time
+export const revalidate = 86400; // ISR: cache og revalider forsiden hver 24. time (hurtig TTFB)
 
-const FRONT_PAGE_MAP_SIZE = 1000;
-const FRONT_PAGE_SHELTER_LIMIT = 8;
+const FRONT_PAGE_SHELTER_LIMIT = 4;
 const FRONT_PAGE_FETCH_BUFFER = 24;
 
 const SHELTER_SELECT =
@@ -131,25 +134,65 @@ const regions = [
   },
 ];
 
+/** Populære områder til forside – styrker intern linking til /omraade/[slug]. */
+const POPULAR_AREAS = [
+  {
+    slug: "sydfynske-oeehav",
+    name: "Sydfynske Øhav",
+    image:
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80&auto=format&fit=crop",
+  },
+  {
+    slug: "lolland",
+    name: "Lolland",
+    image:
+      "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?w=800&q=80&auto=format&fit=crop",
+  },
+  {
+    slug: "soehojlandet",
+    name: "Silkeborg & Søhøjlandet",
+    image:
+      "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80&auto=format&fit=crop",
+  },
+  {
+    slug: "kongernes-nordsjaelland",
+    name: "Kongernes Nordsjælland",
+    image:
+      "https://images.unsplash.com/photo-1511497584788-876760111969?w=800&q=80&auto=format&fit=crop",
+  },
+  {
+    slug: "bornholm",
+    name: "Bornholm",
+    image:
+      "https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=800&q=80&auto=format&fit=crop",
+  },
+  {
+    slug: "nationalpark-thy",
+    name: "Nationalpark Thy",
+    image:
+      "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=800&q=80&auto=format&fit=crop",
+  },
+];
+
 export default async function HomePage() {
   let shelters: Shelter[] = [];
-  let mapShelters: Shelter[] = [];
   try {
-    const [s, m] = await Promise.all([
-      getPrimaryShelters(FRONT_PAGE_FETCH_BUFFER),
-      getSheltersPage(null, null, 1, FRONT_PAGE_MAP_SIZE),
-    ]);
-    shelters = s;
-    mapShelters = m.shelters ?? [];
+    shelters = await getPrimaryShelters(FRONT_PAGE_FETCH_BUFFER);
   } catch (err) {
     console.error("Forside: kunne ikke hente shelters:", err);
   }
+  // Initiale markers på kortet (samme top-shelters som grid); ved pan/zoom hentes viewport-data via API
+  const mapShelters = shelters.slice(0, 100);
 
   return (
     <>
       <WebSiteSchema />
-      <section className="relative bg-gradient-to-br from-primary via-primary/95 to-primary/90 text-white min-h-[320px] sm:min-h-[380px] md:min-h-[420px] flex flex-col justify-end">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1920&q=80&auto=format&fit=crop')] bg-cover bg-center opacity-25" />
+      {/* Semantisk: side-intro med én h1 – godt for SEO og skærmlæsere */}
+      <header
+        className="relative bg-gradient-to-br from-primary via-primary/95 to-primary/90 text-white min-h-[320px] sm:min-h-[380px] md:min-h-[420px] flex flex-col justify-end"
+        aria-label="Introduktion"
+      >
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1920&q=80&auto=format&fit=crop')] bg-cover bg-center opacity-25" aria-hidden />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 md:py-24 w-full">
           <div className="max-w-3xl mb-10">
             <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
@@ -166,12 +209,16 @@ export default async function HomePage() {
             </Suspense>
           </div>
         </div>
-      </section>
+      </header>
 
       {shelters.length > 0 && (
-        <section className="py-16 bg-background">
+        <section
+          className="py-16 bg-background"
+          id="udforsk-shelters"
+          aria-labelledby="heading-udforsk-shelters"
+        >
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h2 className="font-serif text-3xl font-bold text-primary mb-8 text-center">
+            <h2 id="heading-udforsk-shelters" className="font-serif text-3xl font-bold text-primary mb-8 text-center">
               Udforsk shelters
             </h2>
             <FrontPageShelterGrid
@@ -182,14 +229,18 @@ export default async function HomePage() {
         </section>
       )}
 
-      <section className="pt-8 pb-16 bg-background">
+      <section
+        className="pt-8 pb-16 bg-background"
+        id="kort"
+        aria-labelledby="heading-kort"
+      >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="font-serif text-3xl font-bold text-primary mb-4 text-center">
+          <h2 id="heading-kort" className="font-serif text-3xl font-bold text-primary mb-4 text-center">
             Kort over Danmarks shelters
           </h2>
-          <div className="rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[320px] sm:min-h-[400px] md:min-h-[560px] h-[60vh] sm:h-[70vh] md:h-[75vh] max-h-[960px]">
-            <ShelterMap shelters={mapShelters} className="w-full h-full" />
-          </div>
+          <figure className="rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[320px] sm:min-h-[400px] md:min-h-[560px] h-[60vh] sm:h-[70vh] md:h-[75vh] max-h-[960px]" aria-label="Interaktivt kort med shelters">
+            <MapComponent shelters={mapShelters} className="w-full h-full" />
+          </figure>
           <p className="text-center mt-4">
             <Link href="/soeg" className="text-accent font-medium hover:underline">
               Søg shelters med liste og kort →
@@ -198,34 +249,85 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="py-16 bg-background">
+      <section
+        className="py-16 bg-background"
+        id="udforsk-efter-region"
+        aria-labelledby="heading-region"
+      >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="font-serif text-3xl font-bold text-primary mb-8 text-center">
+          <h2 id="heading-region" className="font-serif text-3xl font-bold text-primary mb-8 text-center">
             Udforsk efter region
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {regions.map((region) => (
+          <nav aria-label="Udforsk shelters efter region">
+            <ul className="grid grid-cols-1 md:grid-cols-3 gap-6 list-none m-0 p-0">
+              {regions.map((region) => (
+                <li key={region.href + region.name}>
+                  <Link
+                    href={region.href}
+                    className="group relative overflow-hidden rounded-xl aspect-[4/3] bg-primary block"
+                  >
+                    <Image
+                      src={region.image}
+                      alt=""
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-110"
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      priority
+                    />
+                    <span className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/50 to-transparent" aria-hidden />
+                    <h3 className="absolute bottom-0 left-0 right-0 p-6 font-serif text-2xl font-bold text-white m-0">
+                      {region.name}
+                    </h3>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+      </section>
+
+      <section
+        className="py-16 bg-background"
+        id="populaere-omraader"
+        aria-labelledby="heading-populaere-omraader"
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <h2 id="heading-populaere-omraader" className="font-serif text-3xl font-bold text-primary mb-8 text-center">
+            Populære områder
+          </h2>
+          <nav aria-label="Udforsk shelters efter område">
+            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 list-none m-0 p-0">
+              {POPULAR_AREAS.map((area) => (
+                <li key={area.slug}>
+                  <Link
+                    href={`/omraade/${area.slug}`}
+                    className="group relative overflow-hidden rounded-xl aspect-[4/3] bg-primary block"
+                  >
+                    <Image
+                      src={area.image}
+                      alt=""
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-110"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    />
+                    <span className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/50 to-transparent" aria-hidden />
+                    <h3 className="absolute bottom-0 left-0 right-0 p-5 font-serif text-xl font-bold text-white m-0">
+                      {area.name}
+                    </h3>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-6 text-center">
               <Link
-                key={region.href + region.name}
-                href={region.href}
-                className="group relative overflow-hidden rounded-xl aspect-[4/3] bg-primary"
+                href="/omraade"
+                className="text-accent font-medium hover:underline inline-flex items-center gap-1"
               >
-                <Image
-                  src={region.image}
-                  alt={region.name}
-                  fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-110"
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/50 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <h3 className="font-serif text-2xl font-bold text-white">
-                    {region.name}
-                  </h3>
-                </div>
+                Se alle områder
+                <span aria-hidden>→</span>
               </Link>
-            ))}
-          </div>
+            </p>
+          </nav>
         </div>
       </section>
     </>

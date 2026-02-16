@@ -1,0 +1,8 @@
+{
+  "name": "shelterdk",
+  "private": true,
+  "scripts": {
+    "backfill:municipality": "cd web && npm run backfill:municipality",
+    "backfill:municipality:alle": "cd web && npm run backfill:municipality:alle"
+  }
+}

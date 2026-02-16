@@ -40,7 +40,7 @@ export interface MapBbox {
 const BBOX_FETCH_LIMIT = 2000;
 
 /**
- * Hent én side shelters med valgfri region, søgetekst, filtre og bbox.
+ * Hent én side shelters med valgfri region, søgetekst, area_slug, filtre og bbox.
  * Ved bbox hentes op til BBOX_FETCH_LIMIT og filtreres efter koordinater (location).
  */
 export async function getSheltersPage(
@@ -49,14 +49,14 @@ export async function getSheltersPage(
   page: number,
   pageSize: number = SOEG_PAGE_SIZE,
   filters?: SoegFilters | null,
-  bbox?: MapBbox | null
+  bbox?: MapBbox | null,
+  areaSlug?: string | null
 ): Promise<SoegPageResult> {
   const supabase = createPublicClient();
   const useBbox = bbox && [bbox.minLat, bbox.maxLat, bbox.minLon, bbox.maxLon].every((n) => Number.isFinite(n));
   const from = useBbox ? 0 : (page - 1) * pageSize;
   const toInclusive = useBbox ? BBOX_FETCH_LIMIT - 1 : from + pageSize - 1;
 
-  // Rangering: display_score (billeder + anmeldelser), derefter titel
   let query = supabase
     .from("shelters")
     .select(SHELTER_SELECT)
@@ -66,6 +66,9 @@ export async function getSheltersPage(
 
   if (region && region.trim()) {
     query = query.eq("region", region.trim());
+  }
+  if (areaSlug && areaSlug.trim()) {
+    query = query.eq("area_slug", areaSlug.trim());
   }
   if (q && q.trim()) {
     const term = q.trim().replace(/"/g, '""');
@@ -114,6 +117,9 @@ export async function getSheltersPage(
       .order("title", { ascending: true });
     if (region && region.trim()) {
       fallbackQuery = fallbackQuery.eq("region", region.trim());
+    }
+    if (areaSlug && areaSlug.trim()) {
+      fallbackQuery = fallbackQuery.eq("area_slug", areaSlug.trim());
     }
     if (q && q.trim()) {
       const term = q.trim().replace(/"/g, '""');

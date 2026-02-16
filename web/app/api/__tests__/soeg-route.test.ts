@@ -41,7 +41,7 @@ describe("GET /api/soeg", () => {
     const data = await res.json();
     expect(data.shelters).toBeDefined();
     expect(data.hasMore).toBe(false);
-    expect(mockGetSheltersPage).toHaveBeenCalledWith(null, null, 1, 24, undefined, undefined);
+    expect(mockGetSheltersPage).toHaveBeenCalledWith(null, null, 1, 24, undefined, undefined, null);
   });
 
   it("sender region til getSheltersPage", async () => {
@@ -53,7 +53,8 @@ describe("GET /api/soeg", () => {
       1,
       24,
       undefined,
-      undefined
+      undefined,
+      null
     );
   });
 
@@ -68,13 +69,13 @@ describe("GET /api/soeg", () => {
   it("sender page til getSheltersPage", async () => {
     const req = mockRequest("http://localhost/api/soeg?page=3");
     await GET(req);
-    expect(mockGetSheltersPage).toHaveBeenCalledWith(null, null, 3, 24, undefined, undefined);
+    expect(mockGetSheltersPage).toHaveBeenCalledWith(null, null, 3, 24, undefined, undefined, null);
   });
 
   it("sender søgetekst til getSheltersPage", async () => {
     const req = mockRequest("http://localhost/api/soeg?q=Brønderslev");
     await GET(req);
-    expect(mockGetSheltersPage).toHaveBeenCalledWith(null, "Brønderslev", 1, 24, undefined, undefined);
+    expect(mockGetSheltersPage).toHaveBeenCalledWith(null, "Brønderslev", 1, 24, undefined, undefined, null);
   });
 
   it("sender filtre til getSheltersPage", async () => {
@@ -84,7 +85,7 @@ describe("GET /api/soeg", () => {
       billede: true,
       anmeldelser: true,
       bookbar: true,
-    }, undefined);
+    }, undefined, null);
   });
 
   it("sender bbox til getSheltersPage ved minLat/maxLat/minLon/maxLon", async () => {
@@ -98,7 +99,8 @@ describe("GET /api/soeg", () => {
       1,
       24,
       undefined,
-      { minLat: 55, maxLat: 57, minLon: 8, maxLon: 11 }
+      { minLat: 55, maxLat: 57, minLon: 8, maxLon: 11 },
+      null
     );
   });
 });

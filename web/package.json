@@ -13,7 +13,9 @@
     "test:watch": "vitest",
     "prepare": "husky",
     "test:e2e": "playwright test",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "backfill:municipality": "node ../scripts/backfill-municipality-dawa.js",
+    "backfill:municipality:alle": "node ../scripts/backfill-municipality-dawa.js --alle"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.0",

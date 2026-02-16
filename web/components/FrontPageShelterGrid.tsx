@@ -14,11 +14,16 @@ export function FrontPageShelterGrid({
   maxVisible = 12,
 }: FrontPageShelterGridProps) {
   const toShow = shelters.slice(0, maxVisible);
+  const priorityCount = 6; // Above-the-fold kort får priority for LCP
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {toShow.map((shelter) => (
-        <ShelterCard key={shelter.id} shelter={shelter} />
+      {toShow.map((shelter, index) => (
+        <ShelterCard
+          key={shelter.id}
+          shelter={shelter}
+          priority={index < priorityCount}
+        />
       ))}
     </div>
   );

@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
   const region = searchParams.get("region")?.trim() ?? null;
   const q = searchParams.get("q")?.trim() ?? null;
+  const area = searchParams.get("area")?.trim() ?? null;
   const filters: SoegFilters = {};
   if (searchParams.get("billede") === "1") filters.billede = true;
   if (searchParams.get("anmeldelser") === "1") filters.anmeldelser = true;
@@ -39,7 +40,8 @@ export async function GET(request: NextRequest) {
     page,
     SOEG_PAGE_SIZE,
     Object.keys(filters).length ? filters : undefined,
-    bbox
+    bbox,
+    area
   );
 
   if (region) shelters = filterSheltersByRegion(shelters, region);

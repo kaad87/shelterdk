@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-// Supabase storage-host fra miljø (brugeruploadede billeder)
+// Supabase API + Storage bruger samme host (fx xxx.supabase.co) – tillader next/image for begge
 const supabaseHost =
   typeof process.env.NEXT_PUBLIC_SUPABASE_URL === "string"
     ? (() => {
@@ -74,6 +74,7 @@ const nextConfig = {
         protocol: "https",
         hostname: "webkort.esbjergkommune.dk",
       },
+      // Supabase Storage (brugeruploadede billeder) – samme host som API
       ...(supabaseHost ? [{ protocol: "https", hostname: supabaseHost }] : []),
     ],
   },

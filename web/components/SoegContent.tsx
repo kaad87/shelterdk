@@ -15,6 +15,7 @@ interface SoegContentProps {
   initialHasMore: boolean;
   initialRegion: string | null;
   initialQuery: string | null;
+  initialArea?: string | null;
   initialFilters?: SoegFilters;
   view: ViewMode;
 }
@@ -24,6 +25,7 @@ export function SoegContent({
   initialHasMore,
   initialRegion,
   initialQuery,
+  initialArea = null,
   initialFilters = {},
   view: initialView,
 }: SoegContentProps) {
@@ -59,6 +61,7 @@ export function SoegContent({
       const params: Record<string, string> = { page: String(nextPage) };
       if (initialRegion != null && initialRegion !== "") params.region = initialRegion;
       if (initialQuery != null && initialQuery !== "") params.q = initialQuery;
+      if (initialArea != null && initialArea !== "") params.area = initialArea;
       if (initialFilters?.billede) params.billede = "1";
       if (initialFilters?.anmeldelser) params.anmeldelser = "1";
       if (initialFilters?.bookbar) params.bookbar = "1";
@@ -84,7 +87,7 @@ export function SoegContent({
       loadingRef.current = false;
       setLoading(false);
     }
-  }, [loading, hasMore, nextPage, initialRegion, initialQuery, initialFilters]);
+  }, [loading, hasMore, nextPage, initialRegion, initialQuery, initialArea, initialFilters]);
 
   // IntersectionObserver: split – afslør flere fra listen (op til shelters.length) eller hent næste side
   useEffect(() => {
@@ -137,6 +140,7 @@ export function SoegContent({
       };
       if (initialRegion != null && initialRegion !== "") params.region = initialRegion;
       if (initialQuery != null && initialQuery !== "") params.q = initialQuery;
+      if (initialArea != null && initialArea !== "") params.area = initialArea;
       if (initialFilters?.billede) params.billede = "1";
       if (initialFilters?.anmeldelser) params.anmeldelser = "1";
       if (initialFilters?.bookbar) params.bookbar = "1";
@@ -156,7 +160,7 @@ export function SoegContent({
         setLoading(false);
       }
     },
-    [initialRegion, initialQuery, initialFilters]
+    [initialRegion, initialQuery, initialArea, initialFilters]
   );
 
   return (
@@ -165,6 +169,7 @@ export function SoegContent({
         mode="search"
         initialRegion={initialRegion}
         initialQuery={initialQuery}
+        initialArea={initialArea}
         initialFilters={initialFilters}
         view={view}
         onViewChange={handleViewChange}

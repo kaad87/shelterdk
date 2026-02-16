@@ -15,7 +15,7 @@ const SHELTER_SELECT =
   "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, water, geofa_raw, display_score";
 
 const SHELTER_SELECT_DETAIL =
-  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, region, kommune, place, toilet, water, geofa_raw";
+  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, region, kommune, place, toilet, water, geofa_raw, area_slug";
 
 function sortByImageAndScore(a: Shelter, b: Shelter): number {
   const aHas = hasAnyImage(a) ? 1 : 0;

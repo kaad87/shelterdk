@@ -12,6 +12,7 @@ import {
   NO_KOMMUNE_SLUG,
 } from "@/lib/danmark-silo";
 import { segmentSlugToName } from "@/lib/slug";
+import type { Shelter } from "@/types/shelter";
 import {
   getLongDescription,
   getPhotoUrls,
@@ -27,13 +28,16 @@ import {
   stripHtml,
   isBookable,
   getToilet,
+  getWater,
   getPetsAllowed,
+  isValidImageUrl,
 } from "@/lib/shelter-detail";
 import { getShelterFaqItems, faqToJsonLd } from "@/lib/faq";
+import { getAreaBySlug } from "@/lib/area-db";
 import { ShelterDetailContent } from "@/components/ShelterDetailContent";
 import { ShelterSchema } from "@/components/seo/ShelterSchema";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
-import { NearbyShelters } from "@/components/NearbyShelters";
+import { NearbySheltersWithinRadius } from "@/components/NearbySheltersWithinRadius";
 
 interface PageProps {
   params: Promise<{ region: string; municipality: string; shelter_slug: string }>;
@@ -41,6 +45,9 @@ interface PageProps {
 
 // true = tillad on-demand rendering af shelters der ikke var med ved sidste build
 export const dynamicParams = true;
+
+/** ISR: cache side og revalider i baggrunden hver 24. time for hurtig TTFB. */
+export const revalidate = 86400;
 
 export async function generateStaticParams() {
   const shelters = await getSheltersForStaticParams();
@@ -51,27 +58,54 @@ export async function generateStaticParams() {
   }));
 }
 
+/** Kort SEO-beskrivelse ud fra shelterets faciliteter (samme logik som /shelter/[slug]). */
+function buildDescriptionFromFacilities(shelter: Shelter): string {
+  const region = (shelter.region ?? "").trim() || "Danmark";
+  const parts: string[] = [];
+  const toilet = getToilet(shelter);
+  const water = getWater(shelter);
+  if (toilet === "flush") parts.push("toilet");
+  else if (toilet === "mulch") parts.push("komposttoilet");
+  if (water === true) parts.push("vand");
+  if (isBookable(shelter)) parts.push("bookbar");
+  const facilityStr = parts.length > 0 ? ` Med ${parts.join(", ")}.` : "";
+  const longDesc = getLongDescription(shelter);
+  const fallbackDesc = stripHtml(shelter.description)?.slice(0, 120) || null;
+  const extra = longDesc?.slice(0, 120) || fallbackDesc || "Overnatning i naturen.";
+  return `${shelter.title} – book shelter i ${region}.${facilityStr} ${extra}`.slice(0, 160);
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { region: regionSlug, municipality: municipalitySlug, shelter_slug } = await params;
   const { shelter } = await getShelterBySlugInSilo(shelter_slug);
   if (!shelter) return { title: "Shelter ikke fundet" };
 
-  const longDesc = getLongDescription(shelter);
-  const fallbackDesc = stripHtml(shelter.description)?.slice(0, 160) || null;
-  const description =
-    longDesc?.slice(0, 160) ||
-    fallbackDesc ||
-    `Shelter: ${shelter.title}. Overnatning i naturen i Danmark.`;
+  const region = (shelter.region ?? "").trim() || "Danmark";
+  const title = `${shelter.title} - Book shelter i ${region}`;
+  const description = buildDescriptionFromFacilities(shelter);
   const canonicalPath = `/danmark/${regionSlug}/${municipalitySlug}/${shelter_slug}`;
 
+  const photoUrls = getPhotoUrls(shelter);
+  const ogImage =
+    photoUrls.length > 0 && isValidImageUrl(photoUrls[0])
+      ? photoUrls[0]
+      : shelter.image_url && isValidImageUrl(shelter.image_url)
+        ? shelter.image_url
+        : undefined;
+
   return {
-    title: `${shelter.title} | ShelterDK`,
+    title: { absolute: title },
     description,
     alternates: { canonical: `https://shelterdk.dk${canonicalPath}` },
     openGraph: {
-      title: `${shelter.title} | ShelterDK`,
+      title,
       description,
       siteName: "ShelterDK",
+      type: "website",
+      url: `https://shelterdk.dk${canonicalPath}`,
+      ...(ogImage && {
+        images: [{ url: ogImage, width: 1200, height: 630, alt: shelter.title }],
+      }),
     },
   };
 }
@@ -122,8 +156,10 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
     redirect(`/danmark/${expectedRegionSlug}/${expectedMunicipalitySlug}/${shelter_slug}`);
   }
 
-  const [reviews] = await Promise.all([
+  const areaSlug = (shelter as { area_slug?: string | null }).area_slug?.trim() || null;
+  const [reviews, area] = await Promise.all([
     getReviews(shelter.google_place_id ?? null),
+    areaSlug ? getAreaBySlug(areaSlug) : Promise.resolve(null),
   ]);
 
   const placeName = shelter.google_place_name ?? null;
@@ -179,13 +215,20 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
   const displayRegionName = regionName ?? shelterRegion ?? "Danmark";
   const displayMunicipalityName = municipalityName ?? shelterKommune ?? "Ukendt kommune";
 
-  const breadcrumbs = [
-    { label: "Hjem", href: "/" },
-    { label: "Søg shelters", href: "/soeg" },
-    { label: displayRegionName, href: `/danmark/${regionSlug}` },
-    { label: displayMunicipalityName, href: `/danmark/${regionSlug}/${municipalitySlug}` },
-    { label: shelter.title },
-  ];
+  const breadcrumbs = area
+    ? [
+        { label: "Forside", href: "/" },
+        { label: "Områder", href: "/omraade" },
+        { label: area.name, href: `/omraade/${areaSlug}` },
+        { label: shelter.title },
+      ]
+    : [
+        { label: "Hjem", href: "/" },
+        { label: "Søg shelters", href: "/soeg" },
+        { label: displayRegionName, href: `/danmark/${regionSlug}` },
+        { label: displayMunicipalityName, href: `/danmark/${regionSlug}/${municipalitySlug}` },
+        { label: shelter.title },
+      ];
 
   const breadcrumbSchemaItems: { label: string; href?: string }[] = breadcrumbs.map((b) =>
     b.href ? { label: b.label, href: b.href } : { label: b.label }
@@ -199,8 +242,10 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
       <ShelterDetailContent
         shelter={shelter}
         slug={shelter_slug}
-      breadcrumbs={breadcrumbs}
-      city={city}
+        breadcrumbs={breadcrumbs}
+        city={city}
+        areaSlug={area ? areaSlug : undefined}
+        areaName={area?.name ?? undefined}
       showReviews={showReviews}
       allPhotoUrls={allPhotoUrls}
       displayDescription={displayDescription}
@@ -219,14 +264,11 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
       reviews={reviews}
       coords={coords}
       />
-      {coords && (
-        <NearbyShelters
-          lat={coords.lat}
-          lng={coords.lon}
-          excludeId={shelter.id}
-          limit={5}
-        />
-      )}
+      <NearbySheltersWithinRadius
+        shelterId={shelter.id}
+        limit={5}
+        coords={coords}
+      />
     </>
   );
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { getSheltersPage, SOEG_PAGE_SIZE } from "@/lib/soeg-db";
+import { getAreaBySlug } from "@/lib/area-db";
 
 /** Ved kortvisning: max pr. request (Supabase typisk 1000). Resten hentes på client. */
 const MAP_VIEW_PAGE_SIZE = 1000;
@@ -9,16 +10,35 @@ import { SoegContent } from "@/components/SoegContent";
 
 export const revalidate = 300; // ISR: revalider søgesiden hvert 5. min
 
-export const metadata: Metadata = {
+const DEFAULT_METADATA: Metadata = {
   title: "Søg shelters",
   description:
     "Se alle shelters i Danmark. Filtrer efter region, søg efter område og se listen eller kortvisning.",
 };
 
+export async function generateMetadata(props: { searchParams: Promise<{ area?: string }> }): Promise<Metadata> {
+  const { area: areaSlug } = await props.searchParams;
+  if (!areaSlug?.trim()) return DEFAULT_METADATA;
+  const area = await getAreaBySlug(areaSlug.trim());
+  if (!area) return DEFAULT_METADATA;
+  const title = `Shelters i ${area.name} – Se kort og liste | ShelterDK`;
+  const description =
+    area.description?.slice(0, 155) ||
+    `Find shelters og naturovernatning i ${area.name}. Se kort, billeder og book muligheder.`;
+  return {
+    title: { absolute: title },
+    description,
+    openGraph: {
+      title: `Shelters i ${area.name} | ShelterDK`,
+      description,
+    },
+  };
+}
+
 type ViewMode = "list" | "map" | "split";
 
 interface SoegPageProps {
-  searchParams: Promise<{ region?: string; q?: string; view?: string; billede?: string; anmeldelser?: string; bookbar?: string }>;
+  searchParams: Promise<{ region?: string; q?: string; view?: string; area?: string; billede?: string; anmeldelser?: string; bookbar?: string }>;
 }
 
 function parseFilters(params: SoegPageProps["searchParams"] extends Promise<infer P> ? P : never) {
@@ -33,6 +53,7 @@ export default async function SoegPage({ searchParams }: SoegPageProps) {
   const params = await searchParams;
   const region = params.region ?? null;
   const q = params.q ?? null;
+  const area = params.area ?? null;
   const viewParam = (params.view ?? "split").toLowerCase();
   const view: ViewMode =
     viewParam === "map" ? "map" : viewParam === "list" ? "list" : "split";
@@ -40,28 +61,68 @@ export default async function SoegPage({ searchParams }: SoegPageProps) {
 
   const initialPageSize =
     view === "map" || view === "split" ? MAP_VIEW_PAGE_SIZE : SOEG_PAGE_SIZE;
-  const { shelters: initialShelters, hasMore: initialHasMore } =
-    await getSheltersPage(region, q, 1, initialPageSize, Object.keys(filters).length ? filters : undefined);
+  const [areaInfo, sheltersResult] = await Promise.all([
+    area?.trim() ? getAreaBySlug(area.trim()) : Promise.resolve(null),
+    getSheltersPage(region, q, 1, initialPageSize, Object.keys(filters).length ? filters : undefined, undefined, area),
+  ]);
+  const { shelters: initialShelters, hasMore: initialHasMore } = sheltersResult;
 
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-        <nav className="mb-8">
+        <nav className="mb-8 flex flex-wrap items-center gap-3">
           <Link
             href="/"
             className="text-primary/80 hover:text-accent text-sm font-medium"
           >
             ← Til forsiden
           </Link>
+          <span className="text-primary/40" aria-hidden>|</span>
+          <Link
+            href="/omraade"
+            className="text-primary/80 hover:text-accent text-sm font-medium"
+          >
+            Udforsk efter område
+          </Link>
         </nav>
 
         <h1 className="font-serif text-3xl font-bold text-primary mb-2">
-          Søg shelters
+          {areaInfo
+            ? `Shelters i ${areaInfo.name}`
+            : "Søg shelters"}
         </h1>
-        <p className="text-primary/80 mb-8">
-          Shelters i Danmark
-          {(region || q) ? " (filtreret)" : ""}
-        </p>
+        {areaInfo ? (
+          <section className="mb-8" aria-label="Om området">
+            {areaInfo.description ? (
+              <p className="text-primary/90 text-lg leading-relaxed max-w-3xl">
+                {areaInfo.description}
+              </p>
+            ) : (
+              <p className="text-primary/80 max-w-3xl">
+                Udforsk shelters og naturovernatning i {areaInfo.name}. Her finder du overnatningspladser med kort,
+                billeder og book muligheder – både åbne shelterpladser og lukkede shelters.
+              </p>
+            )}
+            <p className="mt-3 text-primary/70 text-sm">
+              <Link href={`/omraade/${area}`} className="text-accent hover:underline">
+                Læs mere om {areaInfo.name} og se områdets landingsside →
+              </Link>
+              {" · "}
+              <Link href="/omraade" className="text-accent hover:underline">
+                Alle områder
+              </Link>
+            </p>
+          </section>
+        ) : (
+          <p className="text-primary/80 mb-8">
+            Shelters i Danmark
+            {(region || q || area) ? " (filtreret)" : ""}
+            {" – "}
+            <Link href="/omraade" className="text-accent hover:underline">
+              shelter efter område
+            </Link>
+          </p>
+        )}
 
         <Suspense
           fallback={
@@ -69,11 +130,12 @@ export default async function SoegPage({ searchParams }: SoegPageProps) {
           }
         >
           <SoegContent
-            key={`${region ?? ""}-${q ?? ""}-${String(filters.billede)}-${String(filters.anmeldelser)}-${String(filters.bookbar)}`}
+            key={`${region ?? ""}-${q ?? ""}-${area ?? ""}-${String(filters.billede)}-${String(filters.anmeldelser)}-${String(filters.bookbar)}`}
             initialShelters={initialShelters}
             initialHasMore={initialHasMore}
             initialRegion={region}
             initialQuery={q}
+            initialArea={area}
             initialFilters={filters}
             view={view}
           />

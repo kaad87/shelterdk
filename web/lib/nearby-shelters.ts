@@ -12,6 +12,8 @@ export interface NearbyShelter extends Shelter {
 
 const RPC_NAME = "get_nearby_shelters";
 
+const RPC_NEARBY_WITHIN_RADIUS = "get_nearby_shelters_within_radius";
+
 /** Returnerer op til 5 nærmeste shelters (ekskl. excludeId). distance_km i km. */
 export async function getNearbyShelters(
   lat: number,
@@ -29,6 +31,27 @@ export async function getNearbyShelters(
 
   if (error) {
     console.error("get_nearby_shelters RPC error:", error);
+    return [];
+  }
+
+  return (data ?? []) as NearbyShelter[];
+}
+
+/** Returnerer op til limit nærmeste shelters inden for radius_km (default 15 km). Kræver migration 021. */
+export async function getNearbySheltersWithinRadius(
+  shelterId: string,
+  radiusKm: number = 15,
+  limit: number = 3
+): Promise<NearbyShelter[]> {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase.rpc(RPC_NEARBY_WITHIN_RADIUS, {
+    p_shelter_id: shelterId,
+    p_radius_km: radiusKm,
+    p_limit: limit,
+  });
+
+  if (error) {
+    console.error("get_nearby_shelters_within_radius RPC error:", error);
     return [];
   }
 
