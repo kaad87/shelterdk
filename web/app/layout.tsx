@@ -20,6 +20,12 @@ export const metadata: Metadata = {
   },
   description:
     "Find og udforsk shelters i hele Danmark. Se billeder, anmeldelser og praktisk info for overnatning i naturen.",
+  icons: {
+    icon: [
+      { url: "/icon", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+  },
   other: { google: "notranslate" },
 };
 

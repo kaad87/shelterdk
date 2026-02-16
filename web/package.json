@@ -21,7 +21,8 @@
     "check:booking-links:fix:dry": "node ../scripts/check-booking-links.js --fix --dry-run",
     "match:booking-urls": "node ../scripts/match-booking-urls-from-naturstyrelsen.js",
     "match:booking-urls:apply": "node ../scripts/match-booking-urls-from-naturstyrelsen.js --apply",
-    "match:booking-urls:apply:empty": "node ../scripts/match-booking-urls-from-naturstyrelsen.js --apply --only-empty"
+    "match:booking-urls:apply:empty": "node ../scripts/match-booking-urls-from-naturstyrelsen.js --apply --only-empty",
+    "generate:favicon": "node scripts/generate-favicon.js"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.0",
@@ -52,7 +53,9 @@
     "husky": "^9.1.7",
     "jsdom": "^28.0.0",
     "lint-staged": "^16.2.7",
+    "png-to-ico": "^3.0.1",
     "postcss": "^8",
+    "sharp": "^0.34.5",
     "tailwindcss": "^3.4.1",
     "typescript": "^5",
     "vitest": "^4.0.18"
