@@ -80,7 +80,7 @@ export default async function OmraadePage({ params }: PageProps) {
 
         <header className="mb-8">
           <h1 className="font-serif text-3xl sm:text-4xl font-bold text-primary leading-tight">
-            Find det perfekte shelter på {area.name} (Kort & Overblik)
+            Find det perfekte shelter på {area.name} (Kort og Overblik)
           </h1>
         </header>
 
