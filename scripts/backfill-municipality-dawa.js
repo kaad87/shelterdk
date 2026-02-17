@@ -87,13 +87,18 @@ function municipalityToAreaSlug(municipality) {
   // Jylland – Rold Skov og Rebild Bakker
   if (["rebild kommune", "mariagerfjord kommune", "aalborg kommune"].includes(key)) return "rold-skov-rebild";
 
-  // Jylland – Limfjorden (kommuner rundt om fjorden)
+  // Jylland – Limfjorden (kommuner rundt om fjorden; Samsø har eget område)
   const limfjordenKommuner = [
     "viborg kommune", "struer kommune", "lemvig kommune", "skive kommune", "morsø kommune",
     "jammerbugt kommune", "brønderslev kommune", "hjørring kommune", "randers kommune",
-    "norddjurs kommune", "favrskov kommune", "samsø kommune",
+    "norddjurs kommune", "favrskov kommune",
   ];
   if (limfjordenKommuner.some((k) => key === k)) return "limfjorden";
+
+  // Jylland – Fanø, Samsø, Læsø (egne områdesider)
+  if (key === "fanø kommune") return "fanoe";
+  if (key === "samsø kommune") return "samsoe";
+  if (key === "læsø kommune") return "laesoe";
 
   // Jylland – Vadehavet
   if (["tønder kommune", "esbjerg kommune", "varde kommune", "ribe kommune"].includes(key)) return "vadehavet";
@@ -111,8 +116,8 @@ function municipalityToAreaSlug(municipality) {
   // Fyn og Øerne – Hindsholm og Nordfyn
   if (["nordfyns kommune", "kerteminde kommune", "odense kommune"].includes(key)) return "hindsholm-nordfyn";
 
-  // Sjælland – Lolland (egen landingsside)
-  if (["lolland kommune", "guldborgsund kommune"].includes(key)) return "lolland";
+  // Sjælland – Lolland-Falster (Lolland + Guldborgsund/Falster)
+  if (["lolland kommune", "guldborgsund kommune"].includes(key)) return "lolland-falster";
 
   // Sjælland – Sydsjælland og Møn (Møns Klint, Camønoen)
   if (["vordingborg kommune", "faxe kommune", "stevns kommune"].includes(key)) return "sydsjaelland-moen";

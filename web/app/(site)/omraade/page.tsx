@@ -63,7 +63,7 @@ export default async function OmraadeIndexPage() {
           {areasWithCount.map((area) => (
             <li key={area.slug}>
               <Link
-                href={`/omraade/${area.slug}`}
+                href={`/soeg?area=${encodeURIComponent(area.slug)}`}
                 className="block rounded-xl border border-primary/15 bg-card px-5 py-4 hover:border-accent/40 hover:bg-primary/5 transition-colors"
               >
                 <span className="font-semibold text-primary">{area.name}</span>

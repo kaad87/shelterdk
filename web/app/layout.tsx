@@ -1,9 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Suspense } from "react";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
-import { CookieBanner } from "@/components/CookieBanner";
-import { CollectPageView } from "@/components/CollectPageView";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -45,15 +40,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen flex flex-col font-sans antialiased bg-background">
-        <CookieBanner />
-        <Suspense fallback={null}>
-          <CollectPageView />
-        </Suspense>
-        <Suspense fallback={<header className="h-16 border-b border-primary/10" />}>
-          <Navbar />
-        </Suspense>
-        <main className="flex-1">{children}</main>
-        <Footer />
+        {children}
       </body>
     </html>
   );

@@ -9,12 +9,19 @@ import { slugifySegment } from "@/lib/slug";
 
 const NO_KOMMUNE_SLUG = "ukendt-kommune";
 
+const SITE_ORIGIN = "https://shelterdk.dk";
+
 function getShelterHref(shelter: Shelter): string {
   const r = (shelter.region || "").trim();
   if (!r || r === "Danmark") return `/shelter/${shelter.slug}`;
   const regionSlug = slugifySegment(r);
   const m = shelter.kommune ? slugifySegment(shelter.kommune) : NO_KOMMUNE_SLUG;
   return `/danmark/${regionSlug}/${m}/${shelter.slug}`;
+}
+
+/** Til embed: fuld URL så link åbner shelterdk.dk i ny fane uanset hvor iframe er indlejret. */
+function getEmbedShelterHref(shelter: Shelter): string {
+  return `${SITE_ORIGIN}/shelter/${shelter.slug}`;
 }
 
 // Leaflet CSS – indlæses med kort-chunk
@@ -144,12 +151,14 @@ const MapInner = dynamic(
       initialCenter,
       initialZoom,
       getHref,
+      embedMode,
     }: {
       sheltersWithCoords: ShelterWithCoords[];
       onBoundsChange?: (bounds: MapBounds) => void;
       initialCenter?: [number, number];
       initialZoom?: number;
       getHref: (s: Shelter) => string;
+      embedMode?: boolean;
     }) {
       const points = useMemo(
         () => sheltersWithCoords.map((s) => s._coords),
@@ -161,7 +170,7 @@ const MapInner = dynamic(
         <MapContainer
           center={center}
           zoom={zoom}
-          className="h-full w-full rounded-xl z-0 min-h-[400px]"
+          className={embedMode ? "h-full w-full z-0" : "h-full w-full rounded-xl z-0 min-h-[400px]"}
           scrollWheelZoom
         >
           <TileLayer
@@ -177,33 +186,47 @@ const MapInner = dynamic(
               icon={icon}
             >
               <Popup closeButton={false}>
-                <a
-                  href={getHref(shelter)}
-                  className="block p-1 min-w-[180px] text-primary no-underline hover:opacity-90"
-                >
-                  {isValidImageUrl(shelter.image_url) && (
-                    <div className="w-full aspect-video rounded overflow-hidden bg-primary/10 mb-2 relative">
-                      <Image
-                        src={(shelter.image_url || "").trim()}
-                        alt={`Billede af ${shelter.title}`}
-                        width={240}
-                        height={135}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
-                  <span className="font-semibold text-primary block">
-                    {shelter.title}
-                  </span>
-                  {shelter.region && (
-                    <p className="text-sm text-primary/70 mt-0.5">
-                      {shelter.region}
-                    </p>
-                  )}
-                  <span className="text-sm text-accent font-medium mt-2 inline-block">
-                    Se shelter →
-                  </span>
-                </a>
+                {embedMode ? (
+                  <div className="p-1 min-w-[180px]">
+                    <p className="font-semibold text-primary mb-2">{shelter.title}</p>
+                    <a
+                      href={getHref(shelter)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block px-3 py-1.5 text-sm font-medium text-white bg-accent rounded-lg hover:opacity-90"
+                    >
+                      Se detaljer & book
+                    </a>
+                  </div>
+                ) : (
+                  <a
+                    href={getHref(shelter)}
+                    className="block p-1 min-w-[180px] text-primary no-underline hover:opacity-90"
+                  >
+                    {isValidImageUrl(shelter.image_url) && (
+                      <div className="w-full aspect-video rounded overflow-hidden bg-primary/10 mb-2 relative">
+                        <Image
+                          src={(shelter.image_url || "").trim()}
+                          alt={`Billede af ${shelter.title}`}
+                          width={240}
+                          height={135}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <span className="font-semibold text-primary block">
+                      {shelter.title}
+                    </span>
+                    {shelter.region && (
+                      <p className="text-sm text-primary/70 mt-0.5">
+                        {shelter.region}
+                      </p>
+                    )}
+                    <span className="text-sm text-accent font-medium mt-2 inline-block">
+                      Se shelter →
+                    </span>
+                  </a>
+                )}
               </Popup>
             </Marker>
           ))}
@@ -221,6 +244,8 @@ interface ShelterMapProps {
   onBoundsChange?: (bounds: MapBounds) => void;
   /** Ved region-filter (Jylland, Fyn, Sjælland) zoomes kortet ind på regionen i stedet for hele Danmark. */
   initialRegion?: string | null;
+  /** Embed-tilstand: simpelt popup med "Se detaljer & book" (target _blank til /shelter/slug). */
+  embedMode?: boolean;
 }
 
 export function ShelterMap({
@@ -228,6 +253,7 @@ export function ShelterMap({
   className = "",
   onBoundsChange,
   initialRegion,
+  embedMode,
 }: ShelterMapProps) {
   const regionView = initialRegion ? REGION_CENTER_ZOOM[initialRegion] : undefined;
   const initialCenter = regionView?.center;
@@ -240,6 +266,8 @@ export function ShelterMap({
     const r = initialRegion.trim();
     withCoords = withCoords.filter((s) => isInRegionBounds(s._coords.lat, s._coords.lon, r));
   }
+
+  const getHref = embedMode ? getEmbedShelterHref : getShelterHref;
 
   if (withCoords.length === 0 && !onBoundsChange) {
     return (
@@ -254,14 +282,19 @@ export function ShelterMap({
     );
   }
 
+  const wrapperClass =
+    embedMode
+      ? className
+      : "rounded-xl overflow-hidden border border-primary/10 min-h-[280px] " + className;
   return (
-    <div className={"rounded-xl overflow-hidden border border-primary/10 " + className}>
+    <div className={wrapperClass}>
       <MapInner
         sheltersWithCoords={withCoords}
         onBoundsChange={onBoundsChange}
         initialCenter={initialCenter}
         initialZoom={initialZoom}
-        getHref={getShelterHref}
+        getHref={getHref}
+        embedMode={embedMode}
       />
     </div>
   );

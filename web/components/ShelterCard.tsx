@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { MapPin, Star } from "lucide-react";
 import type { Shelter } from "@/types/shelter";
-import { getCity, isShelterPlace, isValidImageUrl } from "@/lib/shelter-detail";
+import { getCity, getDisplayImageUrl, isShelterPlace, isValidImageUrl } from "@/lib/shelter-detail";
 import { ShelterPlaceholder } from "@/components/ShelterPlaceholder";
 
 interface ShelterCardProps {
@@ -74,8 +74,9 @@ function FrontPageCardImage({
 
 export function ShelterCard({ shelter, onImageError, href, priority }: ShelterCardProps) {
   const [imageFailed, setImageFailed] = useState(false);
-  const hasValidImage = isValidImageUrl(shelter.image_url) && !imageFailed;
-  const imageUrl = hasValidImage ? (shelter.image_url ?? "").trim() : null;
+  const displayUrl = getDisplayImageUrl(shelter);
+  const hasValidImage = displayUrl && isValidImageUrl(displayUrl) && !imageFailed;
+  const imageUrl = hasValidImage ? displayUrl.trim() : null;
   const loadedRef = useRef(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const showRating =

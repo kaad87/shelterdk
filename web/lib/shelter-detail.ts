@@ -259,6 +259,11 @@ export function isValidImageUrl(url: string | null | undefined): boolean {
   return true;
 }
 
+/** Slugs hvor de første N billeder springes over på sheltersiden (fx uønskede/gentagne). */
+const SKIP_FIRST_IMAGES: Record<string, number> = {
+  "shelterplads-med-balplads-og-borde-og-baenke-14806": 4,
+};
+
 /** Saml alle billed-URL'er fra image_url, image_urls (jsonb) og geofa_raw. Dedupe, filtrer cookiebot/1.gif og ugyldige URL'er. */
 export function getPhotoUrls(shelter: Shelter): string[] {
   const seen = new Set<string>();
@@ -281,7 +286,19 @@ export function getPhotoUrls(shelter: Shelter): string[] {
   }
   const raw = RAW(shelter);
   for (const k of GEOFA_PHOTO_KEYS) add(raw[k] as string | undefined);
-  return out;
+  const skip = shelter.slug ? SKIP_FIRST_IMAGES[shelter.slug] : 0;
+  return skip > 0 ? out.slice(skip) : out;
+}
+
+/** URL til det billede der skal vises på kort/liste (respekterer SKIP_FIRST_IMAGES). */
+export function getDisplayImageUrl(shelter: Shelter): string | null {
+  const skip = shelter.slug ? SKIP_FIRST_IMAGES[shelter.slug] : 0;
+  if (skip > 0) {
+    const urls = getPhotoUrls(shelter);
+    const first = urls[0];
+    return first && isValidImageUrl(first) ? first : null;
+  }
+  return isValidImageUrl(shelter.image_url) ? (shelter.image_url ?? null) : null;
 }
 
 /**

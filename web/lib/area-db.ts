@@ -1,4 +1,5 @@
 import { createPublicClient } from "@/utils/supabase/server-public";
+import type { Shelter } from "@/types/shelter";
 
 export interface Area {
   slug: string;
@@ -6,6 +7,24 @@ export interface Area {
   description: string | null;
   region: string;
 }
+
+/** Øer og ø-grupper: vi siger "shelters på Bornholm", ikke "i Bornholm". */
+const AREA_SLUGS_ISLAND = new Set([
+  "bornholm",
+  "lolland",
+  "lolland-falster",
+  "fanoe",
+  "samsoe",
+  "laesoe",
+]);
+
+export function prepositionForArea(area: { slug: string }): "på" | "i" {
+  return AREA_SLUGS_ISLAND.has(area.slug) ? "på" : "i";
+}
+
+const SHELTER_SELECT =
+  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, water, geofa_raw, display_score";
+const EMBED_SHELTER_LIMIT = 500;
 
 /** Hent alle områder (sorteret efter navn). */
 export async function getAllAreas(): Promise<Area[]> {
@@ -40,4 +59,19 @@ export async function getShelterCountByAreaSlug(areaSlug: string): Promise<numbe
     .is("duplicate_of_shelter_id", null);
   if (error) return 0;
   return count ?? 0;
+}
+
+/** Hent alle shelters i et område (til embed-kort). ISR/cache. */
+export async function getSheltersByAreaSlug(areaSlug: string): Promise<Shelter[]> {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("shelters")
+    .select(SHELTER_SELECT)
+    .eq("area_slug", areaSlug)
+    .is("duplicate_of_shelter_id", null)
+    .order("display_score", { ascending: false, nullsFirst: false })
+    .order("title", { ascending: true })
+    .limit(EMBED_SHELTER_LIMIT);
+  if (error) return [];
+  return (data ?? []) as Shelter[];
 }

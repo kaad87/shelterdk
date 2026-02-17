@@ -198,13 +198,15 @@ export function SoegContent({
               )}
             </div>
           </div>
-          <div className="lg:sticky lg:top-24 lg:self-start rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[280px] sm:min-h-[360px] lg:min-h-[420px] h-[50vh] sm:h-[60vh] lg:h-[calc(100vh-8rem)] lg:max-h-[720px] order-1 lg:order-2 mb-6 lg:mb-0">
-            <ShelterMap
-              shelters={shelters}
-              className="w-full h-full"
-              onBoundsChange={fetchByBounds}
-              initialRegion={initialRegion}
-            />
+          <div className="lg:sticky lg:top-24 lg:self-start rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[280px] sm:min-h-[360px] lg:min-h-[420px] h-[50vh] sm:h-[60vh] lg:h-[calc(100vh-8rem)] lg:max-h-[720px] order-1 lg:order-2 mb-6 lg:mb-0 flex flex-col">
+            <div className="flex-1 min-h-0 w-full relative">
+              <ShelterMap
+                shelters={shelters}
+                className="absolute inset-0 w-full h-full"
+                onBoundsChange={fetchByBounds}
+                initialRegion={initialRegion}
+              />
+            </div>
           </div>
         </div>
       ) : view === "map" ? (
@@ -213,10 +215,10 @@ export function SoegContent({
             Viser {shelters.length} shelter{shelters.length !== 1 ? "s" : ""} på kortet
             {loading && " · opdaterer…"}
           </p>
-          <div className="rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[400px] sm:min-h-[500px] md:min-h-[700px] h-[70vh] sm:h-[80vh] md:h-[85vh] max-h-[1400px]">
+          <div className="rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[400px] sm:min-h-[500px] md:min-h-[700px] h-[70vh] sm:h-[80vh] md:h-[85vh] max-h-[1400px] relative">
             <ShelterMap
               shelters={shelters}
-              className="w-full h-full"
+              className="absolute inset-0 w-full h-full"
               onBoundsChange={fetchByBounds}
               initialRegion={initialRegion}
             />

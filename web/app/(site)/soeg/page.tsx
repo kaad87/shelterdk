@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { getSheltersPage, SOEG_PAGE_SIZE } from "@/lib/soeg-db";
-import { getAreaBySlug } from "@/lib/area-db";
+import { getAreaBySlug, prepositionForArea } from "@/lib/area-db";
 
 /** Ved kortvisning: max pr. request (Supabase typisk 1000). Resten hentes på client. */
 const MAP_VIEW_PAGE_SIZE = 1000;
@@ -26,15 +26,16 @@ export async function generateMetadata(props: { searchParams: Promise<{ area?: s
   if (!areaSlug?.trim()) return DEFAULT_METADATA;
   const area = await getAreaBySlug(areaSlug.trim());
   if (!area) return DEFAULT_METADATA;
-  const title = `Shelters i ${area.name} – Se kort og liste | ShelterDK`;
+  const prep = prepositionForArea(area);
+  const title = `Shelters ${prep} ${area.name} – Se kort og liste | ShelterDK`;
   const description =
     area.description?.slice(0, 155) ||
-    `Find shelters og naturovernatning i ${area.name}. Se kort, billeder og book muligheder.`;
+    `Find shelters og naturovernatning ${prep} ${area.name}. Se kort, billeder og book muligheder.`;
   return {
     title: { absolute: title },
     description,
     openGraph: {
-      title: `Shelters i ${area.name} | ShelterDK`,
+      title: `Shelters ${prep} ${area.name} | ShelterDK`,
       description,
       url: `/soeg?area=${encodeURIComponent(areaSlug.trim())}`,
     },
@@ -94,7 +95,7 @@ export default async function SoegPage({ searchParams }: SoegPageProps) {
 
         <h1 className="font-serif text-3xl font-bold text-primary mb-2">
           {areaInfo
-            ? `Shelters i ${areaInfo.name}`
+            ? `Shelters ${prepositionForArea(areaInfo)} ${areaInfo.name}`
             : "Søg shelters"}
         </h1>
         {areaInfo ? (
@@ -110,10 +111,6 @@ export default async function SoegPage({ searchParams }: SoegPageProps) {
               </p>
             )}
             <p className="mt-3 text-primary/70 text-sm">
-              <Link href={`/omraade/${area}`} className="text-accent hover:underline">
-                Læs mere om {areaInfo.name} og se områdets landingsside →
-              </Link>
-              {" · "}
               <Link href="/omraade" className="text-accent hover:underline">
                 Alle områder
               </Link>
@@ -146,6 +143,33 @@ export default async function SoegPage({ searchParams }: SoegPageProps) {
             view={view}
           />
         </Suspense>
+
+        {areaInfo && area && (
+          <section aria-labelledby="embed-heading" className="mt-12 pt-8 border-t border-primary/10">
+            <h2 id="embed-heading" className="font-serif text-xl font-semibold text-primary mb-2">
+              Indlejr dette kort
+            </h2>
+            <p className="text-primary/80 mb-3 text-sm">
+              Turistbureauer og partnere kan indlejre kortet med nedenstående kode. Linket under
+              iframen giver SEO-værdi og peger på denne side.
+            </p>
+            <pre className="bg-primary/5 border border-primary/10 rounded-lg p-4 text-sm overflow-x-auto whitespace-pre-wrap font-mono text-primary/90">
+{`<iframe
+  src="https://shelterdk.dk/embed/${area}"
+  title="Shelter-kort ${areaInfo.name}"
+  width="100%"
+  height="500"
+  loading="lazy"
+  style="border: none;"
+></iframe>
+<p style="text-align: right; font-size: 12px; margin-top: 5px;">
+  <a href="https://shelterdk.dk/soeg?area=${encodeURIComponent(area)}" target="_blank" rel="noopener">
+    Se alle shelters ${prepositionForArea(areaInfo)} ${areaInfo.name} hos Shelterdk.dk
+  </a>
+</p>`}
+            </pre>
+          </section>
+        )}
       </div>
     </div>
   );
