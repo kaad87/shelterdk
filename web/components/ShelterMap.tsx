@@ -61,6 +61,14 @@ export interface MapBounds {
   west: number;
 }
 
+/** Hele Danmark inkl. Bornholm – til forsidens kort så mobil/desktop viser landet fra start. */
+const DENMARK_BOUNDS: MapBounds = {
+  north: 57.75,
+  south: 54.56,
+  west: 8.08,
+  east: 15.19,
+};
+
 function getSheltersWithCoords(shelters: Shelter[]): ShelterWithCoords[] {
   return shelters
     .map((s) => {
@@ -79,6 +87,7 @@ const MapInner = dynamic(
     );
     const L = await import("leaflet");
     const { useEffect, useRef } = await import("react");
+    const Image = (await import("next/image")).default;
     const { isValidImageUrl } = await import("@/lib/shelter-detail");
 
     // Fix default marker-ikon (Next/Leaflet)
@@ -91,13 +100,27 @@ const MapInner = dynamic(
       iconAnchor: [12, 41],
     });
 
-    function FitBounds({ items }: { items: { lat: number; lon: number }[] }) {
+    function FitBounds({
+      items,
+      fixedBounds,
+    }: {
+      items: { lat: number; lon: number }[];
+      fixedBounds?: { north: number; south: number; east: number; west: number };
+    }) {
       const map = useMap();
       const hasFittedRef = useRef(false);
       useEffect(() => {
-        if (items.length === 0) return;
         if (hasFittedRef.current) return;
         hasFittedRef.current = true;
+        if (fixedBounds) {
+          const bounds = L.latLngBounds(
+            [fixedBounds.south, fixedBounds.west],
+            [fixedBounds.north, fixedBounds.east]
+          );
+          map.fitBounds(bounds, { padding: [24, 24], maxZoom: 10 });
+          return;
+        }
+        if (items.length === 0) return;
         if (items.length === 1) {
           map.setView([items[0].lat, items[0].lon], 12);
         } else {
@@ -106,7 +129,7 @@ const MapInner = dynamic(
           );
           map.fitBounds(bounds, { padding: [24, 24], maxZoom: 12 });
         }
-      }, [map, items]);
+      }, [map, items, fixedBounds]);
       return null;
     }
 
@@ -150,6 +173,7 @@ const MapInner = dynamic(
       onBoundsChange,
       initialCenter,
       initialZoom,
+      initialFitBounds,
       getHref,
       embedMode,
     }: {
@@ -157,6 +181,7 @@ const MapInner = dynamic(
       onBoundsChange?: (bounds: MapBounds) => void;
       initialCenter?: [number, number];
       initialZoom?: number;
+      initialFitBounds?: { north: number; south: number; east: number; west: number };
       getHref: (s: Shelter) => string;
       embedMode?: boolean;
     }) {
@@ -177,7 +202,7 @@ const MapInner = dynamic(
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          <FitBounds items={points} />
+          <FitBounds items={points} fixedBounds={initialFitBounds} />
           <BoundsReporter onBoundsChange={onBoundsChange} />
           {sheltersWithCoords.map((shelter) => (
             <Marker
@@ -188,6 +213,17 @@ const MapInner = dynamic(
               <Popup closeButton={false}>
                 {embedMode ? (
                   <div className="p-1 min-w-[180px]">
+                    {isValidImageUrl(shelter.image_url) && (
+                      <div className="w-full aspect-video rounded overflow-hidden bg-primary/10 mb-2 relative">
+                        <Image
+                          src={(shelter.image_url || "").trim()}
+                          alt={`Billede af ${shelter.title}`}
+                          width={240}
+                          height={135}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
                     <p className="font-semibold text-primary mb-2">{shelter.title}</p>
                     <a
                       href={getHref(shelter)}
@@ -244,6 +280,8 @@ interface ShelterMapProps {
   onBoundsChange?: (bounds: MapBounds) => void;
   /** Ved region-filter (Jylland, Fyn, Sjælland) zoomes kortet ind på regionen i stedet for hele Danmark. */
   initialRegion?: string | null;
+  /** Ved load: fit til hele Danmark inkl. Bornholm (fx forsiden på mobil). */
+  fitWholeDenmarkOnLoad?: boolean;
   /** Embed-tilstand: simpelt popup med "Se detaljer & book" (target _blank til /shelter/slug). */
   embedMode?: boolean;
 }
@@ -253,6 +291,7 @@ export function ShelterMap({
   className = "",
   onBoundsChange,
   initialRegion,
+  fitWholeDenmarkOnLoad,
   embedMode,
 }: ShelterMapProps) {
   const regionView = initialRegion ? REGION_CENTER_ZOOM[initialRegion] : undefined;
@@ -293,6 +332,7 @@ export function ShelterMap({
         onBoundsChange={onBoundsChange}
         initialCenter={initialCenter}
         initialZoom={initialZoom}
+        initialFitBounds={fitWholeDenmarkOnLoad ? DENMARK_BOUNDS : undefined}
         getHref={getHref}
         embedMode={embedMode}
       />

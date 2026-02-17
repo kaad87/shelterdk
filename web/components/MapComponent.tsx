@@ -40,6 +40,7 @@ export function MapComponent({ shelters: initialShelters, className }: MapCompon
       shelters={shelters}
       className={className}
       onBoundsChange={handleBoundsChange}
+      fitWholeDenmarkOnLoad
     />
   );
 }

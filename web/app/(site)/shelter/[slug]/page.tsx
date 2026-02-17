@@ -111,11 +111,7 @@ export async function generateMetadata({
 
   const photoUrls = getPhotoUrls(shelter);
   const ogImage =
-    photoUrls.length > 0 && isValidImageUrl(photoUrls[0])
-      ? photoUrls[0]
-      : shelter.image_url && isValidImageUrl(shelter.image_url)
-        ? shelter.image_url
-        : undefined;
+    photoUrls.length > 0 && isValidImageUrl(photoUrls[0]) ? photoUrls[0] : undefined;
 
   return {
     title: { absolute: title },

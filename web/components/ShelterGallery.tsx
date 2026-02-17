@@ -31,7 +31,6 @@ export function ShelterGallery({
   const [mainImageFailed, setMainImageFailed] = useState(false);
   const hasImages = urls.length > 0;
   const mainImageUrl = hasImages ? urls[0] : null;
-  const galleryUrls = hasImages ? urls.slice(1) : [];
   const showMainImage = mainImageUrl && !mainImageFailed;
 
   // Tastaturstyring, når lightbox er åben
@@ -123,29 +122,6 @@ export function ShelterGallery({
           )}
         </div>
       </div>
-
-      {/* Thumbnails under hero – klik åbner også lightbox */}
-      {galleryUrls.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-8">
-          {galleryUrls.slice(0, 4).map((url, i) => (
-            <button
-              key={url}
-              type="button"
-              onClick={() => setLightboxIndex(i + 1)}
-              className="relative w-full aspect-square min-h-0 rounded-xl overflow-hidden bg-primary focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
-              aria-label={`Vis billede ${i + 1} i fuld størrelse`}
-            >
-              <Image
-                src={url}
-                alt={`${title} – galleribillede ${i + 2}`}
-                fill
-                className="object-cover transition-transform hover:scale-105"
-                sizes="(max-width: 640px) 50vw, 25vw"
-              />
-            </button>
-          ))}
-        </div>
-      )}
 
       {/* Lightbox: klik udenfor, på X eller brug tastatur (← → Esc) */}
       {lightboxIndex !== null && (

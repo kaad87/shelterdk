@@ -264,13 +264,30 @@ const SKIP_FIRST_IMAGES: Record<string, number> = {
   "shelterplads-med-balplads-og-borde-og-baenke-14806": 4,
 };
 
-/** Saml alle billed-URL'er fra image_url, image_urls (jsonb) og geofa_raw. Dedupe, filtrer cookiebot/1.gif og ugyldige URL'er. */
+/** URL-mønstre for billeder der ikke må vises (fx sponsor-/annoncebilleder). */
+const EXCLUDED_IMAGE_PATTERNS = [
+  "a_p_moller_fonden",
+  "moller_fonden",
+  "a_p_moller-fonden",
+  "moller-fonden",
+];
+
+function isExcludedImageUrl(url: string): boolean {
+  const lower = url.toLowerCase();
+  if (EXCLUDED_IMAGE_PATTERNS.some((p) => lower.includes(p))) return true;
+  // Fange "A.P. Møller Fonden"-billeder uanset URL-format (fx udinaturen.dk/.../moller...fonden)
+  if (lower.includes("moller") && lower.includes("fonden")) return true;
+  return false;
+}
+
+/** Saml alle billed-URL'er fra image_url, image_urls (jsonb) og geofa_raw. Dedupe, filtrer cookiebot/1.gif, A.P. Møller Fonden og ugyldige URL'er. */
 export function getPhotoUrls(shelter: Shelter): string[] {
   const seen = new Set<string>();
   const out: string[] = [];
   const add = (url: string | null | undefined) => {
     const u = typeof url === "string" ? url.trim() : "";
     if (!u || u.includes("cookiebot.com") || u.endsWith("/1.gif") || seen.has(u)) return;
+    if (isExcludedImageUrl(u)) return;
     if (!isValidImageUrl(u)) return;
     seen.add(u);
     out.push(u);
@@ -290,15 +307,11 @@ export function getPhotoUrls(shelter: Shelter): string[] {
   return skip > 0 ? out.slice(skip) : out;
 }
 
-/** URL til det billede der skal vises på kort/liste (respekterer SKIP_FIRST_IMAGES). */
+/** URL til det billede der skal vises på kort/liste (respekterer SKIP_FIRST_IMAGES og ekskluderede billeder). */
 export function getDisplayImageUrl(shelter: Shelter): string | null {
-  const skip = shelter.slug ? SKIP_FIRST_IMAGES[shelter.slug] : 0;
-  if (skip > 0) {
-    const urls = getPhotoUrls(shelter);
-    const first = urls[0];
-    return first && isValidImageUrl(first) ? first : null;
-  }
-  return isValidImageUrl(shelter.image_url) ? (shelter.image_url ?? null) : null;
+  const urls = getPhotoUrls(shelter);
+  const first = urls[0];
+  return first && isValidImageUrl(first) ? first : null;
 }
 
 /**
