@@ -49,6 +49,7 @@ export function ShelterSchema({
   const payment = getPayment(shelter);
 
   const description =
+    (shelter.seo_description?.trim() ? stripHtml(shelter.seo_description) : null) ||
     getLongDescription(shelter) ||
     (shelter.description ? stripHtml(shelter.description) : null) ||
     shelter.description ||

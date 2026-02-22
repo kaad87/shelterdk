@@ -74,6 +74,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "webkort.esbjergkommune.dk",
       },
+      {
+        protocol: "https",
+        hostname: "webkort.herning.dk",
+      },
       // Supabase Storage (brugeruploadede billeder) – samme host som API
       ...(supabaseHost ? [{ protocol: "https", hostname: supabaseHost }] : []),
     ],

@@ -35,12 +35,13 @@ interface PageProps {
 }
 
 /** ISR: cache side og revalider i baggrunden hver 24. time for hurtig TTFB. */
-export const revalidate = 86400;
+/** 0 = altid friske data (fx når seo_description opdateres). Sæt til 86400 for 24t cache. */
+export const revalidate = 0;
 
 const SHELTER_SELECT_DETAIL =
-  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, region, kommune, place, toilet, water, geofa_raw, area_slug";
+  "id, title, slug, description, seo_description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, region, kommune, place, toilet, water, geofa_raw, area_slug";
 const SHELTER_SELECT_DETAIL_FALLBACK =
-  "id, title, slug, description, location, image_url, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, region, water, geofa_raw, area_slug";
+  "id, title, slug, description, seo_description, location, image_url, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, region, water, geofa_raw, area_slug";
 
 async function getShelterBySlug(slug: string): Promise<Shelter | null> {
   const supabase = createPublicClient();
@@ -159,7 +160,10 @@ export default async function ShelterPage({ params }: PageProps) {
   const photoUrls = getPhotoUrls(shelter);
   const allPhotoUrls = photoUrls.length > 0 ? photoUrls : [];
   const displayDescription =
-    getLongDescription(shelter) || stripHtml(shelter.description) || null;
+    (shelter.seo_description?.trim() ? stripHtml(shelter.seo_description) : null) ||
+    getLongDescription(shelter) ||
+    stripHtml(shelter.description) ||
+    null;
   const capacity = getCapacity(shelter);
   const features = getFeatures(shelter);
   const season = getSeason(shelter);

@@ -46,8 +46,8 @@ interface PageProps {
 // true = tillad on-demand rendering af shelters der ikke var med ved sidste build
 export const dynamicParams = true;
 
-/** ISR: cache side og revalider i baggrunden hver 24. time for hurtig TTFB. */
-export const revalidate = 86400;
+/** ISR: cache side og revalider i baggrunden hver 24. time for hurtig TTFB. 0 = altid friske data (bruges ved seo_description-opdateringer). */
+export const revalidate = 0;
 
 export async function generateStaticParams() {
   const shelters = await getSheltersForStaticParams();
@@ -167,7 +167,10 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
   const photoUrls = getPhotoUrls(shelter);
   const allPhotoUrls = photoUrls.length > 0 ? photoUrls : [];
   const displayDescription =
-    getLongDescription(shelter) || stripHtml(shelter.description) || null;
+    (shelter.seo_description?.trim() ? stripHtml(shelter.seo_description) : null) ||
+    getLongDescription(shelter) ||
+    stripHtml(shelter.description) ||
+    null;
   const capacity = getCapacity(shelter);
   const features = getFeatures(shelter);
   const season = getSeason(shelter);

@@ -33,4 +33,6 @@ export interface Shelter {
   google_places?: { name: string | null } | null;
   /** SEO-område (matcher areas.slug) – bruges til brødkrummer og område-landingssider. */
   area_slug?: string | null;
+  /** AI-omskrevet beskrivelse til SEO (unik tekst, ingen duplicate content). */
+  seo_description?: string | null;
 }

@@ -20,8 +20,6 @@ export function ShelterFaq({ items, jsonLd }: ShelterFaqProps) {
       <section
         className="mb-10"
         aria-label="Ofte stillede spørgsmål om dette shelter"
-        itemScope
-        itemType="https://schema.org/FAQPage"
       >
         <h2 className="font-serif text-xl font-bold text-primary mb-4">
           Ofte stillede spørgsmål
@@ -31,25 +29,13 @@ export function ShelterFaq({ items, jsonLd }: ShelterFaqProps) {
             <li
               key={index}
               className="rounded-xl border border-primary/10 bg-white/50 p-5"
-              itemScope
-              itemProp="mainEntity"
-              itemType="https://schema.org/Question"
             >
-              <h3
-                className="font-semibold text-primary mb-2"
-                itemProp="name"
-              >
+              <h3 className="font-semibold text-primary mb-2">
                 {item.question}
               </h3>
-              <div
-                itemScope
-                itemProp="acceptedAnswer"
-                itemType="https://schema.org/Answer"
-              >
-                <p className="text-primary/90 text-sm leading-relaxed" itemProp="text">
-                  {item.answer}
-                </p>
-              </div>
+              <p className="text-primary/90 text-sm leading-relaxed">
+                {item.answer}
+              </p>
             </li>
           ))}
         </ul>

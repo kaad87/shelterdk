@@ -35,38 +35,18 @@ export default function FaqPage() {
           </p>
         </header>
 
-        <section
-          className="space-y-10"
-          aria-label="FAQ-liste"
-          itemScope
-          itemType="https://schema.org/FAQPage"
-        >
+        <section className="space-y-10" aria-label="FAQ-liste">
           {GLOBAL_FAQS.map((item, index) => (
             <article
               key={index}
               className="border-b border-primary/10 pb-10 last:border-0 last:pb-0"
-              itemScope
-              itemProp="mainEntity"
-              itemType="https://schema.org/Question"
             >
-              <h2
-                className="font-serif text-xl font-bold text-primary mb-3"
-                itemProp="name"
-              >
+              <h2 className="font-serif text-xl font-bold text-primary mb-3">
                 {item.question}
               </h2>
-              <div
-                itemScope
-                itemProp="acceptedAnswer"
-                itemType="https://schema.org/Answer"
-              >
-                <p
-                  className="text-primary/90 leading-relaxed"
-                  itemProp="text"
-                >
-                  {item.answer}
-                </p>
-              </div>
+              <p className="text-primary/90 leading-relaxed">
+                {item.answer}
+              </p>
             </article>
           ))}
         </section>

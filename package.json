@@ -9,6 +9,8 @@
     "check:booking-links:fix:dry": "node scripts/check-booking-links.js --fix --dry-run",
     "match:booking-urls": "node scripts/match-booking-urls-from-naturstyrelsen.js",
     "match:booking-urls:apply": "node scripts/match-booking-urls-from-naturstyrelsen.js --apply",
-    "match:booking-urls:apply:empty": "node scripts/match-booking-urls-from-naturstyrelsen.js --apply --only-empty"
+    "match:booking-urls:apply:empty": "node scripts/match-booking-urls-from-naturstyrelsen.js --apply --only-empty",
+    "generate:ai-summaries": "node scripts/generateAiSummaries.js",
+    "rewrite:descriptions": "node scripts/rewriteDescriptions.js"
   }
 }
