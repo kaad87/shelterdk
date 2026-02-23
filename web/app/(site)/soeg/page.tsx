@@ -14,6 +14,7 @@ const DEFAULT_METADATA: Metadata = {
   title: { absolute: "Søg shelters | ShelterDK" },
   description:
     "Se alle shelters i Danmark. Filtrer efter region, søg efter område og se listen eller kortvisning.",
+  alternates: { canonical: "https://shelterdk.dk/soeg" },
   openGraph: {
     title: "Søg shelters | ShelterDK",
     description: "Se alle shelters i Danmark. Filtrer efter region, søg efter område og se listen eller kortvisning.",
@@ -31,13 +32,15 @@ export async function generateMetadata(props: { searchParams: Promise<{ area?: s
   const description =
     area.description?.slice(0, 155) ||
     `Find shelters og naturovernatning ${prep} ${area.name}. Se kort, billeder og book muligheder.`;
+  const canonicalPath = `/soeg?area=${encodeURIComponent(areaSlug.trim())}`;
   return {
     title: { absolute: title },
     description,
+    alternates: { canonical: `https://shelterdk.dk${canonicalPath}` },
     openGraph: {
       title: `Shelters ${prep} ${area.name} | ShelterDK`,
       description,
-      url: `/soeg?area=${encodeURIComponent(areaSlug.trim())}`,
+      url: canonicalPath,
     },
   };
 }

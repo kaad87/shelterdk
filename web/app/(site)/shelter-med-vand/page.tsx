@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   title: { absolute: PAGE_TITLE },
   description:
     "Find shelters og overnatningspladser i Danmark hvor der er vand – vandhane eller drikkevand. Udforsk pladser med adgang til vand til naturovernatning.",
+  alternates: { canonical: "https://shelterdk.dk/shelter-med-vand" },
   openGraph: {
     title: PAGE_TITLE,
     description:

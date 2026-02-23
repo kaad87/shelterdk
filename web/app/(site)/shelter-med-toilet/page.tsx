@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   title: { absolute: PAGE_TITLE },
   description:
     "Find shelters og overnatningspladser i Danmark hvor der er toilet – vandskyllende toilet eller muldtoilet. Udforsk pladser med faciliteter til naturovernatning.",
+  alternates: { canonical: "https://shelterdk.dk/shelter-med-toilet" },
   openGraph: {
     title: PAGE_TITLE,
     description:

@@ -86,6 +86,50 @@ function kommuneToBy(value: string): string {
   return t;
 }
 
+/** Generer SEO-titel med bynavn. Original title bevares i shelter.title. Undgår generisk fallback for at reducere duplicate content. */
+export function buildSeoTitle(shelter: Shelter): string {
+  const name = (shelter.title || "").trim();
+  const city = getCity(shelter);
+  const region = (shelter.region ?? "").trim() || "Danmark";
+  const by = city || (region !== "Danmark" ? region : null);
+  const suffix = " | Shelterdk.dk";
+
+  const isGenericOnly =
+    !name ||
+    /^shelter\s*$/i.test(name) ||
+    /^shelterplads\s*$/i.test(name);
+
+  if (isGenericOnly) {
+    const place = shelter.place && typeof shelter.place === "string" ? shelter.place.trim() : null;
+    const vejnavn = getStr(RAW(shelter), "vejnavn");
+    if (by && place && place !== by) {
+      return `Shelter ved ${place} i ${by}${suffix}`;
+    }
+    if (by && vejnavn && vejnavn.length > 2) {
+      return `Shelter ved ${vejnavn} i ${by}${suffix}`;
+    }
+    if (by && region !== "Danmark") {
+      return `Shelter i ${by}, ${region}${suffix}`;
+    }
+    if (by) {
+      return `Shelter i ${by}${suffix}`;
+    }
+    return `Shelter - Overnatning i naturen${suffix}`;
+  }
+
+  if (!by) {
+    return name + suffix;
+  }
+
+  const nameLower = name.toLowerCase();
+  const byLower = by.toLowerCase();
+  if (nameLower.includes(byLower)) {
+    return name + suffix;
+  }
+
+  return `${name} i ${by}${suffix}`;
+}
+
 /** By/stedsnavn til visning – foretrækker præcist sted (place), ellers kommune eller GeoFA. */
 export function getCity(shelter: Shelter): string | null {
   const place = shelter.place && typeof shelter.place === "string" ? shelter.place.trim() : null;

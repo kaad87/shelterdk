@@ -35,4 +35,6 @@ export interface Shelter {
   area_slug?: string | null;
   /** AI-omskrevet beskrivelse til SEO (unik tekst, ingen duplicate content). */
   seo_description?: string | null;
+  /** Genereret SEO-titel med bynavn. Original title bevares i title. */
+  seo_title?: string | null;
 }

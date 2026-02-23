@@ -1,5 +1,7 @@
+import { cache } from "react";
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import {
   getShelterBySlugInSilo,
   getShelterBySlugIncludingDuplicates,
@@ -15,6 +17,7 @@ import { segmentSlugToName } from "@/lib/slug";
 import type { Shelter } from "@/types/shelter";
 import {
   getLongDescription,
+  buildSeoTitle,
   getPhotoUrls,
   getCapacity,
   getFeatures,
@@ -46,8 +49,8 @@ interface PageProps {
 // true = tillad on-demand rendering af shelters der ikke var med ved sidste build
 export const dynamicParams = true;
 
-/** ISR: cache side og revalider i baggrunden hver 24. time for hurtig TTFB. 0 = altid friske data (bruges ved seo_description-opdateringer). */
-export const revalidate = 0;
+/** ISR: cache 1 time for hurtig TTFB. Efter første load serveres siden fra cache. */
+export const revalidate = 3600;
 
 export async function generateStaticParams() {
   const shelters = await getSheltersForStaticParams();
@@ -75,13 +78,15 @@ function buildDescriptionFromFacilities(shelter: Shelter): string {
   return `${shelter.title} – book shelter i ${region}.${facilityStr} ${extra}`.slice(0, 160);
 }
 
+const getCachedShelterInSilo = cache(getShelterBySlugInSilo);
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { region: regionSlug, municipality: municipalitySlug, shelter_slug } = await params;
-  const { shelter } = await getShelterBySlugInSilo(shelter_slug);
+  const { shelter } = await getCachedShelterInSilo(shelter_slug);
   if (!shelter) return { title: "Shelter ikke fundet" };
 
-  const region = (shelter.region ?? "").trim() || "Danmark";
-  const title = `${shelter.title} - Book shelter i ${region}`;
+  const title =
+    (shelter.seo_title?.trim() || null) ?? buildSeoTitle(shelter);
   const description = buildDescriptionFromFacilities(shelter);
   const canonicalPath = `/danmark/${regionSlug}/${municipalitySlug}/${shelter_slug}`;
 
@@ -109,7 +114,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function DanmarkShelterPage({ params }: PageProps) {
   const { region: regionSlug, municipality: municipalitySlug, shelter_slug } = await params;
 
-  let result = await getShelterBySlugInSilo(shelter_slug);
+  let result = await getCachedShelterInSilo(shelter_slug);
   if (!result.shelter) {
     // Fallback: slug kan matche en duplicate – redirect til kanonisk shelter
     const fallback = await getShelterBySlugIncludingDuplicates(shelter_slug);
@@ -133,11 +138,6 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
   const pairs = await getRegionKommunePairs();
   const regions = [...new Set(pairs.map((p) => p.region))];
   const regionName = segmentSlugToName(regionSlug, regions);
-  const municipalities = regionName ? await getMunicipalitiesInRegion(regionName) : [];
-  const municipalityName =
-    municipalitySlug === NO_KOMMUNE_SLUG
-      ? null
-      : segmentSlugToName(municipalitySlug, municipalities);
 
   const expectedRegionSlug = shelterRegion ? slugifySegment(shelterRegion) : null;
   const expectedMunicipalitySlug = shelterKommune
@@ -153,10 +153,15 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
   }
 
   const areaSlug = (shelter as { area_slug?: string | null }).area_slug?.trim() || null;
-  const [reviews, area] = await Promise.all([
+  const [municipalitiesResult, reviews, area] = await Promise.all([
+    regionName ? getMunicipalitiesInRegion(regionName) : Promise.resolve([]),
     getReviews(shelter.google_place_id ?? null),
     areaSlug ? getAreaBySlug(areaSlug) : Promise.resolve(null),
   ]);
+  const municipalityName =
+    municipalitySlug === NO_KOMMUNE_SLUG
+      ? null
+      : segmentSlugToName(municipalitySlug, municipalitiesResult);
 
   const placeName = shelter.google_place_name ?? null;
   const showReviews = isShelterPlace(placeName);
@@ -259,11 +264,19 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
       reviews={reviews}
       coords={coords}
       />
-      <NearbySheltersWithinRadius
-        shelterId={shelter.id}
-        limit={5}
-        coords={coords}
-      />
+      <Suspense
+        fallback={
+          <section className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-10 border-t border-primary/10">
+            <div className="h-8 w-48 bg-primary/5 rounded animate-pulse" aria-hidden />
+          </section>
+        }
+      >
+        <NearbySheltersWithinRadius
+          shelterId={shelter.id}
+          limit={5}
+          coords={coords}
+        />
+      </Suspense>
     </>
   );
 }

@@ -131,8 +131,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     );
   }
 
-  // Kommuner: /danmark/[region]/[municipality]
-  const pairs = await getRegionKommunePairs();
+  // Kommuner: /danmark/[region]/[municipality] – kun kommuner med 2+ shelters (matcher generateStaticParams)
+  const pairs = await getRegionKommunePairs(2);
   for (const { region, kommune } of pairs) {
     const regionSlug = slugifySegment(region);
     const municipalitySlug = kommune ? slugifySegment(kommune) : NO_KOMMUNE_SLUG;

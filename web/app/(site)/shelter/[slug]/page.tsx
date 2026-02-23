@@ -1,10 +1,13 @@
+import { cache } from "react";
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { createPublicClient } from "@/utils/supabase/server-public";
 import { getShelterFaqItems, faqToJsonLd } from "@/lib/faq";
 import type { Shelter } from "@/types/shelter";
 import {
   getLongDescription,
+  buildSeoTitle,
   getPhotoUrls,
   getCapacity,
   getFeatures,
@@ -34,16 +37,15 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-/** ISR: cache side og revalider i baggrunden hver 24. time for hurtig TTFB. */
-/** 0 = altid friske data (fx når seo_description opdateres). Sæt til 86400 for 24t cache. */
-export const revalidate = 0;
+/** ISR: cache 1 time for hurtig TTFB. */
+export const revalidate = 3600;
 
 const SHELTER_SELECT_DETAIL =
-  "id, title, slug, description, seo_description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, region, kommune, place, toilet, water, geofa_raw, area_slug";
+  "id, title, slug, seo_title, description, seo_description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, region, kommune, place, toilet, water, geofa_raw, area_slug";
 const SHELTER_SELECT_DETAIL_FALLBACK =
-  "id, title, slug, description, seo_description, location, image_url, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, region, water, geofa_raw, area_slug";
+  "id, title, slug, description, seo_description, location, image_url, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, region, kommune, place, water, geofa_raw, area_slug";
 
-async function getShelterBySlug(slug: string): Promise<Shelter | null> {
+async function getShelterBySlugUncached(slug: string): Promise<Shelter | null> {
   const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("shelters")
@@ -61,6 +63,8 @@ async function getShelterBySlug(slug: string): Promise<Shelter | null> {
   }
   return null;
 }
+
+const getShelterBySlug = cache(getShelterBySlugUncached);
 
 async function getReviews(googlePlaceId: string | null) {
   if (!googlePlaceId) return [];
@@ -106,8 +110,8 @@ export async function generateMetadata({
   const shelter = await getShelterBySlug(slug);
   if (!shelter) return { title: "Shelter ikke fundet" };
 
-  const region = (shelter.region ?? "").trim() || "Danmark";
-  const title = `${shelter.title} - Book shelter i ${region}`;
+  const title =
+    (shelter.seo_title?.trim() || null) ?? buildSeoTitle(shelter);
   const description = buildDescriptionFromFacilities(shelter);
 
   const photoUrls = getPhotoUrls(shelter);
@@ -247,11 +251,19 @@ export default async function ShelterPage({ params }: PageProps) {
       reviews={reviews}
       coords={coords}
       />
-      <NearbySheltersWithinRadius
-        shelterId={shelter.id}
-        limit={5}
-        coords={coords}
-      />
+      <Suspense
+        fallback={
+          <section className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-10 border-t border-primary/10">
+            <div className="h-8 w-48 bg-primary/5 rounded animate-pulse" aria-hidden />
+          </section>
+        }
+      >
+        <NearbySheltersWithinRadius
+          shelterId={shelter.id}
+          limit={5}
+          coords={coords}
+        />
+      </Suspense>
     </>
   );
 }

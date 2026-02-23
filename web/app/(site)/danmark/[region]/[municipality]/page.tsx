@@ -43,13 +43,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!municipalityName) return { title: { absolute: "Kommune ikke fundet" } };
   const title = `Shelters i ${municipalityName}, ${regionName} | ShelterDK`;
   const description = `Find shelters og overnatningspladser i ${municipalityName}, ${regionName}. Se pladser, booking og praktisk info.`;
+  const canonicalPath = `/danmark/${regionSlug}/${municipalitySlug}`;
   return {
     title: { absolute: title },
     description,
+    alternates: { canonical: `https://shelterdk.dk${canonicalPath}` },
     openGraph: {
       title,
       description,
-      url: `/danmark/${regionSlug}/${municipalitySlug}`,
+      url: canonicalPath,
     },
   };
 }

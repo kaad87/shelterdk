@@ -35,13 +35,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!regionName) return { title: { absolute: "Region ikke fundet" } };
   const title = `Shelters i ${regionName} | ShelterDK`;
   const description = `Find shelters og overnatningspladser i ${regionName}. Se kommuner, top shelters og book muligheder.`;
+  const canonicalPath = `/danmark/${regionSlug}`;
   return {
     title: { absolute: title },
     description,
+    alternates: { canonical: `https://shelterdk.dk${canonicalPath}` },
     openGraph: {
       title,
       description,
-      url: `/danmark/${regionSlug}`,
+      url: canonicalPath,
     },
   };
 }

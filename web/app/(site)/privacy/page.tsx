@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: { absolute: "Privatliv og cookies | ShelterDK" },
   description:
     "Sådan bruger ShelterDK cookies og håndterer vi data. Nødvendige og valgfrie cookies, Google Tag Manager og dine valg.",
+  alternates: { canonical: "https://shelterdk.dk/privacy" },
   openGraph: {
     title: "Privatliv og cookies | ShelterDK",
     description: "Sådan bruger ShelterDK cookies og håndterer vi data. Nødvendige og valgfrie cookies og dine valg.",

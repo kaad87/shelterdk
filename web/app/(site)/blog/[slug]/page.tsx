@@ -70,13 +70,15 @@ export async function generateMetadata({
   if (!post) return { title: { absolute: "Indlæg ikke fundet" } };
   const title = `${post.title} | ShelterDK`;
   const description = post.content.slice(0, 160).replace(/\n/g, " ");
+  const canonicalPath = `/blog/${slug}`;
   return {
     title: { absolute: title },
     description,
+    alternates: { canonical: `https://shelterdk.dk${canonicalPath}` },
     openGraph: {
       title,
       description,
-      url: `/blog/${slug}`,
+      url: canonicalPath,
     },
   };
 }

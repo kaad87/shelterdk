@@ -9,7 +9,7 @@
  *          Kolonnen seo_description (TEXT) skal findes i shelters-tabellen.
  *
  * Kør: node scripts/rewriteDescriptions.js
- *   --limit=50      max shelters per kørsel (standard 50)
+ *   --limit=N       max shelters per kørsel (standard 50). --limit=0 = alle
  *   --delay=500     ms mellem API-kald (standard 500)
  *   --dry-run       vis kun hvad der ville blive opdateret
  */
@@ -67,6 +67,7 @@ Du må IKKE:
 - Fjerne fakta, faciliteter, praktisk information eller beskrivelser
 - Droppe punkter fra lister
 - Reducere antallet af sætninger
+- Tilføje overskrifter som "Beskrivelse:" eller lignende – output kun selve beskrivelsesteksten, ingen labels foran
 
 Hold en neutral, faktuel tone.`;
 
@@ -76,10 +77,11 @@ function parseArgs() {
   let delayMs = DEFAULT_DELAY_MS;
   let dryRun = false;
   for (const a of args) {
-    if (a.startsWith("--limit=")) limit = Math.max(1, parseInt(a.slice(8), 10)) || BATCH_SIZE;
+    if (a.startsWith("--limit=")) limit = Math.max(0, parseInt(a.slice(8), 10));
     if (a.startsWith("--delay=")) delayMs = Math.max(0, parseInt(a.slice(8), 10)) || DEFAULT_DELAY_MS;
     if (a === "--dry-run") dryRun = true;
   }
+  if (limit === 0) limit = 99999; // 0 = ingen grænse
   return { limit, delayMs, dryRun };
 }
 
@@ -233,12 +235,14 @@ async function main() {
         ],
       });
 
-      const content = completion.choices?.[0]?.message?.content?.trim();
+      let content = completion.choices?.[0]?.message?.content?.trim();
       if (!content) {
         console.log(`[${i + 1}/${shelters.length}] ${s.title}: tom respons fra OpenAI`);
         err++;
         continue;
       }
+      // Fjern evt. "Beskrivelse:" eller lignende fra starten
+      content = content.replace(/^Beskrivelse\s*:\s*/i, "").trim();
 
       if (!dryRun) {
         const { error: updateError } = await supabase

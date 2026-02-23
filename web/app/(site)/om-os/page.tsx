@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: { absolute: "Om os | ShelterDK" },
   description:
     "ShelterDK samler shelters i hele Danmark – GeoFA, Naturstyrelsen, Book en Shelter og mere. Find overnatning i naturen på ét kort.",
+  alternates: { canonical: "https://shelterdk.dk/om-os" },
   openGraph: {
     title: "Om os | ShelterDK",
     description: "ShelterDK samler shelters i hele Danmark – GeoFA, Naturstyrelsen, Book en Shelter og mere. Find overnatning i naturen på ét kort.",

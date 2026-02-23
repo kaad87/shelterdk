@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: { absolute: PAGE_TITLE },
   description:
     "Svar på de mest stillede spørgsmål om shelters: hvad er et shelter, hvor finder jeg dem, er de gratis, kan man booke, toilet og hund. Find shelters i hele Danmark på ShelterDK.",
+  alternates: { canonical: "https://shelterdk.dk/faq" },
   openGraph: {
     title: PAGE_TITLE,
     description:

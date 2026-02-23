@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: { absolute: "Blog | ShelterDK" },
   description:
     "Tips, guider og nyheder om shelters og naturovernatning i Danmark.",
+  alternates: { canonical: "https://shelterdk.dk/blog" },
   openGraph: {
     title: "Blog | ShelterDK",
     description: "Tips, guider og nyheder om shelters og naturovernatning i Danmark.",

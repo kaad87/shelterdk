@@ -12,6 +12,13 @@ const supabaseHost =
     : null;
 
 const nextConfig = {
+  async redirects() {
+    return [
+      { source: "/danmark/jylland/ny-hammersholt", destination: "/danmark/jylland", permanent: true },
+      { source: "/danmark/jylland/fons", destination: "/danmark/jylland", permanent: true },
+      { source: "/danmark/fyn/dybbol", destination: "/danmark/fyn", permanent: true },
+    ];
+  },
   images: {
     remotePatterns: [
       {

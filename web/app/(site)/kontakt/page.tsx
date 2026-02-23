@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: { absolute: "Kontakt | ShelterDK" },
   description:
     "Kontakt ShelterDK – spørgsmål, forslag eller fejlrapporter om shelters i Danmark.",
+  alternates: { canonical: "https://shelterdk.dk/kontakt" },
   openGraph: {
     title: "Kontakt | ShelterDK",
     description: "Kontakt ShelterDK – spørgsmål, forslag eller fejlrapporter om shelters i Danmark.",
