@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { MapPin, ExternalLink } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import "leaflet/dist/leaflet.css";
 
 const MAP_HEIGHT = 300;
@@ -72,10 +73,48 @@ export function ShelterLocationMap({
   openStreetMapUrl,
   googleMapsUrl,
 }: ShelterLocationMapProps) {
+  const [isVisible, setIsVisible] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (isVisible) return;
+    const element = containerRef.current;
+    if (!element) return;
+
+    if (typeof window === "undefined" || !("IntersectionObserver" in window)) {
+      setIsVisible(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+            observer.disconnect();
+            break;
+          }
+        }
+      },
+      { rootMargin: "200px 0px" }
+    );
+
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [isVisible]);
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" ref={containerRef}>
       <div className="rounded-2xl overflow-hidden border border-primary/10 bg-white shadow-sm ring-1 ring-primary/5">
-        <LocationMapInner lat={lat} lon={lon} />
+        {isVisible ? (
+          <LocationMapInner lat={lat} lon={lon} />
+        ) : (
+          <div
+            className="w-full rounded-xl bg-primary/5 animate-pulse"
+            style={{ height: MAP_HEIGHT }}
+            aria-hidden
+          />
+        )}
       </div>
       <div className="flex flex-wrap items-center gap-2">
         <a

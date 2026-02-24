@@ -63,6 +63,10 @@ const nextConfig = {
       },
       {
         protocol: "https",
+        hostname: "book.naturstyrelsen.dk",
+      },
+      {
+        protocol: "https",
         hostname: "kortservice2.vejle.dk",
       },
       {

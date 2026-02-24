@@ -19,6 +19,7 @@ const STATIC_PAGES: Array<{
 }> = [
   { path: "", changeFrequency: "daily", priority: 1 },
   { path: "/soeg", changeFrequency: "weekly", priority: 0.9 },
+  { path: "/shelter-naer-mig", changeFrequency: "weekly", priority: 0.88 },
   { path: "/shelter-med-toilet", changeFrequency: "weekly", priority: 0.85 },
   { path: "/shelter-med-vand", changeFrequency: "weekly", priority: 0.85 },
   { path: "/faq", changeFrequency: "monthly", priority: 0.8 },

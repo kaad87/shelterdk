@@ -47,6 +47,8 @@ export function ShelterSchema({
   const locality = getCity(shelter) ?? shelter.kommune?.trim() ?? shelter.place?.trim() ?? null;
   const region = (shelter.region ?? "").trim();
   const payment = getPayment(shelter);
+  const rating = shelter.google_rating;
+  const ratingCount = shelter.google_user_ratings_total;
 
   const description =
     (shelter.seo_description?.trim() ? stripHtml(shelter.seo_description) : null) ||
@@ -138,6 +140,16 @@ export function ShelterSchema({
     ...(priceRange !== undefined && { priceRange }),
     ...(amenityFeatures.length > 0 && { amenityFeature: amenityFeatures }),
     ...(images.length > 0 && { image: images }),
+    ...(rating != null &&
+      ratingCount != null &&
+      ratingCount > 0 && {
+        aggregateRating: {
+          "@type": "AggregateRating",
+          ratingValue: rating,
+          ratingCount,
+          reviewCount: ratingCount,
+        },
+      }),
   };
 
   // Remove undefined so JSON-LD is valid

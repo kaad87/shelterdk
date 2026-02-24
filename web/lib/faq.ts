@@ -103,20 +103,20 @@ export function getShelterFaqItems(
     flush: "vandskyllende toilet",
     mulch: "muldtoilet / tørkloset",
     none: "Ingen toilet på pladsen – medbring spade eller brug nærliggende toiletter.",
-    unknown: "Vi har ikke oplysninger om toilet på denne plads. Tjek beskrivelsen eller kontakt forvalter.",
   };
-  const toiletAnswer =
-    options.toilet === "none"
-      ? toiletLabels.none
-      : options.toilet === "unknown"
-        ? toiletLabels.unknown
-        : options.toilet
-          ? `Ja, der findes et ${toiletLabels[options.toilet]} på pladsen.`
-          : toiletLabels.unknown;
-  items.push({
-    question: `Er der toilet på ${title}?`,
-    answer: toiletAnswer,
-  });
+  let toiletAnswer: string | null = null;
+  if (options.toilet === "none") {
+    toiletAnswer = toiletLabels.none;
+  } else if (options.toilet && options.toilet !== "unknown") {
+    toiletAnswer = `Ja, der findes et ${toiletLabels[options.toilet]} på pladsen.`;
+  }
+  // Hvis vi ikke har reelle oplysninger om toilettet, skjules spørgsmålet helt
+  if (toiletAnswer) {
+    items.push({
+      question: `Er der toilet på ${title}?`,
+      answer: toiletAnswer,
+    });
+  }
 
   // Booking
   if (options.bookable && options.bookingUrl) {
@@ -137,19 +137,19 @@ export function getShelterFaqItems(
   }
 
   // Pets
-  let petsAnswer: string;
+  let petsAnswer: string | null = null;
   if (options.petsAllowed === true) {
     petsAnswer = "Ja, man må have hund med på denne shelterplads.";
   } else if (options.petsAllowed === false) {
     petsAnswer = "Nej, hund er ikke tilladt på denne plads.";
-  } else {
-    petsAnswer =
-      "Vi har ikke oplysninger om hvorvidt hund er tilladt. Tjek beskrivelsen eller kontakt ejer/forvalter før du tager hunden med.";
   }
-  items.push({
-    question: "Må man have hund med?",
-    answer: petsAnswer,
-  });
+  // Hvis vi ikke har reelle oplysninger om hund, skjules spørgsmålet helt
+  if (petsAnswer) {
+    items.push({
+      question: "Må man have hund med?",
+      answer: petsAnswer,
+    });
+  }
 
   return items;
 }

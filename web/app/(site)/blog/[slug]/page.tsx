@@ -88,6 +88,19 @@ export default async function BlogPostPage({ params }: PageProps) {
   const post = posts[slug];
   if (!post) notFound();
 
+  const BASE_URL = "https://shelterdk.dk";
+  const canonicalPath = `/blog/${slug}`;
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    datePublished: post.date,
+    dateModified: post.date,
+    author: { "@type": "Organization", name: "ShelterDK", url: BASE_URL },
+    publisher: { "@type": "Organization", name: "ShelterDK", url: BASE_URL },
+    mainEntityOfPage: { "@type": "WebPage", "@id": `${BASE_URL}${canonicalPath}` },
+  };
+
   const blocks = post.content
     .split(/\n\n+/)
     .filter((b) => b.trim())
@@ -105,6 +118,10 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
         <Link
           href="/blog"

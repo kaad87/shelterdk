@@ -15,6 +15,14 @@ export const metadata: Metadata = {
   },
   description:
     "Find og udforsk shelters i hele Danmark. Se billeder, anmeldelser og praktisk info for overnatning i naturen.",
+  openGraph: {
+    siteName: "ShelterDK",
+    type: "website",
+    locale: "da_DK",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
   icons: {
     icon: [
       { url: "/icon", type: "image/svg+xml" },

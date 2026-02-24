@@ -318,10 +318,7 @@ const EXCLUDED_IMAGE_PATTERNS = [
 
 function isExcludedImageUrl(url: string): boolean {
   const lower = url.toLowerCase();
-  if (EXCLUDED_IMAGE_PATTERNS.some((p) => lower.includes(p))) return true;
-  // Fange "A.P. Møller Fonden"-billeder uanset URL-format (fx udinaturen.dk/.../moller...fonden)
-  if (lower.includes("moller") && lower.includes("fonden")) return true;
-  return false;
+  return EXCLUDED_IMAGE_PATTERNS.some((p) => lower.includes(p));
 }
 
 /** Saml alle billed-URL'er fra image_url, image_urls (jsonb) og geofa_raw. Dedupe, filtrer cookiebot/1.gif, A.P. Møller Fonden og ugyldige URL'er. */
