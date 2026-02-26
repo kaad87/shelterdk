@@ -17,7 +17,8 @@ import { isShelterPlace } from "@/lib/shelter-detail";
 
 export const revalidate = 86400; // ISR: cache og revalider forsiden hver 24. time (hurtig TTFB)
 
-const FRONT_PAGE_SHELTER_LIMIT = 4;
+const FRONT_PAGE_SHELTER_LIMIT = 4; // antal kort i grid'et
+const FRONT_PAGE_MAP_SHELTER_LIMIT = 40; // antal shelters til initiale pins på kortet
 
 /** Udvalgte shelters på forsiden (i denne rækkefølge). */
 const FEATURED_SHELTER_SLUGS = [
@@ -165,7 +166,7 @@ const regions = [
     name: "Jylland",
     href: "/soeg?region=Jylland",
     image:
-      "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80&auto=format&fit=crop",
   },
   {
     name: "Sjælland",
@@ -187,7 +188,7 @@ const POPULAR_AREAS = [
     slug: "sydfynske-oeehav",
     name: "Sydfynske Øhav",
     image:
-      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=800&q=80&auto=format&fit=crop",
   },
   {
     slug: "lolland",
@@ -217,7 +218,7 @@ const POPULAR_AREAS = [
     slug: "nationalpark-thy",
     name: "Nationalpark Thy",
     image:
-      "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1482192596544-9eb780fc7f66?w=800&q=80&auto=format&fit=crop",
   },
 ];
 
@@ -228,8 +229,17 @@ export default async function HomePage() {
   } catch (err) {
     console.error("Forside: kunne ikke hente udvalgte shelters:", err);
   }
-  // Forside-grid: de fire udvalgte. Kortet viser samme fire som initiale markers (ved pan/zoom hentes viewport-data via API).
-  const mapShelters = featuredShelters;
+  // Forside-grid: de udvalgte shelters.
+  // Kortet må gerne have flere pins fra start, så man ser et mere fyldigt Danmarkskort.
+  let mapShelters: Shelter[] = featuredShelters;
+  try {
+    const primaryForMap = await getPrimaryShelters(FRONT_PAGE_MAP_SHELTER_LIMIT);
+    if (primaryForMap.length > 0) {
+      mapShelters = primaryForMap;
+    }
+  } catch (err) {
+    console.error("Forside: kunne ikke hente shelters til kortet:", err);
+  }
 
   return (
     <>
@@ -239,7 +249,7 @@ export default async function HomePage() {
         className="relative bg-gradient-to-br from-primary via-primary/95 to-primary/90 text-white min-h-[320px] sm:min-h-[380px] md:min-h-[420px] flex flex-col justify-end"
         aria-label="Introduktion"
       >
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1920&q=80&auto=format&fit=crop')] bg-cover bg-center opacity-25" aria-hidden />
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1920&q=80&auto=format&fit=crop')] bg-cover bg-center opacity-25" aria-hidden />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 md:py-24 w-full">
           <div className="max-w-3xl mb-10">
             <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4">

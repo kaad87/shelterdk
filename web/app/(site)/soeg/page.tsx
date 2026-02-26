@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { getSheltersPage, SOEG_PAGE_SIZE } from "@/lib/soeg-db";
 import { getAreaBySlug, prepositionForArea } from "@/lib/area-db";
+import { AreaFaq } from "@/components/AreaFaq";
+import { getAreaFaqItems, faqToJsonLd } from "@/lib/faq";
 
 /** Ved kortvisning: max pr. request (Supabase typisk 1000). Resten hentes på client. */
 const MAP_VIEW_PAGE_SIZE = 1000;
@@ -76,6 +78,16 @@ export default async function SoegPage({ searchParams }: SoegPageProps) {
     getSheltersPage(region, q, 1, initialPageSize, Object.keys(filters).length ? filters : undefined, undefined, area),
   ]);
   const { shelters: initialShelters, hasMore: initialHasMore } = sheltersResult;
+
+  let areaFaqItems = [];
+  let areaFaqJsonLd: string | undefined;
+  const areaPreposition = areaInfo ? prepositionForArea(areaInfo) : "i";
+  if (areaInfo) {
+    areaFaqItems = getAreaFaqItems(areaInfo.name, areaPreposition);
+    if (areaFaqItems.length > 0) {
+      areaFaqJsonLd = JSON.stringify(faqToJsonLd(areaFaqItems));
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -167,11 +179,15 @@ export default async function SoegPage({ searchParams }: SoegPageProps) {
 ></iframe>
 <p style="text-align: right; font-size: 12px; margin-top: 5px;">
   <a href="https://shelterdk.dk/soeg?area=${encodeURIComponent(area)}" target="_blank" rel="noopener">
-    Se alle shelters ${prepositionForArea(areaInfo)} ${areaInfo.name} hos Shelterdk.dk
+    Se alle shelters ${areaPreposition} ${areaInfo.name} hos Shelterdk.dk
   </a>
 </p>`}
             </pre>
           </section>
+        )}
+
+        {areaInfo && areaFaqItems.length > 0 && (
+          <AreaFaq areaName={areaInfo.name} items={areaFaqItems} jsonLd={areaFaqJsonLd} />
         )}
       </div>
     </div>

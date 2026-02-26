@@ -22,6 +22,7 @@ const STATIC_PAGES: Array<{
   { path: "/shelter-naer-mig", changeFrequency: "weekly", priority: 0.88 },
   { path: "/shelter-med-toilet", changeFrequency: "weekly", priority: 0.85 },
   { path: "/shelter-med-vand", changeFrequency: "weekly", priority: 0.85 },
+  { path: "/guides", changeFrequency: "weekly", priority: 0.75 },
   { path: "/faq", changeFrequency: "monthly", priority: 0.8 },
   { path: "/privacy", changeFrequency: "monthly", priority: 0.5 },
   { path: "/blog", changeFrequency: "weekly", priority: 0.7 },

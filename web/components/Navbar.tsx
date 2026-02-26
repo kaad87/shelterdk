@@ -12,6 +12,7 @@ const navLinks = [
   { label: "Områder", href: "/omraade" },
   { label: "FAQ", href: "/faq" },
   { label: "Om os", href: "/om-os" },
+  { label: "Guides", href: "/guides" },
   { label: "Blog", href: "/blog" },
   { label: "Kontakt", href: "/kontakt" },
 ];
