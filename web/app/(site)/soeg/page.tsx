@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { getSheltersPage, SOEG_PAGE_SIZE } from "@/lib/soeg-db";
 import { getAreaBySlug, prepositionForArea } from "@/lib/area-db";
 import { AreaFaq } from "@/components/AreaFaq";
-import { getAreaFaqItems, faqToJsonLd } from "@/lib/faq";
+import { getAreaFaqItems, faqToJsonLd, type FaqItem } from "@/lib/faq";
 
 /** Ved kortvisning: max pr. request (Supabase typisk 1000). Resten hentes på client. */
 const MAP_VIEW_PAGE_SIZE = 1000;
@@ -79,7 +79,7 @@ export default async function SoegPage({ searchParams }: SoegPageProps) {
   ]);
   const { shelters: initialShelters, hasMore: initialHasMore } = sheltersResult;
 
-  let areaFaqItems = [];
+  let areaFaqItems: FaqItem[] = [];
   let areaFaqJsonLd: string | undefined;
   const areaPreposition = areaInfo ? prepositionForArea(areaInfo) : "i";
   if (areaInfo) {
