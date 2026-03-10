@@ -28,6 +28,7 @@ import {
 import { slugifySegment } from "@/lib/slug";
 import { NO_KOMMUNE_SLUG } from "@/lib/danmark-silo";
 import { getAreaBySlug } from "@/lib/area-db";
+import { getWeatherForecast } from "@/lib/weather";
 import { ShelterDetailContent } from "@/components/ShelterDetailContent";
 import { ShelterSchema } from "@/components/seo/ShelterSchema";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
@@ -38,7 +39,7 @@ interface PageProps {
 }
 
 /** ISR: cache 1 time for hurtig TTFB. */
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 const SHELTER_SELECT_DETAIL =
   "id, title, slug, seo_title, description, seo_description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, region, kommune, place, toilet, water, geofa_raw, area_slug";
@@ -154,6 +155,10 @@ export default async function ShelterPage({ params }: PageProps) {
     getReviews(shelter.google_place_id ?? null),
     areaSlug ? getAreaBySlug(areaSlug) : Promise.resolve(null),
   ]);
+  const coordsEarly = getLocationCoords(shelter);
+  const weatherForecast = coordsEarly
+    ? await getWeatherForecast(coordsEarly.lat, coordsEarly.lon)
+    : null;
 
   const placeName = shelter.google_place_name ?? null;
   const showReviews = isShelterPlace(placeName);
@@ -249,6 +254,7 @@ export default async function ShelterPage({ params }: PageProps) {
       shelterFaqJsonLd={shelterFaqJsonLd}
       reviews={reviews}
       coords={coords}
+      weatherForecast={weatherForecast}
       />
       <Suspense
         fallback={

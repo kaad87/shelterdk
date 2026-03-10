@@ -11,11 +11,12 @@ function errorResponse(status: number, message: string) {
   return NextResponse.json({ error: message }, { status });
 }
 
-function noStoreHeaders(contentType: string) {
+function cacheHeaders(contentType: string) {
   return {
     "Content-Type": contentType,
-    // Critical: avoid CDN caching mixing querystring variants (/api/image?url=...)
-    "Cache-Control": "no-store",
+    // URL inkluderer det fulde billede-URL som query param → unik cache key per billede.
+    // 7 dages CDN-cache (s-maxage), 30 dages stale-while-revalidate for baggrundsopdatering.
+    "Cache-Control": "public, max-age=604800, s-maxage=604800, stale-while-revalidate=2592000",
   };
 }
 
@@ -95,7 +96,7 @@ export async function GET(req: Request) {
   if (contentType.toLowerCase().includes("gif")) {
     return new NextResponse(new Uint8Array(buf), {
       status: 200,
-      headers: noStoreHeaders(contentType),
+      headers: cacheHeaders(contentType),
     });
   }
 
@@ -114,13 +115,13 @@ export async function GET(req: Request) {
 
     return new NextResponse(new Uint8Array(out), {
       status: 200,
-      headers: noStoreHeaders(outputType),
+      headers: cacheHeaders(outputType),
     });
   } catch {
     // If sharp fails for any reason, fallback to passthrough.
     return new NextResponse(new Uint8Array(buf), {
       status: 200,
-      headers: noStoreHeaders(contentType),
+      headers: cacheHeaders(contentType),
     });
   }
 }

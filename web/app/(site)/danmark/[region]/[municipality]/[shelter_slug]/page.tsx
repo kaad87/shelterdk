@@ -37,6 +37,7 @@ import {
 } from "@/lib/shelter-detail";
 import { getShelterFaqItems, faqToJsonLd } from "@/lib/faq";
 import { getAreaBySlug } from "@/lib/area-db";
+import { getWeatherForecast } from "@/lib/weather";
 import { ShelterDetailContent } from "@/components/ShelterDetailContent";
 import { ShelterSchema } from "@/components/seo/ShelterSchema";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
@@ -50,7 +51,7 @@ interface PageProps {
 export const dynamicParams = true;
 
 /** ISR: cache 1 time for hurtig TTFB. Efter første load serveres siden fra cache. */
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 export async function generateStaticParams() {
   const shelters = await getSheltersForStaticParams();
@@ -158,6 +159,10 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
     getReviews(shelter.google_place_id ?? null),
     areaSlug ? getAreaBySlug(areaSlug) : Promise.resolve(null),
   ]);
+  const coordsEarly = getLocationCoords(shelter);
+  const weatherForecast = coordsEarly
+    ? await getWeatherForecast(coordsEarly.lat, coordsEarly.lon)
+    : null;
   const municipalityName =
     municipalitySlug === NO_KOMMUNE_SLUG
       ? null
@@ -261,6 +266,7 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
       shelterFaqJsonLd={shelterFaqJsonLd}
       reviews={reviews}
       coords={coords}
+      weatherForecast={weatherForecast}
       />
       <Suspense
         fallback={

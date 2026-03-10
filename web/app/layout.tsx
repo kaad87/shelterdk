@@ -1,6 +1,19 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
+import { DM_Sans, Playfair_Display } from "next/font/google";
 import "./globals.css";
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-dm-sans",
+  display: "swap",
+});
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-playfair",
+  display: "swap",
+});
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -49,19 +62,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="da">
+    <html lang="da" className={`${dmSans.variable} ${playfair.variable}`}>
       <head>
         <Script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4295774462032317"
           crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap"
-          rel="stylesheet"
+          strategy="lazyOnload"
         />
       </head>
       <body className="min-h-screen flex flex-col font-sans antialiased bg-background">
@@ -70,4 +77,3 @@ export default function RootLayout({
     </html>
   );
 }
-

@@ -17,6 +17,7 @@ import { ShelterLocationMap } from "@/components/ShelterLocationMap";
 import { ShelterFaq } from "@/components/ShelterFaq";
 import { ShelterFacts } from "@/components/ShelterFacts";
 import { WeatherWidget } from "@/components/WeatherWidget";
+import type { DailyForecast } from "@/lib/weather";
 import type { Shelter } from "@/types/shelter";
 import type { FaqItem } from "@/lib/faq";
 import { formatRelativeTimeDa } from "@/lib/relative-time-da";
@@ -63,6 +64,7 @@ interface ShelterDetailContentProps {
     time: string | null;
   }[];
   coords: { lat: number; lon: number } | null;
+  weatherForecast?: DailyForecast[] | null;
 }
 
 export function ShelterDetailContent(props: ShelterDetailContentProps) {
@@ -93,6 +95,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
     shelterFaqJsonLd,
     reviews,
     coords,
+    weatherForecast = null,
   } = props;
 
   const BookingCard = ({ className = "" }: { className?: string }) => (
@@ -399,7 +402,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
             )}
 
             {coords && (
-              <WeatherWidget latitude={coords.lat} longitude={coords.lon} />
+              <WeatherWidget latitude={coords.lat} longitude={coords.lon} initialForecast={weatherForecast} />
             )}
 
             <div className="rounded-2xl border border-primary/10 bg-white shadow-sm p-6">

@@ -11,28 +11,17 @@ import {
   CloudFog,
   CloudDrizzle,
 } from "lucide-react";
+import type { DailyForecast } from "@/lib/weather";
+
+export type { DailyForecast };
 
 const OPEN_METEO_BASE = "https://api.open-meteo.com/v1/forecast";
 
 interface WeatherWidgetProps {
   latitude: number;
   longitude: number;
-}
-
-interface DailyForecast {
-  time: string;
-  weather_code: number;
-  temperature_2m_max: number;
-  temperature_2m_min: number;
-}
-
-interface ForecastResponse {
-  daily?: {
-    time: string[];
-    weather_code: number[];
-    temperature_2m_max: number[];
-    temperature_2m_min: number[];
-  };
+  /** Server-side pre-fetched forecast — skip client fetch if provided. */
+  initialForecast?: DailyForecast[] | null;
 }
 
 /** WMO weather code → Lucide icon + beskrivelse. */
@@ -61,27 +50,53 @@ function formatDay(dateStr: string): string {
   return d.toLocaleDateString("da-DK", { weekday: "short", day: "numeric", month: "short" });
 }
 
-function SkeletonCard() {
+function ForecastList({ forecast }: { forecast: DailyForecast[] }) {
   return (
-    <div className="flex items-center gap-3 py-3 first:pt-0 border-b border-primary/5 last:border-0 last:pb-0">
-      <div className="h-10 w-10 rounded-full bg-primary/10 animate-pulse shrink-0" />
-      <div className="flex-1 min-w-0">
-        <div className="h-4 w-16 bg-primary/10 rounded animate-pulse mb-2" />
-        <div className="h-3 w-20 bg-primary/10 rounded animate-pulse" />
-      </div>
-    </div>
+    <ul className="space-y-0" aria-label="Vejrudsigt næste 3 dage">
+      {forecast.map((day) => {
+        const { Icon, label } = getWeatherIcon(day.weather_code);
+        return (
+          <li
+            key={day.time}
+            className="flex items-center gap-3 py-3 first:pt-0 border-b border-primary/5 last:border-0 last:pb-0"
+          >
+            <span
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/5 text-primary shrink-0"
+              aria-hidden
+            >
+              <Icon size={22} strokeWidth={1.8} />
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-primary text-sm">
+                {formatDay(day.time)}
+              </p>
+              <p className="text-primary/60 text-xs">{label}</p>
+            </div>
+            <div className="text-right shrink-0">
+              <span className="font-semibold text-primary tabular-nums">
+                {Math.round(day.temperature_2m_max)}°
+              </span>
+              <span className="text-primary/50 text-sm tabular-nums ml-1">
+                {Math.round(day.temperature_2m_min)}°
+              </span>
+            </div>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
-export function WeatherWidget({ latitude, longitude }: WeatherWidgetProps) {
-  const [forecast, setForecast] = useState<DailyForecast[] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export function WeatherWidget({ latitude, longitude, initialForecast }: WeatherWidgetProps) {
+  const [forecast, setForecast] = useState<DailyForecast[] | null>(initialForecast ?? null);
+  const [loading, setLoading] = useState(!initialForecast);
 
   useEffect(() => {
+    // Skip client fetch if server already provided data
+    if (initialForecast) return;
+
     let cancelled = false;
     setLoading(true);
-    setError(null);
 
     const params = new URLSearchParams({
       latitude: String(latitude),
@@ -96,89 +111,57 @@ export function WeatherWidget({ latitude, longitude }: WeatherWidgetProps) {
         if (!res.ok) throw new Error("Kunne ikke hente vejrudsigt");
         return res.json();
       })
-      .then((data: ForecastResponse) => {
+      .then((data) => {
         if (cancelled) return;
         const daily = data.daily;
         if (!daily?.time?.length) {
           setForecast([]);
           return;
         }
-        const list: DailyForecast[] = daily.time.slice(0, 3).map((time, i) => ({
-          time,
-          weather_code: daily.weather_code?.[i] ?? 0,
-          temperature_2m_max: daily.temperature_2m_max?.[i] ?? 0,
-          temperature_2m_min: daily.temperature_2m_min?.[i] ?? 0,
-        }));
-        setForecast(list);
+        setForecast(
+          daily.time.slice(0, 3).map((time: string, i: number) => ({
+            time,
+            weather_code: daily.weather_code?.[i] ?? 0,
+            temperature_2m_max: daily.temperature_2m_max?.[i] ?? 0,
+            temperature_2m_min: daily.temperature_2m_min?.[i] ?? 0,
+          }))
+        );
       })
-      .catch((err) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : "Fejl");
+      .catch(() => {
+        if (!cancelled) setForecast([]);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
 
-    return () => {
-      cancelled = true;
-    };
-  }, [latitude, longitude]);
+    return () => { cancelled = true; };
+  }, [latitude, longitude, initialForecast]);
 
   if (loading) {
     return (
       <div className="rounded-2xl border border-primary/10 bg-white shadow-sm p-6">
-        <h2 className="font-serif text-lg font-bold text-primary mb-3">
-          Vejrudsigt
-        </h2>
+        <h2 className="font-serif text-lg font-bold text-primary mb-3">Vejrudsigt</h2>
         <div className="space-y-0">
-          <SkeletonCard />
-          <SkeletonCard />
-          <SkeletonCard />
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="flex items-center gap-3 py-3 first:pt-0 border-b border-primary/5 last:border-0 last:pb-0">
+              <div className="h-10 w-10 rounded-full bg-primary/10 animate-pulse shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="h-4 w-16 bg-primary/10 rounded animate-pulse mb-2" />
+                <div className="h-3 w-20 bg-primary/10 rounded animate-pulse" />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );
   }
 
-  if (error || !forecast?.length) {
-    return null;
-  }
+  if (!forecast?.length) return null;
 
   return (
     <div className="rounded-2xl border border-primary/10 bg-white shadow-sm p-6">
-      <h2 className="font-serif text-lg font-bold text-primary mb-3">
-        Vejrudsigt
-      </h2>
-      <ul className="space-y-0" aria-label="Vejrudsigt næste 3 dage">
-        {forecast.map((day) => {
-          const { Icon, label } = getWeatherIcon(day.weather_code);
-          return (
-            <li
-              key={day.time}
-              className="flex items-center gap-3 py-3 first:pt-0 border-b border-primary/5 last:border-0 last:pb-0"
-            >
-              <span
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/5 text-primary shrink-0"
-                aria-hidden
-              >
-                <Icon size={22} strokeWidth={1.8} />
-              </span>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-primary text-sm">
-                  {formatDay(day.time)}
-                </p>
-                <p className="text-primary/60 text-xs">{label}</p>
-              </div>
-              <div className="text-right shrink-0">
-                <span className="font-semibold text-primary tabular-nums">
-                  {Math.round(day.temperature_2m_max)}°
-                </span>
-                <span className="text-primary/50 text-sm tabular-nums ml-1">
-                  {Math.round(day.temperature_2m_min)}°
-                </span>
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+      <h2 className="font-serif text-lg font-bold text-primary mb-3">Vejrudsigt</h2>
+      <ForecastList forecast={forecast} />
     </div>
   );
 }
