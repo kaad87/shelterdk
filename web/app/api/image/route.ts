@@ -11,6 +11,14 @@ function errorResponse(status: number, message: string) {
   return NextResponse.json({ error: message }, { status });
 }
 
+function noStoreHeaders(contentType: string) {
+  return {
+    "Content-Type": contentType,
+    // Critical: avoid CDN caching mixing querystring variants (/api/image?url=...)
+    "Cache-Control": "no-store",
+  };
+}
+
 function pickOutputContentType(format: string | undefined | null): string {
   switch ((format || "").toLowerCase()) {
     case "png":
@@ -87,10 +95,7 @@ export async function GET(req: Request) {
   if (contentType.toLowerCase().includes("gif")) {
     return new NextResponse(new Uint8Array(buf), {
       status: 200,
-      headers: {
-        "Content-Type": contentType,
-        "Cache-Control": "public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400",
-      },
+      headers: noStoreHeaders(contentType),
     });
   }
 
@@ -109,19 +114,13 @@ export async function GET(req: Request) {
 
     return new NextResponse(new Uint8Array(out), {
       status: 200,
-      headers: {
-        "Content-Type": outputType,
-        "Cache-Control": "public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400",
-      },
+      headers: noStoreHeaders(outputType),
     });
   } catch {
     // If sharp fails for any reason, fallback to passthrough.
     return new NextResponse(new Uint8Array(buf), {
       status: 200,
-      headers: {
-        "Content-Type": contentType,
-        "Cache-Control": "public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400",
-      },
+      headers: noStoreHeaders(contentType),
     });
   }
 }
