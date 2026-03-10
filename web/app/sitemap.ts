@@ -123,13 +123,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entries.push(entry(`${BASE_URL}${path || "/"}`, changeFrequency, priority));
   }
 
-  // Regioner: /danmark/[region]
+  // Regioner: peger nu på søgesiden med kort (/danmark/X redirecter til /soeg?region=X)
   const regions = await getDistinctRegions();
   for (const region of regions) {
-    const regionSlug = slugifySegment(region);
-    if (!regionSlug) continue;
+    if (!region?.trim()) continue;
     entries.push(
-      entry(`${BASE_URL}/danmark/${regionSlug}`, "weekly", 0.8)
+      entry(`${BASE_URL}/soeg?region=${encodeURIComponent(region.trim())}`, "weekly", 0.8)
     );
   }
 
