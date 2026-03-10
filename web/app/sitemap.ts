@@ -23,6 +23,8 @@ const STATIC_PAGES: Array<{
   { path: "/shelter-naer-mig", changeFrequency: "weekly", priority: 0.88 },
   { path: "/shelter-med-toilet", changeFrequency: "weekly", priority: 0.85 },
   { path: "/shelter-med-vand", changeFrequency: "weekly", priority: 0.85 },
+  { path: "/shelter-med-hund", changeFrequency: "weekly", priority: 0.85 },
+  { path: "/shelter-med-baalplads", changeFrequency: "weekly", priority: 0.85 },
   { path: "/omraade", changeFrequency: "weekly", priority: 0.8 },
   { path: "/guides", changeFrequency: "weekly", priority: 0.75 },
   { path: "/faq", changeFrequency: "monthly", priority: 0.8 },

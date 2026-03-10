@@ -42,6 +42,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       ? "Ukendt kommune"
       : segmentSlugToName(municipalitySlug, municipalities);
   if (!municipalityName) return { title: { absolute: "Kommune ikke fundet" } };
+  const shelters = await getSheltersInMunicipality(regionName, municipalityName === "Ukendt kommune" ? null : (municipalityName ?? null));
   const title = `Shelters i ${municipalityName}, ${regionName} | ShelterDK`;
   const description = `Find shelters og overnatningspladser i ${municipalityName}, ${regionName}. Se pladser, booking og praktisk info.`;
   const canonicalPath = `/danmark/${regionSlug}/${municipalitySlug}`;
@@ -54,6 +55,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description,
       url: canonicalPath,
     },
+    ...(shelters.length === 0 && { robots: { index: false, follow: true } }),
   };
 }
 
