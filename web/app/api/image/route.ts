@@ -1,0 +1,128 @@
+import { NextResponse } from "next/server";
+import sharp from "sharp";
+import { getAllowedImageHosts } from "@/lib/image-proxy";
+
+export const runtime = "nodejs";
+
+const MAX_BYTES = 15 * 1024 * 1024; // 15MB
+const FETCH_TIMEOUT_MS = 12_000;
+
+function errorResponse(status: number, message: string) {
+  return NextResponse.json({ error: message }, { status });
+}
+
+function pickOutputContentType(format: string | undefined | null): string {
+  switch ((format || "").toLowerCase()) {
+    case "png":
+      return "image/png";
+    case "webp":
+      return "image/webp";
+    case "avif":
+      return "image/avif";
+    case "jpeg":
+    case "jpg":
+    default:
+      return "image/jpeg";
+  }
+}
+
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const raw = searchParams.get("url");
+  if (!raw) return errorResponse(400, "Missing url");
+
+  let target: URL;
+  try {
+    target = new URL(raw);
+  } catch {
+    return errorResponse(400, "Invalid url");
+  }
+
+  if (target.protocol !== "https:" && target.protocol !== "http:") {
+    return errorResponse(400, "Invalid protocol");
+  }
+
+  const allowedHosts = getAllowedImageHosts();
+  if (!allowedHosts.has(target.hostname)) {
+    return errorResponse(403, "Host not allowed");
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+  let res: Response;
+  try {
+    res = await fetch(target.toString(), {
+      signal: controller.signal,
+      headers: {
+        // Some hosts vary by Accept; keep it explicit.
+        Accept: "image/avif,image/webp,image/*,*/*;q=0.8",
+      },
+      cache: "no-store",
+    });
+  } catch {
+    clearTimeout(timeout);
+    return errorResponse(502, "Fetch failed");
+  } finally {
+    clearTimeout(timeout);
+  }
+
+  if (!res.ok) return errorResponse(502, `Upstream error (${res.status})`);
+
+  const contentType = res.headers.get("content-type") || "";
+  if (!contentType.toLowerCase().startsWith("image/")) {
+    return errorResponse(415, "Not an image");
+  }
+
+  const contentLength = Number(res.headers.get("content-length") || 0);
+  if (contentLength && contentLength > MAX_BYTES) {
+    return errorResponse(413, "Image too large");
+  }
+
+  const buf = Buffer.from(await res.arrayBuffer());
+  if (buf.byteLength > MAX_BYTES) return errorResponse(413, "Image too large");
+
+  // Animated GIFs: sharp will only process the first frame unless configured.
+  // For safety, passthrough.
+  if (contentType.toLowerCase().includes("gif")) {
+    return new NextResponse(new Uint8Array(buf), {
+      status: 200,
+      headers: {
+        "Content-Type": contentType,
+        "Cache-Control": "public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400",
+      },
+    });
+  }
+
+  try {
+    const img = sharp(buf, { failOnError: false }).rotate(); // rotate() respects EXIF orientation
+    const meta = await img.metadata();
+
+    const outputType = pickOutputContentType(meta.format);
+    const out = await (outputType === "image/png"
+      ? img.png().toBuffer()
+      : outputType === "image/webp"
+        ? img.webp({ quality: 82 }).toBuffer()
+        : outputType === "image/avif"
+          ? img.avif({ quality: 55 }).toBuffer()
+          : img.jpeg({ quality: 82, mozjpeg: true }).toBuffer());
+
+    return new NextResponse(new Uint8Array(out), {
+      status: 200,
+      headers: {
+        "Content-Type": outputType,
+        "Cache-Control": "public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400",
+      },
+    });
+  } catch {
+    // If sharp fails for any reason, fallback to passthrough.
+    return new NextResponse(new Uint8Array(buf), {
+      status: 200,
+      headers: {
+        "Content-Type": contentType,
+        "Cache-Control": "public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400",
+      },
+    });
+  }
+}
+

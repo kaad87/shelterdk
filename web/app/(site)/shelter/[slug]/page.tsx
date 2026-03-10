@@ -204,19 +204,13 @@ export default async function ShelterPage({ params }: PageProps) {
   const shelterFaqJsonLd =
     shelterFaqItems.length > 0 ? JSON.stringify(faqToJsonLd(shelterFaqItems)) : undefined;
 
-  const breadcrumbs = area
-    ? [
-        { label: "Forside", href: "/" },
-        { label: "Områder", href: "/omraade" },
-        { label: area.name, href: `/omraade/${areaSlug}` },
-        { label: shelter.title },
-      ]
-    : [
-        { label: "Hjem", href: "/" },
-        { label: "Søg shelters", href: "/soeg" },
-        ...(city ? [{ label: city, href: undefined }] : []),
-        { label: shelter.title },
-      ].filter((b): b is { label: string; href?: string } => typeof b.label === "string");
+  // /shelter bruges kun når vi ikke har region-silo. Breadcrumbs følger derfor søgning som primær sti.
+  // Område vises separat på siden.
+  const breadcrumbs = [
+    { label: "Hjem", href: "/" },
+    { label: "Søg shelters", href: "/soeg" },
+    { label: shelter.title },
+  ];
 
   const breadcrumbSchemaItems: { label: string; href?: string }[] = breadcrumbs.map((b) =>
     b.href ? { label: b.label, href: b.href } : { label: b.label }

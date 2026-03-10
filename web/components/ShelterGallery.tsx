@@ -2,9 +2,10 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { MapPin, Star, X } from "lucide-react";
+import { MapPin, Star, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { ShelterPhotoUpload } from "@/components/ShelterPhotoUpload";
 import { ShelterPlaceholder } from "@/components/ShelterPlaceholder";
+import { getProxiedImageSrc } from "@/lib/image-proxy";
 
 interface ShelterGalleryProps {
   /** Alle billeder, inkl. hero-billedet som første element. Tom array = vis "Ingen billede"-placeholder. */
@@ -27,15 +28,16 @@ export function ShelterGallery({
   slug,
   shelterId,
 }: ShelterGalleryProps) {
+  const proxiedUrls = urls.map(getProxiedImageSrc);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [mainImageFailed, setMainImageFailed] = useState(false);
-  const hasImages = urls.length > 0;
-  const mainImageUrl = hasImages ? urls[0] : null;
+  const hasImages = proxiedUrls.length > 0;
+  const mainImageUrl = hasImages ? proxiedUrls[0] : null;
   const showMainImage = mainImageUrl && !mainImageFailed;
 
   // Tastaturstyring, når lightbox er åben
   useEffect(() => {
-    if (lightboxIndex === null || urls.length === 0) return;
+    if (lightboxIndex === null || proxiedUrls.length === 0) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -45,25 +47,25 @@ export function ShelterGallery({
       if (event.key === "ArrowRight") {
         event.preventDefault();
         setLightboxIndex((prev) =>
-          prev === null ? 0 : (prev + 1) % urls.length,
+          prev === null ? 0 : (prev + 1) % proxiedUrls.length,
         );
       }
       if (event.key === "ArrowLeft") {
         event.preventDefault();
         setLightboxIndex((prev) =>
-          prev === null ? 0 : (prev - 1 + urls.length) % urls.length,
+          prev === null ? 0 : (prev - 1 + proxiedUrls.length) % proxiedUrls.length,
         );
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [lightboxIndex, urls.length]);
+  }, [lightboxIndex, proxiedUrls.length]);
 
   return (
     <>
       {/* Hero: billede eller "Ingen billede"-placeholder */}
-        <div className="relative w-full min-h-[200px] sm:min-h-[280px] aspect-[4/3] rounded-xl overflow-hidden bg-primary mb-6 isolate">
+      <div className="relative w-full min-h-[200px] sm:min-h-[280px] aspect-[4/3] rounded-xl overflow-hidden bg-primary mb-3 isolate">
         {showMainImage ? (
           <button
             type="button"
@@ -123,26 +125,95 @@ export function ShelterGallery({
         </div>
       </div>
 
-      {/* Lightbox: klik udenfor, på X eller brug tastatur (← → Esc) */}
+      {/* Thumbnail-strip: kun synlig hvis der er 2+ billeder */}
+      {proxiedUrls.length > 1 && (
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
+          {proxiedUrls.map((url, i) => (
+            <button
+              key={url}
+              type="button"
+              onClick={() => setLightboxIndex(i)}
+              aria-label={`Vis billede ${i + 1}`}
+              className={`relative flex-none w-20 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                i === 0
+                  ? "border-accent"
+                  : "border-transparent opacity-70 hover:opacity-100 hover:border-accent/50"
+              }`}
+            >
+              <Image
+                src={url}
+                alt={`${title} – miniature ${i + 1}`}
+                fill
+                className="object-cover"
+                sizes="80px"
+              />
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Lightbox med pile-navigation */}
       {lightboxIndex !== null && (
-        <button
-          type="button"
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
           onClick={() => setLightboxIndex(null)}
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 focus:outline-none"
-          aria-label="Luk billede"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Billedvisning"
         >
-          <span className="absolute top-4 right-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20">
+          {/* Luk-knap */}
+          <span className="absolute top-4 right-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20 cursor-pointer">
             <X size={24} />
           </span>
+
+          {/* Tæller */}
+          <span className="absolute top-4 left-4 text-white/70 text-sm">
+            {lightboxIndex + 1} / {proxiedUrls.length}
+          </span>
+
+          {/* Forrige-knap */}
+          {proxiedUrls.length > 1 && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setLightboxIndex((prev) =>
+                  prev === null ? 0 : (prev - 1 + proxiedUrls.length) % proxiedUrls.length,
+                );
+              }}
+              className="absolute left-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
+              aria-label="Forrige billede"
+            >
+              <ChevronLeft size={28} />
+            </button>
+          )}
+
+          {/* Næste-knap */}
+          {proxiedUrls.length > 1 && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setLightboxIndex((prev) =>
+                  prev === null ? 0 : (prev + 1) % proxiedUrls.length,
+                );
+              }}
+              className="absolute right-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
+              aria-label="Næste billede"
+            >
+              <ChevronRight size={28} />
+            </button>
+          )}
+
           <Image
-            src={urls[lightboxIndex]}
+            src={proxiedUrls[lightboxIndex]}
             alt={`${title} – billede ${lightboxIndex + 1} i fuld størrelse`}
             width={1200}
             height={900}
             className="max-w-full max-h-[90vh] w-auto h-auto object-contain"
             onClick={(e) => e.stopPropagation()}
           />
-        </button>
+        </div>
       )}
     </>
   );

@@ -2,11 +2,12 @@ import type { FaqItem } from "@/lib/faq";
 
 interface AreaFaqProps {
   areaName: string;
+  preposition?: "i" | "på";
   items: FaqItem[];
   jsonLd?: string;
 }
 
-export function AreaFaq({ areaName, items, jsonLd }: AreaFaqProps) {
+export function AreaFaq({ areaName, preposition = "i", items, jsonLd }: AreaFaqProps) {
   if (items.length === 0) return null;
 
   return (
@@ -23,7 +24,7 @@ export function AreaFaq({ areaName, items, jsonLd }: AreaFaqProps) {
       >
         <div className="max-w-3xl">
           <h2 className="font-serif text-2xl font-bold text-primary mb-3">
-            Praktisk info om friluftsliv på {areaName}
+            Praktisk info om friluftsliv {preposition} {areaName}
           </h2>
           <p className="text-primary/80 text-sm sm:text-base mb-8">
             Her kan du læse generelle svar på typiske spørgsmål om shelters og
@@ -37,7 +38,7 @@ export function AreaFaq({ areaName, items, jsonLd }: AreaFaqProps) {
             id="area-faq-heading"
             className="font-serif text-xl font-bold text-primary mb-4"
           >
-            Ofte stillede spørgsmål om shelters på {areaName}
+            Ofte stillede spørgsmål om shelters {preposition} {areaName}
           </h3>
           <ul className="space-y-4">
             {items.map((item, index) => (

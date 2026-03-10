@@ -133,7 +133,7 @@ export default async function ShelterMedVandPage() {
             Find shelter med vand i hele Danmark
           </h2>
           <p>
-            Udforsk shelters med vand i Jylland, på Fyn, Sjælland og på Bornholm. Klik på et
+            Udforsk shelters med vand i Jylland, på Fyn, på Sjælland og på Bornholm. Klik på et
             shelter for at se mere information og præcis hvad der findes på pladsen. Mange
             shelters kan bookes på forhånd via udinaturen.dk eller Naturstyrelsen.
           </p>

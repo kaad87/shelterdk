@@ -214,20 +214,13 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
   const displayRegionName = regionName ?? shelterRegion ?? "Danmark";
   const displayMunicipalityName = municipalityName ?? shelterKommune ?? "Ukendt kommune";
 
-  const breadcrumbs = area
-    ? [
-        { label: "Forside", href: "/" },
-        { label: "Områder", href: "/omraade" },
-        { label: area.name, href: `/omraade/${areaSlug}` },
-        { label: shelter.title },
-      ]
-    : [
-        { label: "Hjem", href: "/" },
-        { label: "Søg shelters", href: "/soeg" },
-        { label: displayRegionName, href: `/danmark/${regionSlug}` },
-        { label: displayMunicipalityName, href: `/danmark/${regionSlug}/${municipalitySlug}` },
-        { label: shelter.title },
-      ];
+  // Breadcrumbs prioriterer altid Danmark-silo (region → kommune). Område vises separat på siden.
+  const breadcrumbs = [
+    { label: "Hjem", href: "/" },
+    { label: displayRegionName, href: `/danmark/${regionSlug}` },
+    { label: displayMunicipalityName, href: `/danmark/${regionSlug}/${municipalitySlug}` },
+    { label: shelter.title },
+  ];
 
   const breadcrumbSchemaItems: { label: string; href?: string }[] = breadcrumbs.map((b) =>
     b.href ? { label: b.label, href: b.href } : { label: b.label }

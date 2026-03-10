@@ -76,13 +76,15 @@ function parseArgs() {
   let limit = BATCH_SIZE;
   let delayMs = DEFAULT_DELAY_MS;
   let dryRun = false;
+  let force = false;
   for (const a of args) {
     if (a.startsWith("--limit=")) limit = Math.max(0, parseInt(a.slice(8), 10));
     if (a.startsWith("--delay=")) delayMs = Math.max(0, parseInt(a.slice(8), 10)) || DEFAULT_DELAY_MS;
     if (a === "--dry-run") dryRun = true;
+    if (a === "--force") force = true;
   }
   if (limit === 0) limit = 99999; // 0 = ingen grænse
-  return { limit, delayMs, dryRun };
+  return { limit, delayMs, dryRun, force };
 }
 
 function sleep(ms) {
@@ -163,7 +165,7 @@ async function main() {
     process.exit(1);
   }
 
-  const { limit, delayMs, dryRun } = parseArgs();
+  const { limit, delayMs, dryRun, force } = parseArgs();
 
   let createClient;
   try {
@@ -180,16 +182,17 @@ async function main() {
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  const { data: shelters, error: fetchError } = await supabase
+  let q = supabase
     .from("shelters")
     .select(
       "id, title, slug, description, area_slug, kommune, region, place, water, toilet, geofa_raw, booking_url"
     )
-    .is("seo_description", null)
     .is("duplicate_of_shelter_id", null)
     .not("description", "is", null)
     .neq("description", "")
     .limit(limit);
+  if (!force) q = q.is("seo_description", null);
+  const { data: shelters, error: fetchError } = await q;
 
   if (fetchError) {
     if (fetchError.code === "42703") {

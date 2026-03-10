@@ -314,13 +314,13 @@ def import_shelters():
         base_slug = slugify(title)
         slug = f"{base_slug}-{str(lon)[:6].replace('.', '')}"
 
-        # GeoFA bruger "beskrivels" og "d_k_beskr" (dansk beskrivelse), ikke "beskrivelse".
+        # GeoFA bruger "lang_beskr" (lang HTML) og "beskrivels" (kort). lang_beskr foretrækkes.
         description = _get_prop(
             props,
-            "beskrivels",
-            "d_k_beskr",
             "lang_beskr",
             "beskrivelse",
+            "beskrivels",
+            "d_k_beskr",
             "description",
             "facilitetbeskrivelse",
         ) or ""

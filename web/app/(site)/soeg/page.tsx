@@ -24,27 +24,59 @@ const DEFAULT_METADATA: Metadata = {
   },
 };
 
-export async function generateMetadata(props: { searchParams: Promise<{ area?: string }> }): Promise<Metadata> {
-  const { area: areaSlug } = await props.searchParams;
-  if (!areaSlug?.trim()) return DEFAULT_METADATA;
-  const area = await getAreaBySlug(areaSlug.trim());
-  if (!area) return DEFAULT_METADATA;
-  const prep = prepositionForArea(area);
-  const title = `Shelters ${prep} ${area.name} – Se kort og liste | ShelterDK`;
-  const description =
-    area.description?.slice(0, 155) ||
-    `Find shelters og naturovernatning ${prep} ${area.name}. Se kort, billeder og book muligheder.`;
-  const canonicalPath = `/soeg?area=${encodeURIComponent(areaSlug.trim())}`;
-  return {
-    title: { absolute: title },
-    description,
-    alternates: { canonical: `https://shelterdk.dk${canonicalPath}` },
-    openGraph: {
-      title: `Shelters ${prep} ${area.name} | ShelterDK`,
+function prepositionForRegionName(region: string): "i" | "på" {
+  const r = (region || "").trim().toLowerCase();
+  if (r === "fyn" || r === "sjælland" || r === "bornholm") return "på";
+  return "i";
+}
+
+export async function generateMetadata(props: {
+  searchParams: Promise<{ area?: string; region?: string }>;
+}): Promise<Metadata> {
+  const { area: areaSlug, region } = await props.searchParams;
+
+  // Area pages already have good SEO metadata.
+  if (areaSlug?.trim()) {
+    const area = await getAreaBySlug(areaSlug.trim());
+    if (!area) return DEFAULT_METADATA;
+    const prep = prepositionForArea(area);
+    const title = `Shelters ${prep} ${area.name} – Se kort og liste | ShelterDK`;
+    const description =
+      area.description?.slice(0, 155) ||
+      `Find shelters og naturovernatning ${prep} ${area.name}. Se kort, billeder og book muligheder.`;
+    const canonicalPath = `/soeg?area=${encodeURIComponent(areaSlug.trim())}`;
+    return {
+      title: { absolute: title },
       description,
-      url: canonicalPath,
-    },
-  };
+      alternates: { canonical: `https://shelterdk.dk${canonicalPath}` },
+      openGraph: {
+        title: `Shelters ${prep} ${area.name} | ShelterDK`,
+        description,
+        url: canonicalPath,
+      },
+    };
+  }
+
+  // Region-filter: improve title for SEO while keeping page design/URL as-is.
+  const regionTrim = region?.trim() || "";
+  if (regionTrim && regionTrim.toLowerCase() !== "danmark") {
+    const prep = prepositionForRegionName(regionTrim);
+    const title = `Shelters ${prep} ${regionTrim} – Se kort og liste | ShelterDK`;
+    const description = `Find shelters og overnatningspladser ${prep} ${regionTrim}. Se kort, billeder, faciliteter og book muligheder.`;
+    return {
+      title: { absolute: title },
+      description,
+      // Keep canonical as /soeg (existing behavior) to avoid indexing many variants unless explicitly desired.
+      alternates: { canonical: "https://shelterdk.dk/soeg" },
+      openGraph: {
+        title: `Shelters ${prep} ${regionTrim} | ShelterDK`,
+        description,
+        url: "/soeg",
+      },
+    };
+  }
+
+  return DEFAULT_METADATA;
 }
 
 type ViewMode = "list" | "map" | "split";
@@ -187,7 +219,12 @@ export default async function SoegPage({ searchParams }: SoegPageProps) {
         )}
 
         {areaInfo && areaFaqItems.length > 0 && (
-          <AreaFaq areaName={areaInfo.name} items={areaFaqItems} jsonLd={areaFaqJsonLd} />
+          <AreaFaq
+            areaName={areaInfo.name}
+            preposition={prepositionForArea(areaInfo)}
+            items={areaFaqItems}
+            jsonLd={areaFaqJsonLd}
+          />
         )}
       </div>
     </div>

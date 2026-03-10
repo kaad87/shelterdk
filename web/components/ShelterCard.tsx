@@ -7,6 +7,7 @@ import { MapPin, Star } from "lucide-react";
 import type { Shelter } from "@/types/shelter";
 import { getCity, getDisplayImageUrl, isShelterPlace, isValidImageUrl } from "@/lib/shelter-detail";
 import { ShelterPlaceholder } from "@/components/ShelterPlaceholder";
+import { getProxiedImageSrc } from "@/lib/image-proxy";
 
 interface ShelterCardProps {
   shelter: Shelter;
@@ -77,6 +78,7 @@ export function ShelterCard({ shelter, onImageError, href, priority }: ShelterCa
   const displayUrl = getDisplayImageUrl(shelter);
   const hasValidImage = displayUrl && isValidImageUrl(displayUrl) && !imageFailed;
   const imageUrl = hasValidImage ? displayUrl.trim() : null;
+  const imageSrc = imageUrl ? getProxiedImageSrc(imageUrl) : null;
   const loadedRef = useRef(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const showRating =
@@ -102,7 +104,7 @@ export function ShelterCard({ shelter, onImageError, href, priority }: ShelterCa
           />
         ) : onImageError ? (
           <FrontPageCardImage
-            src={imageUrl!}
+            src={imageSrc!}
             alt={`Billede af shelter ${shelter.title}`}
             onError={onImageError}
             timeoutRef={timeoutRef}
@@ -111,7 +113,7 @@ export function ShelterCard({ shelter, onImageError, href, priority }: ShelterCa
           />
         ) : (
           <Image
-            src={imageUrl!}
+            src={imageSrc!}
             alt={`Billede af shelter ${shelter.title}`}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

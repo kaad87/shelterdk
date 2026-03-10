@@ -10,6 +10,13 @@ import { filterSheltersByRegion } from "@/lib/soeg-filters";
 
 type ViewMode = "list" | "map" | "split";
 
+function prepositionForRegionName(region: string): "i" | "på" {
+  const r = (region || "").trim().toLowerCase();
+  // Landsdele/øer som typisk bruger "på" i dansk.
+  if (r === "fyn" || r === "sjælland" || r === "bornholm") return "på";
+  return "i";
+}
+
 interface SoegContentProps {
   initialShelters: Shelter[];
   initialHasMore: boolean;
@@ -184,7 +191,9 @@ export function SoegContent({
           <div className="overflow-y-auto lg:max-h-[calc(100vh-12rem)] lg:pr-4 order-2 lg:order-1">
             <p className="text-primary/70 text-sm mb-4 sticky top-0 bg-background/95 py-2 z-10">
               {shelters.length} shelter{shelters.length !== 1 ? "s" : ""}{" "}
-              {initialRegion?.trim() ? `i ${initialRegion.trim()}` : "i Danmark"}
+              {initialRegion?.trim()
+                ? `${prepositionForRegionName(initialRegion)} ${initialRegion.trim()}`
+                : "i Danmark"}
               {(hasMore || listDisplayCount < shelters.length) && " · scroll for flere"}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6">

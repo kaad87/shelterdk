@@ -92,6 +92,72 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
     coords,
   } = props;
 
+  const BookingCard = ({ className = "" }: { className?: string }) => (
+    <div className={`rounded-2xl border border-primary/10 bg-white shadow-sm p-6 ${className}`}>
+      {bookingUrl ? (
+        <>
+          <a
+            href={bookingUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 w-full bg-accent text-white font-semibold px-6 py-4 rounded-xl hover:bg-accent/90 transition-colors"
+          >
+            <ExternalLink size={20} />
+            Book shelter
+          </a>
+          <p className="text-center text-primary/70 text-sm mt-3">
+            Du sendes til booking-systemet
+          </p>
+        </>
+      ) : isBookable ? (
+        <p className="text-primary/80 text-center py-2">
+          {bookingFallbackHint === "naturstyrelsen" ? (
+            <>
+              Søg eller book på{" "}
+              <a
+                href="https://book.naturstyrelsen.dk"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-accent underline hover:no-underline"
+              >
+                book.naturstyrelsen.dk
+              </a>
+              .
+            </>
+          ) : (
+            <>
+              Shelteren kan ofte bookes på{" "}
+              <a
+                href="https://udinaturen.dk"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-accent underline hover:no-underline"
+              >
+                udinaturen.dk
+              </a>
+              .
+            </>
+          )}
+        </p>
+      ) : (
+        <p className="text-primary/80 text-center py-2">
+          Booking er ikke tilgængelig for dette shelter.
+        </p>
+      )}
+      {showReviews && shelter.google_rating != null && (
+        <div className="mt-4 pt-4 border-t border-primary/10 flex items-center justify-center gap-2 text-primary/90">
+          <Star size={18} className="fill-accent text-accent" />
+          <span className="font-medium">{shelter.google_rating.toFixed(1)}</span>
+          {shelter.google_user_ratings_total != null && (
+            <span className="text-primary/70">
+              ({shelter.google_user_ratings_total} anmeldelser)
+            </span>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
@@ -207,6 +273,9 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
               </section>
             )}
 
+            {/* Mobile: show booking above reviews (aside moves below on mobile) */}
+            <BookingCard className="mb-10 lg:hidden" />
+
             {showReviews && reviews.length > 0 && (
               <section className="mb-10">
                 <h2 className="font-serif text-xl font-bold text-primary mb-4">
@@ -278,69 +347,8 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
           </article>
 
           <aside className="lg:sticky lg:top-6 mt-8 lg:mt-0 space-y-4">
-            <div className="rounded-2xl border border-primary/10 bg-white shadow-sm p-6">
-              {bookingUrl ? (
-                <>
-                  <a
-                    href={bookingUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 w-full bg-accent text-white font-semibold px-6 py-4 rounded-xl hover:bg-accent/90 transition-colors"
-                  >
-                    <ExternalLink size={20} />
-                    Book shelter
-                  </a>
-                  <p className="text-center text-primary/70 text-sm mt-3">
-                    Du sendes til booking-systemet
-                  </p>
-                </>
-              ) : isBookable ? (
-                <p className="text-primary/80 text-center py-2">
-                  {bookingFallbackHint === "naturstyrelsen" ? (
-                    <>
-                      Søg eller book på{" "}
-                      <a
-                        href="https://book.naturstyrelsen.dk"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-accent underline hover:no-underline"
-                      >
-                        book.naturstyrelsen.dk
-                      </a>
-                      .
-                    </>
-                  ) : (
-                    <>
-                      Shelteren kan ofte bookes på{" "}
-                      <a
-                        href="https://udinaturen.dk"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-accent underline hover:no-underline"
-                      >
-                        udinaturen.dk
-                      </a>
-                      .
-                    </>
-                  )}
-                </p>
-              ) : (
-                <p className="text-primary/80 text-center py-2">
-                  Booking er ikke tilgængelig for dette shelter.
-                </p>
-              )}
-              {showReviews && shelter.google_rating != null && (
-                <div className="mt-4 pt-4 border-t border-primary/10 flex items-center justify-center gap-2 text-primary/90">
-                  <Star size={18} className="fill-accent text-accent" />
-                  <span className="font-medium">{shelter.google_rating.toFixed(1)}</span>
-                  {shelter.google_user_ratings_total != null && (
-                    <span className="text-primary/70">
-                      ({shelter.google_user_ratings_total} anmeldelser)
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
+            {/* Desktop: booking stays in sidebar */}
+            <BookingCard className="hidden lg:block" />
 
             {(owner || contact || season) && (
               <div className="rounded-2xl border border-primary/10 bg-white shadow-sm p-6">

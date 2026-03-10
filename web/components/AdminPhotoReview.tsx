@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Check, X, Loader2, Lock } from "lucide-react";
+import { getProxiedImageSrc } from "@/lib/image-proxy";
 
 const STORAGE_KEY = "shelterdk-admin-secret";
 
@@ -188,7 +189,7 @@ export function AdminPhotoReview() {
               <div className="relative h-32 w-full shrink-0 overflow-hidden rounded-lg bg-primary/5 sm:w-48">
                 {s.image_url ? (
                   <Image
-                    src={s.image_url}
+                    src={getProxiedImageSrc(s.image_url)}
                     alt={`Forslag til billede for ${s.shelter?.title ?? "shelter"}`}
                     fill
                     className="object-cover"

@@ -154,7 +154,7 @@ export default async function ShelterMedToiletPage() {
             Find shelter med toilet i hele Danmark
           </h2>
           <p>
-            Udforsk shelters med toilet i Jylland, på Fyn, Sjælland og på Bornholm. Klik på et
+            Udforsk shelters med toilet i Jylland, på Fyn, på Sjælland og på Bornholm. Klik på et
             shelter for at se mere information, billeder og præcis hvilken toilettype der findes på
             pladsen. Mange shelters kan bookes på forhånd via udinaturen.dk eller Naturstyrelsen.
           </p>
