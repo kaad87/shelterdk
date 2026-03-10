@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { ArrowLeft, Calendar } from "lucide-react";
 
 const posts: Record<
@@ -69,7 +70,11 @@ export async function generateMetadata({
   const post = posts[slug];
   if (!post) return { title: { absolute: "Indlæg ikke fundet" } };
   const title = `${post.title} | ShelterDK`;
-  const description = post.content.slice(0, 160).replace(/\n/g, " ");
+  const description = post.content
+    .replace(/\*\*(.+?)\*\*/g, "$1")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/\n/g, " ")
+    .slice(0, 160);
   const canonicalPath = `/blog/${slug}`;
   return {
     title: { absolute: title },
@@ -117,6 +122,8 @@ export default async function BlogPostPage({ params }: PageProps) {
     });
 
   return (
+    <>
+    <BreadcrumbSchema items={[{ label: "Hjem", href: "/" }, { label: "Blog", href: "/blog" }, { label: post.title }]} />
     <div className="min-h-screen bg-background">
       <script
         type="application/ld+json"
@@ -165,5 +172,6 @@ export default async function BlogPostPage({ params }: PageProps) {
         </article>
       </div>
     </div>
+    </>
   );
 }

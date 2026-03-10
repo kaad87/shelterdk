@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Calendar } from "lucide-react";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 
 export const metadata: Metadata = {
   title: { absolute: "Blog | ShelterDK" },
@@ -40,6 +41,8 @@ const posts = [
 
 export default function BlogPage() {
   return (
+    <>
+    <BreadcrumbSchema items={[{ label: "Hjem", href: "/" }, { label: "Blog" }]} />
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
         <h1 className="font-serif text-4xl font-bold text-primary mb-4">
@@ -86,5 +89,6 @@ export default function BlogPage() {
         </p>
       </div>
     </div>
+    </>
   );
 }

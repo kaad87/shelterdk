@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { getSheltersPage, SOEG_PAGE_SIZE } from "@/lib/soeg-db";
 import { getAreaBySlug, prepositionForArea } from "@/lib/area-db";
 import { AreaFaq } from "@/components/AreaFaq";
@@ -121,7 +122,13 @@ export default async function SoegPage({ searchParams }: SoegPageProps) {
     }
   }
 
+  const breadcrumbItems = areaInfo
+    ? [{ label: "Hjem", href: "/" }, { label: "Områder", href: "/omraade" }, { label: areaInfo.name }]
+    : [{ label: "Hjem", href: "/" }, { label: "Søg shelters" }];
+
   return (
+    <>
+    <BreadcrumbSchema items={breadcrumbItems} />
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <nav className="mb-8 flex flex-wrap items-center gap-3">
@@ -228,5 +235,6 @@ export default async function SoegPage({ searchParams }: SoegPageProps) {
         )}
       </div>
     </div>
+    </>
   );
 }

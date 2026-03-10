@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { GLOBAL_FAQS, faqToJsonLd } from "@/lib/faq";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 
 const PAGE_TITLE = "Ofte stillede spørgsmål om shelters i Danmark | ShelterDK";
 export const metadata: Metadata = {
@@ -19,6 +21,8 @@ export default function FaqPage() {
   const jsonLd = faqToJsonLd(GLOBAL_FAQS);
 
   return (
+    <>
+    <BreadcrumbSchema items={[{ label: "Hjem", href: "/" }, { label: "FAQ" }]} />
     <div className="min-h-screen bg-background">
       <script
         type="application/ld+json"
@@ -51,7 +55,46 @@ export default function FaqPage() {
             </article>
           ))}
         </section>
+
+        <section className="mt-12 border-t border-primary/10 pt-8">
+          <h2 className="font-serif text-xl font-bold text-primary mb-4">
+            Nyttige links
+          </h2>
+          <ul className="space-y-2 text-primary/90">
+            <li>
+              <Link href="/soeg" className="text-accent hover:underline">
+                → Søg alle shelters i Danmark
+              </Link>
+            </li>
+            <li>
+              <Link href="/shelter-med-toilet" className="text-accent hover:underline">
+                → Shelters med toilet
+              </Link>
+            </li>
+            <li>
+              <Link href="/shelter-med-vand" className="text-accent hover:underline">
+                → Shelters med vand
+              </Link>
+            </li>
+            <li>
+              <Link href="/shelter-naer-mig" className="text-accent hover:underline">
+                → Find shelter nær mig
+              </Link>
+            </li>
+            <li>
+              <Link href="/omraade" className="text-accent hover:underline">
+                → Udforsk shelter efter område
+              </Link>
+            </li>
+            <li>
+              <Link href="/guides" className="text-accent hover:underline">
+                → Guides til naturovernatning
+              </Link>
+            </li>
+          </ul>
+        </section>
       </div>
     </div>
+    </>
   );
 }

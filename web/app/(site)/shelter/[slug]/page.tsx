@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { notFound, redirect } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { createPublicClient } from "@/utils/supabase/server-public";
@@ -146,7 +146,7 @@ export default async function ShelterPage({ params }: PageProps) {
   if (region) {
     const regionSlug = slugifySegment(region);
     const municipalitySlug = kommune ? slugifySegment(kommune) : NO_KOMMUNE_SLUG;
-    redirect(`/danmark/${regionSlug}/${municipalitySlug}/${slug}`);
+    permanentRedirect(`/danmark/${regionSlug}/${municipalitySlug}/${slug}`);
   }
 
   const areaSlug = (shelter as { area_slug?: string | null }).area_slug?.trim() || null;
@@ -194,6 +194,10 @@ export default async function ShelterPage({ params }: PageProps) {
       ? "naturstyrelsen"
       : null;
   const toilet = getToilet(shelter);
+  const water = getWater(shelter);
+  const facilityLinks: { label: string; href: string }[] = [];
+  if (toilet === "flush" || toilet === "mulch") facilityLinks.push({ label: "Se shelters med toilet", href: "/shelter-med-toilet" });
+  if (water === true) facilityLinks.push({ label: "Se shelters med vand", href: "/shelter-med-vand" });
   const petsAllowed = getPetsAllowed(shelter);
   const shelterFaqItems = getShelterFaqItems(shelter.title, {
     toilet,
@@ -239,6 +243,7 @@ export default async function ShelterPage({ params }: PageProps) {
       googleMapsUrl={googleMapsUrl}
       bookingUrl={bookingUrl}
       bookingFallbackHint={bookingFallbackHint}
+      facilityLinks={facilityLinks}
       isBookable={isBookable(shelter)}
       shelterFaqItems={shelterFaqItems}
       shelterFaqJsonLd={shelterFaqJsonLd}

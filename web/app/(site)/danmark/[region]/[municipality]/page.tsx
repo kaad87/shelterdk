@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { ChevronRight } from "lucide-react";
 import {
   getRegionKommunePairs,
@@ -62,6 +63,12 @@ function shelterHref(region: string, kommune: string | null, slug: string): stri
   return `/danmark/${r}/${m}/${slug}`;
 }
 
+function prepositionForRegionName(region: string): "i" | "på" {
+  const r = (region || "").trim().toLowerCase();
+  if (r === "fyn" || r === "sjælland" || r === "bornholm") return "på";
+  return "i";
+}
+
 export default async function DanmarkMunicipalityPage({ params }: PageProps) {
   const { region: regionSlug, municipality: municipalitySlug } = await params;
   const pairs = await getRegionKommunePairs(2);
@@ -80,6 +87,12 @@ export default async function DanmarkMunicipalityPage({ params }: PageProps) {
   const displayName = municipalityName ?? "Ukendt kommune";
 
   return (
+    <>
+    <BreadcrumbSchema items={[
+      { label: "Hjem", href: "/" },
+      { label: regionName, href: `/danmark/${regionSlug}` },
+      { label: displayName },
+    ]} />
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-primary/70 py-2">
@@ -140,8 +153,24 @@ export default async function DanmarkMunicipalityPage({ params }: PageProps) {
             bålplads og mulighed for at tage hund med – tjek den enkelte plads for detaljer og
             bookingmuligheder.
           </p>
+          <p>
+            Se alle shelters{" "}
+            <Link href={`/danmark/${regionSlug}`} className="text-accent hover:underline">
+              {prepositionForRegionName(regionName)} {regionName}
+            </Link>
+            , eller filtrer på{" "}
+            <Link href="/shelter-med-toilet" className="text-accent hover:underline">
+              shelter med toilet
+            </Link>
+            {" "}og{" "}
+            <Link href="/shelter-med-vand" className="text-accent hover:underline">
+              shelter med vand
+            </Link>
+            {" "}i hele Danmark.
+          </p>
         </section>
       </div>
     </div>
+    </>
   );
 }

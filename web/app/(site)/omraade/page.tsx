@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getAllAreas } from "@/lib/area-db";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { getShelterCountByAreaSlug } from "@/lib/area-db";
 
 const BRAND = "ShelterDK";
@@ -33,6 +34,8 @@ export default async function OmraadeIndexPage() {
   }));
 
   return (
+    <>
+    <BreadcrumbSchema items={[{ label: "Hjem", href: "/" }, { label: "Områder" }]} />
     <main className="min-h-screen bg-background" id="main-content">
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-10 lg:py-14">
         <nav className="mb-8 text-sm text-primary/70" aria-label="Brødkrummesti">
@@ -82,5 +85,6 @@ export default async function OmraadeIndexPage() {
         )}
       </div>
     </main>
+    </>
   );
 }

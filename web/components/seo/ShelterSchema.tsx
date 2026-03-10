@@ -147,7 +147,6 @@ export function ShelterSchema({
           "@type": "AggregateRating",
           ratingValue: rating,
           ratingCount,
-          reviewCount: ratingCount,
         },
       }),
   };

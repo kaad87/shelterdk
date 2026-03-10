@@ -36,6 +36,8 @@ interface ShelterDetailContentProps {
   areaName?: string | null;
   /** Bålplads – når data findes. */
   firewood?: boolean | null;
+  /** Links til relaterede filterlister (fx shelter-med-toilet, shelter-med-vand). */
+  facilityLinks?: { label: string; href: string }[];
   showReviews: boolean;
   allPhotoUrls: string[];
   displayDescription: string | null;
@@ -72,6 +74,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
     areaSlug = null,
     areaName = null,
     firewood = null,
+    facilityLinks = [],
     showReviews,
     allPhotoUrls,
     displayDescription,
@@ -249,6 +252,20 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                   ))}
                 </div>
               </section>
+            )}
+
+            {facilityLinks.length > 0 && (
+              <div className="mb-8 flex flex-wrap gap-2">
+                {facilityLinks.map((fl) => (
+                  <Link
+                    key={fl.href}
+                    href={fl.href}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 px-3 py-1.5 text-xs text-accent hover:bg-accent/10 transition-colors"
+                  >
+                    {fl.label}
+                  </Link>
+                ))}
+              </div>
             )}
 
             {displayDescription && (

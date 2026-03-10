@@ -164,19 +164,19 @@ export const metadata: Metadata = {
 const regions = [
   {
     name: "Jylland",
-    href: "/soeg?region=Jylland",
+    href: "/danmark/jylland",
     image:
       "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80&auto=format&fit=crop",
   },
   {
     name: "Sjælland",
-    href: "/soeg?region=Sjælland",
+    href: "/danmark/sjaelland",
     image:
       "https://images.unsplash.com/photo-1562843025-6e9c7260b005?w=800&q=80&auto=format&fit=crop",
   },
   {
     name: "Fyn",
-    href: "/soeg?region=Fyn",
+    href: "/danmark/fyn",
     image:
       "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80&auto=format&fit=crop",
   },
@@ -317,7 +317,7 @@ export default async function HomePage() {
           </h2>
           <nav aria-label="Udforsk shelters efter region">
             <ul className="grid grid-cols-1 md:grid-cols-3 gap-6 list-none m-0 p-0">
-              {regions.map((region) => (
+              {regions.map((region, i) => (
                 <li key={region.href + region.name}>
                   <Link
                     href={region.href}
@@ -329,7 +329,7 @@ export default async function HomePage() {
                       fill
                       className="object-cover transition-transform duration-300 group-hover:scale-110"
                       sizes="(max-width: 768px) 100vw, 33vw"
-                      priority
+                      priority={i === 0}
                     />
                     <span className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/50 to-transparent" aria-hidden />
                     <h3 className="absolute bottom-0 left-0 right-0 p-6 font-serif text-2xl font-bold text-white m-0">

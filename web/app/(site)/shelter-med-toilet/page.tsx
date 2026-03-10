@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { getSheltersWithToilet } from "@/lib/shelters-with-toilet";
 import { slugifySegment } from "@/lib/slug";
 import { ShelterCard } from "@/components/ShelterCard";
@@ -44,6 +45,8 @@ export default async function ShelterMedToiletPage() {
   const shelters = await getSheltersWithToilet(200);
 
   return (
+    <>
+    <BreadcrumbSchema items={[{ label: "Hjem", href: "/" }, { label: "Søg shelters", href: "/soeg" }, { label: "Shelter med toilet" }]} />
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-primary/70 py-2">
@@ -154,12 +157,29 @@ export default async function ShelterMedToiletPage() {
             Find shelter med toilet i hele Danmark
           </h2>
           <p>
-            Udforsk shelters med toilet i Jylland, på Fyn, på Sjælland og på Bornholm. Klik på et
-            shelter for at se mere information, billeder og præcis hvilken toilettype der findes på
-            pladsen. Mange shelters kan bookes på forhånd via udinaturen.dk eller Naturstyrelsen.
+            Udforsk shelters med toilet i{" "}
+            <Link href="/danmark/jylland" className="text-accent hover:underline">Jylland</Link>,{" "}
+            <Link href="/danmark/fyn" className="text-accent hover:underline">Fyn</Link>,{" "}
+            <Link href="/danmark/sjaelland" className="text-accent hover:underline">Sjælland</Link>{" "}
+            og på Bornholm. Klik på et shelter for at se mere information, billeder og præcis
+            hvilken toilettype der findes på pladsen. Mange shelters kan bookes på forhånd via
+            udinaturen.dk eller Naturstyrelsen.
+          </p>
+
+          <p>
+            Leder du i stedet efter shelters med adgang til drikkevand? Se{" "}
+            <Link href="/shelter-med-vand" className="text-accent hover:underline">
+              shelter med vand
+            </Link>
+            {" "}eller{" "}
+            <Link href="/soeg" className="text-accent hover:underline">
+              søg alle shelters
+            </Link>
+            .
           </p>
         </section>
       </div>
     </div>
+    </>
   );
 }

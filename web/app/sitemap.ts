@@ -6,6 +6,7 @@ import {
   NO_KOMMUNE_SLUG,
 } from "@/lib/danmark-silo";
 import { slugifySegment } from "@/lib/slug";
+import { getGuides } from "@/data/guides";
 
 const BASE_URL = "https://shelterdk.dk";
 const BATCH_SIZE = 1000;
@@ -22,6 +23,7 @@ const STATIC_PAGES: Array<{
   { path: "/shelter-naer-mig", changeFrequency: "weekly", priority: 0.88 },
   { path: "/shelter-med-toilet", changeFrequency: "weekly", priority: 0.85 },
   { path: "/shelter-med-vand", changeFrequency: "weekly", priority: 0.85 },
+  { path: "/omraade", changeFrequency: "weekly", priority: 0.8 },
   { path: "/guides", changeFrequency: "weekly", priority: 0.75 },
   { path: "/faq", changeFrequency: "monthly", priority: 0.8 },
   { path: "/privacy", changeFrequency: "monthly", priority: 0.5 },
@@ -123,13 +125,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entries.push(entry(`${BASE_URL}${path || "/"}`, changeFrequency, priority));
   }
 
-  // Regioner: peger nu på søgesiden med kort (/danmark/X redirecter til /soeg?region=X)
+  // Regioner: dedikerede landingssider med kort
   const regions = await getDistinctRegions();
   for (const region of regions) {
     if (!region?.trim()) continue;
-    entries.push(
-      entry(`${BASE_URL}/soeg?region=${encodeURIComponent(region.trim())}`, "weekly", 0.8)
-    );
+    const regionSlug = slugifySegment(region.trim());
+    if (!regionSlug) continue;
+    entries.push(entry(`${BASE_URL}/danmark/${regionSlug}`, "weekly", 0.8));
+  }
+
+  // Blog-posts (hardkodet – ingen ekstern datakilde)
+  const blogSlugs = [
+    "hvordan-vælge-shelter",
+    "shelter-etiquette",
+    "de-bedste-regioner",
+  ];
+  for (const slug of blogSlugs) {
+    entries.push(entry(`${BASE_URL}/blog/${slug}`, "monthly", 0.65));
+  }
+
+  // Guide-sider
+  const guides = getGuides();
+  for (const guide of guides) {
+    entries.push(entry(`${BASE_URL}/guides/${guide.slug}`, "monthly", 0.7));
   }
 
   // Kommuner: /danmark/[region]/[municipality] – kun kommuner med 2+ shelters (matcher generateStaticParams)
