@@ -14,9 +14,9 @@ function errorResponse(status: number, message: string) {
 function cacheHeaders(contentType: string) {
   return {
     "Content-Type": contentType,
-    // URL inkluderer det fulde billede-URL som query param → unik cache key per billede.
-    // 7 dages CDN-cache (s-maxage), 30 dages stale-while-revalidate for baggrundsopdatering.
-    "Cache-Control": "public, max-age=604800, s-maxage=604800, stale-while-revalidate=2592000",
+    // private: kun browser-cache, ikke CDN – undgår at Netlify returnerer samme
+    // cachede svar for alle /api/image?url=... requests uanset query param.
+    "Cache-Control": "private, max-age=604800, stale-while-revalidate=2592000",
   };
 }
 
