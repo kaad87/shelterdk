@@ -5,9 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { MapPin, Star } from "lucide-react";
 import type { Shelter } from "@/types/shelter";
-import { getCity, getDisplayImageUrl, isShelterPlace, isValidImageUrl } from "@/lib/shelter-detail";
+import { getCity, getResolvedPhotoUrls, isShelterPlace, isValidImageUrl } from "@/lib/shelter-detail";
 import { ShelterPlaceholder } from "@/components/ShelterPlaceholder";
-import { getProxiedImageSrc } from "@/lib/image-proxy";
+import { getProxiedImageSrc, isUnoptimizedImageUrl } from "@/lib/image-proxy";
 
 interface ShelterCardProps {
   shelter: Shelter;
@@ -66,6 +66,7 @@ function FrontPageCardImage({
       fill
       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
       className="object-cover transition-transform duration-300 group-hover:scale-105"
+      unoptimized={isUnoptimizedImageUrl(src)}
       onError={() => onErrorRef.current()}
       onLoad={handleLoad}
       priority={priority}
@@ -74,11 +75,29 @@ function FrontPageCardImage({
 }
 
 export function ShelterCard({ shelter, onImageError, href, priority }: ShelterCardProps) {
-  const [imageFailed, setImageFailed] = useState(false);
-  const displayUrl = getDisplayImageUrl(shelter);
-  const hasValidImage = displayUrl && isValidImageUrl(displayUrl) && !imageFailed;
-  const imageUrl = hasValidImage ? displayUrl.trim() : null;
-  const imageSrc = imageUrl ? getProxiedImageSrc(imageUrl) : null;
+  const resolvedUrls = getResolvedPhotoUrls(shelter, shelter.google_photo_ref ?? undefined);
+  const displayableUrls = resolvedUrls.filter(
+    (u) => u.startsWith("/api/google-photo") || isValidImageUrl(u)
+  );
+  const proxiedSrcs = displayableUrls.map(getProxiedImageSrc);
+
+  const [cardImageIndex, setCardImageIndex] = useState(0);
+  const [gaveUp, setGaveUp] = useState(false);
+
+  const hasImagesToTry = proxiedSrcs.length > 0;
+  const currentSrc =
+    hasImagesToTry && cardImageIndex < proxiedSrcs.length ? proxiedSrcs[cardImageIndex] : null;
+  const hasValidImage = currentSrc && !gaveUp;
+
+  const handleImageError = () => {
+    if (cardImageIndex < proxiedSrcs.length - 1) {
+      setCardImageIndex((i) => i + 1);
+    } else {
+      setGaveUp(true);
+      onImageError?.();
+    }
+  };
+
   const loadedRef = useRef(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const showRating =
@@ -104,22 +123,25 @@ export function ShelterCard({ shelter, onImageError, href, priority }: ShelterCa
           />
         ) : onImageError ? (
           <FrontPageCardImage
-            src={imageSrc!}
+            key={currentSrc}
+            src={currentSrc!}
             alt={`Billede af shelter ${shelter.title}`}
-            onError={onImageError}
+            onError={handleImageError}
             timeoutRef={timeoutRef}
             loadedRef={loadedRef}
-            priority={priority}
+            priority={priority && cardImageIndex === 0}
           />
         ) : (
           <Image
-            src={imageSrc!}
+            key={currentSrc}
+            src={currentSrc!}
             alt={`Billede af shelter ${shelter.title}`}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover transition-transform duration-300 group-hover:scale-105"
-            onError={() => setImageFailed(true)}
-            priority={priority}
+            unoptimized={currentSrc ? isUnoptimizedImageUrl(currentSrc) : false}
+            onError={handleImageError}
+            priority={priority && cardImageIndex === 0}
           />
         )}
         {showRating && (

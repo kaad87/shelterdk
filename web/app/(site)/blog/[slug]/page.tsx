@@ -1,81 +1,34 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getBlogPosts, getBlogPostBySlug } from "@/data/blog";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
-import { ArrowLeft, Calendar } from "lucide-react";
-
-const posts: Record<
-  string,
-  { title: string; date: string; content: string }
-> = {
-  "hvordan-vælge-shelter": {
-    title: "Hvordan vælger man det rigtige shelter?",
-    date: "2024-10-15",
-    content: `
-Der er mange shelters i Danmark – fra simple bålpladser til fuldt udstyrede shelter med bænke og tag. Her er et par ting at overveje, når du vælger dit næste opholdssted i naturen.
-
-**Beliggenhed.** Vil du helst være tæt på parkering eller vil du gå en tur først? Se på kortet og læs beskrivelsen for at få et indtryk af afstand og adgang.
-
-**Faciliteter.** Har shelteret bord, bænke, brændeovn? Mange har kun en bålplads – tjek hvad du kan forvente under "Faciliteter" på sheltersiden.
-
-**Sæson og vejr.** Nogle shelters er kun åbne i sæsonen. Husk telt eller regnbeskyttelse hvis vejret er usikkert – sheltertag dækker ikke altid fuldt.
-
-**Bookbar.** Nogle shelter kan bookes på forhånd (fx via udinaturen.dk eller Book en Shelter). Hvis du vil være sikker på pladsen, vælg et bookbart shelter i højsæsonen.
-    `.trim(),
-  },
-  "shelter-etiquette": {
-    title: "Shelter-etikette i naturen",
-    date: "2024-09-22",
-    content: `
-At overnatte i naturen er en privilegie – og det kræver hensyn. Her er nogle simple regler, så alle (og naturen) har det godt.
-
-**Deling.** Shelter er ofte til flere. Vær åben for at dele pladsen med andre, medmindre du har booket det specifikt for dig selv.
-
-**Ryd op.** Tag alt affald med. Lad stedet være renere end da du kom – det gør næste gæst glad.
-
-**Brænde og bål.** Brug kun det brænde der er tilgængeligt, eller medbring dit eget. Sluk altid bål ordentligt.
-
-**Lyd.** Naturen er stille – hold musik og høj stemme nede om aftenen.
-
-**Respekt for dyrelivet.** Lad dyr i fred og sørg for at mad ikke tiltrækker uønsket besøg.
-    `.trim(),
-  },
-  "de-bedste-regioner": {
-    title: "De bedste regioner for shelterophold",
-    date: "2024-08-10",
-    content: `
-Danmark har mange skønne områder til naturovernatning. Her er et kort overblik over nogle af de mest populære regioner.
-
-**Jylland.** Store skove som Rold Skov, Himmerland og Silkeborg-området byder på masser af shelter og gode vandrestier. God adgang til parkering og korte ture.
-
-**Sjælland.** Nord- og Sydsjælland har både kystnære og skovshelter. Gribskov og store dele af kysten tilbyder gode muligheder.
-
-**Fyn.** Centrale skove og kyststrækninger med mange shelter – ofte med god cykelafstand.
-
-**Øerne.** Lolland, Falster, Møn og Bornholm har deres egen karakter. Bornholm er særligt kendt for sin natur og mange shelters.
-
-Brug søgefeltet til at filtrere på region – eller udforsk kortet for at finde dit næste favoritsted.
-    `.trim(),
-  },
-};
+import { renderContent } from "@/lib/renderContent";
+import { AuthorBio } from "@/components/AuthorBio";
+import { ArticleFaq } from "@/components/ArticleFaq";
+import { ShelterCTA } from "@/components/ShelterCTA";
+import { ShareExperience } from "@/components/ShareExperience";
+import { ArrowLeft, Calendar, Clock } from "lucide-react";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
+export async function generateStaticParams() {
+  return getBlogPosts().map((p) => ({ slug: p.slug }));
+}
+
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const post = posts[slug];
+  const { slug: rawSlug } = await params;
+  const slug = decodeURIComponent(rawSlug);
+  const post = getBlogPostBySlug(slug);
   if (!post) return { title: { absolute: "Indlæg ikke fundet" } };
   const title = `${post.title} | ShelterDK`;
-  const description = post.content
-    .replace(/\*\*(.+?)\*\*/g, "$1")
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-    .replace(/\n/g, " ")
-    .slice(0, 160);
-  const canonicalPath = `/blog/${slug}`;
+  const description = post.excerpt;
+  const canonicalPath = `/blog/${rawSlug}`;
   return {
     title: { absolute: title },
     description,
@@ -84,13 +37,17 @@ export async function generateMetadata({
       title,
       description,
       url: canonicalPath,
+      images: [
+        { url: post.coverImage, width: 1200, height: 630, alt: post.title },
+      ],
     },
   };
 }
 
 export default async function BlogPostPage({ params }: PageProps) {
-  const { slug } = await params;
-  const post = posts[slug];
+  const { slug: rawSlug } = await params;
+  const slug = decodeURIComponent(rawSlug);
+  const post = getBlogPostBySlug(slug);
   if (!post) notFound();
 
   const BASE_URL = "https://shelterdk.dk";
@@ -101,77 +58,172 @@ export default async function BlogPostPage({ params }: PageProps) {
     headline: post.title,
     datePublished: post.date,
     dateModified: post.date,
-    author: { "@type": "Organization", name: "ShelterDK", url: BASE_URL },
+    image: post.coverImage,
+    articleSection: post.category,
+    author: {
+      "@type": "Person",
+      name: "Christian",
+      url: `${BASE_URL}/om-os`,
+    },
     publisher: { "@type": "Organization", name: "ShelterDK", url: BASE_URL },
-    mainEntityOfPage: { "@type": "WebPage", "@id": `${BASE_URL}${canonicalPath}` },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `${BASE_URL}${canonicalPath}`,
+    },
   };
 
-  const blocks = post.content
-    .split(/\n\n+/)
-    .filter((b) => b.trim())
-    .map((block) => {
-      const lines = block.split("\n");
-      if (lines[0].match(/^\*\*.+\*\*$/)) {
-        return {
-          type: "heading" as const,
-          title: lines[0].replace(/\*\*/g, ""),
-          body: lines.slice(1).join("\n"),
-        };
-      }
-      return { type: "paragraph" as const, text: block };
-    });
+  // Render content and split for inline CTA insertion
+  const contentBlocks = renderContent(post.content);
+  const midpoint = Math.floor(contentBlocks.length / 2);
+  const firstHalf = contentBlocks.slice(0, midpoint);
+  const secondHalf = contentBlocks.slice(midpoint);
+
+  // Related posts — same category first, then fill from other categories
+  const allPosts = getBlogPosts().filter((p) => p.slug !== post.slug);
+  const sameCategory = allPosts.filter((p) => p.category === post.category);
+  const otherPosts = allPosts.filter((p) => p.category !== post.category);
+  const relatedPosts = [...sameCategory, ...otherPosts].slice(0, 3);
 
   return (
     <>
-    <BreadcrumbSchema items={[{ label: "Hjem", href: "/" }, { label: "Blog", href: "/blog" }, { label: post.title }]} />
-    <div className="min-h-screen bg-background">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      <BreadcrumbSchema
+        items={[
+          { label: "Hjem", href: "/" },
+          { label: "Blog", href: "/blog" },
+          { label: post.title },
+        ]}
       />
-      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-        <Link
-          href="/blog"
-          className="inline-flex items-center gap-2 text-primary/70 hover:text-accent text-sm mb-8 transition-colors"
-        >
-          <ArrowLeft size={16} />
-          Tilbage til blog
-        </Link>
+      <div className="min-h-screen bg-background">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+        />
 
-        <article>
-          <span className="flex items-center gap-2 text-primary/60 text-sm mb-4" suppressHydrationWarning>
-            <Calendar size={14} />
-            {new Date(post.date).toLocaleDateString("da-DK", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
-          </span>
-          <h1 className="font-serif text-4xl font-bold text-primary mb-8">
-            {post.title}
-          </h1>
-
-          <div className="prose prose-primary max-w-none text-primary/90 leading-relaxed space-y-4">
-            {blocks.map((block, i) =>
-              block.type === "heading" ? (
-                <div key={i}>
-                  <h2 className="font-serif text-xl font-bold text-primary mt-6 mb-2">
-                    {block.title}
-                  </h2>
-                  {block.body && (
-                    <p className="whitespace-pre-line">{block.body}</p>
-                  )}
-                </div>
-              ) : (
-                <p key={i} className="whitespace-pre-line">
-                  {block.text.replace(/\*\*(.+?)\*\*/g, "$1")}
-                </p>
-              )
-            )}
+        {/* Hero image */}
+        <div className="relative aspect-[16/9] md:aspect-[21/9] overflow-hidden">
+          <Image
+            src={post.coverImage}
+            alt={post.title}
+            fill
+            priority
+            className="object-cover"
+            sizes="100vw"
+            unoptimized
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/50 to-transparent" />
+          <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-10 md:p-16">
+            <div className="max-w-3xl">
+              <span className="inline-block bg-accent text-white text-xs font-medium px-3 py-1 rounded-full mb-3">
+                {post.category}
+              </span>
+              <h1 className="font-serif text-2xl sm:text-3xl md:text-5xl font-bold text-white leading-tight">
+                {post.title}
+              </h1>
+              <div
+                className="flex items-center gap-3 text-white/60 text-sm mt-4"
+                suppressHydrationWarning
+              >
+                <span className="flex items-center gap-1">
+                  <Calendar size={14} />
+                  {new Date(post.date).toLocaleDateString("da-DK", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Clock size={14} />
+                  {post.readingTime} min læsetid
+                </span>
+              </div>
+            </div>
           </div>
-        </article>
+        </div>
+
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-10 lg:py-14">
+          <Link
+            href="/blog"
+            className="inline-flex items-center gap-2 text-primary/70 hover:text-accent text-sm mb-8 transition-colors"
+          >
+            <ArrowLeft size={16} />
+            Tilbage til blog
+          </Link>
+
+          {/* Article content — first half */}
+          <article className="prose prose-primary max-w-none">
+            {firstHalf}
+          </article>
+
+          {/* Inline shelter CTA */}
+          <ShelterCTA variant="inline" />
+
+          {/* Article content — second half */}
+          <article className="prose prose-primary max-w-none">
+            {secondHalf}
+          </article>
+
+          {/* Author bio */}
+          <div className="mt-12">
+            <AuthorBio />
+          </div>
+
+          {/* FAQ section */}
+          {post.faq && post.faq.length > 0 && <ArticleFaq items={post.faq} />}
+
+          {/* Share experience */}
+          <ShareExperience />
+
+          {/* Full-width shelter CTA */}
+          <ShelterCTA variant="full" />
+
+          {/* Related posts */}
+          {relatedPosts.length > 0 && (
+            <section className="mt-12 pt-10 border-t border-primary/10">
+              <h2 className="font-serif text-2xl font-bold text-primary mb-6">
+                Læs også
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                {relatedPosts.map((related) => (
+                  <Link
+                    key={related.slug}
+                    href={`/blog/${related.slug}`}
+                    className="group block rounded-xl overflow-hidden border border-primary/10 bg-white hover:shadow-md transition-shadow"
+                  >
+                    <div className="relative aspect-[16/9] overflow-hidden">
+                      <Image
+                        src={related.coverImage}
+                        alt={related.title}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        sizes="(max-width: 640px) 100vw, 33vw"
+                        unoptimized
+                      />
+                      <span className="absolute top-2 left-2 bg-accent text-white text-[10px] font-medium px-2 py-0.5 rounded-full">
+                        {related.category}
+                      </span>
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-serif text-base font-bold text-primary group-hover:text-accent transition-colors line-clamp-2">
+                        {related.title}
+                      </h3>
+                      <p
+                        className="text-primary/60 text-xs mt-2"
+                        suppressHydrationWarning
+                      >
+                        {new Date(related.date).toLocaleDateString("da-DK", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
       </div>
-    </div>
     </>
   );
 }

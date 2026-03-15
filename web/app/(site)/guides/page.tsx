@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import Image from "next/image";
-import Link from "next/link";
-import { getGuides } from "@/data/guides";
+import { getGuides, getGuideCategories } from "@/data/guides";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
+import { GuidesContent } from "@/components/GuidesContent";
 
 const PAGE_TITLE = "Guides til shelters og naturovernatning | ShelterDK";
 const PAGE_DESCRIPTION =
@@ -20,67 +20,38 @@ export const metadata: Metadata = {
 
 export default function GuidesIndexPage() {
   const guides = getGuides();
+  const categories = getGuideCategories();
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-        <header className="mb-10">
-          <p className="text-sm text-primary/70 mb-2">
-            <Link href="/" className="hover:text-accent transition-colors">
-              Hjem
-            </Link>{" "}
-            <span aria-hidden className="text-primary/40">
+      <BreadcrumbSchema
+        items={[{ label: "Hjem", href: "/" }, { label: "Guides" }]}
+      />
+
+      {/* Hero section */}
+      <header className="bg-primary text-white py-14 md:py-20">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <p className="text-sm text-white/60 mb-3">
+            <span>Hjem</span>
+            <span className="mx-2" aria-hidden>
               /
-            </span>{" "}
-            <span className="text-primary font-medium">Guides</span>
+            </span>
+            <span className="text-white/90 font-medium">Guides</span>
           </p>
-          <h1 className="font-serif text-3xl sm:text-4xl font-bold text-primary mb-3">
+          <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold mb-4 leading-tight">
             Guides til shelters og naturovernatning
           </h1>
-          <p className="text-primary/80 max-w-2xl">
-            Dyk ned i praktiske guides om valg af shelter, pakkelister og tips til
-            en god nat i det fri. Siden udbygges løbende, så du altid kan finde
-            ny inspiration.
+          <p className="text-white/80 max-w-2xl text-base sm:text-lg leading-relaxed">
+            Dyk ned i praktiske guides om valg af shelter, pakkelister og tips
+            til en god nat i det fri. Siden udbygges løbende, så du altid kan
+            finde ny inspiration.
           </p>
-        </header>
+        </div>
+      </header>
 
-        <section
-          aria-label="Liste over guider"
-          className="grid grid-cols-1 md:grid-cols-2 gap-8"
-        >
-          {guides.map((guide) => (
-            <article
-              key={guide.slug}
-              className="group rounded-2xl overflow-hidden border border-primary/10 bg-white shadow-sm hover:shadow-md transition-shadow flex flex-col"
-            >
-              <Link
-                href={`/guides/${guide.slug}`}
-                className="flex flex-col flex-1 cursor-pointer outline-none focus:ring-2 focus:ring-accent focus:ring-inset focus:ring-offset-2 rounded-2xl"
-              >
-                <div className="relative h-52 w-full overflow-hidden bg-primary/10">
-                  <Image
-                    src={guide.coverImage}
-                    alt={guide.title}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    unoptimized
-                  />
-                </div>
-                <div className="flex-1 flex flex-col p-5 gap-3">
-                  <h2 className="font-serif text-xl font-bold text-primary">
-                    {guide.title}
-                  </h2>
-                  <p className="text-sm text-primary/80 flex-1">{guide.excerpt}</p>
-                  <span className="inline-flex items-center gap-1 text-accent font-semibold text-sm group-hover:underline">
-                    Læs guiden
-                    <span aria-hidden>→</span>
-                  </span>
-                </div>
-              </Link>
-            </article>
-          ))}
-        </section>
+      {/* Main content */}
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+        <GuidesContent guides={guides} categories={categories} />
       </div>
     </div>
   );

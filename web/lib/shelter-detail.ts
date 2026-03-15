@@ -348,11 +348,52 @@ export function getPhotoUrls(shelter: Shelter): string[] {
   return skip > 0 ? out.slice(skip) : out;
 }
 
+/** Er URL'en fra Google (lh3.googleusercontent.com)? */
+function isGoogleImageUrl(url: string): boolean {
+  if (!url || typeof url !== "string") return false;
+  try {
+    return new URL(url).hostname.includes("googleusercontent.com");
+  } catch {
+    return false;
+  }
+}
+
+/** URL til Google Place Photo proxy (bruger photo_reference i stedet for udløbet signed URL). */
+export function getGooglePhotoProxyUrl(ref: string, maxwidth = 1200): string {
+  if (!ref || typeof ref !== "string" || ref.length < 10) return "";
+  return `/api/google-photo?ref=${encodeURIComponent(ref.trim())}&maxwidth=${maxwidth}`;
+}
+
+/** Samme som getPhotoUrls, men erstatter Google-billeder med proxy-URL når firstGooglePhotoRef er sat. */
+export function getResolvedPhotoUrls(
+  shelter: Shelter,
+  firstGooglePhotoRef?: string | null
+): string[] {
+  const urls = getPhotoUrls(shelter);
+  if (!firstGooglePhotoRef || urls.length === 0) return urls;
+  const first = urls[0];
+  if (isGoogleImageUrl(first)) {
+    const proxy = getGooglePhotoProxyUrl(firstGooglePhotoRef);
+    if (proxy) return [proxy, ...urls.slice(1)];
+  }
+  return urls;
+}
+
 /** URL til det billede der skal vises på kort/liste (respekterer SKIP_FIRST_IMAGES og ekskluderede billeder). */
 export function getDisplayImageUrl(shelter: Shelter): string | null {
   const urls = getPhotoUrls(shelter);
   const first = urls[0];
   return first && isValidImageUrl(first) ? first : null;
+}
+
+/** Samme som getDisplayImageUrl, men med Google proxy når firstGooglePhotoRef er sat. */
+export function getResolvedDisplayImageUrl(
+  shelter: Shelter,
+  firstGooglePhotoRef?: string | null
+): string | null {
+  const urls = getResolvedPhotoUrls(shelter, firstGooglePhotoRef);
+  const first = urls[0];
+  return first ? first : null;
 }
 
 /**

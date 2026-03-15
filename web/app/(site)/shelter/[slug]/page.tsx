@@ -9,6 +9,7 @@ import {
   getLongDescription,
   buildSeoTitle,
   getPhotoUrls,
+  getResolvedPhotoUrls,
   getCapacity,
   getFeatures,
   getSeason,
@@ -26,6 +27,7 @@ import {
   isValidImageUrl,
 } from "@/lib/shelter-detail";
 import { slugifySegment } from "@/lib/slug";
+import { getFirstGooglePhotoRef } from "@/lib/google-photo";
 import { NO_KOMMUNE_SLUG } from "@/lib/danmark-silo";
 import { getAreaBySlug } from "@/lib/area-db";
 import { getWeatherForecast } from "@/lib/weather";
@@ -115,9 +117,14 @@ export async function generateMetadata({
     (shelter.seo_title?.trim() || null) ?? buildSeoTitle(shelter);
   const description = buildDescriptionFromFacilities(shelter);
 
-  const photoUrls = getPhotoUrls(shelter);
-  const ogImage =
-    photoUrls.length > 0 && isValidImageUrl(photoUrls[0]) ? photoUrls[0] : undefined;
+  const photoRef = await getFirstGooglePhotoRef(shelter.google_place_id ?? null);
+  const photoUrls = getResolvedPhotoUrls(shelter, photoRef);
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://shelterdk.dk";
+  const ogImageRaw =
+    photoUrls.length > 0 && (photoUrls[0].startsWith("/") || isValidImageUrl(photoUrls[0]))
+      ? photoUrls[0]
+      : undefined;
+  const ogImage = ogImageRaw?.startsWith("/") ? `${baseUrl}${ogImageRaw}` : ogImageRaw;
 
   return {
     title: { absolute: title },
@@ -151,9 +158,10 @@ export default async function ShelterPage({ params }: PageProps) {
   }
 
   const areaSlug = (shelter as { area_slug?: string | null }).area_slug?.trim() || null;
-  const [reviews, area] = await Promise.all([
+  const [reviews, area, photoRef] = await Promise.all([
     getReviews(shelter.google_place_id ?? null),
     areaSlug ? getAreaBySlug(areaSlug) : Promise.resolve(null),
+    getFirstGooglePhotoRef(shelter.google_place_id ?? null),
   ]);
   const coordsEarly = getLocationCoords(shelter);
   const weatherForecast = coordsEarly
@@ -166,7 +174,7 @@ export default async function ShelterPage({ params }: PageProps) {
     getCity(shelter) ??
     (shelter.region && shelter.region !== "Danmark" ? shelter.region : null);
 
-  const photoUrls = getPhotoUrls(shelter);
+  const photoUrls = getResolvedPhotoUrls(shelter, photoRef);
   const allPhotoUrls = photoUrls.length > 0 ? photoUrls : [];
   const displayDescription =
     (shelter.seo_description?.trim() ? stripHtml(shelter.seo_description) : null) ||

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { getSheltersPage, SOEG_PAGE_SIZE } from "@/lib/soeg-db";
+import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 import { getAreaBySlug, prepositionForArea } from "@/lib/area-db";
 import { AreaFaq } from "@/components/AreaFaq";
 import { getAreaFaqItems, faqToJsonLd, type FaqItem } from "@/lib/faq";
@@ -110,7 +111,8 @@ export default async function SoegPage({ searchParams }: SoegPageProps) {
     area?.trim() ? getAreaBySlug(area.trim()) : Promise.resolve(null),
     getSheltersPage(region, q, 1, initialPageSize, Object.keys(filters).length ? filters : undefined, undefined, area),
   ]);
-  const { shelters: initialShelters, hasMore: initialHasMore } = sheltersResult;
+  const { shelters: rawShelters, hasMore: initialHasMore } = sheltersResult;
+  const initialShelters = await enrichSheltersWithGooglePhotoRef(rawShelters);
 
   let areaFaqItems: FaqItem[] = [];
   let areaFaqJsonLd: string | undefined;

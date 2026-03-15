@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { getSheltersPage, SOEG_PAGE_SIZE, type SoegFilters, type MapBbox } from "@/lib/soeg-db";
 import { filterSheltersByRegion } from "@/lib/soeg-filters";
+import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +46,7 @@ export async function GET(request: NextRequest) {
   );
 
   if (region) shelters = filterSheltersByRegion(shelters, region);
+  shelters = await enrichSheltersWithGooglePhotoRef(shelters);
 
   return Response.json({ shelters, hasMore });
 }

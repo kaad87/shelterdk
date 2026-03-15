@@ -7,6 +7,7 @@ import { WebSiteSchema } from "@/components/seo/WebSiteSchema";
 import { FrontPageShelterGrid } from "@/components/FrontPageShelterGrid";
 import { SearchBar } from "@/components/SearchBar";
 import { createPublicClient } from "@/utils/supabase/server-public";
+import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 
 const MapComponent = dynamic(
   () => import("@/components/MapComponent").then((m) => ({ default: m.MapComponent })),
@@ -29,9 +30,9 @@ const FEATURED_SHELTER_SLUGS = [
 ] as const;
 
 const SHELTER_SELECT =
-  "id, title, slug, description, location, image_url, google_rating, google_user_ratings_total, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, geofa_raw, display_score";
+  "id, title, slug, description, location, image_url, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, geofa_raw, display_score";
 const SHELTER_SELECT_FALLBACK =
-  "id, title, slug, description, location, image_url, google_rating, google_user_ratings_total, google_place_name, booking_url, duplicate_of_shelter_id, region, geofa_raw";
+  "id, title, slug, description, location, image_url, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, geofa_raw";
 
 const ALLOWED_IMAGE_HOSTS = new Set([
   "dynamic-media-cdn.tripadvisor.com",
@@ -75,14 +76,16 @@ async function getFeaturedShelters(): Promise<Shelter[]> {
           .in("slug", slugs);
         if (!fallback?.length) return [];
         const bySlug = new Map((fallback as unknown as Shelter[]).map((s) => [s.slug, s]));
-        return slugs.map((slug) => bySlug.get(slug)).filter(Boolean) as Shelter[];
+        const list = slugs.map((slug) => bySlug.get(slug)).filter(Boolean) as Shelter[];
+        return enrichSheltersWithGooglePhotoRef(list);
       }
       console.error("Supabase featured shelters:", error);
       return [];
     }
     const list = (data as unknown as Shelter[]) ?? [];
     const bySlug = new Map(list.map((s) => [s.slug, s]));
-    return slugs.map((slug) => bySlug.get(slug)).filter(Boolean) as Shelter[];
+    const ordered = slugs.map((slug) => bySlug.get(slug)).filter(Boolean) as Shelter[];
+    return enrichSheltersWithGooglePhotoRef(ordered);
   } catch (err) {
     console.error("Error fetching featured shelters:", err);
     return [];
@@ -142,7 +145,7 @@ async function getPrimaryShelters(limit: number): Promise<Shelter[]> {
       if (bTotal !== aTotal) return bTotal - aTotal;
       return (a.title || "").localeCompare(b.title || "");
     });
-    return sorted.slice(0, limit);
+    return enrichSheltersWithGooglePhotoRef(sorted.slice(0, limit));
   } catch (err) {
     console.error("Error fetching shelters:", err);
     return [];

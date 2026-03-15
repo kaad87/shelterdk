@@ -7,6 +7,7 @@ import { ShelterMap, type MapBounds } from "@/components/ShelterMap";
 import type { Shelter } from "@/types/shelter";
 import type { SoegFilters } from "@/lib/soeg-db";
 import { filterSheltersByRegion } from "@/lib/soeg-filters";
+import { getLocationCoords } from "@/lib/shelter-detail";
 
 type ViewMode = "list" | "map" | "split";
 
@@ -50,6 +51,11 @@ export function SoegContent({
   );
   const sentinelRef = useRef<HTMLDivElement>(null);
   const loadingRef = useRef(false);
+
+  // Track current map bounds so the list can filter to visible shelters
+  const [mapBounds, setMapBounds] = useState<MapBounds | null>(null);
+  const hasPannedMap = useRef(false);
+  const boundsReportCount = useRef(0);
 
   useEffect(() => {
     setView(initialView);
@@ -139,6 +145,17 @@ export function SoegContent({
 
   const fetchByBounds = useCallback(
     async (bounds: MapBounds) => {
+      // Skip the very first bounds report (initial map render) so the list
+      // shows all shelters until the user actually interacts with the map.
+      boundsReportCount.current += 1;
+      if (boundsReportCount.current <= 1) return;
+
+      // Update map bounds so list filters to visible area
+      setMapBounds(bounds);
+      hasPannedMap.current = true;
+      // Reset list display count so we show the first batch for the new area
+      setListDisplayCount(24);
+
       const params: Record<string, string> = {
         minLat: String(bounds.south),
         maxLat: String(bounds.north),
@@ -170,6 +187,20 @@ export function SoegContent({
     [initialRegion, initialQuery, initialArea, initialFilters]
   );
 
+  // Filter shelters to only those visible on the map (split view after user pans/zooms)
+  const visibleShelters = (view === "split" && hasPannedMap.current && mapBounds)
+    ? shelters.filter((s) => {
+        const coords = getLocationCoords(s);
+        if (!coords) return false;
+        return (
+          coords.lat >= mapBounds.south &&
+          coords.lat <= mapBounds.north &&
+          coords.lon >= mapBounds.west &&
+          coords.lon <= mapBounds.east
+        );
+      })
+    : shelters;
+
   return (
     <div className="space-y-8">
       <SearchBar
@@ -190,14 +221,16 @@ export function SoegContent({
         <div className="grid grid-cols-1 lg:grid-cols-[1fr,minmax(380px,45%)] gap-0 min-h-[70vh] -mx-4 sm:-mx-6 lg:-mx-8">
           <div className="overflow-y-auto lg:max-h-[calc(100vh-12rem)] lg:pr-4 order-2 lg:order-1">
             <p className="text-primary/70 text-sm mb-4 sticky top-0 bg-background/95 py-2 z-10">
-              {shelters.length} shelter{shelters.length !== 1 ? "s" : ""}{" "}
-              {initialRegion?.trim()
-                ? `${prepositionForRegionName(initialRegion)} ${initialRegion.trim()}`
-                : "i Danmark"}
-              {(hasMore || listDisplayCount < shelters.length) && " · scroll for flere"}
+              {visibleShelters.length} shelter{visibleShelters.length !== 1 ? "s" : ""}{" "}
+              {hasPannedMap.current && mapBounds
+                ? "i dette område"
+                : initialRegion?.trim()
+                  ? `${prepositionForRegionName(initialRegion)} ${initialRegion.trim()}`
+                  : "i Danmark"}
+              {!hasPannedMap.current && (hasMore || listDisplayCount < shelters.length) && " · scroll for flere"}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6">
-              {shelters.slice(0, listDisplayCount).map((shelter) => (
+              {visibleShelters.slice(0, listDisplayCount).map((shelter) => (
                 <ShelterCard key={shelter.id} shelter={shelter} />
               ))}
             </div>

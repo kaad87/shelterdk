@@ -10,6 +10,7 @@ import {
   slugifySegment,
   NO_KOMMUNE_SLUG,
 } from "@/lib/danmark-silo";
+import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 import { segmentSlugToName } from "@/lib/slug";
 import { ShelterCard } from "@/components/ShelterCard";
 
@@ -85,7 +86,8 @@ export default async function DanmarkMunicipalityPage({ params }: PageProps) {
       : segmentSlugToName(municipalitySlug, municipalities);
   if (municipalitySlug !== NO_KOMMUNE_SLUG && !municipalityName) notFound();
 
-  const shelters = await getSheltersInMunicipality(regionName, municipalityName ?? null);
+  const rawShelters = await getSheltersInMunicipality(regionName, municipalityName ?? null);
+  const shelters = await enrichSheltersWithGooglePhotoRef(rawShelters);
   const displayName = municipalityName ?? "Ukendt kommune";
 
   return (

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { MapPin, Star, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { ShelterPhotoUpload } from "@/components/ShelterPhotoUpload";
 import { ShelterPlaceholder } from "@/components/ShelterPlaceholder";
-import { getProxiedImageSrc } from "@/lib/image-proxy";
+import { getProxiedImageSrc, isUnoptimizedImageUrl } from "@/lib/image-proxy";
 
 interface ShelterGalleryProps {
   /** Alle billeder, inkl. hero-billedet som første element. Tom array = vis "Ingen billede"-placeholder. */
@@ -30,10 +30,21 @@ export function ShelterGallery({
 }: ShelterGalleryProps) {
   const proxiedUrls = urls.map(getProxiedImageSrc);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const [mainImageFailed, setMainImageFailed] = useState(false);
+  const [heroIndex, setHeroIndex] = useState(0);
+  const [heroGaveUp, setHeroGaveUp] = useState(false);
   const hasImages = proxiedUrls.length > 0;
-  const mainImageUrl = hasImages ? proxiedUrls[0] : null;
-  const showMainImage = mainImageUrl && !mainImageFailed;
+  const mainImageUrl = hasImages && heroIndex < proxiedUrls.length ? proxiedUrls[heroIndex] : null;
+  const isGoogleProxyUrl = mainImageUrl?.startsWith("/api/google-photo") ?? false;
+  const showMainImage = mainImageUrl && !heroGaveUp;
+  const showUploadForm = !showMainImage && slug && shelterId && !isGoogleProxyUrl;
+
+  const handleHeroError = () => {
+    if (heroIndex < proxiedUrls.length - 1) {
+      setHeroIndex((i) => i + 1);
+    } else {
+      setHeroGaveUp(true);
+    }
+  };
 
   // Tastaturstyring, når lightbox er åben
   useEffect(() => {
@@ -69,21 +80,23 @@ export function ShelterGallery({
         {showMainImage ? (
           <button
             type="button"
-            onClick={() => setLightboxIndex(0)}
+            onClick={() => setLightboxIndex(heroIndex)}
             className="absolute inset-0 z-0"
             aria-label="Vis hovedbilledet i fuld størrelse"
           >
             <Image
+              key={mainImageUrl}
               src={mainImageUrl!}
               alt={`Billede af shelter ${title}`}
               fill
               className="object-cover"
               sizes="(max-width: 1024px) 100vw, 896px"
-              priority
-              onError={() => setMainImageFailed(true)}
+              priority={heroIndex === 0}
+              unoptimized={isUnoptimizedImageUrl(mainImageUrl)}
+              onError={handleHeroError}
             />
           </button>
-        ) : slug && shelterId ? (
+        ) : showUploadForm ? (
           <div className="absolute inset-0 z-0">
             <ShelterPhotoUpload
               shelterId={shelterId}
@@ -125,32 +138,40 @@ export function ShelterGallery({
         </div>
       </div>
 
-      {/* Thumbnail-strip: kun synlig hvis der er 2+ billeder */}
-      {proxiedUrls.length > 1 && (
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
-          {proxiedUrls.map((url, i) => (
-            <button
-              key={url}
-              type="button"
-              onClick={() => setLightboxIndex(i)}
-              aria-label={`Vis billede ${i + 1}`}
-              className={`relative flex-none w-20 h-16 rounded-lg overflow-hidden border-2 transition-all ${
-                i === 0
-                  ? "border-accent"
-                  : "border-transparent opacity-70 hover:opacity-100 hover:border-accent/50"
-              }`}
-            >
-              <Image
-                src={url}
-                alt={`${title} – miniature ${i + 1}`}
-                fill
-                className="object-cover"
-                sizes="80px"
-              />
-            </button>
-          ))}
-        </div>
-      )}
+      {/* Thumbnail-strip: vis kun fra heroIndex så fejlede første billeder ikke vises som ødelagte ikoner */}
+      {(() => {
+        const displayUrls = heroIndex > 0 ? proxiedUrls.slice(heroIndex) : proxiedUrls;
+        if (displayUrls.length <= 1) return null;
+        return (
+          <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
+            {displayUrls.map((url, i) => {
+              const fullIndex = heroIndex + i;
+              return (
+                <button
+                  key={`${fullIndex}-${url}`}
+                  type="button"
+                  onClick={() => setLightboxIndex(fullIndex)}
+                  aria-label={`Vis billede ${fullIndex + 1}`}
+                  className={`relative flex-none w-20 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                    fullIndex === heroIndex
+                      ? "border-accent"
+                      : "border-transparent opacity-70 hover:opacity-100 hover:border-accent/50"
+                  }`}
+                >
+                  <Image
+                    src={url}
+                    alt={`${title} – miniature ${fullIndex + 1}`}
+                    fill
+                    className="object-cover"
+                    sizes="80px"
+                    unoptimized={isUnoptimizedImageUrl(url)}
+                  />
+                </button>
+              );
+            })}
+          </div>
+        );
+      })()}
 
       {/* Lightbox med pile-navigation */}
       {lightboxIndex !== null && (
@@ -211,6 +232,7 @@ export function ShelterGallery({
             width={1200}
             height={900}
             className="max-w-full max-h-[90vh] w-auto h-auto object-contain"
+            unoptimized={isUnoptimizedImageUrl(proxiedUrls[lightboxIndex])}
             onClick={(e) => e.stopPropagation()}
           />
         </div>

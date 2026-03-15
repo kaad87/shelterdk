@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { getDistinctRegions, slugifySegment } from "@/lib/danmark-silo";
 import { segmentSlugToName } from "@/lib/slug";
 import { getSheltersPage } from "@/lib/soeg-db";
+import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { SoegContent } from "@/components/SoegContent";
 
@@ -61,12 +62,13 @@ export default async function DanmarkRegionPage({ params }: PageProps) {
 
   const prep = prepositionForRegionName(regionName);
 
-  const { shelters: initialShelters, hasMore: initialHasMore } = await getSheltersPage(
+  const { shelters: rawShelters, hasMore: initialHasMore } = await getSheltersPage(
     regionName,
     null,
     1,
     MAP_VIEW_PAGE_SIZE
   );
+  const initialShelters = await enrichSheltersWithGooglePhotoRef(rawShelters);
 
   const breadcrumbItems = [
     { label: "Hjem", href: "/" },

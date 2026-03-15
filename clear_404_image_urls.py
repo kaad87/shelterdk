@@ -18,20 +18,22 @@ from typing import Optional
 import requests
 
 _script_dir = os.path.dirname(os.path.abspath(__file__))
-for p in (os.path.join(_script_dir, ".env"), os.path.join(_script_dir, ".env.local"), ".env"):
-    if os.path.isfile(p):
-        try:
-            from dotenv import load_dotenv
-            load_dotenv(p)
-        except ImportError:
-            pass
-        if not os.environ.get("NEXT_PUBLIC_SUPABASE_URL") and os.path.isfile(p):
-            with open(p) as f:
-                for line in f:
-                    line = line.strip()
-                    if line and not line.startswith("#") and "=" in line:
-                        k, _, v = line.partition("=")
-                        os.environ.setdefault(k.strip(), v.strip())
+_env_dirs = [_script_dir, os.path.join(_script_dir, "web")]
+for d in _env_dirs:
+    for p in (os.path.join(d, ".env.local"), os.path.join(d, ".env")):
+        if os.path.isfile(p):
+            try:
+                from dotenv import load_dotenv
+                load_dotenv(p)
+            except ImportError:
+                pass
+            if not os.environ.get("NEXT_PUBLIC_SUPABASE_URL") and os.path.isfile(p):
+                with open(p) as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith("#") and "=" in line:
+                            k, _, v = line.partition("=")
+                            os.environ.setdefault(k.strip(), v.strip())
 
 USER_AGENT = "ShelterDK/1.0 (clear 404 image_urls)"
 REQUEST_TIMEOUT = 10
@@ -79,49 +81,97 @@ def main():
     from supabase import create_client
     supabase = create_client(url, key)
 
-    # Hent i batcher og filtrer i Python (undgår .not_() API som kan give "not callable")
     fetch_limit = (args.limit * 3) if args.limit > 0 else 10000
-    r = supabase.table("shelters").select("id, title, image_url").limit(fetch_limit).execute()
-    rows = [s for s in (r.data or []) if (s.get("image_url") or "").strip()]
+    r = supabase.table("shelters").select("id, title, image_url, image_urls").is_(
+        "duplicate_of_shelter_id", None
+    ).limit(fetch_limit).execute()
+    rows = [s for s in (r.data or []) if (s.get("image_url") or "").strip() or (s.get("image_urls") or [])]
     if args.limit > 0:
         rows = rows[: args.limit]
 
-    print(f"Tjekker {len(rows)} shelter(s) med image_url...")
+    print(f"Tjekker {len(rows)} shelter(s) (image_url + image_urls)...")
     if not rows:
         print("Ingen at tjekke.")
         return 0
 
-    to_clear = []
+    to_update = []
     for i, s in enumerate(rows):
-        img = (s.get("image_url") or "").strip()
-        if not img or not img.startswith("http"):
-            to_clear.append((s["id"], s.get("title") or s["id"], img[:60]))
+        sid = s["id"]
+        title = s.get("title") or sid
+        primary = (s.get("image_url") or "").strip()
+        urls_list = s.get("image_urls")
+        if not isinstance(urls_list, list):
+            urls_list = []
+        all_urls = ([primary] if primary and primary.startswith("http") else []) + [
+            u for u in urls_list if isinstance(u, str) and u.strip().startswith("http")
+        ]
+        if not all_urls:
             continue
-        if not check_url(img):
-            to_clear.append((s["id"], s.get("title") or s["id"], img[:60]))
-        if (i + 1) % 50 == 0:
-            print(f"  Tjekket {i + 1}/{len(rows)}...")
-        time.sleep(SLEEP_PER_REQUEST)
 
-    print(f"Fundet {len(to_clear)} med 404/fejl der sættes til NULL.")
-    if not to_clear:
+        working = []
+        primary_ok = False
+        for u in all_urls:
+            url = (u or "").strip()
+            if not url:
+                continue
+            if check_url(url):
+                working.append(url)
+                if url == primary:
+                    primary_ok = True
+            if (i + 1) % 50 == 0 and url == all_urls[-1]:
+                print(f"  Tjekket {i + 1}/{len(rows)}...")
+            time.sleep(SLEEP_PER_REQUEST)
+
+        new_primary = working[0] if working else None
+        if primary_ok and primary and primary in working:
+            new_primary = primary
+        new_urls_list = working[1:] if (working and new_primary == working[0]) else (working if working else [])
+        new_urls_same = new_urls_list == urls_list
+
+        primary_changed = (not primary_ok and primary) or (working and not primary_ok and primary)
+        urls_changed = not new_urls_same
+
+        if primary_changed or urls_changed:
+            to_update.append((
+                sid,
+                title,
+                new_primary,
+                new_urls_list if urls_changed else None,
+            ))
+
+    updates = []
+    for sid, title, new_primary, new_urls in to_update:
+        payload = {}
+        payload["image_url"] = new_primary
+        if new_urls is not None:
+            payload["image_urls"] = new_urls
+        if payload:
+            updates.append((sid, title, payload))
+
+    print(f"Fundet {len(updates)} shelter(s) med defekte billed-URL'er (404/403/timeout).")
+    if not updates:
         print("Ingen opdateringer nødvendige.")
         return 0
 
     if args.dry_run:
         print("(dry-run – ingen opdateringer)")
-        for sid, title, u in to_clear[:20]:
-            print(f"  {title[:45]}… → NULL")
-        if len(to_clear) > 20:
-            print(f"  ... og {len(to_clear) - 20} til")
+        for sid, title, payload in updates[:25]:
+            msg = []
+            if "image_url" in payload:
+                msg.append("image_url→" + ("NULL" if payload["image_url"] is None else "opdateret"))
+            if "image_urls" in payload:
+                msg.append(f"image_urls→{len(payload['image_urls'])} URL'er")
+            print(f"  {title[:45]}…  [{', '.join(msg)}]")
+        if len(updates) > 25:
+            print(f"  ... og {len(updates) - 25} til")
         return 0
 
     updated = 0
-    for sid, title, _ in to_clear:
-        supabase.table("shelters").update({"image_url": None}).eq("id", sid).execute()
+    for sid, title, payload in updates:
+        supabase.table("shelters").update(payload).eq("id", sid).execute()
         updated += 1
         if updated <= 10 or updated % 100 == 0:
-            print(f"  [{updated}/{len(to_clear)}] {title[:50]}…")
+            print(f"  [{updated}/{len(updates)}] {title[:50]}…")
     print(f"Færdig. Opdateret {updated} shelter(s).")
     return 0
 
