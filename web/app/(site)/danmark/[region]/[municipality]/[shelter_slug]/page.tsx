@@ -34,10 +34,10 @@ import {
   getWater,
   getPetsAllowed,
   isValidImageUrl,
+  generateFallbackDescription,
 } from "@/lib/shelter-detail";
 import { getShelterFaqItems, faqToJsonLd } from "@/lib/faq";
 import { getAreaBySlug } from "@/lib/area-db";
-import { getFirstGooglePhotoRef } from "@/lib/google-photo";
 import { getWeatherForecast } from "@/lib/weather";
 import { ShelterDetailContent } from "@/components/ShelterDetailContent";
 import { ShelterSchema } from "@/components/seo/ShelterSchema";
@@ -92,7 +92,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const description = buildDescriptionFromFacilities(shelter);
   const canonicalPath = `/danmark/${regionSlug}/${municipalitySlug}/${shelter_slug}`;
 
-  const photoRef = await getFirstGooglePhotoRef(shelter.google_place_id ?? null);
+  const embeddedPlaces = shelter.google_places;
+  const embeddedRefs = Array.isArray(embeddedPlaces)
+    ? embeddedPlaces?.[0]?.photo_references
+    : embeddedPlaces?.photo_references;
+  const photoRef = Array.isArray(embeddedRefs) ? (embeddedRefs?.[0] ?? null) : null;
   const photoUrls = getResolvedPhotoUrls(shelter, photoRef);
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://shelterdk.dk";
   const ogImageRaw =
@@ -160,12 +164,16 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
   }
 
   const areaSlug = (shelter as { area_slug?: string | null }).area_slug?.trim() || null;
-  const [municipalitiesResult, reviews, area, photoRef] = await Promise.all([
+  const [municipalitiesResult, reviews, area] = await Promise.all([
     regionName ? getMunicipalitiesInRegion(regionName) : Promise.resolve([]),
     getReviews(shelter.google_place_id ?? null),
     areaSlug ? getAreaBySlug(areaSlug) : Promise.resolve(null),
-    getFirstGooglePhotoRef(shelter.google_place_id ?? null),
   ]);
+  const embeddedPlaces = shelter.google_places;
+  const embeddedRefs = Array.isArray(embeddedPlaces)
+    ? embeddedPlaces?.[0]?.photo_references
+    : embeddedPlaces?.photo_references;
+  const photoRef = Array.isArray(embeddedRefs) ? (embeddedRefs?.[0] ?? null) : null;
   const coordsEarly = getLocationCoords(shelter);
   const weatherForecast = coordsEarly
     ? await getWeatherForecast(coordsEarly.lat, coordsEarly.lon)
@@ -187,7 +195,7 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
     (shelter.seo_description?.trim() ? stripHtml(shelter.seo_description) : null) ||
     getLongDescription(shelter) ||
     stripHtml(shelter.description) ||
-    null;
+    generateFallbackDescription(shelter);
   const capacity = getCapacity(shelter);
   const features = getFeatures(shelter);
   const season = getSeason(shelter);

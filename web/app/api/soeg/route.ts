@@ -35,8 +35,13 @@ export async function GET(request: NextRequest) {
       ? { minLat, maxLat, minLon, maxLon }
       : undefined;
 
+  // UX: Når brugeren panorerer/zoomer på kortet, skal resultater følge det synlige område,
+  // også hvis der tidligere var valgt region-filter (fx “Aarhus”). Derfor ignorerer vi region
+  // for bbox-forespørgsler.
+  const regionForQuery = bbox ? null : region;
+
   let { shelters, hasMore } = await getSheltersPage(
-    region,
+    regionForQuery,
     q,
     page,
     SOEG_PAGE_SIZE,
@@ -45,7 +50,7 @@ export async function GET(request: NextRequest) {
     area
   );
 
-  if (region) shelters = filterSheltersByRegion(shelters, region);
+  if (region && !bbox) shelters = filterSheltersByRegion(shelters, region);
   shelters = await enrichSheltersWithGooglePhotoRef(shelters);
 
   return Response.json({ shelters, hasMore });

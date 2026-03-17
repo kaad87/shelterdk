@@ -27,7 +27,6 @@ import {
   isValidImageUrl,
 } from "@/lib/shelter-detail";
 import { slugifySegment } from "@/lib/slug";
-import { getFirstGooglePhotoRef } from "@/lib/google-photo";
 import { NO_KOMMUNE_SLUG } from "@/lib/danmark-silo";
 import { getAreaBySlug } from "@/lib/area-db";
 import { getWeatherForecast } from "@/lib/weather";
@@ -44,9 +43,9 @@ interface PageProps {
 export const revalidate = 86400;
 
 const SHELTER_SELECT_DETAIL =
-  "id, title, slug, seo_title, description, seo_description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, region, kommune, place, toilet, water, geofa_raw, area_slug";
+  "id, title, slug, seo_title, description, seo_description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, toilet, water, geofa_raw, area_slug, google_places!shelters_google_place_id_fkey(photo_references)";
 const SHELTER_SELECT_DETAIL_FALLBACK =
-  "id, title, slug, description, seo_description, location, image_url, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, region, kommune, place, water, geofa_raw, area_slug";
+  "id, title, slug, description, seo_description, location, image_url, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, water, geofa_raw, area_slug, google_places!shelters_google_place_id_fkey(photo_references)";
 
 async function getShelterBySlugUncached(slug: string): Promise<Shelter | null> {
   const supabase = createPublicClient();
@@ -117,7 +116,11 @@ export async function generateMetadata({
     (shelter.seo_title?.trim() || null) ?? buildSeoTitle(shelter);
   const description = buildDescriptionFromFacilities(shelter);
 
-  const photoRef = await getFirstGooglePhotoRef(shelter.google_place_id ?? null);
+  const embeddedPlaces = shelter.google_places;
+  const embeddedRefs = Array.isArray(embeddedPlaces)
+    ? embeddedPlaces?.[0]?.photo_references
+    : embeddedPlaces?.photo_references;
+  const photoRef = Array.isArray(embeddedRefs) ? (embeddedRefs?.[0] ?? null) : null;
   const photoUrls = getResolvedPhotoUrls(shelter, photoRef);
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://shelterdk.dk";
   const ogImageRaw =
@@ -158,11 +161,15 @@ export default async function ShelterPage({ params }: PageProps) {
   }
 
   const areaSlug = (shelter as { area_slug?: string | null }).area_slug?.trim() || null;
-  const [reviews, area, photoRef] = await Promise.all([
+  const [reviews, area] = await Promise.all([
     getReviews(shelter.google_place_id ?? null),
     areaSlug ? getAreaBySlug(areaSlug) : Promise.resolve(null),
-    getFirstGooglePhotoRef(shelter.google_place_id ?? null),
   ]);
+  const embeddedPlaces = shelter.google_places;
+  const embeddedRefs = Array.isArray(embeddedPlaces)
+    ? embeddedPlaces?.[0]?.photo_references
+    : embeddedPlaces?.photo_references;
+  const photoRef = Array.isArray(embeddedRefs) ? (embeddedRefs?.[0] ?? null) : null;
   const coordsEarly = getLocationCoords(shelter);
   const weatherForecast = coordsEarly
     ? await getWeatherForecast(coordsEarly.lat, coordsEarly.lon)

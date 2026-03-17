@@ -74,9 +74,33 @@ export default async function GuidePage({ params }: PageProps) {
       ? [...relatedGuides, ...allGuides.filter((g) => g.category === guide.category)].slice(0, 2)
       : relatedGuides;
 
+  const BASE_URL = "https://shelterdk.dk";
+  const canonicalPath = `/guides/${guide.slug}`;
+  const guideSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: guide.title,
+    description: guide.excerpt,
+    image: guide.coverImage,
+    author: {
+      "@type": "Person",
+      name: "Christian",
+      url: `${BASE_URL}/om-os`,
+    },
+    publisher: { "@type": "Organization", name: "ShelterDK", url: BASE_URL },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `${BASE_URL}${canonicalPath}`,
+    },
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <BreadcrumbSchema items={breadcrumbItems} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(guideSchema) }}
+      />
 
       {/* Header with cover image */}
       <header className="relative w-full h-[260px] sm:h-[320px] md:h-[380px] bg-primary text-white overflow-hidden">

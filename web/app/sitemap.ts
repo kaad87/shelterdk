@@ -7,6 +7,7 @@ import {
 } from "@/lib/danmark-silo";
 import { slugifySegment } from "@/lib/slug";
 import { getGuides } from "@/data/guides";
+import { getBlogPosts } from "@/data/blog";
 
 const BASE_URL = "https://shelterdk.dk";
 const BATCH_SIZE = 1000;
@@ -136,14 +137,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entries.push(entry(`${BASE_URL}/danmark/${regionSlug}`, "weekly", 0.8));
   }
 
-  // Blog-posts (hardkodet – ingen ekstern datakilde)
-  const blogSlugs = [
-    "hvordan-vælge-shelter",
-    "shelter-etiquette",
-    "de-bedste-regioner",
-  ];
-  for (const slug of blogSlugs) {
-    entries.push(entry(`${BASE_URL}/blog/${slug}`, "monthly", 0.65));
+  // Blog-posts (dynamisk fra data/blog.ts)
+  const blogPosts = getBlogPosts();
+  for (const post of blogPosts) {
+    entries.push(entry(`${BASE_URL}/blog/${post.slug}`, "monthly", 0.65));
   }
 
   // Guide-sider

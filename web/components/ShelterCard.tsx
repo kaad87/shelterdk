@@ -3,9 +3,9 @@
 import { useRef, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { MapPin, Star } from "lucide-react";
+import { MapPin, Star, CheckCircle, Droplets, Dog, Flame } from "lucide-react";
 import type { Shelter } from "@/types/shelter";
-import { getCity, getResolvedPhotoUrls, isShelterPlace, isValidImageUrl } from "@/lib/shelter-detail";
+import { getCity, getResolvedPhotoUrls, isShelterPlace, isValidImageUrl, getWater, getToilet, getPetsAllowed } from "@/lib/shelter-detail";
 import { ShelterPlaceholder } from "@/components/ShelterPlaceholder";
 import { getProxiedImageSrc, isUnoptimizedImageUrl } from "@/lib/image-proxy";
 
@@ -75,7 +75,12 @@ function FrontPageCardImage({
 }
 
 export function ShelterCard({ shelter, onImageError, href, priority }: ShelterCardProps) {
-  const resolvedUrls = getResolvedPhotoUrls(shelter, shelter.google_photo_ref ?? undefined);
+  const embeddedPlaces = shelter.google_places;
+  const embeddedRefs = Array.isArray(embeddedPlaces)
+    ? embeddedPlaces?.[0]?.photo_references
+    : embeddedPlaces?.photo_references;
+  const photoRef = shelter.google_photo_ref ?? (Array.isArray(embeddedRefs) ? (embeddedRefs?.[0] ?? null) : null);
+  const resolvedUrls = getResolvedPhotoUrls(shelter, photoRef);
   const displayableUrls = resolvedUrls.filter(
     (u) => u.startsWith("/api/google-photo") || isValidImageUrl(u)
   );
@@ -166,10 +171,43 @@ export function ShelterCard({ shelter, onImageError, href, priority }: ShelterCa
             <span className="truncate">{city}</span>
           </p>
         )}
-        {/* Reserver plads så alle kort har samme højde uanset bookbar */}
-        <p className="mt-2 min-h-[1.25rem] text-sm font-medium text-accent">
-          {shelter.booking_url && "Bookbar"}
-        </p>
+        {/* Facility badges */}
+        <div className="mt-1.5 flex items-center gap-1.5 min-h-[1.25rem]" aria-label="Faciliteter">
+          {(() => {
+            const water = getWater(shelter);
+            const toilet = getToilet(shelter);
+            const pets = getPetsAllowed(shelter);
+            const hasToilet = toilet === "flush" || toilet === "mulch";
+            return (
+              <>
+                {water === true && (
+                  <span className="flex items-center gap-0.5 text-primary/50 text-[11px]" title="Vand" role="img" aria-label="Vand">
+                    <Droplets size={13} aria-hidden="true" />
+                  </span>
+                )}
+                {hasToilet && (
+                  <span className="flex items-center gap-0.5 text-primary/50 text-[11px]" title="Toilet" role="img" aria-label="Toilet">
+                    <span aria-hidden="true">🚽</span>
+                  </span>
+                )}
+                {pets === true && (
+                  <span className="flex items-center gap-0.5 text-primary/50 text-[11px]" title="Hund tilladt" role="img" aria-label="Hund tilladt">
+                    <Dog size={13} aria-hidden="true" />
+                  </span>
+                )}
+              </>
+            );
+          })()}
+        </div>
+        {/* Bookbar badge */}
+        <div className="mt-1.5 min-h-[1.5rem]">
+          {shelter.booking_url && (
+            <span className="inline-flex items-center gap-1 bg-green-50 text-green-700 text-xs font-medium px-2 py-0.5 rounded-full border border-green-200">
+              <CheckCircle size={12} />
+              Bookbar
+            </span>
+          )}
+        </div>
       </div>
     </Link>
   );

@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { getByerSuggestions } from "@/lib/soeg-db";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 /**
  * GET /api/soeg/byer?q=Bil

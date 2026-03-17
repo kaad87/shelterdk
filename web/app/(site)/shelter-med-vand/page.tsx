@@ -6,6 +6,15 @@ import { getSheltersWithWater } from "@/lib/shelters-with-water";
 import { slugifySegment } from "@/lib/slug";
 import { ShelterCard } from "@/components/ShelterCard";
 import { ShelterMap } from "@/components/ShelterMap";
+import { faqToJsonLd, type FaqItem } from "@/lib/faq";
+
+const VAND_FAQ: FaqItem[] = [
+  { question: "Er vandet på shelterpladser drikkevand?", answer: "Det varierer fra plads til plads. Nogle shelterpladser har vandhaner med godkendt drikkevand, mens andre kun har vand til opvask. Tjek altid lokal skiltning ved vandhanen, og medtag drikkevand som backup hvis du er i tvivl." },
+  { question: "Skal man medbringe eget vand til sheltertur?", answer: "Det er altid en god idé at medbringe vand til din sheltertur, selv hvis pladsen har vandhane. Vandhaner kan være lukket om vinteren, eller vandtrykket kan være lavt. Vi anbefaler minimum 2 liter per person per dag." },
+  { question: "Har alle shelters i Danmark vand?", answer: "Nej, mange primitive shelterpladser har ingen vandforsyning. Pladser med vand er typisk dem der drives af Naturstyrelsen eller kommuner med et vist service-niveau. På ShelterDK kan du filtrere specifikt efter shelters med vand." },
+  { question: "Kan man drikke vand fra søer og åer ved shelters?", answer: "Vi fraråder at drikke ubehandlet vand fra søer og åer i Danmark. Selvom vandet kan se rent ud, kan det indeholde bakterier og parasitter. Medbring altid drikkevand eller et vandfilter/rensetabletter." },
+  { question: "Er der vand tilgængeligt hele året på shelterpladser?", answer: "Mange vandhaner på shelterpladser lukkes om vinteren for at undgå frostskader, typisk fra november til marts. Planlæg med ekstra medbragt vand hvis du overvejer en vintertur." },
+];
 
 const PAGE_TITLE = "Shelter med vand i Danmark – drikkevand og vandhane | ShelterDK";
 export const metadata: Metadata = {
@@ -146,16 +155,42 @@ export default async function ShelterMedVandPage() {
           </p>
 
           <p>
-            Leder du i stedet efter shelters med toilet? Se{" "}
+            Se også:{" "}
             <Link href="/shelter-med-toilet" className="text-accent hover:underline">
               shelter med toilet
             </Link>
-            {" "}eller{" "}
+            {" · "}
+            <Link href="/shelter-med-hund" className="text-accent hover:underline">
+              hundevenlige shelters
+            </Link>
+            {" · "}
+            <Link href="/shelter-med-baalplads" className="text-accent hover:underline">
+              shelter med bålplads
+            </Link>
+            {" · "}
             <Link href="/soeg" className="text-accent hover:underline">
               søg alle shelters
             </Link>
             .
           </p>
+        </section>
+
+        <section className="mt-12 pt-8 border-t border-primary/10">
+          <h2 className="font-serif text-xl font-bold text-primary mb-6">
+            Ofte stillede spørgsmål om shelters med vand
+          </h2>
+          <dl className="space-y-6">
+            {VAND_FAQ.map((item) => (
+              <div key={item.question}>
+                <dt className="font-semibold text-primary mb-1">{item.question}</dt>
+                <dd className="text-primary/80 leading-relaxed">{item.answer}</dd>
+              </div>
+            ))}
+          </dl>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(faqToJsonLd(VAND_FAQ)) }}
+          />
         </section>
       </div>
     </div>

@@ -6,6 +6,15 @@ import { getSheltersWithFirewood } from "@/lib/shelters-with-firewood";
 import { slugifySegment } from "@/lib/slug";
 import { ShelterCard } from "@/components/ShelterCard";
 import { ShelterMap } from "@/components/ShelterMap";
+import { faqToJsonLd, type FaqItem } from "@/lib/faq";
+
+const BAAL_FAQ: FaqItem[] = [
+  { question: "Hvornår er der bålforbud i Danmark?", answer: "Bålforbud udstedes af lokale beredskaber i perioder med tørke og forhøjet brandfare, typisk om sommeren. Tjek altid Beredskabsstyrelsens hjemmeside eller lokal skiltning inden du tænder bål. Ved bålforbud må du heller ikke bruge gasblus eller engangsgrill i naturen." },
+  { question: "Må man bruge egen brænde på shelterpladser?", answer: "Ja, du må gerne medbringe eget brænde. På mange Naturstyrelsen-pladser er der gratis brænde tilgængeligt, men det er ikke garanteret. Medbring altid lidt brænde eller briketter som backup, og saml aldrig levende træ fra skoven." },
+  { question: "Er der bålplads ved alle shelters i Danmark?", answer: "Nej, ikke alle shelters har bålplads. Nogle pladser ligger i områder med brandfare eller særlige naturhensyn. På ShelterDK kan du filtrere efter shelters med bålplads, så du kun ser pladser hvor bål er muligt." },
+  { question: "Hvordan slukker man et bål korrekt på shelterplads?", answer: "Lad bålet brænde helt ned til gløder, hæld rigelig vand på og rør rundt med en pind. Gentag til der ikke længere stiger damp op. Bålpladsen skal være kold at røre ved inden du forlader den. Lad aldrig et bål brænde uovervåget." },
+  { question: "Kan man lave mad over bål på shelterpladser?", answer: "Ja, bålpladsen er perfekt til madlavning. Medbring en grillrist eller en trefod til at sætte en gryde over ilden. Snobrød, grillmad og one-pot-retter er klassikere. Se vores guide til mad over bål for inspiration og opskrifter." },
+];
 
 const PAGE_TITLE = "Shelter med bålplads i Danmark – shelters med bål | ShelterDK";
 export const metadata: Metadata = {
@@ -145,20 +154,42 @@ export default async function ShelterMedBaalpladsPage() {
           </p>
 
           <p>
-            Leder du efter andre faciliteter? Se{" "}
+            Se også:{" "}
             <Link href="/shelter-med-toilet" className="text-accent hover:underline">
               shelter med toilet
             </Link>
-            {" "}eller{" "}
+            {" · "}
             <Link href="/shelter-med-vand" className="text-accent hover:underline">
               shelter med vand
             </Link>
-            {" "}– eller tag hunden med og find{" "}
+            {" · "}
             <Link href="/shelter-med-hund" className="text-accent hover:underline">
               hundevenlige shelters
             </Link>
+            {" · "}
+            <Link href="/soeg" className="text-accent hover:underline">
+              søg alle shelters
+            </Link>
             .
           </p>
+        </section>
+
+        <section className="mt-12 pt-8 border-t border-primary/10">
+          <h2 className="font-serif text-xl font-bold text-primary mb-6">
+            Ofte stillede spørgsmål om shelters med bålplads
+          </h2>
+          <dl className="space-y-6">
+            {BAAL_FAQ.map((item) => (
+              <div key={item.question}>
+                <dt className="font-semibold text-primary mb-1">{item.question}</dt>
+                <dd className="text-primary/80 leading-relaxed">{item.answer}</dd>
+              </div>
+            ))}
+          </dl>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(faqToJsonLd(BAAL_FAQ)) }}
+          />
         </section>
       </div>
     </div>

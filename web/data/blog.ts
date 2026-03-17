@@ -27,6 +27,511 @@ export const BLOG_CATEGORIES: BlogCategory[] = [
 
 const BLOG_POSTS: BlogPost[] = [
   {
+    slug: "gratis-shelters-i-danmark",
+    title: "Gratis shelters i Danmark – komplet guide",
+    excerpt:
+      "Find ud af hvor du kan overnatte gratis i shelters over hele Danmark, og hvordan systemet fungerer.",
+    date: "2026-02-15",
+    category: "Guides",
+    coverImage:
+      "https://images.unsplash.com/photo-1471513671800-b09c87e1497c?w=1200&q=80&auto=format&fit=crop",
+    readingTime: 4,
+    content: `Danmark er et af de bedste lande i Europa, hvis du vil overnatte gratis i naturen. Hundredvis af shelters er frit tilgængelige for alle, og det koster ikke en krone at bruge dem. Men hvordan finder du dem, hvad er reglerne, og hvad kan du forvente? I denne guide giver vi dig det fulde overblik over gratis shelters i Danmark.
+
+![Shelter i dansk skov med bålplads](https://images.unsplash.com/photo-1471513671800-b09c87e1497c?w=1200&q=80&auto=format&fit=crop)
+
+## Hvad er et gratis shelter?
+
+Et gratis shelter er en trækonstruktion i naturen, som er åben for alle uden betaling. De fleste er opført af Naturstyrelsen, kommuner eller lokale friluftsforeninger og er placeret i skove, ved søer, langs kysten og i naturområder over hele landet. Typisk består et shelter af tre vægge, et tag og en hævet træplatform, hvor du kan rulle dit liggeunderlag ud og sove beskyttet mod vind og regn.
+
+Gratis shelters drives efter det såkaldte først-til-mølle-princip. Det betyder, at du ikke kan reservere pladsen på forhånd. Du møder simpelthen op, og hvis der er plads, er du velkommen til at blive. Hvis shelteren allerede er optaget, må du finde en anden plads eller have en alternativ plan klar.
+
+## Først-til-mølle vs. booking
+
+Det er vigtigt at forstå forskellen mellem gratis shelters og bookbare shelters. I Danmark har vi begge typer, og de fungerer meget forskelligt.
+
+**Gratis shelters (først-til-mølle):**
+- Ingen reservation mulig
+- Helt gratis at bruge
+- Du deler pladsen, hvis andre ankommer
+- Størst risiko for at være optaget i højsæsonen
+
+**Bookbare shelters:**
+- Kan reserveres via platforme som [Book en Shelter](https://bookenshelter.dk) eller [udinaturen.dk](https://udinaturen.dk)
+- Koster typisk et mindre gebyr (ofte 30-100 kr. per nat)
+- Du har pladsen for dig selv eller din gruppe
+- Mere planlægningssikkerhed, især med børn
+
+Hvis du er fleksibel med din rejseplan og gerne vil spare penge, er gratis shelters et fremragende valg. Har du brug for sikkerhed i planlægningen, kan det betale sig at booke.
+
+## Hvor finder man gratis shelters?
+
+Der findes flere gode kilder til at finde gratis shelters i Danmark. Brug vores <a href="/soeg">sheltersøgning</a> til at filtrere efter område og se placeringer på kortet. Naturstyrelsen driver en stor del af landets gratis shelters, og deres hjemmeside har opdaterede oplysninger om tilgængelighed og faciliteter.
+
+De mest populære områder for gratis shelters inkluderer:
+
+- **Nordjylland** – store klitplantager og kystområder med mange frie shelters
+- **Midtjylland** – Silkeborg-området og Søhøjlandet har adskillige shelters langs vandreruter
+- **Fyn** – et tæt netværk af cykelvenlige shelters
+- **Nordsjælland** – Gribskov og Tisvilde Hegn er populære for Københavnere
+- **Bornholm** – unikke klippekystshelters i en helt særlig natur
+
+## Faciliteter ved gratis shelters
+
+Forvent ikke luksus ved gratis shelters. De fleste har en bålplads og måske et bord med bænke, men derudover varierer faciliteterne. Mange har ikke toilet, drikkevand eller brænde til rådighed. Det er vigtigt at være selvforsynende.
+
+Medbring altid:
+- Rigeligt med drikkevand (minimum 2 liter per person)
+- Brænde eller briketter, hvis du vil lave bål
+- Toiletpapir og en lille spade til nødtoilet
+- Alt dit affald skal tages med hjem
+
+Læs mere om, hvad du skal pakke, i vores <a href="/guides/pakkeliste-til-sheltertur">pakkeliste til sheltertur</a>.
+
+## Regler og god opførsel
+
+Selvom gratis shelters er åbne for alle, er der stadig regler, du skal overholde. Overnatning i shelters er tilladt på de udpegede pladser, men du må som udgangspunkt ikke slå lejr andre steder i skoven uden tilladelse. Læs mere om de juridiske rammer i vores <a href="/guides/regler-for-shelter-og-teltning-i-danmark">guide til regler for shelter og teltning</a>.
+
+De vigtigste regler for gratis shelters:
+
+- **Tag alt affald med** – efterlad stedet renere end du fandt det
+- **Del pladsen** – du har ikke eneret, selvom du kom først
+- **Brug kun etablerede bålpladser** – og sluk altid ilden helt
+- **Respekter naturen** – fæld ikke træer og forstyr ikke dyrelivet
+- **Hold støjniveauet nede** – især efter kl. 22
+
+![Bålplads ved gratis shelter](https://images.unsplash.com/photo-1497900304864-273dfb3aae33?w=1200&q=80&auto=format&fit=crop)
+
+## Tips til at finde ledige shelters
+
+Vil du maksimere dine chancer for at finde et ledigt gratis shelter? Her er nogle strategier:
+
+- **Undgå weekender i juni-august** – det er den travleste periode
+- **Tag afsted midt i ugen** – tirsdag til torsdag er sjældent udsolgt
+- **Ankom tidligt** – jo tidligere du er på pladsen, desto bedre
+- **Hav en plan B** – kend et alternativt shelter i nærheden, eller medbring et let telt
+- **Vælg mindre kendte pladser** – de populære shelters tæt på storbyer fyldes først
+
+Brug vores <a href="/soeg">søgefunktion</a> til at finde shelters i mindre besøgte områder, og planlæg din tur med flere mulige overnatningssteder.
+
+## Afrunding
+
+Gratis shelters er en fantastisk ressource for alle, der vil opleve dansk natur uden at bruge penge på overnatning. Med lidt planlægning og fleksibilitet kan du finde rolige, smukke steder at tilbringe natten under åben himmel. Respekter reglerne, pak ordentligt, og nyd friheden ved at sove i naturen.`,
+    faq: [
+      {
+        question: "Er alle shelters gratis?",
+        answer:
+          "Nej, ikke alle shelters er gratis. Danmark har både gratis shelters, der fungerer efter først-til-mølle-princippet, og bookbare shelters, der typisk koster et mindre gebyr. Naturstyrelsen driver mange af de gratis shelters, mens kommunale og private pladser kan have en pris.",
+      },
+      {
+        question: "Skal man booke gratis shelters?",
+        answer:
+          "Nej, gratis shelters kan ikke bookes. De fungerer efter først-til-mølle-princippet, hvilket betyder at du møder op og bruger pladsen, hvis den er ledig. Vil du have sikkerhed for en plads, bør du vælge et bookbart shelter i stedet.",
+      },
+      {
+        question: "Hvor finder man gratis shelters?",
+        answer:
+          "Du kan finde gratis shelters via vores sheltersøgning, Naturstyrelsens hjemmeside eller udinaturen.dk. Shelters findes over hele landet i skove, ved søer og langs kysten. De fleste kommuner har også information om lokale shelters på deres hjemmesider.",
+      },
+    ],
+  },
+  {
+    slug: "shelter-vs-teltplads",
+    title: "Shelter vs teltplads – hvad er forskellen?",
+    excerpt:
+      "En sammenligning af shelter og teltplads – fordele, ulemper og hvornår du bør vælge hvad.",
+    date: "2026-02-28",
+    category: "Tips",
+    coverImage:
+      "https://images.unsplash.com/photo-1504851149312-7a075b496cc7?w=1200&q=80&auto=format&fit=crop",
+    readingTime: 3,
+    content: `Når du planlægger en overnatning i naturen, står du ofte over for et grundlæggende valg: skal du overnatte i et shelter eller medbringe dit eget telt og bruge en teltplads? Begge muligheder har deres fordele og ulemper, og det rigtige valg afhænger af din rejsestil, dit udstyr og hvad du prioriterer. I denne artikel gennemgår vi forskellene, så du kan træffe det bedste valg til din næste tur.
+
+![Shelter og telt i dansk natur](https://images.unsplash.com/photo-1504851149312-7a075b496cc7?w=1200&q=80&auto=format&fit=crop)
+
+## Hvad er et shelter?
+
+Et shelter er en fast trækonstruktion med typisk tre vægge og et tag. Det er permanent opstillet i naturen og vedligeholdes af Naturstyrelsen, kommuner eller lokale foreninger. Shelters er designet til overnatning og har som regel plads til 4-6 personer. De fleste har en bålplads i nærheden, og nogle har også bord, bænke og toilet.
+
+Du behøver ikke medbringe telt for at overnatte i et shelter. Dit liggeunderlag og din sovepose er i princippet alt, hvad du har brug for. Det gør shelters til et oplagt valg for dem, der vil rejse let.
+
+## Hvad er en teltplads?
+
+En teltplads er et udpeget område, hvor det er tilladt at slå telt op. Primitive teltpladser i naturen er ofte gratis og har basale faciliteter som bålplads og eventuelt toilet. De adskiller sig fra egentlige campingpladser, som typisk har strøm, badefaciliteter og kiosk.
+
+På en teltplads skal du medbringe dit eget telt, hvilket giver dig mere privatliv og beskyttelse mod vejret, men også en tungere oppakning.
+
+## Fordele ved shelter
+
+Shelters har en række klare fordele, som gør dem populære blandt friluftsfolk:
+
+- **Lettere oppakning** – du skal ikke bære telt, heringe og stænger
+- **Hurtig opstilling** – du ankommer og lægger dig til rette. Intet besvær med at rejse telt i mørke eller regn
+- **Socialt** – shelters opfordrer til fællesskab. Du møder ofte andre overnattende, og stemningen er hyggelig
+- **Fast konstruktion** – et shelter holder i kraftig vind og regn, hvor et let telt kan få problemer
+- **Bålplads** – de fleste shelters har en dedikeret bålplads, som er klar til brug
+
+Brug vores <a href="/soeg">sheltersøgning</a> til at finde det perfekte shelter til din næste tur.
+
+## Fordele ved telt og teltplads
+
+Telt har også styrker, som et shelter ikke kan matche:
+
+- **Privatliv** – du har dit eget rum og behøver ikke dele med fremmede
+- **Fleksibilitet** – du er ikke afhængig af, om et shelter er ledigt
+- **Insektbeskyttelse** – et telt med myggenet holder insekter ude, hvilket kan være en stor fordel om sommeren
+- **Temperaturregulering** – et lukket telt holder bedre på varmen i kolde nætter
+- **Flere placeringsmuligheder** – du kan bruge enhver udpeget teltplads
+
+## Hvornår skal du vælge shelter?
+
+Et shelter er det rigtige valg, når du:
+
+- Vil rejse med minimal oppakning og vægt
+- Er på en længere vandre- eller cykeltur, hvor hver gram tæller
+- Sætter pris på den sociale dimension og gerne møder andre
+- Er begynder og vil prøve at overnatte i naturen uden at investere i dyrt teltudstyr
+- Planlægger en tur i den milde sæson, hvor insekter ikke er et stort problem
+
+Læs vores <a href="/guides/shelter-for-begyndere-forste-tur">begynderguide</a> for at komme godt i gang med shelterture.
+
+## Hvornår skal du vælge telt?
+
+Et telt er bedre, når du:
+
+- Vil have garanti for privatliv og egen plads
+- Rejser i højsæsonen, hvor shelters ofte er optaget
+- Planlægger ture i myg- og flåtsæsonen (juni-juli)
+- Har brug for ekstra beskyttelse mod kulde om vinteren
+- Vil have fuld fleksibilitet i din rejseplan
+
+## Kan man kombinere begge dele?
+
+Mange erfarne friluftsfolk vælger faktisk at kombinere shelter og telt. De medbringer et let telt eller en tarp som backup og planlægger primært at overnatte i shelters. Hvis shelteren er optaget, eller vejret kræver ekstra beskyttelse, har de altid en alternativ løsning.
+
+Denne tilgang giver den bedste kombination af fleksibilitet og bekvemmelighed. En ultralet tarp vejer under 500 gram og kan gøre forskellen mellem en god og en dårlig tur.
+
+![Teltplads ved sø i Danmark](https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?w=1200&q=80&auto=format&fit=crop)
+
+## Regler for telt vs. shelter
+
+Det er vigtigt at kende reglerne, uanset om du vælger shelter eller telt. I Danmark er det tilladt at overnatte i udpegede shelters og på primitive teltpladser, men du må som udgangspunkt ikke slå telt op frit i naturen. Der er dog undtagelser – i visse private skove over 5 hektar må du telte en enkelt nat, hvis du holder afstand til beboelse. Læs de fulde regler i vores <a href="/guides/regler-for-shelter-og-teltning-i-danmark">guide til regler for shelter og teltning</a>.
+
+## Vores anbefaling
+
+For begyndere og dem, der vil rejse let, er shelters det oplagte valg. De giver en autentisk naturoplevelse uden krav om dyrt udstyr. For erfarne friluftsfolk, der prioriterer privatliv og fleksibilitet, er telt og teltpladser en god løsning. Uanset hvad du vælger, er det vigtigste at komme ud i naturen og nyde den danske friluftsliv.`,
+    faq: [
+      {
+        question: "Er shelter bedre end telt?",
+        answer:
+          "Det afhænger af dine prioriteter. Shelters er bedre, hvis du vil rejse let og sætter pris på den sociale oplevelse. Telt er bedre, hvis du prioriterer privatliv, insektbeskyttelse og fleksibilitet. Mange erfarne friluftsfolk kombinerer begge dele.",
+      },
+      {
+        question: "Koster det at bruge en shelter?",
+        answer:
+          "De fleste shelters i Danmark er gratis. Nogle bookbare shelters kræver et mindre gebyr, typisk 30-100 kr. per nat. Gratis shelters fungerer efter først-til-mølle-princippet og kan ikke reserveres.",
+      },
+      {
+        question: "Kan man have telt ved en shelter?",
+        answer:
+          "Det varierer fra sted til sted. Nogle shelterpladser har også plads til telt, mens andre kun er beregnet til selve shelteren. Tjek altid de lokale regler for den specifikke plads, inden du pakker teltet med.",
+      },
+    ],
+  },
+  {
+    slug: "de-10-bedste-shelters",
+    title: "De 10 bedste shelters i Danmark [2026]",
+    excerpt:
+      "Vores bud på de 10 bedste shelters i Danmark – fra kyst til skov og alt derimellem.",
+    date: "2026-03-01",
+    category: "Inspiration",
+    coverImage:
+      "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1200&q=80&auto=format&fit=crop",
+    readingTime: 5,
+    content: `Danmark har over tusind shelters spredt ud over hele landet, men nogle steder skiller sig ud med en helt særlig beliggenhed, fantastiske faciliteter eller en stemning, der gør oplevelsen uforglemmelig. Vi har samlet vores bud på de 10 bedste shelters i Danmark, baseret på beliggenhed, tilstand, omgivelser og den samlede oplevelse.
+
+![Dansk kystlandskab med shelter](https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1200&q=80&auto=format&fit=crop)
+
+## 1. Shelters ved Silkeborgsøerne, Midtjylland
+
+Søhøjlandet omkring Silkeborg byder på nogle af Danmarks smukkeste shelters. Pladserne langs Gudenåen og de omkringliggende søer kombinerer rolige vandspejl med tæt skov og et rigt dyreliv. Om morgenen kan du vågne til tåge over søen og lyden af fugle. Området er perfekt til kano- og kajakture, hvor du padler fra shelter til shelter.
+
+## 2. Rold Skov-shelters, Nordjylland
+
+Rold Skov er en af Danmarks største og ældste skove. Shelters her ligger dybt inde i skoven, omgivet af imponerende bøge- og grantræer. Troldeskoven, med sine krogede og mosbegroede træer, giver en næsten eventyrlig stemning. Vandreruterne i området er velmarkerede, og du kan sammensætte flerdages ture med overnatning i forskellige shelters.
+
+## 3. Hammershus-området, Bornholm
+
+Bornholm er unik i dansk sammenhæng med sine klippekyster og dramatiske natur. Shelters nær Hammershus og langs nordkystens klippestier giver dig udsigt over Østersøen og en helt anderledes shelteoplevelse. Solnedgangene her er legendariske, og den friske havluft giver en dyb nattesøvn.
+
+## 4. Thy-shelters, Nationalpark Thy
+
+Nationalpark Thy er vild og uforudsigelig natur, når den er bedst. Shelters i klitplantagerne og langs Nordsøstien giver adgang til milevide sandstrande, hede og klitskov. Her er du virkelig langt fra civilisationen, og stilheden er næsten overdøvende. Området er ideelt for den, der vil opleve rå, uberørt natur.
+
+## 5. Mols Bjerge, Østjylland
+
+Naturpark Mols Bjerge har et kuperet landskab, der skiller sig ud fra det flade Danmark. Shelters her ligger med udsigt over bakker, hede og Kalø Vig. Områdets rige kulturhistorie, med gravhøje og oldtidsspor, giver en ekstra dimension til oplevelsen. Det er et fantastisk område til vandring og mountainbiking.
+
+## 6. Møns Klint-området, Sydsjælland
+
+Kridhvideklinterne på Møn er et af Danmarks mest ikoniske naturområder. Shelters i skovene bag klinterne giver adgang til dramatiske kystvandringsruter og en helt særlig geologi. Stjernekiggeriet er enestående her, da Møn har opnået status som Dark Sky Park med minimal lysforurening.
+
+## 7. Svanninge Bakker, Fyn
+
+Fyn er perfekt til cykelshelterture, og Svanninge Bakker byder på nogle af øens bedste shelters. Det kuperede landskab med lyng, skov og panoramaudsigter giver en oplevelse, man ikke forventer på Fyn. Området er velegnet til familier med korte afstande mellem shelters og gode stier.
+
+## 8. Gribskov-shelters, Nordsjælland
+
+For Københavnere er Gribskov det oplagte valg. Skoven er en af Danmarks største og har flere velholdte shelters med god adgang fra parkeringspladser. Esrum Sø og de omkringliggende vandreruter giver masser af muligheder for dagture med overnatning. Trods nærheden til hovedstaden kan du finde rolige pletter, især midt i ugen.
+
+## 9. Hærvejen-shelters, tværs gennem Jylland
+
+Hærvejen er Danmarks ældste landevej og strækker sig fra Padborg i syd til Viborg i nord. Langs ruten finder du adskillige shelters, der er perfekte til flerdages vandre- eller cykelture. Hver etape byder på nye landskaber, fra hedelandskaber til dybe skove og historiske landsbyer. Det er den ultimative shelterture for den, der vil opleve Jyllands mangfoldighed.
+
+![Shelter ved sø i skov](https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1200&q=80&auto=format&fit=crop)
+
+## 10. Tisvilde Hegn, Nordsjælland
+
+Tisvilde Hegn er en stemningsfuld plantage nær Nordsjællands kyst. Shelters her ligger i rolige skovområder med kort afstand til stranden. Den sandede jordbund og de vindblæste fyrretræer giver en helt anden atmosfære end de klassiske danske bøgeskove. Området er populært, men med lidt planlægning kan du finde rolige pladser.
+
+## Hvad gør et shelter til et af de bedste?
+
+Når vi vurderer shelters, kigger vi på flere faktorer:
+
+- **Beliggenhed** – udsigt, nærhed til vand, natur og landskabets karakter
+- **Tilstand** – er shelteren velholdt, med intakt tag og gulv?
+- **Faciliteter** – bålplads, bord, bænke, toilet, brænde
+- **Omgivelser** – vandreruter, aktivitetsmuligheder, dyreliv
+- **Stemning** – fred og ro, afsondrethed, naturlighed
+
+De bedste shelters kombinerer flere af disse faktorer og giver en samlet oplevelse, der er mere end summen af enkeltdelene.
+
+## Find dit næste shelter
+
+Brug vores <a href="/soeg">sheltersøgning</a> til at finde shelters i alle dele af Danmark. Filtrér efter region, faciliteter og tilgængelighed. Læs også vores <a href="/guides/shelter-for-begyndere-forste-tur">begynderguide</a>, hvis du er ny i shelterverdenen, eller lad dig inspirere af vores <a href="/blog/de-bedste-regioner">regionguide</a> for et dybere indblik i hvert område.
+
+Planlæg din tur med tid og omhu, og husk at de mest populære shelters kan være optaget i weekender og ferier. Book i forvejen, hvis muligheden er der, eller vælg at tage afsted midt i ugen for en mere fredelig oplevelse.`,
+    faq: [
+      {
+        question: "Hvad gør et shelter til et af de bedste?",
+        answer:
+          "De bedste shelters kombinerer en fantastisk beliggenhed med god tilstand, gode faciliteter og smukke omgivelser. Udsigt over vand, nærhed til vandreruter og en velholdt bålplads er typiske kendetegn for de mest populære shelters i Danmark.",
+      },
+      {
+        question: "Kan man booke populære shelters?",
+        answer:
+          "Nogle af de populære shelters kan bookes via bookenshelter.dk eller udinaturen.dk, mens andre er gratis og fungerer efter først-til-mølle-princippet. Tjek den specifikke plads, inden du tager afsted. I højsæsonen anbefales booking, hvis det er muligt.",
+      },
+    ],
+  },
+  {
+    slug: "shelter-i-efteraaret",
+    title: "Shelter i efteråret – guide til efterårsture",
+    excerpt:
+      "Alt du skal vide om shelterture i efteråret: vejr, udstyr, stemning og de bedste oplevelser.",
+    date: "2026-01-20",
+    category: "Sæson",
+    coverImage:
+      "https://images.unsplash.com/photo-1508193638397-1c4234db14d8?w=1200&q=80&auto=format&fit=crop",
+    readingTime: 4,
+    content: `Efteråret er en undervurderet sæson for shelterture. Mens de fleste forbinder naturovernatning med lyse sommeraftener, har efteråret sin helt egen charme. Farveskiftende skove, frisk luft, svampejagtens glæder og en stillere natur uden sommerens folkemasser gør september til november til en fremragende tid for den, der vil opleve dansk natur fra sin bedste side.
+
+![Efterårsskov med gyldne farver](https://images.unsplash.com/photo-1508193638397-1c4234db14d8?w=1200&q=80&auto=format&fit=crop)
+
+## Efterårets særlige stemning
+
+Der er noget magisk ved at sidde ved et bål i en efterårsskov. Bladene skifter farve fra grønt til guld, orange og dybt rødt, og skovbunden dufter af jord og nedfaldne blade. Lyset er blødt og varmt, og solnedgangene kommer tidligt og maler himlen i dramatiske farver.
+
+Efteråret byder også på langt færre besøgende end sommeren. De mest populære shelters, der er umulige at få i juli, står ofte tomme en tirsdag i oktober. Det giver ro, plads og mulighed for at nyde naturen i dit eget tempo.
+
+Dyrelivet er aktivt om efteråret. Hjortene brøler i brunsten i september og oktober, og det er en oplevelse helt uden sammenligning at ligge i et shelter og høre kronhjortens brøl gennem skoven i den tidlige morgen.
+
+## Vejr og temperatur
+
+Efterårets vejr er uforudsigeligt, og det er en central del af planlægningen. September kan stadig byde på milde dage omkring 15-18 grader, mens november kan byde på frost og temperaturer tæt på frysepunktet om natten.
+
+Regnvejr er hyppigt, og det er klogt at forberede sig på våde forhold. Vindretningen er vigtig for din komfort i shelteren – et shelter med åbningen mod vestenvinden kan blive ubehageligt i regnvejr. Tjek vejrudsigten og shelterens orientering inden afgang.
+
+Dagslyset forkortes markant. I september har du stadig rimelige aftener med mørke omkring kl. 20, men i november er det mørkt allerede kl. 16-17. Planlæg dine aktiviteter derefter, og medbring en god hovedlygte.
+
+## Hvad skal du medbringe?
+
+Udstyr til efterårsture kræver mere omtanke end sommerpakkelisten. Her er de vigtigste ting:
+
+- **Sovepose med comfort-temperatur på -5 til 0 grader** – nætterne kan blive kolde, og det er bedre at have for varm end for kold
+- **Godt liggeunderlag med høj R-værdi** – kulden kommer nedefra, og et tyndt skumunderlag er ikke nok i oktober
+- **Vandtæt overtøj** – en god regnjakke og vandtætte bukser er uundværlige
+- **Uldundertøj** – uld holder varmen selv når det er fugtigt, og regulerer temperaturen naturligt
+- **Varm hue og handsker** – hovedet og hænderne mister varme hurtigt
+- **Ekstra tørre sokker** – våde fødder er den hurtigste vej til en dårlig oplevelse
+- **Tarp som ekstra beskyttelse** – kan spændes op foran shelterens åbning i kraftigt regnvejr
+
+Se vores komplette <a href="/guides/pakkeliste-til-sheltertur">pakkeliste til sheltertur</a> for flere detaljer.
+
+## Svampejagt og naturens spisekammer
+
+Efteråret er svampesæson, og danske skove bugner af spiselige svampe fra august til november. Karl Johan, kantareller, tragtkantareller og rørhatte er bare nogle af de arter, du kan finde nær dit shelter. Medbring en svampebog og en kurv, og gør svampejagtens til en del af turen.
+
+Husk de vigtige regler:
+- Spis aldrig en svamp, du ikke er helt sikker på at kunne identificere
+- Tjek med en erfaren svampekender, hvis du er i tvivl
+- Høst bæredygtigt og tag kun, hvad du har brug for
+
+Ud over svampe byder efteråret på vilde æbler, slåen, hyben og brombær. En varm svampesuppe tilberedt over bål med ingredienser fra skoven er en af de fineste madoplevelser, du kan have i naturen.
+
+![Bålplads i efterårsskov](https://images.unsplash.com/photo-1510312305653-8ed496efae75?w=1200&q=80&auto=format&fit=crop)
+
+## De bedste områder til efterårsture
+
+Nogle områder er særligt smukke om efteråret:
+
+- **Rold Skov** – Troldeskoven er magisk med efterårsfarver og morgentåge
+- **Silkeborg-søerne** – tågen over søerne om morgenen er uforglemmelig
+- **Mols Bjerge** – lyng og hede skifter farve og giver et dramatisk landskab
+- **Gribskov** – en af Danmarks største bøgeskove med fantastiske efterårsfarver
+- **Svanninge Bakker** – panoramaudsigter over det fynske efterårslandskab
+
+Brug vores <a href="/soeg">sheltersøgning</a> til at finde shelters i disse områder.
+
+## Tips til en vellykket efterårstur
+
+Afslutningsvis er her vores bedste råd til efterårsture:
+
+- **Tjek vejret grundigt** – efterårsvejr kan ændre sig hurtigt, og en ekstra dag med regn kan gøre en stor forskel
+- **Ankom i dagslys** – det er meget lettere at sætte sig til rette og samle brænde, mens der stadig er lys
+- **Lav et godt bål** – i efteråret er bålet centralt for både varme, madlavning og stemning. Medbring optænding og tørt brænde
+- **Klæd dig i lag** – temperaturen kan svinge 15 grader i løbet af dagen
+- **Nyd stilheden** – efteråret er sæsonen for ro. Lad telefonen blive i lommen og mærk naturen
+
+Efterårsture kræver mere forberedelse end sommerture, men belønningen er en dybere, mere intim naturoplevelse. Færre mennesker, flottere farver og en følelse af at have naturen for dig selv gør efteråret til vores favoritssæson for shelterture.`,
+    faq: [
+      {
+        question: "Er det koldt at sove i shelter om efteråret?",
+        answer:
+          "Det kan det være, især fra oktober og frem. Nattemperaturer kan falde til 0-5 grader, og med fugt og vind føles det koldere. En god sovepose med comfort-temperatur på -5 til 0 grader, et godt liggeunderlag og varmt tøj er afgørende for en behagelig nat.",
+      },
+      {
+        question: "Hvad skal man medbringe til sheltertur i efteråret?",
+        answer:
+          "Udover de sædvanlige ting som sovepose og liggeunderlag bør du medbringe vandtæt overtøj, uldundertøj, varm hue og handsker, ekstra tørre sokker og eventuelt en tarp til ekstra beskyttelse. Medbring også optænding og tørt brænde, da det kan være svært at finde tørt brænde i skoven om efteråret.",
+      },
+    ],
+  },
+  {
+    slug: "shelter-regler-overnatning",
+    title: "Shelter regler – må man overnatte hvor som helst?",
+    excerpt:
+      "Bliv klogere på reglerne for overnatning i shelters og i naturen i Danmark.",
+    date: "2026-03-10",
+    category: "Tips",
+    coverImage:
+      "https://images.unsplash.com/photo-1448375240586-882707db888b?w=1200&q=80&auto=format&fit=crop",
+    readingTime: 4,
+    content: `En af de mest stillede spørgsmål blandt nye friluftsfolk er: må man bare overnatte i naturen i Danmark? Svaret er ikke helt enkelt, for reglerne afhænger af, om du sover i et shelter, på en teltplads eller frit i landskabet. I denne artikel gennemgår vi de vigtigste regler, så du kan planlægge din tur med god samvittighed og inden for lovens rammer.
+
+![Shelter i dansk skov](https://images.unsplash.com/photo-1448375240586-882707db888b?w=1200&q=80&auto=format&fit=crop)
+
+## Grundreglen: udpegede pladser
+
+I Danmark er det som udgangspunkt kun tilladt at overnatte på udpegede pladser. Det gælder både shelters, primitive teltpladser og lejrpladser. Disse pladser er markeret, vedligeholdt og godkendt til overnatning af de relevante myndigheder.
+
+Det betyder, at du ikke bare kan finde et pænt sted i skoven og slå lejr. Naturbeskyttelsesloven regulerer adgangen til naturen, og selvom vi i Danmark har god allemandsret sammenlignet med mange andre lande, er der klare grænser for, hvad der er tilladt.
+
+## Regler for shelters
+
+Shelters er de mest ligetil overnatningssteder i naturen. De er bygget specifikt til formålet, og overnatning er tilladt, medmindre der er opsat skilte med andet. De vigtigste regler for shelters:
+
+- **Overnatning er tilladt** – shelters er bygget til at sove i, og du er velkommen til at bruge dem
+- **Først-til-mølle** – gratis shelters kan ikke reserveres, og du har ikke eneret på pladsen
+- **Typisk maks 2 nætter** – de fleste steder må du overnatte op til 2 på hinanden følgende nætter, medmindre andet er angivet
+- **Brug kun etablerede bålpladser** – lav aldrig bål uden for de markerede områder
+- **Tag alt affald med** – efterlad ingen spor af dit besøg
+
+Læs den fulde oversigt over regler i vores <a href="/guides/regler-for-shelter-og-teltning-i-danmark">guide til regler for shelter og teltning i Danmark</a>.
+
+## Regler for teltning
+
+Reglerne for teltning er mere komplicerede. I Danmark gælder følgende:
+
+**I statsskove (Naturstyrelsens skove):**
+- Du må telte en nat på udpegede teltpladser
+- Mange statsskove har primitive teltpladser, der er gratis at bruge
+- Du må ikke slå telt op frit i skoven
+
+**I private skove over 5 hektar:**
+- Du må telte en enkelt nat, hvis du er gående eller på cykel
+- Du skal holde mindst 150 meter fra beboelse
+- Du skal være væk senest dagen efter ankomst kl. 10
+- Det gælder kun, hvis der ikke er opsat skilte med forbud
+
+**Andre steder:**
+- På stranden må du som udgangspunkt ikke telte
+- I fredede områder gælder særlige regler
+- I nationalparker kan der være specifikke regler for overnatning
+
+## Hvad med fri camping og wild camping?
+
+Wild camping – altså at overnatte frit i naturen uden for udpegede pladser – er generelt ikke tilladt i Danmark. Det adskiller Danmark fra lande som Sverige og Norge, der har en mere vidtgående allemandsret.
+
+Dog er der som nævnt mulighed for at telte en nat i visse private skove, og der findes et netværk af fri teltpladser, som er udpeget specifikt til formålet. Disse pladser er markeret og kan findes via udinaturen.dk.
+
+Hvis du vil overnatte frit, er de lovlige muligheder:
+- Udpegede shelters og teltpladser
+- Private skove over 5 hektar (med de nævnte begrænsninger)
+- Steder hvor du har ejerens udtrykkelige tilladelse
+
+## Bålregler
+
+Bål er en central del af shelteroplevelsen, men der er også regler her:
+
+- **Brug kun etablerede bålpladser** – lav aldrig bål direkte på skovbunden
+- **Tjek for bålrestriktioner** – i tørre perioder kan myndighederne udstede forbud mod åben ild
+- **Fæld aldrig levende træer** – brug kun dødt, nedfaldent træ eller medbring eget brænde
+- **Sluk bålet helt** – hæld vand på gløderne og sikr dig, at alt er koldt, inden du forlader stedet
+
+Overtrædelse af bålregler kan medføre bøder og i værste fald ansvar for eventuelle skader.
+
+![Bålplads ved shelter](https://images.unsplash.com/photo-1497900304864-273dfb3aae33?w=1200&q=80&auto=format&fit=crop)
+
+## Konsekvenser ved overtrædelse
+
+Hvad sker der, hvis du bryder reglerne? Konsekvenserne afhænger af overtrædelsens karakter:
+
+- **Teltning uden for udpegede pladser** – kan give en bøde. Naturstyrelsen og politiet kan håndhæve reglerne
+- **Ulovligt bål** – kan medføre bøde og erstatningsansvar, hvis det forårsager skade
+- **Hærværk på shelters eller natur** – er strafbart efter straffeloven
+- **Forsøpling** – kan give bøde og i grove tilfælde politianmeldelse
+
+I praksis møder de fleste friluftsfolk aldrig problemer, hvis de bruger sund fornuft og respekterer de udpegede pladser. Myndighederne er generelt imødekommende over for friluftsfolk, der opfører sig ordentligt.
+
+## Respekt for naturen
+
+Reglerne eksisterer for at beskytte naturen og sikre, at alle kan nyde den. Friluftsliv handler i bund og grund om respekt – for landskabet, for dyrelivet og for andre besøgende. Følg princippet om at efterlade naturen, som du fandt den, og bidrag til at bevare muligheden for fri naturovernatning i Danmark.
+
+Brug vores <a href="/soeg">sheltersøgning</a> til at finde lovlige overnatningssteder, og planlæg din tur med respekt for reglerne. Læs også vores <a href="/guides/regler-for-shelter-og-teltning-i-danmark">detaljerede regelguide</a> for det fulde juridiske overblik.
+
+## Afrunding
+
+Danmark har et fint system for naturovernatning med shelters, teltpladser og mulighed for teltning i private skove. Nøglen er at kende reglerne, bruge de udpegede pladser og altid rydde op efter sig. Med den rette viden og forberedelse kan du nyde fantastiske oplevelser i dansk natur – helt inden for lovens rammer.`,
+    faq: [
+      {
+        question: "Hvor længe må man overnatte i et shelter?",
+        answer:
+          "De fleste shelters tillader overnatning i op til 2 på hinanden følgende nætter, medmindre der er opsat skilte med andre regler. Nogle bookbare shelters kan have andre vilkår. Tjek altid de specifikke regler for det shelter, du besøger.",
+      },
+      {
+        question: "Er det lovligt at sove i naturen i Danmark?",
+        answer:
+          "Det er lovligt at overnatte på udpegede shelters og teltpladser. Du må også telte en nat i private skove over 5 hektar, hvis du er gående eller på cykel og holder afstand til beboelse. Fri camping uden for udpegede pladser er generelt ikke tilladt.",
+      },
+      {
+        question: "Hvad sker der hvis man overtræder reglerne?",
+        answer:
+          "Overtrædelser kan medføre bøder fra Naturstyrelsen eller politiet. Ulovligt bål kan desuden medføre erstatningsansvar, hvis det forårsager skade. I praksis er myndighederne sjældent håndfaste over for friluftsfolk, der opfører sig ordentligt, men det er altid bedst at kende og følge reglerne.",
+      },
+    ],
+  },
+  {
     slug: "hvordan-vælge-shelter",
     title: "Hvordan vælger man det rigtige shelter?",
     excerpt:

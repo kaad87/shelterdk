@@ -18,7 +18,7 @@ import { isShelterPlace } from "@/lib/shelter-detail";
 
 export const revalidate = 86400; // ISR: cache og revalider forsiden hver 24. time (hurtig TTFB)
 
-const FRONT_PAGE_SHELTER_LIMIT = 4; // antal kort i grid'et
+const FRONT_PAGE_SHELTER_LIMIT = 8; // antal kort i grid'et
 const FRONT_PAGE_MAP_SHELTER_LIMIT = 40; // antal shelters til initiale pins på kortet
 
 /** Udvalgte shelters på forsiden (i denne rækkefølge). */
@@ -27,12 +27,18 @@ const FEATURED_SHELTER_SLUGS = [
   "shelter-i-true-skov-10055",
   "logismose-10073",
   "tipi-og-shelters-i-frugtplantagen-11780",
+  "shelter-ved-nors-so-10056",
+  "shelter-i-hovdal-10049",
+  "kongshoj-strand-10809",
+  "3-sheltere-pa-lejrplads-i-finnedalen-14745",
+  "bindeballe-kobmandsgard-2-sheltere-92598",
+  "ronnerhavnen-10535",
 ] as const;
 
 const SHELTER_SELECT =
-  "id, title, slug, description, location, image_url, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, geofa_raw, display_score";
+  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, display_score, google_places!shelters_google_place_id_fkey(photo_references)";
 const SHELTER_SELECT_FALLBACK =
-  "id, title, slug, description, location, image_url, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, geofa_raw";
+  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, display_score, google_places!shelters_google_place_id_fkey(photo_references)";
 
 const ALLOWED_IMAGE_HOSTS = new Set([
   "dynamic-media-cdn.tripadvisor.com",
@@ -244,6 +250,19 @@ export default async function HomePage() {
     console.error("Forside: kunne ikke hente shelters til kortet:", err);
   }
 
+  // Get total shelter count for hero trust counter
+  let shelterCount = 800;
+  try {
+    const supabase = createPublicClient();
+    const { count } = await supabase
+      .from("shelters")
+      .select("id", { count: "exact", head: true })
+      .is("duplicate_of_shelter_id", null);
+    if (count && count > 0) shelterCount = count;
+  } catch {
+    // Use fallback
+  }
+
   return (
     <>
       <WebSiteSchema />
@@ -258,10 +277,15 @@ export default async function HomePage() {
             <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
               Find dit næste shelter i Danmark
             </h1>
-            <p className="text-base sm:text-lg md:text-xl text-white/90 mb-8">
+            <p className="text-base sm:text-lg md:text-xl text-white/90 mb-4">
               Udforsk Danmarks shelters – ét samlet kort over naturovernatning fra
               Geofa, Naturstyrelsen, Book en Shelter og flere.
             </p>
+            <div className="flex flex-wrap gap-x-6 gap-y-1 text-white/70 text-sm mb-4">
+              <span><strong className="text-white">{shelterCount}+</strong> shelters</span>
+              <span><strong className="text-white">5</strong> regioner</span>
+              <span><strong className="text-white">Gratis</strong> at bruge</span>
+            </div>
           </div>
           <div className="max-w-4xl">
             <Suspense fallback={<div className="h-14 bg-white/20 rounded-xl animate-pulse" />}>

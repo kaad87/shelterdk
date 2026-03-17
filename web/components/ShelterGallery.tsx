@@ -28,7 +28,15 @@ export function ShelterGallery({
   slug,
   shelterId,
 }: ShelterGalleryProps) {
-  const proxiedUrls = urls.map(getProxiedImageSrc);
+  const HERO_W = 1200;
+  const THUMB_W = 320;
+  const MAX_THUMBS = 10;
+
+  const proxiedUrls = urls.map((u) => {
+    const p = getProxiedImageSrc(u);
+    if (p.includes("/api/image?url=")) return `${p}&w=${HERO_W}`;
+    return p;
+  });
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [heroIndex, setHeroIndex] = useState(0);
   const [heroGaveUp, setHeroGaveUp] = useState(false);
@@ -142,10 +150,16 @@ export function ShelterGallery({
       {(() => {
         const displayUrls = heroIndex > 0 ? proxiedUrls.slice(heroIndex) : proxiedUrls;
         if (displayUrls.length <= 1) return null;
+        const toShow = displayUrls.slice(0, MAX_THUMBS);
         return (
           <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
-            {displayUrls.map((url, i) => {
+            {toShow.map((url, i) => {
               const fullIndex = heroIndex + i;
+              const thumbUrl = url.startsWith("/api/google-photo")
+                ? url.replace(/([?&])maxwidth=\d+/i, `$1maxwidth=${THUMB_W}`)
+                : url.includes("/api/image?url=")
+                  ? url.replace(/([?&])w=\d+/i, `$1w=${THUMB_W}`)
+                  : url;
               return (
                 <button
                   key={`${fullIndex}-${url}`}
@@ -159,12 +173,12 @@ export function ShelterGallery({
                   }`}
                 >
                   <Image
-                    src={url}
+                    src={thumbUrl}
                     alt={`${title} – miniature ${fullIndex + 1}`}
                     fill
                     className="object-cover"
                     sizes="80px"
-                    unoptimized={isUnoptimizedImageUrl(url)}
+                    unoptimized={isUnoptimizedImageUrl(thumbUrl)}
                   />
                 </button>
               );

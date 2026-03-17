@@ -6,6 +6,15 @@ import { getSheltersWithPets } from "@/lib/shelters-with-pets";
 import { slugifySegment } from "@/lib/slug";
 import { ShelterCard } from "@/components/ShelterCard";
 import { ShelterMap } from "@/components/ShelterMap";
+import { faqToJsonLd, type FaqItem } from "@/lib/faq";
+
+const HUND_FAQ: FaqItem[] = [
+  { question: "Skal hunden være i snor på shelterpladser?", answer: "Ja, i perioden 1. april til 30. september skal hunde altid føres i snor i danske skove og naturområder – også på shelterpladser. Resten af året må hunde gå løse hvis de er under fuld kontrol, men tjek altid lokal skiltning." },
+  { question: "Er alle shelters i Danmark hundevenlige?", answer: "Nej, ikke alle shelters tillader hunde. Nogle pladser ligger i områder med særlige hensyn til vildt eller fugleliv. På ShelterDK kan du filtrere efter hundevenlige shelters, så du kun ser pladser hvor hunde er velkomne." },
+  { question: "Kan hunden sove i shelteren?", answer: "På de fleste hundevenlige shelterpladser er det tilladt at have hunden med i selve shelteren. Vis hensyn til andre gæster og sørg for at hunden ikke er til gene. Medbring hundens egen soveunderlag." },
+  { question: "Hvad skal jeg medbringe til hunden på sheltertur?", answer: "Medbring rigeligt vand og vandskål, hundefoder, snor, hundeposer til afføring, hundens soveunderlag og evt. en refleksvest til aftenvandringer. Husk også hundens vaccinationsattest hvis I krydser grænser." },
+  { question: "Må hunden bade i søer ved shelters?", answer: "Det varierer fra sted til sted. Nogle naturområder har baderestriktioner for hunde, især i fuglenes yngletid. Tjek lokal skiltning og undgå at lade hunden bade i drikkevandssøer eller i nærheden af badesteder for mennesker." },
+];
 
 const PAGE_TITLE = "Shelter med hund i Danmark – tag hunden med på tur | ShelterDK";
 export const metadata: Metadata = {
@@ -145,20 +154,42 @@ export default async function ShelterMedHundPage() {
           </p>
 
           <p>
-            Leder du efter andre faciliteter? Se{" "}
+            Se også:{" "}
             <Link href="/shelter-med-toilet" className="text-accent hover:underline">
               shelter med toilet
             </Link>
-            {" "}eller{" "}
+            {" · "}
             <Link href="/shelter-med-vand" className="text-accent hover:underline">
               shelter med vand
             </Link>
-            {" "}– eller{" "}
+            {" · "}
+            <Link href="/shelter-med-baalplads" className="text-accent hover:underline">
+              shelter med bålplads
+            </Link>
+            {" · "}
             <Link href="/soeg" className="text-accent hover:underline">
               søg alle shelters
             </Link>
             .
           </p>
+        </section>
+
+        <section className="mt-12 pt-8 border-t border-primary/10">
+          <h2 className="font-serif text-xl font-bold text-primary mb-6">
+            Ofte stillede spørgsmål om shelters med hund
+          </h2>
+          <dl className="space-y-6">
+            {HUND_FAQ.map((item) => (
+              <div key={item.question}>
+                <dt className="font-semibold text-primary mb-1">{item.question}</dt>
+                <dd className="text-primary/80 leading-relaxed">{item.answer}</dd>
+              </div>
+            ))}
+          </dl>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(faqToJsonLd(HUND_FAQ)) }}
+          />
         </section>
       </div>
     </div>

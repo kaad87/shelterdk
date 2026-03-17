@@ -369,11 +369,18 @@ export function getResolvedPhotoUrls(
   shelter: Shelter,
   firstGooglePhotoRef?: string | null
 ): string[] {
+  const embeddedPlaces = shelter.google_places;
+  const embeddedRefs = Array.isArray(embeddedPlaces)
+    ? embeddedPlaces?.[0]?.photo_references
+    : embeddedPlaces?.photo_references;
+  const derivedRef =
+    firstGooglePhotoRef ??
+    (Array.isArray(embeddedRefs) ? (embeddedRefs?.[0] ?? null) : null);
   const urls = getPhotoUrls(shelter);
-  if (!firstGooglePhotoRef || urls.length === 0) return urls;
+  if (!derivedRef || urls.length === 0) return urls;
   const first = urls[0];
   if (isGoogleImageUrl(first)) {
-    const proxy = getGooglePhotoProxyUrl(firstGooglePhotoRef);
+    const proxy = getGooglePhotoProxyUrl(derivedRef);
     if (proxy) return [proxy, ...urls.slice(1)];
   }
   return urls;
@@ -425,6 +432,63 @@ export function getDisplayScore(shelter: Shelter): number {
 export function isShelterPlace(placeName: string | null): boolean {
   if (!placeName || typeof placeName !== "string") return false;
   return placeName.toLowerCase().trim().includes("shelter");
+}
+
+/**
+ * Generér en fallback-beskrivelse når shelter mangler seo_description og lang_beskr.
+ * Bruges til at sikre at alle shelter-detaljesider har mindst 2-3 sætninger unikt indhold.
+ */
+export function generateFallbackDescription(shelter: Shelter): string | null {
+  const title = shelter.title?.trim();
+  if (!title) return null;
+
+  const city = getCity(shelter);
+  const region = shelter.region?.trim();
+  const cap = getCapacity(shelter);
+  const toilet = getToilet(shelter);
+  const water = getWater(shelter);
+  const pets = getPetsAllowed(shelter);
+  const bookable = isBookable(shelter);
+
+  const parts: string[] = [];
+
+  // Sætning 1: Hvad og hvor
+  let s1 = `${title} er et shelter`;
+  if (city && region && region !== "Danmark") {
+    s1 += ` i ${city}, ${region}`;
+  } else if (city) {
+    s1 += ` i ${city}`;
+  } else if (region && region !== "Danmark") {
+    s1 += ` i ${region}`;
+  }
+  if (cap && cap > 0) {
+    s1 += ` med plads til ${cap} person${cap !== 1 ? "er" : ""}`;
+  }
+  s1 += ".";
+  parts.push(s1);
+
+  // Sætning 2: Faciliteter
+  const facilities: string[] = [];
+  if (toilet === "flush") facilities.push("vandskyllende toilet");
+  else if (toilet === "mulch") facilities.push("muldtoilet");
+  if (water === true) facilities.push("adgang til vand");
+  if (pets === true) facilities.push("hundevenlig");
+
+  if (facilities.length > 0) {
+    const facilityStr = facilities.length === 1
+      ? facilities[0]
+      : facilities.slice(0, -1).join(", ") + " og " + facilities[facilities.length - 1];
+    parts.push(`Pladsen har ${facilityStr}.`);
+  }
+
+  // Sætning 3: Booking
+  if (bookable) {
+    parts.push("Shelteren kan bookes på forhånd, hvilket anbefales i højsæsonen.");
+  } else {
+    parts.push("Shelteren fungerer efter først-til-mølle-princippet.");
+  }
+
+  return parts.join(" ");
 }
 
 /** Parse location (POINT(lon lat) eller GeoJSON) til { lat, lon } for kortlink. */

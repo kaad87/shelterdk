@@ -4,7 +4,8 @@ export type GuideCategory =
   | "Begynder"
   | "Mad"
   | "Vinter"
-  | "Udstyr";
+  | "Udstyr"
+  | "Natur";
 
 export const GUIDE_CATEGORIES: GuideCategory[] = [
   "Pakkeliste",
@@ -13,6 +14,7 @@ export const GUIDE_CATEGORIES: GuideCategory[] = [
   "Mad",
   "Vinter",
   "Udstyr",
+  "Natur",
 ];
 
 export interface Guide {
@@ -26,6 +28,222 @@ export interface Guide {
 }
 
 export const GUIDES: Guide[] = [
+  {
+    slug: "shelter-i-nationalparker",
+    title: "Shelter i nationalparker – find naturens bedste pladser",
+    excerpt:
+      "Danmark har fem nationalparker med unikke sheltermuligheder. Udforsk shelters i Thy, Mols Bjerge, Vadehavet, Skjoldungernes Land og Kongernes Nordsjaelland.",
+    coverImage:
+      "https://images.unsplash.com/photo-1500534314263-0869cceaee73?w=1200&q=80&auto=format&fit=crop",
+    category: "Natur",
+    content: `
+## Derfor er nationalparkerne perfekte til shelterture
+
+Danmarks fem nationalparker samler noget af det mest varierede og beskyttede natur, vi har. Her finder du alt fra brede klitheder og stille fjorde til tykke boskove og dramatiske kystlinjer. Fælles for dem er, at de tilbyder primitive overnatningspladser og shelters, der ligger midt i uforstyrret natur. En sheltertur i en nationalpark giver dig mulighed for at komme helt tæt på landskabet og opleve stilheden, fuglelivet og de store vidder på en måde, som en dagsudflugt aldrig kan matche.
+
+Herunder gennemgår vi alle fem danske nationalparker, hvad du kan forvente af shelteroplevelsen i hver, og hvordan du bedst planlægger din tur.
+
+## Nationalpark Thy – klitter, hede og vild vestkyst
+
+Nationalpark Thy strækker sig langs Vestkysten i Nordjylland og er Danmarks ældste nationalpark. Landskabet er præget af vidtstrakte klitheder, nåleskove og friske søer.
+
+### Shelteroplevelsen i Thy
+
+Thy byder på flere primitive overnatningspladser fordelt langs vandreruter og cykelstier. Shelters her ligger typisk i læ bag klitterne eller i kanten af plantager, og mange pladser har bålplads og adgang til brænde. Forvent en rå og enkel oplevelse med lyden af havet i baggrunden. Vær forberedt på, at vinden kan være kraftig langs kysten, og pak vindtæt tøj.
+
+### Sådan kommer du dertil
+
+Thy er lettest tilgængelig med bil via rute 11 langs vestkysten. Nærmeste større by er Thisted. Du kan også tage tog til Thisted og cykle videre ud i parken. Udforsk flere shelters i området via [Jylland-siden](/danmark/jylland).
+
+## Nationalpark Mols Bjerge – bakker og fjordudsigt
+
+Mols Bjerge på Djursland er kendt for sine bakker, overdrev og panoramaudsigter over Ebeltoft Vig og Kalø Vig.
+
+### Shelteroplevelsen i Mols Bjerge
+
+Her finder du shelters og lejrpladser med udsigt over det bakkede landskab. Terrænet er lettere kuperet, og vandreruterne fører dig gennem både skov og åbne overdrev. Flere pladser har toilet og bålplads. Mols Bjerge er et godt valg, hvis du gerne vil kombinere sheltertur med vandring i varieret terræn.
+
+### Sådan kommer du dertil
+
+Kør mod Ebeltoft eller Rønde, hvorfra der er kort afstand til parkens indgange. Offentlig transport via bus fra Aarhus er også muligt. Shelters i området kan du finde under [Jylland](/danmark/jylland).
+
+## Nationalpark Vadehavet – marsk, tidevand og fugle
+
+Vadehavet i Sydvestjylland er UNESCO Verdensarv og et af de vigtigste vådområder i Nordeuropa. Her mødes hav og land i et landskab, der skifter med tidevandet.
+
+### Shelteroplevelsen i Vadehavet
+
+Overnatning ved Vadehavet er en helt særlig oplevelse. Shelters ligger typisk ved marsken eller i nærheden af digerne, og du kan opleve enorme flokke af trækfugle, solopgange over fladen og den helt stille atmosfære, der kendetegner området. Vær opmærksom på tidevand og vejrforhold, og planlæg din tur efter forholdene.
+
+### Sådan kommer du dertil
+
+De vigtigste adgangspunkter er Ribe, Tønder og Esbjerg. Herfra kan du køre eller cykle ud til parkens pladser. Find flere shelters i denne del af landet under [Jylland](/danmark/jylland).
+
+## Nationalpark Skjoldungernes Land – fjorde og vikingearv
+
+Skjoldungernes Land ligger omkring Roskilde og Lejre og er præget af fjordlandskab, skove og kulturhistorie.
+
+### Shelteroplevelsen i Skjoldungernes Land
+
+Parkens shelters og lejrpladser ligger tæt på Roskilde Fjord og de omkringliggende skove. Her kan du kombinere sheltertur med kajak eller kano på fjorden, og du er aldrig langt fra stier og kulturhistoriske seværdigheder. Pladserne er velegnede til familier og begyndere, da flere har gode faciliteter og let adgang.
+
+### Sådan kommer du dertil
+
+Tag S-tog eller regionaltog til Roskilde, hvorfra der er kort afstand til parkens områder. Udforsk shelters på Sjælland via [Sjælland-siden](/danmark/sjaelland).
+
+## Kongernes Nordsjælland – skov, søer og slotte
+
+Danmarks nyeste nationalpark dækker store dele af Nordsjælland med Gribskov, Esrum Sø og Arresø som centrale elementer.
+
+### Shelteroplevelsen i Kongernes Nordsjælland
+
+Her finder du shelters i nogle af Danmarks største og mest varierede skovområder. Gribskov alene har flere primitive overnatningspladser med bålplads og adgang til vandreruter. Naturen er frodig, og du kan opleve kronhjorte, rovfugle og en rig skovbundsflora. Området er let tilgængeligt fra København og oplagt til weekendture.
+
+### Sådan kommer du dertil
+
+Tag S-tog til Hillerød og bus videre, eller kør via Hillerødmotorvejen. Find shelters i Nordsjælland under [Sjælland](/danmark/sjaelland).
+
+## Planlæg din nationalparktur
+
+Uanset hvilken nationalpark du vælger, gælder de samme grundregler: respekter naturen, tjek pladsens regler, og pak ordentligt. Læs vores [guide til regler for shelter og teltning](/guides/regler-for-shelter-og-teltning-i-danmark) og sørg for at have styr på udstyret med vores [pakkeliste](/guides/pakkeliste-til-sheltertur).
+
+Har du brug for shelters med bestemte faciliteter som [toilet](/shelter-med-toilet), [drikkevand](/shelter-med-vand) eller [baalplads](/shelter-med-baalplads), kan du filtrere efter dem på [Søg shelters](/soeg). Du kan også finde pladser, der tillader [hunde](/shelter-med-hund), hvis du har firbenede rejsekammerater med.
+    `.trim(),
+    faq: [
+      {
+        question: "Er der shelters i alle danske nationalparker?",
+        answer:
+          "Ja, alle fem danske nationalparker har primitive overnatningspladser eller shelters i nærområdet. Antallet og typen varierer, men du kan finde muligheder for shelterovernatning i Thy, Mols Bjerge, Vadehavet, Skjoldungernes Land og Kongernes Nordsjælland.",
+      },
+      {
+        question: "Skal man booke shelter i nationalparker?",
+        answer:
+          "Det afhænger af den enkelte plads. Nogle shelters i nationalparkerne er først-til-mølle, mens andre kan bookes. Tjek altid den specifikke plads på ShelterDK eller via Ud i Naturen for at se, om booking er nødvendig.",
+      },
+      {
+        question: "Hvad er den bedste nationalpark for shelterture?",
+        answer:
+          "Det kommer an på, hvad du søger. Thy er bedst til rå kystoplevelser, Mols Bjerge til bakket vandring, Vadehavet til fugle og stilhed, Skjoldungernes Land til fjord og familieture, og Kongernes Nordsjælland til let tilgængelige skovture tæt på København.",
+      },
+    ],
+  },
+  {
+    slug: "saadan-finder-du-det-perfekte-shelter",
+    title: "Sådan finder du det perfekte shelter – overbliksguide",
+    excerpt:
+      "En samlet guide til at finde det helt rigtige shelter i Danmark: vælg efter faciliteter, region, sæson og bookingmuligheder med ShelterDKs filtre.",
+    coverImage:
+      "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200&q=80&auto=format&fit=crop",
+    category: "Begynder",
+    content: `
+## Find det shelter, der passer til netop din tur
+
+Danmark har hundredvis af shelters spredt ud over hele landet. Det kan virke uoverskueligt at finde den rigtige plads, men med en struktureret tilgang bliver det hurtigt nemmere. Denne guide hjælper dig med at vælge shelter ud fra faciliteter, beliggenhed, sæson og praktiske forhold som booking. Brug den som dit overblik, når du planlægger din næste sheltertur.
+
+## Vælg shelter efter faciliteter
+
+Det vigtigste ved valg af shelter er ofte, hvilke faciliteter du har brug for. Tænk over, hvad der er afgørende for netop din tur.
+
+### Toilet
+
+Har du børn med, eller er det din første tur, gør et toilet i nærheden turen langt mere komfortabel. Mange pladser har et simpelt das eller et transportabelt toilet. Find shelters med toilet via [Shelter med toilet](/shelter-med-toilet).
+
+### Drikkevand
+
+Ikke alle pladser har adgang til rent drikkevand. Hvis du ikke vil slæbe store mængder vand med, er det værd at prioritere en plads med vandforsyning. Se pladser med vand på [Shelter med vand](/shelter-med-vand).
+
+### Baalplads
+
+For mange er bålet en central del af shelteroplevelsen. Tjek om pladsen har en etableret bålplads, og husk altid at respektere eventuelle bålforbud. Udforsk pladser med bålmulighed via [Shelter med baalplads](/shelter-med-baalplads).
+
+### Hund
+
+Rejser du med hund, er det vigtigt at finde pladser, hvor hunde er velkomne. Reglerne varierer fra sted til sted, og nogle naturområder kræver, at hunden er i snor hele året. Se hundevenlige shelters på [Shelter med hund](/shelter-med-hund).
+
+Du kan kombinere flere facilitetsfiltre på [Søg shelters](/soeg) for at finde den plads, der opfylder alle dine behov.
+
+## Vælg shelter efter region
+
+Beliggenheden spiller en stor rolle. Tænk over, hvor langt du vil køre, og hvilket landskab du ønsker.
+
+### Jylland
+
+Jylland byder på alt fra den vilde vestkyst og heder i vest til bakkede fjordlandskaber i øst. Her er mange pladser i store skovområder og langs kysten. Udforsk shelters i [Jylland](/danmark/jylland).
+
+### Fyn
+
+Fyn og de omkringliggende øer har et mildere landskab med frugtbare marker, små skove og rolige kyststrækninger. Øhav-området syd for Fyn er særligt populært til kajakture kombineret med shelterovernatning. Find pladser på [Fyn](/danmark/fyn).
+
+### Sjælland
+
+Sjælland har store skove som Gribskov og Nordskoven samt fjordlandskaber omkring Roskilde og Holbæk. Tæt på København finder du overraskende mange gode shelterpladser. Se shelters på [Sjælland](/danmark/sjaelland).
+
+### Bornholm
+
+Bornholm byder på klippekyster, dybe sprækkedale og en helt særlig natur, der adskiller sig fra resten af Danmark. Øen har flere fine shelters og lejrpladser. Udforsk [Bornholm](/danmark/bornholm).
+
+## Vælg shelter efter sæson
+
+Sæsonen påvirker både din oplevelse og dine krav til pladsen.
+
+### Forår og sommer
+
+I de varme måneder er udvalget størst, og de fleste faciliteter er åbne. Til gengæld er der flere besøgende, og populære pladser kan være optaget. Book i god tid, eller vælg mindre kendte pladser.
+
+### Efterår
+
+Efteråret byder på flotte farver, færre mennesker og en roligere atmosfære. Pak ekstra varmt tøj, og vær forberedt på fugt og regn. Tjek at vandforsyning stadig er åben.
+
+### Vinter
+
+Vinterovernatning kræver mere forberedelse, men belønner med stjernehimmel og total stilhed. Vælg pladser tæt på parkering, så du nemt kan afkorte turen. Læs mere i vores guide til [overnatning i shelter om vinteren](/guides/overnatning-i-shelter-om-vinteren).
+
+## Booking eller først-til-mølle
+
+Der er grundlæggende to typer shelters i Danmark:
+
+### Bookbare shelters
+
+Nogle shelters kan reserveres på forhånd, enten via kommunens bookingsystem eller gennem platforme som Book et Shelter. Det giver tryghed for, at pladsen er ledig, og er særligt en fordel i weekender og ferier.
+
+### Først-til-mølle
+
+Mange af Naturstyrelsens primitive overnatningspladser fungerer efter først-til-mølle-princippet. Det betyder, at du ikke kan reservere, men til gengæld er pladserne ofte gratis. Hav altid en plan B, hvis pladsen er optaget.
+
+Læs mere om regler og rettigheder i vores [guide til regler for shelter og teltning](/guides/regler-for-shelter-og-teltning-i-danmark).
+
+## Brug ShelterDK til at filtrere og finde
+
+På [Søg shelters](/soeg) kan du bruge kort og filtre til at indsnævre din søgning. Du kan filtrere på:
+
+- Region og område
+- Faciliteter som toilet, vand, bålplads og hundevenlighed
+- Bookingmuligheder
+
+Kombiner filtrene for at finde præcis den plads, der matcher dine ønsker. Du kan også udforske pladserne direkte på kortet for at se, hvad der ligger i nærheden af din ønskede destination.
+
+## Kom godt i gang
+
+Hvis du er helt ny, anbefaler vi at starte med vores [begynderguide](/guides/shelter-for-begyndere-forste-tur) og bruge [pakkelisten](/guides/pakkeliste-til-sheltertur) til at sikre, at du har alt med. Kombineret med denne overbliksguide har du alle redskaberne til at finde og planlægge den perfekte sheltertur i Danmark.
+    `.trim(),
+    faq: [
+      {
+        question: "Hvordan finder man shelters i Danmark?",
+        answer:
+          "Du kan bruge ShelterDKs søgefunktion til at finde shelters på et interaktivt kort med filtre for region, faciliteter og booking. Du kan også finde pladser via Naturstyrelsens hjemmeside og Ud i Naturen.",
+      },
+      {
+        question: "Hvad skal man kigge efter i et godt shelter?",
+        answer:
+          "Det afhænger af dine behov. Overvej faciliteter som toilet, drikkevand og bålplads, afstanden til parkering, om pladsen kan bookes, og om den passer til årstiden. For familier og begyndere er pladser med gode faciliteter og let adgang bedst.",
+      },
+      {
+        question: "Kan man filtrere shelters efter faciliteter?",
+        answer:
+          "Ja, på ShelterDK kan du filtrere shelters efter faciliteter som toilet, drikkevand, bålplads og hundevenlighed. Du kan også filtrere efter region og bookingmuligheder for at finde den plads, der passer til din tur.",
+      },
+    ],
+  },
   {
     slug: "pakkeliste-til-sheltertur",
     title: "Pakkeliste til sheltertur – den komplette tjekliste",

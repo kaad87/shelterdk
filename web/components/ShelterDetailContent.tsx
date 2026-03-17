@@ -16,6 +16,7 @@ import { ShelterGallery } from "@/components/ShelterGallery";
 import { ShelterLocationMap } from "@/components/ShelterLocationMap";
 import { ShelterFaq } from "@/components/ShelterFaq";
 import { ShelterFacts } from "@/components/ShelterFacts";
+import { ShareButtons } from "@/components/ShareButtons";
 import { WeatherWidget } from "@/components/WeatherWidget";
 import type { DailyForecast } from "@/lib/weather";
 import type { Shelter } from "@/types/shelter";
@@ -165,7 +166,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20 lg:pb-0">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
         <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-primary/70 py-2">
           {breadcrumbs.map((b, i) => (
@@ -233,6 +234,10 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
               )}
             </div>
 
+            <div className="mb-6">
+              <ShareButtons title={shelter.title} url={`/shelter/${slug}`} />
+            </div>
+
             {features.length > 0 && (
               <section className="mb-10">
                 <h2 className="font-serif text-xl font-bold text-primary mb-4">
@@ -292,6 +297,41 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                 </p>
               </section>
             )}
+
+            {/* Nyttige ressourcer – intern linking for SEO */}
+            <section className="mb-10 bg-primary/[0.03] border border-primary/10 rounded-xl p-5">
+              <h2 className="font-serif text-lg font-bold text-primary mb-3">
+                Nyttige ressourcer
+              </h2>
+              <ul className="space-y-2 text-sm text-primary/80">
+                {facilityLinks.map((fl) => (
+                  <li key={fl.href}>
+                    <Link href={fl.href} className="text-accent hover:underline">{fl.label}</Link>
+                    {" "}– se alle shelters med denne facilitet
+                  </li>
+                ))}
+                {breadcrumbs.length >= 2 && breadcrumbs[1]?.href && (
+                  <li>
+                    <Link href={breadcrumbs[1].href} className="text-accent hover:underline">
+                      Shelters i {breadcrumbs[1].label}
+                    </Link>
+                    {" "}– alle shelters i regionen
+                  </li>
+                )}
+                <li>
+                  <Link href="/guides/pakkeliste-til-sheltertur" className="text-accent hover:underline">
+                    Pakkeliste til sheltertur
+                  </Link>
+                  {" "}– alt du skal medbringe
+                </li>
+                <li>
+                  <Link href="/guides/regler-for-shelter-og-teltning-i-danmark" className="text-accent hover:underline">
+                    Regler for shelter og teltning
+                  </Link>
+                  {" "}– det skal du vide
+                </li>
+              </ul>
+            </section>
 
             {/* Mobile: show booking above reviews (aside moves below on mobile) */}
             <BookingCard className="mb-10 lg:hidden" />
@@ -414,6 +454,22 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
           </aside>
         </div>
       </div>
+
+      {/* Sticky mobile booking bar */}
+      {bookingUrl && (
+        <div className="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-primary/10 p-3 lg:hidden" role="complementary" aria-label="Booking">
+          <a
+            href={bookingUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Book ${shelter.title} – åbner i nyt vindue`}
+            className="flex items-center justify-center gap-2 w-full bg-accent text-white text-center font-semibold py-3 rounded-lg hover:bg-accent/90 transition-colors"
+          >
+            <ExternalLink size={18} aria-hidden="true" />
+            Book dette shelter
+          </a>
+        </div>
+      )}
     </div>
   );
 }

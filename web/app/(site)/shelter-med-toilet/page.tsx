@@ -7,6 +7,15 @@ import { slugifySegment } from "@/lib/slug";
 import { ShelterCard } from "@/components/ShelterCard";
 import { ShelterMap } from "@/components/ShelterMap";
 import { getToilet } from "@/lib/shelter-detail";
+import { faqToJsonLd, type FaqItem } from "@/lib/faq";
+
+const TOILET_FAQ: FaqItem[] = [
+  { question: "Hvad er et muldtoilet på en shelterplads?", answer: "Et muldtoilet (også kaldet tørkloset) er et toilet uden vandskyl, der bruger naturlig nedbrydning. Det er det mest almindelige toilettype på shelterpladser i Danmark. Man tilfører typisk savsmuld eller lignende efter brug for at reducere lugt og fremme kompostering." },
+  { question: "Har alle shelters i Danmark toilet?", answer: "Nej, langt fra alle shelters har toilet. Mange primitive shelterpladser har ingen toiletfaciliteter. På ShelterDK kan du filtrere specifikt efter shelters med toilet, så du nemt finder pladser med denne facilitet." },
+  { question: "Hvad er forskellen på vandskyllende toilet og muldtoilet?", answer: "Et vandskyllende toilet fungerer som et almindeligt toilet med vand og kloak eller septiktank. Et muldtoilet bruger ingen vand – i stedet komposteres affaldet naturligt. Muldtoiletter er mere miljøvenlige og bruges på pladser uden kloaktilslutning." },
+  { question: "Kan man bruge toilettet på shelters gratis?", answer: "Ja, toiletterne på offentlige shelterpladser er gratis at bruge. De drives typisk af Naturstyrelsen eller kommuner som en del af naturovernatningsfaciliteterne." },
+  { question: "Skal man medbringe eget toiletpapir til shelters?", answer: "Det er altid en god idé at medbringe toiletpapir, da det ikke er garanteret at der er papir på pladsens toilet. Mange muldtoiletter har papir tilgængeligt, men det kan løbe tør – især i højsæsonen." },
+];
 
 const PAGE_TITLE = "Shelter med toilet i Danmark – vandskyllende og muldtoilet | ShelterDK";
 export const metadata: Metadata = {
@@ -167,16 +176,42 @@ export default async function ShelterMedToiletPage() {
           </p>
 
           <p>
-            Leder du i stedet efter shelters med adgang til drikkevand? Se{" "}
+            Se også:{" "}
             <Link href="/shelter-med-vand" className="text-accent hover:underline">
               shelter med vand
             </Link>
-            {" "}eller{" "}
+            {" · "}
+            <Link href="/shelter-med-hund" className="text-accent hover:underline">
+              hundevenlige shelters
+            </Link>
+            {" · "}
+            <Link href="/shelter-med-baalplads" className="text-accent hover:underline">
+              shelter med bålplads
+            </Link>
+            {" · "}
             <Link href="/soeg" className="text-accent hover:underline">
               søg alle shelters
             </Link>
             .
           </p>
+        </section>
+
+        <section className="mt-12 pt-8 border-t border-primary/10">
+          <h2 className="font-serif text-xl font-bold text-primary mb-6">
+            Ofte stillede spørgsmål om shelters med toilet
+          </h2>
+          <dl className="space-y-6">
+            {TOILET_FAQ.map((item) => (
+              <div key={item.question}>
+                <dt className="font-semibold text-primary mb-1">{item.question}</dt>
+                <dd className="text-primary/80 leading-relaxed">{item.answer}</dd>
+              </div>
+            ))}
+          </dl>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(faqToJsonLd(TOILET_FAQ)) }}
+          />
         </section>
       </div>
     </div>

@@ -6,6 +6,9 @@ export const runtime = "nodejs";
 
 const MAX_BYTES = 15 * 1024 * 1024; // 15MB
 const FETCH_TIMEOUT_MS = 12_000;
+const MAX_WIDTH = 1600;
+const MAX_HEIGHT = 1600;
+const MIN_DIM = 32;
 
 function errorResponse(status: number, message: string) {
   return NextResponse.json({ error: message }, { status });
@@ -39,6 +42,10 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const raw = searchParams.get("url");
   if (!raw) return errorResponse(400, "Missing url");
+  const w = searchParams.get("w");
+  const h = searchParams.get("h");
+  const width = w ? Math.min(MAX_WIDTH, Math.max(MIN_DIM, parseInt(w, 10) || 0)) : null;
+  const height = h ? Math.min(MAX_HEIGHT, Math.max(MIN_DIM, parseInt(h, 10) || 0)) : null;
 
   let target: URL;
   try {
@@ -103,15 +110,24 @@ export async function GET(req: Request) {
   try {
     const img = sharp(buf, { failOnError: false }).rotate(); // rotate() respects EXIF orientation
     const meta = await img.metadata();
+    const resized =
+      width || height
+        ? img.resize({
+            width: width || undefined,
+            height: height || undefined,
+            fit: "inside",
+            withoutEnlargement: true,
+          })
+        : img;
 
     const outputType = pickOutputContentType(meta.format);
     const out = await (outputType === "image/png"
-      ? img.png().toBuffer()
+      ? resized.png().toBuffer()
       : outputType === "image/webp"
-        ? img.webp({ quality: 82 }).toBuffer()
+        ? resized.webp({ quality: 82 }).toBuffer()
         : outputType === "image/avif"
-          ? img.avif({ quality: 55 }).toBuffer()
-          : img.jpeg({ quality: 82, mozjpeg: true }).toBuffer());
+          ? resized.avif({ quality: 55 }).toBuffer()
+          : resized.jpeg({ quality: 82, mozjpeg: true }).toBuffer());
 
     return new NextResponse(new Uint8Array(out), {
       status: 200,

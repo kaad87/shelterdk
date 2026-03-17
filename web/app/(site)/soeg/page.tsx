@@ -8,8 +8,8 @@ import { getAreaBySlug, prepositionForArea } from "@/lib/area-db";
 import { AreaFaq } from "@/components/AreaFaq";
 import { getAreaFaqItems, faqToJsonLd, type FaqItem } from "@/lib/faq";
 
-/** Ved kortvisning: max pr. request (Supabase typisk 1000). Resten hentes på client. */
-const MAP_VIEW_PAGE_SIZE = 1000;
+/** Ved kortvisning: send færre initialt for hurtigere load; resten hentes på client. */
+const MAP_VIEW_PAGE_SIZE = 200;
 import { SoegContent } from "@/components/SoegContent";
 
 export const revalidate = 300; // ISR: revalider søgesiden hvert 5. min
@@ -19,6 +19,7 @@ const DEFAULT_METADATA: Metadata = {
   description:
     "Se alle shelters i Danmark. Filtrer efter region, søg efter område og se listen eller kortvisning.",
   alternates: { canonical: "https://shelterdk.dk/soeg" },
+  robots: { index: false, follow: true },
   openGraph: {
     title: "Søg shelters | ShelterDK",
     description: "Se alle shelters i Danmark. Filtrer efter region, søg efter område og se listen eller kortvisning.",
@@ -70,6 +71,7 @@ export async function generateMetadata(props: {
       description,
       // Keep canonical as /soeg (existing behavior) to avoid indexing many variants unless explicitly desired.
       alternates: { canonical: "https://shelterdk.dk/soeg" },
+      robots: { index: false, follow: true },
       openGraph: {
         title: `Shelters ${prep} ${regionTrim} | ShelterDK`,
         description,

@@ -29,8 +29,11 @@ export interface Shelter {
   geofa_raw?: Record<string, unknown> | null;
   created_at?: string;
   updated_at?: string;
-  /** Ved liste-hent: navn på matchet Google-sted (for at vise rating kun ved klart match). */
-  google_places?: { name: string | null } | null;
+  /** Ved liste-hent: join til google_places (Supabase embed kan komme som array). */
+  google_places?:
+    | { name?: string | null; photo_references?: string[] | null }
+    | { name?: string | null; photo_references?: string[] | null }[]
+    | null;
   /** Første photo_reference fra google_places – til proxy-URL for Google-billeder på kort. */
   google_photo_ref?: string | null;
   /** SEO-område (matcher areas.slug) – bruges til brødkrummer og område-landingssider. */

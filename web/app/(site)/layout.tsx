@@ -18,7 +18,7 @@ export default function SiteLayout({
       <Suspense fallback={<header className="h-16 border-b border-primary/10" />}>
         <Navbar />
       </Suspense>
-      <main className="flex-1">{children}</main>
+      <main id="main-content" className="flex-1">{children}</main>
       <Footer />
     </>
   );

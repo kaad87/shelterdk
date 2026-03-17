@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
+import { ShelterListSchema } from "@/components/seo/ShelterListSchema";
 import { ChevronRight } from "lucide-react";
 import {
   getRegionKommunePairs,
@@ -13,6 +14,8 @@ import {
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 import { segmentSlugToName } from "@/lib/slug";
 import { ShelterCard } from "@/components/ShelterCard";
+import { getWater, getToilet, getPetsAllowed } from "@/lib/shelter-detail";
+import type { Shelter } from "@/types/shelter";
 
 interface PageProps {
   params: Promise<{ region: string; municipality: string }>;
@@ -55,6 +58,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title,
       description,
       url: canonicalPath,
+      images: [
+        {
+          url: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&q=80&auto=format&fit=crop",
+          width: 1200,
+          height: 630,
+          alt: `Shelters i ${municipalityName}, ${regionName}`,
+        },
+      ],
     },
     ...(shelters.length === 0 && { robots: { index: false, follow: true } }),
   };
@@ -70,6 +81,92 @@ function prepositionForRegionName(region: string): "i" | "på" {
   const r = (region || "").trim().toLowerCase();
   if (r === "fyn" || r === "sjælland" || r === "bornholm") return "på";
   return "i";
+}
+
+function MunicipalityProse({
+  shelters,
+  displayName,
+  regionName,
+  regionSlug,
+}: {
+  shelters: Shelter[];
+  displayName: string;
+  regionName: string;
+  regionSlug: string;
+}) {
+  const total = shelters.length;
+  const withToilet = shelters.filter((s) => {
+    const t = getToilet(s);
+    return t && t !== "none" && t !== "unknown";
+  }).length;
+  const withWater = shelters.filter((s) => getWater(s) === true).length;
+  const withPets = shelters.filter((s) => getPetsAllowed(s) === true).length;
+  const bookable = shelters.filter((s) => !!s.booking_url).length;
+  const rated = shelters.filter((s) => s.google_rating && s.google_rating > 0);
+  const avgRating = rated.length > 0
+    ? (rated.reduce((sum, s) => sum + (s.google_rating ?? 0), 0) / rated.length).toFixed(1)
+    : null;
+  const prep = prepositionForRegionName(regionName);
+
+  // Build facility sentence parts
+  const parts: string[] = [];
+  if (withToilet > 0) parts.push(`${withToilet} har toilet`);
+  if (withWater > 0) parts.push(`${withWater} har adgang til vand`);
+  if (withPets > 0) parts.push(`${withPets} er hundevenlige`);
+  if (bookable > 0) parts.push(`${bookable} kan bookes online`);
+  const facilityText = parts.length > 0 ? `, hvoraf ${parts.join(", ")}` : "";
+
+  return (
+    <section className="prose prose-primary max-w-none text-primary/90">
+      <h2 className="font-serif text-xl font-bold text-primary mb-4">
+        Overnatning i {displayName}
+      </h2>
+      <p>
+        I {displayName} {prep} {regionName} finder du {total} shelter{total !== 1 ? "s" : ""}{facilityText}.
+        {avgRating && ` Den gennemsnitlige Google-rating er ${avgRating} stjerner baseret på ${rated.length} bedømte pladser.`}
+        {" "}Uanset om du søger en primitiv overnatning under åben himmel eller en shelter med
+        faciliteter som toilet og vand, giver {displayName} muligheder for naturoplevelser {prep} {regionName}.
+      </p>
+      <p>
+        {bookable > 0 ? (
+          <>Flere af pladserne i {displayName} kan bookes i forvejen via udinaturen.dk eller
+          Naturstyrelsen, hvilket er praktisk i højsæsonen. </>
+        ) : (
+          <>De fleste shelters i {displayName} fungerer efter først-til-mølle-princippet,
+          så det kan betale sig at komme tidligt, særligt i højsæsonen. </>
+        )}
+        Husk at følge lokal skiltning og regler for overnatning, og efterlad altid pladsen
+        pænere end du fandt den.
+      </p>
+      <p>
+        Se alle shelters{" "}
+        <Link href={`/danmark/${regionSlug}`} className="text-accent hover:underline">
+          {prep} {regionName}
+        </Link>
+        , eller udforsk shelters med specifikke faciliteter:{" "}
+        <Link href="/shelter-med-toilet" className="text-accent hover:underline">
+          toilet
+        </Link>
+        ,{" "}
+        <Link href="/shelter-med-vand" className="text-accent hover:underline">
+          vand
+        </Link>
+        ,{" "}
+        <Link href="/shelter-med-hund" className="text-accent hover:underline">
+          hund
+        </Link>
+        {" "}eller{" "}
+        <Link href="/shelter-med-baalplads" className="text-accent hover:underline">
+          bålplads
+        </Link>
+        . Læs også vores{" "}
+        <Link href="/guides/pakkeliste-til-sheltertur" className="text-accent hover:underline">
+          pakkeliste til sheltertur
+        </Link>
+        .
+      </p>
+    </section>
+  );
 }
 
 export default async function DanmarkMunicipalityPage({ params }: PageProps) {
@@ -97,6 +194,11 @@ export default async function DanmarkMunicipalityPage({ params }: PageProps) {
       { label: regionName, href: `/danmark/${regionSlug}` },
       { label: displayName },
     ]} />
+    <ShelterListSchema
+      name={`Shelters i ${displayName}, ${regionName}`}
+      shelters={shelters}
+      hrefFn={(s) => shelterHref(regionName, shelters.find((x) => x.id === s.id)?.kommune ?? null, s.slug)}
+    />
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-primary/70 py-2">
@@ -142,37 +244,12 @@ export default async function DanmarkMunicipalityPage({ params }: PageProps) {
           </div>
         </section>
 
-        <section className="prose prose-primary max-w-none text-primary/90">
-          <h2 className="font-serif text-xl font-bold text-primary mb-4">
-            Overnatning i {displayName}
-          </h2>
-          <p>
-            Shelters i {displayName} tilbyder overnatningsmuligheder midt i naturen i {regionName}.
-            Mange shelterpladser i kommunen kan bookes i forvejen via udinaturen.dk eller
-            Naturstyrelsen, hvilket er særligt praktisk i højsæsonen. Uanset om du vil sove under
-            åben himmel eller i en lukket shelter, finder du flere muligheder her på listen.
-          </p>
-          <p>
-            Husk at følge lokal skiltning og evt. regler for overnatning. De fleste shelters har
-            bålplads og mulighed for at tage hund med – tjek den enkelte plads for detaljer og
-            bookingmuligheder.
-          </p>
-          <p>
-            Se alle shelters{" "}
-            <Link href={`/danmark/${regionSlug}`} className="text-accent hover:underline">
-              {prepositionForRegionName(regionName)} {regionName}
-            </Link>
-            , eller filtrer på{" "}
-            <Link href="/shelter-med-toilet" className="text-accent hover:underline">
-              shelter med toilet
-            </Link>
-            {" "}og{" "}
-            <Link href="/shelter-med-vand" className="text-accent hover:underline">
-              shelter med vand
-            </Link>
-            {" "}i hele Danmark.
-          </p>
-        </section>
+        <MunicipalityProse
+          shelters={shelters}
+          displayName={displayName}
+          regionName={regionName}
+          regionSlug={regionSlug}
+        />
       </div>
     </div>
     </>

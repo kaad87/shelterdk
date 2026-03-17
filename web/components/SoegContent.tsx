@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SearchBar } from "@/components/SearchBar";
 import { ShelterCard } from "@/components/ShelterCard";
 import { ShelterMap, type MapBounds } from "@/components/ShelterMap";
@@ -10,6 +10,7 @@ import { filterSheltersByRegion } from "@/lib/soeg-filters";
 import { getLocationCoords } from "@/lib/shelter-detail";
 
 type ViewMode = "list" | "map" | "split";
+type SortMode = "standard" | "rating" | "reviews";
 
 function prepositionForRegionName(region: string): "i" | "på" {
   const r = (region || "").trim().toLowerCase();
@@ -56,6 +57,9 @@ export function SoegContent({
   const [mapBounds, setMapBounds] = useState<MapBounds | null>(null);
   const hasPannedMap = useRef(false);
   const boundsReportCount = useRef(0);
+
+  // Sorting
+  const [sortMode, setSortMode] = useState<SortMode>("standard");
 
   useEffect(() => {
     setView(initialView);
@@ -201,6 +205,30 @@ export function SoegContent({
       })
     : shelters;
 
+  // Apply sorting
+  const sortedShelters = useMemo(() => {
+    if (sortMode === "standard") return visibleShelters;
+    const sorted = [...visibleShelters];
+    if (sortMode === "rating") {
+      sorted.sort((a, b) => (b.google_rating ?? 0) - (a.google_rating ?? 0));
+    } else if (sortMode === "reviews") {
+      sorted.sort((a, b) => (b.google_user_ratings_total ?? 0) - (a.google_user_ratings_total ?? 0));
+    }
+    return sorted;
+  }, [visibleShelters, sortMode]);
+
+  // Also sort for list view
+  const sortedAllShelters = useMemo(() => {
+    if (sortMode === "standard") return shelters;
+    const sorted = [...shelters];
+    if (sortMode === "rating") {
+      sorted.sort((a, b) => (b.google_rating ?? 0) - (a.google_rating ?? 0));
+    } else if (sortMode === "reviews") {
+      sorted.sort((a, b) => (b.google_user_ratings_total ?? 0) - (a.google_user_ratings_total ?? 0));
+    }
+    return sorted;
+  }, [shelters, sortMode]);
+
   return (
     <div className="space-y-8">
       <SearchBar
@@ -219,8 +247,9 @@ export function SoegContent({
         </p>
       ) : view === "split" ? (
         <div className="grid grid-cols-1 lg:grid-cols-[1fr,minmax(380px,45%)] gap-0 min-h-[70vh] -mx-4 sm:-mx-6 lg:-mx-8">
-          <div className="overflow-y-auto lg:max-h-[calc(100vh-12rem)] lg:pr-4 order-2 lg:order-1">
-            <p className="text-primary/70 text-sm mb-4 sticky top-0 bg-background/95 py-2 z-10">
+          <div className="overflow-y-auto lg:max-h-[calc(100vh-12rem)] lg:pr-4 order-1 lg:order-1">
+            <div className="flex items-center justify-between mb-4 sticky top-0 bg-background/95 py-2 z-10">
+            <p className="text-primary/70 text-sm">
               {visibleShelters.length} shelter{visibleShelters.length !== 1 ? "s" : ""}{" "}
               {hasPannedMap.current && mapBounds
                 ? "i dette område"
@@ -229,8 +258,19 @@ export function SoegContent({
                   : "i Danmark"}
               {!hasPannedMap.current && (hasMore || listDisplayCount < shelters.length) && " · scroll for flere"}
             </p>
+            <select
+              value={sortMode}
+              onChange={(e) => setSortMode(e.target.value as SortMode)}
+              aria-label="Sortér shelters"
+              className="text-sm border border-primary/20 rounded-lg px-2 py-1 bg-white text-primary/80 focus:outline-none focus:ring-1 focus:ring-accent"
+            >
+              <option value="standard">Standard</option>
+              <option value="rating">Bedst bedømt</option>
+              <option value="reviews">Flest anmeldelser</option>
+            </select>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6">
-              {visibleShelters.slice(0, listDisplayCount).map((shelter) => (
+              {sortedShelters.slice(0, listDisplayCount).map((shelter) => (
                 <ShelterCard key={shelter.id} shelter={shelter} />
               ))}
             </div>
@@ -240,7 +280,7 @@ export function SoegContent({
               )}
             </div>
           </div>
-          <div className="lg:sticky lg:top-24 lg:self-start rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[280px] sm:min-h-[360px] lg:min-h-[420px] h-[50vh] sm:h-[60vh] lg:h-[calc(100vh-8rem)] lg:max-h-[720px] order-1 lg:order-2 mb-6 lg:mb-0 flex flex-col">
+          <div className="lg:sticky lg:top-24 lg:self-start rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[280px] sm:min-h-[360px] lg:min-h-[420px] h-[50vh] sm:h-[60vh] lg:h-[calc(100vh-8rem)] lg:max-h-[720px] order-2 lg:order-2 mb-6 lg:mb-0 flex flex-col">
             <div className="flex-1 min-h-0 w-full relative">
               <ShelterMap
                 shelters={shelters}
@@ -268,12 +308,24 @@ export function SoegContent({
         </>
       ) : (
         <>
-          <p className="text-primary/70 text-sm">
-            Viser {shelters.length} shelter{shelters.length !== 1 ? "s" : ""}
-            {hasMore && " (scroll for at indlæse flere)"}
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-primary/70 text-sm">
+              Viser {shelters.length} shelter{shelters.length !== 1 ? "s" : ""}
+              {hasMore && " (scroll for at indlæse flere)"}
+            </p>
+            <select
+              value={sortMode}
+              onChange={(e) => setSortMode(e.target.value as SortMode)}
+              aria-label="Sortér shelters"
+              className="text-sm border border-primary/20 rounded-lg px-2 py-1 bg-white text-primary/80 focus:outline-none focus:ring-1 focus:ring-accent"
+            >
+              <option value="standard">Standard</option>
+              <option value="rating">Bedst bedømt</option>
+              <option value="reviews">Flest anmeldelser</option>
+            </select>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {shelters.map((shelter) => (
+            {sortedAllShelters.map((shelter) => (
               <ShelterCard key={shelter.id} shelter={shelter} />
             ))}
           </div>
