@@ -207,7 +207,7 @@ const POPULAR_AREAS = [
   },
   {
     slug: "soehojlandet",
-    name: "Silkeborg & Søhøjlandet",
+    name: "Silkeborg og Søhøjlandet",
     image:
       "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80&auto=format&fit=crop",
   },
