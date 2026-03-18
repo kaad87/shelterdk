@@ -283,7 +283,6 @@ export default async function HomePage() {
             </p>
             <div className="flex flex-wrap gap-x-6 gap-y-1 text-white/70 text-sm mb-4">
               <span><strong className="text-white">{shelterCount}+</strong> shelters</span>
-              <span><strong className="text-white">5</strong> regioner</span>
               <span><strong className="text-white">Gratis</strong> at bruge</span>
             </div>
           </div>
