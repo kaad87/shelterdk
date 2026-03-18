@@ -34,7 +34,7 @@ export const GUIDES: Guide[] = [
     excerpt:
       "Danmark har fem nationalparker med unikke sheltermuligheder. Udforsk shelters i Thy, Mols Bjerge, Vadehavet, Skjoldungernes Land og Kongernes Nordsjaelland.",
     coverImage:
-      "https://images.unsplash.com/photo-1500534314263-0869cceaee73?w=1200&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200&q=80&auto=format&fit=crop",
     category: "Natur",
     content: `
 ## Derfor er nationalparkerne perfekte til shelterture
