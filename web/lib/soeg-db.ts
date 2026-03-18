@@ -73,9 +73,22 @@ export async function getSheltersPage(
   if (q && q.trim()) {
     const term = q.trim().replace(/"/g, '""');
     const pattern = `"%${term}%"`;
-    query = query.or(
-      `title.ilike.${pattern},region.ilike.${pattern},kommune.ilike.${pattern}`
-    );
+
+    // Find area_slugs der matcher søgetermen (fx "Nationalpark Thy" → "nationalpark-thy")
+    const { data: matchingAreas } = await supabase
+      .from("areas")
+      .select("slug")
+      .ilike("name", `%${term}%`)
+      .limit(5);
+
+    let orParts = `title.ilike.${pattern},region.ilike.${pattern},kommune.ilike.${pattern},place.ilike.${pattern}`;
+    if (matchingAreas && matchingAreas.length > 0) {
+      // Tilføj area_slug matches til OR-filteret
+      const areaSlugs = matchingAreas.map((a: { slug: string }) => `area_slug.eq.${a.slug}`).join(",");
+      orParts += `,${areaSlugs}`;
+    }
+
+    query = query.or(orParts);
   }
   if (filters?.billede) {
     query = query.not("image_url", "is", null).neq("image_url", "");
@@ -124,9 +137,17 @@ export async function getSheltersPage(
     if (q && q.trim()) {
       const term = q.trim().replace(/"/g, '""');
       const pattern = `"%${term}%"`;
-      fallbackQuery = fallbackQuery.or(
-        `title.ilike.${pattern},region.ilike.${pattern},kommune.ilike.${pattern}`
-      );
+      // Genbrug matchingAreas fra den primære query hvis tilgængelig
+      const { data: fbAreas } = await supabase
+        .from("areas")
+        .select("slug")
+        .ilike("name", `%${term}%`)
+        .limit(5);
+      let fbOrParts = `title.ilike.${pattern},region.ilike.${pattern},kommune.ilike.${pattern}`;
+      if (fbAreas && fbAreas.length > 0) {
+        fbOrParts += `,${fbAreas.map((a: { slug: string }) => `area_slug.eq.${a.slug}`).join(",")}`;
+      }
+      fallbackQuery = fallbackQuery.or(fbOrParts);
     }
     if (filters?.billede) {
       fallbackQuery = fallbackQuery.not("image_url", "is", null).neq("image_url", "");
@@ -174,40 +195,96 @@ export async function getSheltersPage(
   };
 }
 
-const BYER_SUGGEST_LIMIT = 10;
+const SUGGEST_LIMIT = 10;
+
+export interface SearchSuggestion {
+  name: string;
+  type: "by" | "område";
+}
 
 /**
- * Hent bynavne (kommune) der matcher prefix – til autocomplete i søgefeltet.
- * Returnerer sorteret, unikke byer, max BYER_SUGGEST_LIMIT.
+ * Hent byer (kommune) og områder (place) der matcher prefix – til autocomplete.
+ * Returnerer sorteret, unikke forslag med type-markør, max SUGGEST_LIMIT.
  */
-export async function getByerSuggestions(prefix: string): Promise<string[]> {
+export async function getSuggestions(prefix: string): Promise<SearchSuggestion[]> {
   const term = (prefix || "").trim();
   if (term.length < 2) return [];
 
   const supabase = createPublicClient();
   const pattern = `${term.replace(/%/g, "\\%").replace(/_/g, "\\_")}%`;
+  const containsPattern = `%${term.replace(/%/g, "\\%").replace(/_/g, "\\_")}%`;
 
-  const { data, error } = await supabase
-    .from("shelters")
-    .select("kommune")
-    .is("duplicate_of_shelter_id", null)
-    .not("kommune", "is", null)
-    .ilike("kommune", pattern)
-    .limit(80);
+  // Hent kommuner, områder og navngivne areas parallelt
+  const [kommuneRes, placeRes, areaRes] = await Promise.all([
+    supabase
+      .from("shelters")
+      .select("kommune")
+      .is("duplicate_of_shelter_id", null)
+      .not("kommune", "is", null)
+      .ilike("kommune", pattern)
+      .limit(80),
+    supabase
+      .from("shelters")
+      .select("place")
+      .is("duplicate_of_shelter_id", null)
+      .not("place", "is", null)
+      .ilike("place", containsPattern)
+      .limit(80),
+    supabase
+      .from("areas")
+      .select("name")
+      .ilike("name", containsPattern)
+      .limit(20),
+  ]);
 
-  if (error) {
-    console.error("Supabase error (byer):", error);
-    return [];
-  }
+  if (kommuneRes.error) console.error("Supabase error (kommune suggestions):", kommuneRes.error);
+  if (placeRes.error) console.error("Supabase error (place suggestions):", placeRes.error);
+  if (areaRes.error) console.error("Supabase error (area suggestions):", areaRes.error);
 
   const seen = new Set<string>();
-  const out: string[] = [];
-  for (const row of (data as { kommune: string }[]) ?? []) {
+  const results: SearchSuggestion[] = [];
+
+  // Byer først (eksakt prefix-match)
+  for (const row of (kommuneRes.data as { kommune: string }[]) ?? []) {
     const k = (row.kommune || "").trim();
-    if (!k || seen.has(k)) continue;
-    seen.add(k);
-    out.push(k);
-    if (out.length >= BYER_SUGGEST_LIMIT) break;
+    const key = k.toLowerCase();
+    if (!k || seen.has(key)) continue;
+    seen.add(key);
+    results.push({ name: k, type: "by" });
   }
-  return out.sort((a, b) => a.localeCompare(b, "da"));
+
+  // Navngivne områder fra areas-tabellen (nationalparker, øer m.m.)
+  for (const row of (areaRes.data as { name: string }[]) ?? []) {
+    const a = (row.name || "").trim();
+    const key = a.toLowerCase();
+    if (!a || seen.has(key)) continue;
+    seen.add(key);
+    results.push({ name: a, type: "område" });
+  }
+
+  // Områder fra place-feltet (contains-match, undgå duplikater)
+  for (const row of (placeRes.data as { place: string }[]) ?? []) {
+    const p = (row.place || "").trim();
+    const key = p.toLowerCase();
+    if (!p || seen.has(key)) continue;
+    seen.add(key);
+    results.push({ name: p, type: "område" });
+  }
+
+  // Sortér: eksakte prefix-matches først, derefter alfabetisk
+  const lowerTerm = term.toLowerCase();
+  results.sort((a, b) => {
+    const aPrefix = a.name.toLowerCase().startsWith(lowerTerm) ? 0 : 1;
+    const bPrefix = b.name.toLowerCase().startsWith(lowerTerm) ? 0 : 1;
+    if (aPrefix !== bPrefix) return aPrefix - bPrefix;
+    return a.name.localeCompare(b.name, "da");
+  });
+
+  return results.slice(0, SUGGEST_LIMIT);
+}
+
+/** Baglæns-kompatibel: returnerer bare bynavne som strings. */
+export async function getByerSuggestions(prefix: string): Promise<string[]> {
+  const suggestions = await getSuggestions(prefix);
+  return suggestions.map((s) => s.name);
 }

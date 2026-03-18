@@ -30,7 +30,7 @@ const FEATURED_SHELTER_SLUGS = [
   "shelter-ved-nors-so-10056",
   "shelter-i-hovdal-10049",
   "kongshoj-strand-10809",
-  "3-sheltere-pa-lejrplads-i-finnedalen-14745",
+  "hojagers-shelter-11932",
   "bindeballe-kobmandsgard-2-sheltere-92598",
   "ronnerhavnen-10535",
 ] as const;
@@ -209,19 +209,19 @@ const POPULAR_AREAS = [
     slug: "soehojlandet",
     name: "Silkeborg og Søhøjlandet",
     image:
-      "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1713872489154-cabdd362a855?w=800&q=80&auto=format&fit=crop",
   },
   {
     slug: "kongernes-nordsjaelland",
     name: "Kongernes Nordsjælland",
     image:
-      "https://images.unsplash.com/photo-1511497584788-876760111969?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1733498669242-ab73bd57ccdf?w=800&q=80&auto=format&fit=crop",
   },
   {
     slug: "bornholm",
     name: "Bornholm",
     image:
-      "https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1636151634125-1a0e9fa99792?w=800&q=80&auto=format&fit=crop",
   },
   {
     slug: "nationalpark-thy",
@@ -258,7 +258,7 @@ export default async function HomePage() {
       .from("shelters")
       .select("id", { count: "exact", head: true })
       .is("duplicate_of_shelter_id", null);
-    if (count && count > 0) shelterCount = count;
+    if (count && count > 0) shelterCount = Math.floor(count / 100) * 100;
   } catch {
     // Use fallback
   }
@@ -296,7 +296,7 @@ export default async function HomePage() {
 
       {featuredShelters.length > 0 && (
         <section
-          className="py-16 bg-background"
+          className="pt-12 pb-8 bg-background"
           id="udforsk-shelters"
           aria-labelledby="heading-udforsk-shelters"
         >
@@ -313,7 +313,7 @@ export default async function HomePage() {
       )}
 
       <section
-        className="pt-8 pb-16 bg-background"
+        className="pt-4 pb-12 bg-background"
         id="kort"
         aria-labelledby="heading-kort"
       >
@@ -333,7 +333,7 @@ export default async function HomePage() {
       </section>
 
       <section
-        className="py-16 bg-background"
+        className="pt-4 pb-12 bg-background"
         id="udforsk-efter-region"
         aria-labelledby="heading-region"
       >
