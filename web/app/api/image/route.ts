@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import sharp from "sharp";
 import { getAllowedImageHosts } from "@/lib/image-proxy";
 
 export const runtime = "nodejs";
@@ -17,25 +16,15 @@ function errorResponse(status: number, message: string) {
 function cacheHeaders(contentType: string) {
   return {
     "Content-Type": contentType,
-    // private: kun browser-cache, ikke CDN – undgår at Netlify returnerer samme
-    // cachede svar for alle /api/image?url=... requests uanset query param.
     "Cache-Control": "private, max-age=604800, stale-while-revalidate=2592000",
   };
 }
 
-function pickOutputContentType(format: string | undefined | null): string {
-  switch ((format || "").toLowerCase()) {
-    case "png":
-      return "image/png";
-    case "webp":
-      return "image/webp";
-    case "avif":
-      return "image/avif";
-    case "jpeg":
-    case "jpg":
-    default:
-      return "image/jpeg";
-  }
+function passthroughResponse(buf: Buffer, contentType: string) {
+  return new NextResponse(new Uint8Array(buf), {
+    status: 200,
+    headers: cacheHeaders(contentType),
+  });
 }
 
 export async function GET(req: Request) {
@@ -71,7 +60,6 @@ export async function GET(req: Request) {
     res = await fetch(target.toString(), {
       signal: controller.signal,
       headers: {
-        // Some hosts vary by Accept; keep it explicit.
         Accept: "image/avif,image/webp,image/*,*/*;q=0.8",
       },
       cache: "no-store",
@@ -98,17 +86,15 @@ export async function GET(req: Request) {
   const buf = Buffer.from(await res.arrayBuffer());
   if (buf.byteLength > MAX_BYTES) return errorResponse(413, "Image too large");
 
-  // Animated GIFs: sharp will only process the first frame unless configured.
-  // For safety, passthrough.
+  // GIFs: passthrough to preserve animation
   if (contentType.toLowerCase().includes("gif")) {
-    return new NextResponse(new Uint8Array(buf), {
-      status: 200,
-      headers: cacheHeaders(contentType),
-    });
+    return passthroughResponse(buf, contentType);
   }
 
+  // Try sharp for resizing/optimization, fall back to passthrough
   try {
-    const img = sharp(buf, { failOnError: false }).rotate(); // rotate() respects EXIF orientation
+    const sharp = (await import("sharp")).default;
+    const img = sharp(buf, { failOnError: false }).rotate();
     const meta = await img.metadata();
     const resized =
       width || height
@@ -120,25 +106,25 @@ export async function GET(req: Request) {
           })
         : img;
 
-    const outputType = pickOutputContentType(meta.format);
-    const out = await (outputType === "image/png"
-      ? resized.png().toBuffer()
-      : outputType === "image/webp"
-        ? resized.webp({ quality: 82 }).toBuffer()
-        : outputType === "image/avif"
-          ? resized.avif({ quality: 55 }).toBuffer()
-          : resized.jpeg({ quality: 82, mozjpeg: true }).toBuffer());
+    const format = (meta.format || "").toLowerCase();
+    let out: Buffer;
+    if (format === "png") {
+      out = await resized.png().toBuffer();
+    } else if (format === "webp") {
+      out = await resized.webp({ quality: 82 }).toBuffer();
+    } else {
+      out = await resized.jpeg({ quality: 82, mozjpeg: true }).toBuffer();
+    }
+
+    const outType =
+      format === "png" ? "image/png" : format === "webp" ? "image/webp" : "image/jpeg";
 
     return new NextResponse(new Uint8Array(out), {
       status: 200,
-      headers: cacheHeaders(outputType),
+      headers: cacheHeaders(outType),
     });
   } catch {
-    // If sharp fails for any reason, fallback to passthrough.
-    return new NextResponse(new Uint8Array(buf), {
-      status: 200,
-      headers: cacheHeaders(contentType),
-    });
+    // sharp unavailable or failed — passthrough the original image
+    return passthroughResponse(buf, contentType);
   }
 }
-
