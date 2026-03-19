@@ -46,3 +46,6 @@ naturstyrelsen_scraped.json
 !*.example
 !.env.example
 !*_urls.txt.example
+
+# Local Netlify folder
+.netlify

@@ -116,7 +116,7 @@ export function BlogContent({ posts, categories }: BlogContentProps) {
     <div className="min-h-screen bg-background">
       {/* Hero — featured post */}
       <Link href={`/blog/${featured.slug}`} className="block group relative">
-        <div className="relative aspect-[16/9] md:aspect-[3/1] max-h-[420px] overflow-hidden">
+        <div className="relative h-[280px] sm:h-[340px] md:h-[420px] w-full overflow-hidden">
           <Image
             src={featured.coverImage}
             alt={featured.title}

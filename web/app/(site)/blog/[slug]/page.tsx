@@ -100,7 +100,7 @@ export default async function BlogPostPage({ params }: PageProps) {
         />
 
         {/* Hero image */}
-        <div className="relative aspect-[16/9] md:aspect-[21/9] overflow-hidden">
+        <div className="relative h-[280px] sm:h-[340px] md:h-[420px] w-full overflow-hidden">
           <Image
             src={post.coverImage}
             alt={post.title}

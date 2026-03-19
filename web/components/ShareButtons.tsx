@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Share2, Link2, Facebook, Check } from "lucide-react";
 
 interface ShareButtonsProps {
@@ -10,9 +10,14 @@ interface ShareButtonsProps {
 
 export function ShareButtons({ title, url }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const fullUrl = url.startsWith("http") ? url : `https://shelterdk.dk${url}`;
   const encodedUrl = encodeURIComponent(fullUrl);
   const encodedTitle = encodeURIComponent(title);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleNativeShare = async () => {
     if (navigator.share) {
@@ -37,7 +42,7 @@ export function ShareButtons({ title, url }: ShareButtonsProps) {
   return (
     <div className="flex items-center gap-2">
       <span className="text-sm text-primary/60 mr-1">Del:</span>
-      {typeof navigator !== "undefined" && "share" in navigator && (
+      {mounted && typeof navigator !== "undefined" && "share" in navigator && (
         <button
           onClick={handleNativeShare}
           className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary/5 text-primary/60 hover:bg-primary/10 hover:text-primary transition-colors"

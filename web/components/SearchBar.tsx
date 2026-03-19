@@ -97,8 +97,19 @@ export function SearchBar({
       setSuggestLoading(true);
       fetch(`/api/soeg/byer?q=${encodeURIComponent(q)}`)
         .then((r) => r.json())
-        .then((arr: SearchSuggestion[]) => {
-          const items = Array.isArray(arr) ? arr : [];
+        .then((arr: unknown) => {
+          // Backwards-compat: ældre endpoint kan returnere `string[]` (bynavne)
+          // mens ny endpoint returnerer `SearchSuggestion[]` ({ name, type }).
+          const items: SearchSuggestion[] = Array.isArray(arr)
+            ? arr.length > 0 && typeof arr[0] === "string"
+              ? (arr as string[]).map((name) => ({ name, type: "by" }))
+              : (arr as any[])
+                  .map((s) => ({
+                    name: String(s?.name ?? ""),
+                    type: s?.type === "område" ? "område" : "by",
+                  }))
+                  .filter((s) => s.name.trim().length > 0)
+            : [];
           setSuggestions(items);
           const alreadySearched = mode === "search" && (initialQuery ?? searchParams.get("q") ?? "").trim() === q;
           setSuggestOpen(!alreadySearched && items.length > 0);

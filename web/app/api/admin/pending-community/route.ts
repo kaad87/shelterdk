@@ -14,8 +14,8 @@ function isAdmin(request: NextRequest): boolean {
 }
 
 /**
- * GET /api/admin/pending-photos?secret=... eller med header x-admin-secret
- * Returnerer alle submissions med status pending inkl. shelter-titel og slug.
+ * GET /api/admin/pending-community
+ * Returnerer alle pending kommentarer og facilities-opdateringer.
  */
 export async function GET(request: NextRequest) {
   if (!isAdmin(request)) {
@@ -24,14 +24,19 @@ export async function GET(request: NextRequest) {
 
   const supabase = createPublicClient();
   const { data, error } = await supabase
-    .from("shelter_photo_submissions")
+    .from("community_submissions")
     .select(
-      "id, shelter_id, file_path, storage_bucket, submitter_email, status, created_at"
+      "id, shelter_id, type, payload, status, submitter_name, submitter_email, created_at"
     )
     .eq("status", "pending")
+    .in("type", ["comment", "facilities_update"])
     .order("created_at", { ascending: false });
 
   if (error) {
+    // Graceful fallback in environments where migration isn't applied yet.
+    if (String(error.message || "").includes("community_submissions")) {
+      return Response.json({ submissions: [], setupRequired: true });
+    }
     return Response.json({ error: error.message }, { status: 500 });
   }
 
@@ -49,14 +54,9 @@ export async function GET(request: NextRequest) {
     (shelters || []).map((s) => [s.id, { title: s.title, slug: s.slug }])
   );
 
-  const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const submissions = (data || []).map((row) => ({
     ...row,
     shelter: shelterMap.get(row.shelter_id) ?? null,
-    image_url:
-      baseUrl && row.storage_bucket && row.file_path
-        ? `${baseUrl}/storage/v1/object/public/${row.storage_bucket}/${row.file_path}`
-        : null,
   }));
 
   return Response.json({ submissions });

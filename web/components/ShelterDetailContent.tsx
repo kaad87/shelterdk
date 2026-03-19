@@ -18,6 +18,8 @@ import { ShelterFaq } from "@/components/ShelterFaq";
 import { ShelterFacts } from "@/components/ShelterFacts";
 import { ShareButtons } from "@/components/ShareButtons";
 import { WeatherWidget } from "@/components/WeatherWidget";
+import { CommunityContributionPanel } from "@/components/CommunityContributionPanel";
+import { CommunityApprovedSection } from "@/components/CommunityApprovedSection";
 import type { DailyForecast } from "@/lib/weather";
 import type { Shelter } from "@/types/shelter";
 import type { FaqItem } from "@/lib/faq";
@@ -276,6 +278,8 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
               </div>
             )}
 
+            <CommunityApprovedSection slug={slug} shelter={shelter} />
+
             {displayDescription && (
               <section className="mb-10">
                 <h2 className="font-serif text-xl font-bold text-primary mb-4">
@@ -335,6 +339,8 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
 
             {/* Mobile: show booking above reviews (aside moves below on mobile) */}
             <BookingCard className="mb-10 lg:hidden" />
+
+            <CommunityContributionPanel slug={slug} />
 
             {showReviews && reviews.length > 0 && (
               <section className="mb-10">

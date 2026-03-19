@@ -28,7 +28,7 @@ export function Navbar() {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<{ name: string; type: string }[]>([]);
   const [suggestOpen, setSuggestOpen] = useState(false);
   const [suggestLoading, setSuggestLoading] = useState(false);
   const suggestRef = useRef<HTMLDivElement>(null);
@@ -51,9 +51,21 @@ export function Navbar() {
       setSuggestLoading(true);
       fetch(`/api/soeg/byer?q=${encodeURIComponent(q)}`)
         .then((r) => r.json())
-        .then((arr: string[]) => {
-          setSuggestions(Array.isArray(arr) ? arr : []);
-          setSuggestOpen((arr?.length ?? 0) > 0);
+        .then((arr: unknown) => {
+          // Backwards-compat: ældre endpoint kan returnere `string[]` (bynavne)
+          // mens ny endpoint returnerer `[{ name, type }]`.
+          const items: { name: string; type: string }[] = Array.isArray(arr)
+            ? arr.length > 0 && typeof arr[0] === "string"
+              ? (arr as string[]).map((name) => ({ name, type: "by" }))
+              : (arr as any[])
+                  .map((s) => ({
+                    name: String(s?.name ?? ""),
+                    type: s?.type === "område" ? "område" : "by",
+                  }))
+                  .filter((s) => s.name.trim().length > 0)
+            : [];
+          setSuggestions(items);
+          setSuggestOpen(items.length > 0);
         })
         .catch(() => {
           setSuggestions([]);
@@ -135,17 +147,20 @@ export function Navbar() {
                   {suggestLoading ? (
                     <li className="px-3 py-2 text-primary/60 text-sm">Henter…</li>
                   ) : (
-                    suggestions.map((by) => (
+                    suggestions.map((s) => (
                       <li
-                        key={by}
+                        key={`${s.type}-${s.name}`}
                         role="option"
                         onMouseDown={(e) => {
                           e.preventDefault();
-                          pickSuggestion(by);
+                          pickSuggestion(s.name);
                         }}
-                        className="px-3 py-2 text-sm text-primary hover:bg-primary/5 cursor-pointer"
+                        className="flex items-center justify-between px-3 py-2 text-sm text-primary hover:bg-primary/5 cursor-pointer"
                       >
-                        {by}
+                        <span>{s.name}</span>
+                        <span className="text-xs text-primary/40 ml-2">
+                          {s.type === "område" ? "Område" : "By"}
+                        </span>
                       </li>
                     ))
                   )}

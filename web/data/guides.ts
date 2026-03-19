@@ -34,7 +34,7 @@ export const GUIDES: Guide[] = [
     excerpt:
       "Danmark har fem nationalparker med unikke sheltermuligheder. Udforsk shelters i Thy, Mols Bjerge, Vadehavet, Skjoldungernes Land og Kongernes Nordsjaelland.",
     coverImage:
-      "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1723637012148-6ea41e4517be?w=1200&q=80&auto=format&fit=crop",
     category: "Natur",
     content: `
 ## Derfor er nationalparkerne perfekte til shelterture
@@ -133,7 +133,7 @@ Har du brug for shelters med bestemte faciliteter som [toilet](/shelter-med-toil
     excerpt:
       "En samlet guide til at finde det helt rigtige shelter i Danmark: vælg efter faciliteter, region, sæson og bookingmuligheder med ShelterDKs filtre.",
     coverImage:
-      "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200&q=80&auto=format&fit=crop",
+      "https://plus.unsplash.com/premium_photo-1697644694742-c97ff0266e69?w=1200&q=80&auto=format&fit=crop",
     category: "Begynder",
     content: `
 ## Find det shelter, der passer til netop din tur
@@ -546,7 +546,7 @@ Når du er klar til næste skridt, kan du bruge vores [Pakkeliste til sheltertur
     excerpt:
       "Idéer til nem og lækker mad over bål: snobrød, one-pot gryderetter, morgenmad og søde sager til aftenhyggen.",
     coverImage:
-      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1200&q=80&auto=format&fit=crop",
+      "https://plus.unsplash.com/premium_photo-1682500052659-07fc479a4772?w=1200&q=80&auto=format&fit=crop",
     category: "Mad",
     content: `
 ## Basisudstyr til mad over bål

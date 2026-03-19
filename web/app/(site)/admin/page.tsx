@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function AdminBillederPage() {
+export default function AdminIndexPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
       <nav className="mb-6 text-sm text-primary/70">
@@ -16,11 +16,7 @@ export default function AdminBillederPage() {
           Hjem
         </Link>
         <span className="mx-1">/</span>
-        <span className="text-primary">Admin – moderation</span>
-        <span className="mx-1">·</span>
-        <Link href="/admin/community" className="hover:text-accent">
-          Gå til community-fanen
-        </Link>
+        <span className="text-primary">Admin</span>
       </nav>
       <AdminPhotoReview />
     </div>

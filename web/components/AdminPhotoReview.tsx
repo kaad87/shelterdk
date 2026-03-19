@@ -3,8 +3,9 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Check, X, Loader2, Lock } from "lucide-react";
+import { Check, X, Loader2, Lock, RefreshCw } from "lucide-react";
 import { getProxiedImageSrc } from "@/lib/image-proxy";
+import { FACILITY_FIELDS } from "@/lib/community";
 
 const STORAGE_KEY = "shelterdk-admin-secret";
 
@@ -20,13 +21,27 @@ type Submission = {
   image_url: string | null;
 };
 
-export function AdminPhotoReview() {
+type CommunitySubmission = {
+  id: string;
+  shelter_id: string;
+  type: "comment" | "facilities_update";
+  payload: Record<string, unknown> | null;
+  status: string;
+  submitter_name: string | null;
+  submitter_email: string | null;
+  created_at: string;
+  shelter: { title: string; slug: string } | null;
+};
+
+export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: "photos" | "community" }) {
   const [secret, setSecret] = useState("");
   const [inputSecret, setInputSecret] = useState("");
   const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [communitySubmissions, setCommunitySubmissions] = useState<CommunitySubmission[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [actingId, setActingId] = useState<string | null>(null);
+  const [tab, setTab] = useState<"photos" | "community">(initialTab);
 
   const loadStored = useCallback(() => {
     if (typeof window === "undefined") return;
@@ -43,22 +58,35 @@ export function AdminPhotoReview() {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch("/api/admin/pending-photos", {
-          headers: { "x-admin-secret": s },
-        });
-        if (res.status === 401) {
+        const ts = Date.now();
+        const [photoRes, communityRes] = await Promise.all([
+          fetch(`/api/admin/pending-photos?t=${ts}`, {
+            headers: { "x-admin-secret": s },
+            cache: "no-store",
+          }),
+          fetch(`/api/admin/pending-community?t=${ts}`, {
+            headers: { "x-admin-secret": s },
+            cache: "no-store",
+          }),
+        ]);
+        if (photoRes.status === 401 || communityRes.status === 401) {
           setError("Ugyldig kode");
           sessionStorage.removeItem(STORAGE_KEY);
           setSecret("");
           setSubmissions([]);
+          setCommunitySubmissions([]);
           return;
         }
-        if (!res.ok) {
+        if (!photoRes.ok || !communityRes.ok) {
           setError("Kunne ikke hente liste");
           return;
         }
-        const data = await res.json();
-        setSubmissions(data.submissions ?? []);
+        const [photoData, communityData] = await Promise.all([
+          photoRes.json(),
+          communityRes.json(),
+        ]);
+        setSubmissions(photoData.submissions ?? []);
+        setCommunitySubmissions(communityData.submissions ?? []);
       } finally {
         setLoading(false);
       }
@@ -73,7 +101,15 @@ export function AdminPhotoReview() {
     } else {
       setSubmissions([]);
     }
-  }, [secret]);
+  }, [secret, fetchPending]);
+
+  useEffect(() => {
+    if (!secret) return;
+    const id = window.setInterval(() => {
+      fetchPending(secret);
+    }, 10000);
+    return () => window.clearInterval(id);
+  }, [secret, fetchPending]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,18 +124,24 @@ export function AdminPhotoReview() {
     setSecret("");
     setInputSecret("");
     setSubmissions([]);
+    setCommunitySubmissions([]);
   };
 
   const act = async (
     submissionId: string,
-    action: "approve" | "reject"
+    action: "approve" | "reject",
+    kind: "photo" | "community" = "photo"
   ) => {
     if (!secret) return;
     setActingId(submissionId);
     const endpoint =
-      action === "approve"
-        ? "/api/admin/approve-photo"
-        : "/api/admin/reject-photo";
+      kind === "photo"
+        ? action === "approve"
+          ? "/api/admin/approve-photo"
+          : "/api/admin/reject-photo"
+        : action === "approve"
+          ? "/api/admin/approve-community"
+          : "/api/admin/reject-community";
     try {
       const res = await fetch(endpoint, {
         method: "POST",
@@ -114,7 +156,11 @@ export function AdminPhotoReview() {
         setError(data.error || "Fejl");
         return;
       }
-      setSubmissions((prev) => prev.filter((s) => s.id !== submissionId));
+      if (kind === "photo") {
+        setSubmissions((prev) => prev.filter((s) => s.id !== submissionId));
+      } else {
+        setCommunitySubmissions((prev) => prev.filter((s) => s.id !== submissionId));
+      }
     } finally {
       setActingId(null);
     }
@@ -154,16 +200,24 @@ export function AdminPhotoReview() {
   return (
     <div className="mx-auto max-w-4xl">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="font-serif text-2xl font-bold text-primary">
-          Billeder til godkendelse
-        </h1>
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="text-sm text-primary/70 hover:text-primary"
-        >
-          Log ud
-        </button>
+        <h1 className="font-serif text-2xl font-bold text-primary">Community moderation</h1>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => secret && fetchPending(secret)}
+            className="inline-flex items-center gap-1.5 text-sm text-primary/70 hover:text-primary"
+          >
+            <RefreshCw size={14} />
+            Opdater
+          </button>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="text-sm text-primary/70 hover:text-primary"
+          >
+            Log ud
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -172,14 +226,35 @@ export function AdminPhotoReview() {
         </p>
       )}
 
+      <div className="mb-5 inline-flex rounded-lg border border-primary/15 bg-white p-1">
+        <button
+          type="button"
+          onClick={() => setTab("photos")}
+          className={`px-3 py-1.5 rounded-md text-sm ${
+            tab === "photos" ? "bg-primary text-white" : "text-primary/75 hover:bg-primary/5"
+          }`}
+        >
+          Billeder ({submissions.length})
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab("community")}
+          className={`px-3 py-1.5 rounded-md text-sm ${
+            tab === "community" ? "bg-primary text-white" : "text-primary/75 hover:bg-primary/5"
+          }`}
+        >
+          Kommentarer og faciliteter ({communitySubmissions.length})
+        </button>
+      </div>
+
       {loading ? (
         <div className="flex items-center gap-2 text-primary/70">
           <Loader2 size={20} className="animate-spin" />
           Henter…
         </div>
-      ) : submissions.length === 0 ? (
+      ) : tab === "photos" && submissions.length === 0 ? (
         <p className="text-primary/70">Ingen billeder venter på godkendelse.</p>
-      ) : (
+      ) : tab === "photos" ? (
         <ul className="space-y-6">
           {submissions.map((s) => (
             <li
@@ -238,6 +313,89 @@ export function AdminPhotoReview() {
                 <button
                   type="button"
                   onClick={() => act(s.id, "reject")}
+                  disabled={actingId != null}
+                  className="inline-flex items-center gap-1 rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                >
+                  {actingId === s.id ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <X size={16} />
+                  )}
+                  Afvis
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : communitySubmissions.length === 0 ? (
+        <p className="text-primary/70">Ingen community-indsendelser venter på godkendelse.</p>
+      ) : (
+        <ul className="space-y-4">
+          {communitySubmissions.map((s) => (
+            <li
+              key={s.id}
+              className="rounded-xl border border-primary/10 bg-white p-4"
+            >
+              <div className="flex items-start justify-between gap-4 flex-wrap">
+                <div>
+                  <p className="font-medium text-primary">
+                    {s.shelter?.title ?? "Ukendt shelter"}
+                  </p>
+                  {s.shelter?.slug && (
+                    <Link
+                      href={`/shelter/${s.shelter.slug}`}
+                      className="text-sm text-accent hover:underline"
+                    >
+                      Se shelter →
+                    </Link>
+                  )}
+                  <p className="mt-1 text-xs text-primary/60">
+                    {new Date(s.created_at).toLocaleString("da-DK")}
+                    {s.submitter_name ? ` · ${s.submitter_name}` : ""}
+                    {s.submitter_email ? ` · ${s.submitter_email}` : ""}
+                  </p>
+                </div>
+                <span className="rounded-full bg-primary/10 px-2 py-1 text-xs text-primary">
+                  {s.type === "comment" ? "Kommentar" : "Faciliteter"}
+                </span>
+              </div>
+
+              {s.type === "comment" ? (
+                <p className="mt-3 text-sm text-primary/90 whitespace-pre-line">
+                  {String((s.payload as { text?: string } | null)?.text ?? "")}
+                </p>
+              ) : (
+                <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                  {FACILITY_FIELDS.map((f) => {
+                    const val = (s.payload as Record<string, string> | null)?.[f.key];
+                    if (!val) return null;
+                    const label = val === "yes" ? "Ja" : val === "no" ? "Nej" : "Ved ikke";
+                    return (
+                      <div key={f.key} className="rounded border border-primary/10 px-2 py-1 text-primary/85">
+                        {f.label}: <strong>{label}</strong>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div className="mt-4 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => act(s.id, "approve", "community")}
+                  disabled={actingId != null}
+                  className="inline-flex items-center gap-1 rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                >
+                  {actingId === s.id ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <Check size={16} />
+                  )}
+                  Godkend
+                </button>
+                <button
+                  type="button"
+                  onClick={() => act(s.id, "reject", "community")}
                   disabled={actingId != null}
                   className="inline-flex items-center gap-1 rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
                 >

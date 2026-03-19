@@ -288,7 +288,7 @@ For Københavnere er Gribskov det oplagte valg. Skoven er en af Danmarks størst
 
 Hærvejen er Danmarks ældste landevej og strækker sig fra Padborg i syd til Viborg i nord. Langs ruten finder du adskillige shelters, der er perfekte til flerdages vandre- eller cykelture. Hver etape byder på nye landskaber, fra hedelandskaber til dybe skove og historiske landsbyer. Det er den ultimative shelterture for den, der vil opleve Jyllands mangfoldighed.
 
-![Shelter ved sø i skov](https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1200&q=80&auto=format&fit=crop)
+![Shelter ved sø i skov](https://images.unsplash.com/photo-1563565615879-0a8fb26cd6ec?w=1200&q=80&auto=format&fit=crop)
 
 ## 10. Tisvilde Hegn, Nordsjælland
 
@@ -539,7 +539,7 @@ Danmark har et fint system for naturovernatning med shelters, teltpladser og mul
     date: "2024-10-15",
     category: "Tips",
     coverImage:
-      "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1200&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1700225852388-a23b1a4aaf25?w=1200&q=80&auto=format&fit=crop",
     readingTime: 3,
     content: `At finde det rigtige shelter kan gøre forskellen mellem en fantastisk tur og en nat med dårlig søvn og kulde. Danmark har over 1.000 offentlige shelters spredt ud over hele landet, og de varierer enormt – fra simple trekantede konstruktioner i skovbunden til velholdte pladser med borde, bænke og adgang til drikkevand. Her guider vi dig igennem de vigtigste overvejelser, så du kan vælge et shelter der passer præcist til din tur.
 
@@ -581,7 +581,7 @@ Booking er især en god idé når du:
 
 [Søg shelters](/soeg) på vores side for at finde både bookbare og frie shelters i dit foretrukne område.
 
-![Udsigt fra shelter ved sø](https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1200&q=80&auto=format&fit=crop)
+![Udsigt fra shelter ved sø](https://images.unsplash.com/photo-1563565615879-0a8fb26cd6ec?w=1200&q=80&auto=format&fit=crop)
 
 ## Vores anbefaling
 
@@ -698,11 +698,11 @@ God etikette er ikke kompliceret – det handler om sund fornuft og respekt. Hvi
     date: "2024-08-10",
     category: "Inspiration",
     coverImage:
-      "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1200&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1563565615879-0a8fb26cd6ec?w=1200&q=80&auto=format&fit=crop",
     readingTime: 4,
     content: `Danmark er et lille land med en overraskende stor variation i landskaber – og det afspejles i shelteroplevelserne. Fra Nordjyllands vilde kystlandskaber til Bornholms klippekyster og Sjællands dybe bøgeskove er der shelter til enhver smag. Her tager vi dig med på en rundtur i de bedste regioner for naturovernatning.
 
-![Dansk skovlandskab med morgendis](https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1200&q=80&auto=format&fit=crop)
+![Dansk skovlandskab med morgendis](https://images.unsplash.com/photo-1767948156403-1f764878374c?w=1200&q=80&auto=format&fit=crop)
 
 ## Nordjylland – vild natur og åbne horisonter
 
@@ -777,7 +777,7 @@ Du kan også udforske [udinaturen.dk](https://udinaturen.dk) for yderligere info
     date: "2024-11-05",
     category: "Guides",
     coverImage:
-      "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1200&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1768509196998-e593f637eb3e?w=1200&q=80&auto=format&fit=crop",
     readingTime: 5,
     content: `At tage børn med på sheltertur er en af de bedste måder at introducere dem til naturen og friluftsliv. Men det kræver lidt mere planlægning end en tur alene eller med andre voksne. Med de rigtige forberedelser kan en sheltertur med børn blive en oplevelse, som hele familien husker længe – og som børnene vil bede om at gentage.
 
@@ -870,7 +870,7 @@ Med den rigtige planlægning bliver en sheltertur med børn en oplevelse, der st
     date: "2024-12-01",
     category: "Sæson",
     coverImage:
-      "https://images.unsplash.com/photo-1510312305653-8ed496efae75?w=1200&q=80&auto=format&fit=crop",
+      "https://plus.unsplash.com/premium_photo-1676648534523-1b4f6271fd1b?w=1200&q=80&auto=format&fit=crop",
     readingTime: 4,
     content: `Foråret og sommeren er den perfekte tid til shelterture i Danmark. De lange, lyse aftener, milde temperaturer og en natur i fuld blomst gør det til den mest populære sæson for naturovernatning. Men med populariteten følger også udfordringer – her guider vi dig til den bedste oplevelse i de varme måneder.
 
@@ -963,7 +963,7 @@ I højsæsonen er planlægning afgørende. Her er vores bedste råd:
     date: "2025-01-10",
     category: "Udstyr",
     coverImage:
-      "https://images.unsplash.com/photo-1445308394109-4ec2920981b1?w=1200&q=80&auto=format&fit=crop",
+      "https://plus.unsplash.com/premium_photo-1755164640987-38c25f3ecd58?w=1200&q=80&auto=format&fit=crop",
     readingTime: 5,
     content: `Du behøver ikke avanceret eller dyrt udstyr for at komme i gang med shelterture. Faktisk er en af de store fordele ved shelterovernatning, at det er langt billigere end telttur – du behøver hverken telt, stangsystem eller footprint. Men der er nogle essentielle ting, du ikke bør gå på kompromis med. Her gennemgår vi alt det vigtige udstyr for din første sheltertur.
 
