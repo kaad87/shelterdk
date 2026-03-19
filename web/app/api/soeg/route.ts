@@ -25,6 +25,10 @@ export async function GET(request: NextRequest) {
   if (searchParams.get("billede") === "1") filters.billede = true;
   if (searchParams.get("anmeldelser") === "1") filters.anmeldelser = true;
   if (searchParams.get("bookbar") === "1") filters.bookbar = true;
+  if (searchParams.get("vand") === "1") filters.vand = true;
+  if (searchParams.get("toilet") === "1") filters.toilet = true;
+  if (searchParams.get("hund") === "1") filters.hund = true;
+  if (searchParams.get("baalplads") === "1") filters.baalplads = true;
 
   const minLat = parseNum(searchParams.get("minLat"));
   const maxLat = parseNum(searchParams.get("maxLat"));

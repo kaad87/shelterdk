@@ -258,7 +258,7 @@ export default async function HomePage() {
       .from("shelters")
       .select("id", { count: "exact", head: true })
       .is("duplicate_of_shelter_id", null);
-    if (count && count > 0) shelterCount = Math.floor(count / 100) * 100;
+    if (count && count > 0) shelterCount = Math.round(count / 100) * 100;
   } catch {
     // Use fallback
   }

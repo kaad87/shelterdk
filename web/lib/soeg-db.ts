@@ -12,7 +12,7 @@ function sortByImageAndScore(a: Shelter, b: Shelter): number {
 }
 
 const SHELTER_SELECT =
-  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, water, display_score, google_places!shelters_google_place_id_fkey(photo_references)";
+  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, water, toilet, geofa_raw, display_score, google_places!shelters_google_place_id_fkey(photo_references)";
 const SHELTER_SELECT_FALLBACK =
   "id, title, slug, description, location, image_url, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, water, google_places!shelters_google_place_id_fkey(photo_references)";
 
@@ -27,6 +27,10 @@ export interface SoegFilters {
   billede?: boolean;
   anmeldelser?: boolean;
   bookbar?: boolean;
+  vand?: boolean;
+  toilet?: boolean;
+  hund?: boolean;
+  baalplads?: boolean;
 }
 
 /** Bounding box for kortvisning – hent shelters inden for det synlige område. */
@@ -99,6 +103,18 @@ export async function getSheltersPage(
   if (filters?.bookbar) {
     query = query.not("booking_url", "is", null).neq("booking_url", "");
   }
+  if (filters?.vand) {
+    query = query.eq("water", true);
+  }
+  if (filters?.toilet) {
+    query = query.in("toilet", ["flush", "mulch"]);
+  }
+  if (filters?.hund) {
+    query = query.filter("geofa_raw->>hunde_tilladt", "ilike", "%ja%");
+  }
+  if (filters?.baalplads) {
+    query = query.filter("geofa_raw->>baalplads", "ilike", "%ja%");
+  }
 
   let { data, error } = await query.range(from, toInclusive);
 
@@ -157,6 +173,18 @@ export async function getSheltersPage(
     }
     if (filters?.bookbar) {
       fallbackQuery = fallbackQuery.not("booking_url", "is", null).neq("booking_url", "");
+    }
+    if (filters?.vand) {
+      fallbackQuery = fallbackQuery.eq("water", true);
+    }
+    if (filters?.toilet) {
+      fallbackQuery = fallbackQuery.in("toilet", ["flush", "mulch"]);
+    }
+    if (filters?.hund) {
+      fallbackQuery = fallbackQuery.filter("geofa_raw->>hunde_tilladt", "ilike", "%ja%");
+    }
+    if (filters?.baalplads) {
+      fallbackQuery = fallbackQuery.filter("geofa_raw->>baalplads", "ilike", "%ja%");
     }
     const { data: fallbackData } = await fallbackQuery.range(from, toInclusive);
     let list = (fallbackData as Shelter[]) ?? [];

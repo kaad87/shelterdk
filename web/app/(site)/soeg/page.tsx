@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
-import { getSheltersPage, SOEG_PAGE_SIZE } from "@/lib/soeg-db";
+import { getSheltersPage, SOEG_PAGE_SIZE, type SoegFilters } from "@/lib/soeg-db";
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 import { getAreaBySlug, prepositionForArea } from "@/lib/area-db";
 import { AreaFaq } from "@/components/AreaFaq";
@@ -86,14 +86,18 @@ export async function generateMetadata(props: {
 type ViewMode = "list" | "map" | "split";
 
 interface SoegPageProps {
-  searchParams: Promise<{ region?: string; q?: string; view?: string; area?: string; billede?: string; anmeldelser?: string; bookbar?: string }>;
+  searchParams: Promise<{ region?: string; q?: string; view?: string; area?: string; billede?: string; anmeldelser?: string; bookbar?: string; vand?: string; toilet?: string; hund?: string; baalplads?: string }>;
 }
 
 function parseFilters(params: SoegPageProps["searchParams"] extends Promise<infer P> ? P : never) {
-  const filters: { billede?: boolean; anmeldelser?: boolean; bookbar?: boolean } = {};
+  const filters: SoegFilters = {};
   if (params.billede === "1") filters.billede = true;
   if (params.anmeldelser === "1") filters.anmeldelser = true;
   if (params.bookbar === "1") filters.bookbar = true;
+  if (params.vand === "1") filters.vand = true;
+  if (params.toilet === "1") filters.toilet = true;
+  if (params.hund === "1") filters.hund = true;
+  if (params.baalplads === "1") filters.baalplads = true;
   return filters;
 }
 
@@ -191,7 +195,7 @@ export default async function SoegPage({ searchParams }: SoegPageProps) {
           }
         >
           <SoegContent
-            key={`${region ?? ""}-${q ?? ""}-${area ?? ""}-${String(filters.billede)}-${String(filters.anmeldelser)}-${String(filters.bookbar)}`}
+            key={`${region ?? ""}-${q ?? ""}-${area ?? ""}-${Object.entries(filters).sort().map(([k, v]) => `${k}:${v}`).join(",")}`}
             initialShelters={initialShelters}
             initialHasMore={initialHasMore}
             initialRegion={region}

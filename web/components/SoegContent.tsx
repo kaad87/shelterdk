@@ -82,6 +82,10 @@ export function SoegContent({
       if (initialFilters?.billede) params.billede = "1";
       if (initialFilters?.anmeldelser) params.anmeldelser = "1";
       if (initialFilters?.bookbar) params.bookbar = "1";
+      if (initialFilters?.vand) params.vand = "1";
+      if (initialFilters?.toilet) params.toilet = "1";
+      if (initialFilters?.hund) params.hund = "1";
+      if (initialFilters?.baalplads) params.baalplads = "1";
       const res = await fetch(`/api/soeg?${new URLSearchParams(params)}`);
       if (!res.ok) return;
       const data = await res.json();
@@ -172,6 +176,10 @@ export function SoegContent({
       if (initialFilters?.billede) params.billede = "1";
       if (initialFilters?.anmeldelser) params.anmeldelser = "1";
       if (initialFilters?.bookbar) params.bookbar = "1";
+      if (initialFilters?.vand) params.vand = "1";
+      if (initialFilters?.toilet) params.toilet = "1";
+      if (initialFilters?.hund) params.hund = "1";
+      if (initialFilters?.baalplads) params.baalplads = "1";
       setLoading(true);
       try {
         const res = await fetch(`/api/soeg?${new URLSearchParams(params)}`);
