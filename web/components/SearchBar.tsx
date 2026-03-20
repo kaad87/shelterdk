@@ -91,7 +91,8 @@ export function SearchBar({
   // Synk filter-state med URL (initialFilters kommer fra server)
   useEffect(() => {
     setFilters(initialFilters);
-  }, [initialFilters.billede, initialFilters.anmeldelser, initialFilters.bookbar, initialFilters.vand, initialFilters.toilet, initialFilters.hund, initialFilters.baalplads]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialFilters.billede, initialFilters.anmeldelser, initialFilters.bookbar, initialFilters.vand, initialFilters.toilet, initialFilters.hund, initialFilters.baalplads, initialFilters.bord_baenk, initialFilters.strand, initialFilters.bruser, initialFilters.gratis, initialFilters.handicap]);
 
   // By-forslag: debounced fetch når brugeren skriver (min. 2 tegn).
   useEffect(() => {
