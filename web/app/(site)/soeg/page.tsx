@@ -86,7 +86,7 @@ export async function generateMetadata(props: {
 type ViewMode = "list" | "map" | "split";
 
 interface SoegPageProps {
-  searchParams: Promise<{ region?: string; q?: string; view?: string; area?: string; billede?: string; anmeldelser?: string; bookbar?: string; vand?: string; toilet?: string; hund?: string; baalplads?: string }>;
+  searchParams: Promise<{ region?: string; q?: string; view?: string; area?: string; billede?: string; anmeldelser?: string; bookbar?: string; vand?: string; toilet?: string; hund?: string; baalplads?: string; gratis?: string; handicap?: string; bord_baenk?: string; strand?: string; bruser?: string }>;
 }
 
 function parseFilters(params: SoegPageProps["searchParams"] extends Promise<infer P> ? P : never) {
@@ -98,6 +98,11 @@ function parseFilters(params: SoegPageProps["searchParams"] extends Promise<infe
   if (params.toilet === "1") filters.toilet = true;
   if (params.hund === "1") filters.hund = true;
   if (params.baalplads === "1") filters.baalplads = true;
+  if (params.bord_baenk === "1") filters.bord_baenk = true;
+  if (params.strand === "1") filters.strand = true;
+  if (params.bruser === "1") filters.bruser = true;
+  if (params.gratis === "1") filters.gratis = true;
+  if (params.handicap === "1") filters.handicap = true;
   return filters;
 }
 
