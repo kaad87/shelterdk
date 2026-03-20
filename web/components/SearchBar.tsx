@@ -102,11 +102,11 @@ export function SearchBar({
           // mens ny endpoint returnerer `SearchSuggestion[]` ({ name, type }).
           const items: SearchSuggestion[] = Array.isArray(arr)
             ? arr.length > 0 && typeof arr[0] === "string"
-              ? (arr as string[]).map((name) => ({ name, type: "by" }))
+              ? (arr as string[]).map((name) => ({ name, type: "by" as const }))
               : (arr as any[])
                   .map((s) => ({
                     name: String(s?.name ?? ""),
-                    type: s?.type === "område" ? "område" : "by",
+                    type: s?.type === "område" ? ("område" as const) : ("by" as const),
                   }))
                   .filter((s) => s.name.trim().length > 0)
             : [];

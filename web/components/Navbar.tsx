@@ -28,7 +28,7 @@ export function Navbar() {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [suggestions, setSuggestions] = useState<{ name: string; type: string }[]>([]);
+  const [suggestions, setSuggestions] = useState<{ name: string; type: "by" | "område" }[]>([]);
   const [suggestOpen, setSuggestOpen] = useState(false);
   const [suggestLoading, setSuggestLoading] = useState(false);
   const suggestRef = useRef<HTMLDivElement>(null);
@@ -54,13 +54,13 @@ export function Navbar() {
         .then((arr: unknown) => {
           // Backwards-compat: ældre endpoint kan returnere `string[]` (bynavne)
           // mens ny endpoint returnerer `[{ name, type }]`.
-          const items: { name: string; type: string }[] = Array.isArray(arr)
+          const items: { name: string; type: "by" | "område" }[] = Array.isArray(arr)
             ? arr.length > 0 && typeof arr[0] === "string"
-              ? (arr as string[]).map((name) => ({ name, type: "by" }))
+              ? (arr as string[]).map((name) => ({ name, type: "by" as const }))
               : (arr as any[])
                   .map((s) => ({
                     name: String(s?.name ?? ""),
-                    type: s?.type === "område" ? "område" : "by",
+                    type: s?.type === "område" ? ("område" as const) : ("by" as const),
                   }))
                   .filter((s) => s.name.trim().length > 0)
             : [];
