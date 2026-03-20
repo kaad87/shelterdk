@@ -62,31 +62,23 @@ export function SoegContent({
   const [sortMode, setSortMode] = useState<SortMode>("standard");
   const prevSortMode = useRef<SortMode>("standard");
 
-  // Re-fetch from page 1 when sort mode changes
-  useEffect(() => {
-    if (sortMode === prevSortMode.current) return;
-    prevSortMode.current = sortMode;
-
-    const params: Record<string, string> = { page: "1" };
-    // Hent flere shelters til kortvisning, så pins ikke forsvinder
+  // Helper: build API params for current filters/sort/view
+  const buildApiParams = useCallback((extraParams?: Record<string, string>) => {
+    const params: Record<string, string> = { page: "1", ...extraParams };
     if (view === "map" || view === "split") params.limit = "200";
     if (initialRegion != null && initialRegion !== "") params.region = initialRegion;
     if (initialQuery != null && initialQuery !== "") params.q = initialQuery;
     if (initialArea != null && initialArea !== "") params.area = initialArea;
-    if (initialFilters?.billede) params.billede = "1";
-    if (initialFilters?.anmeldelser) params.anmeldelser = "1";
-    if (initialFilters?.bookbar) params.bookbar = "1";
-    if (initialFilters?.vand) params.vand = "1";
-    if (initialFilters?.toilet) params.toilet = "1";
-    if (initialFilters?.hund) params.hund = "1";
-    if (initialFilters?.baalplads) params.baalplads = "1";
-    if (initialFilters?.bord_baenk) params.bord_baenk = "1";
-    if (initialFilters?.strand) params.strand = "1";
-    if (initialFilters?.bruser) params.bruser = "1";
-    if (initialFilters?.gratis) params.gratis = "1";
-    if (initialFilters?.handicap) params.handicap = "1";
+    const filterKeys: (keyof SoegFilters)[] = ["billede", "anmeldelser", "bookbar", "vand", "toilet", "hund", "baalplads", "bord_baenk", "strand", "bruser", "gratis", "handicap"];
+    for (const k of filterKeys) {
+      if (initialFilters?.[k]) params[k] = "1";
+    }
     if (sortMode !== "standard") params.sort = sortMode;
+    return params;
+  }, [view, initialRegion, initialQuery, initialArea, initialFilters, sortMode]);
 
+  // Fetch page 1 from API and replace shelters
+  const fetchPage1 = useCallback((params: Record<string, string>) => {
     setLoading(true);
     fetch(`/api/soeg?${new URLSearchParams(params)}`)
       .then((r) => r.json())
@@ -98,7 +90,23 @@ export function SoegContent({
         setListDisplayCount(list.length);
       })
       .finally(() => setLoading(false));
-  }, [sortMode, view, initialRegion, initialQuery, initialArea, initialFilters]);
+  }, [initialRegion]);
+
+  // On mount: if filters are active, re-fetch from API to avoid stale ISR cache
+  const hasActiveFilters = initialFilters && Object.values(initialFilters).some(Boolean);
+  const didInitialFetch = useRef(false);
+  useEffect(() => {
+    if (!hasActiveFilters || didInitialFetch.current) return;
+    didInitialFetch.current = true;
+    fetchPage1(buildApiParams());
+  }, [hasActiveFilters, fetchPage1, buildApiParams]);
+
+  // Re-fetch from page 1 when sort mode changes
+  useEffect(() => {
+    if (sortMode === prevSortMode.current) return;
+    prevSortMode.current = sortMode;
+    fetchPage1(buildApiParams());
+  }, [sortMode, view, buildApiParams, fetchPage1]);
 
   useEffect(() => {
     setView(initialView);
@@ -114,23 +122,7 @@ export function SoegContent({
     loadingRef.current = true;
     setLoading(true);
     try {
-      const params: Record<string, string> = { page: String(nextPage) };
-      if (initialRegion != null && initialRegion !== "") params.region = initialRegion;
-      if (initialQuery != null && initialQuery !== "") params.q = initialQuery;
-      if (initialArea != null && initialArea !== "") params.area = initialArea;
-      if (initialFilters?.billede) params.billede = "1";
-      if (initialFilters?.anmeldelser) params.anmeldelser = "1";
-      if (initialFilters?.bookbar) params.bookbar = "1";
-      if (initialFilters?.vand) params.vand = "1";
-      if (initialFilters?.toilet) params.toilet = "1";
-      if (initialFilters?.hund) params.hund = "1";
-      if (initialFilters?.baalplads) params.baalplads = "1";
-      if (initialFilters?.bord_baenk) params.bord_baenk = "1";
-      if (initialFilters?.strand) params.strand = "1";
-      if (initialFilters?.bruser) params.bruser = "1";
-      if (initialFilters?.gratis) params.gratis = "1";
-      if (initialFilters?.handicap) params.handicap = "1";
-      if (sortMode !== "standard") params.sort = sortMode;
+      const params = buildApiParams({ page: String(nextPage) });
       const res = await fetch(`/api/soeg?${new URLSearchParams(params)}`);
       if (!res.ok) return;
       const data = await res.json();
@@ -153,7 +145,7 @@ export function SoegContent({
       loadingRef.current = false;
       setLoading(false);
     }
-  }, [loading, hasMore, nextPage, initialRegion, initialQuery, initialArea, initialFilters]);
+  }, [loading, hasMore, nextPage, initialRegion, buildApiParams]);
 
   // IntersectionObserver: split – afslør flere fra listen (op til shelters.length) eller hent næste side
   useEffect(() => {
@@ -209,28 +201,12 @@ export function SoegContent({
       // Reset list display count so we show the first batch for the new area
       setListDisplayCount(24);
 
-      const params: Record<string, string> = {
+      const params = buildApiParams({
         minLat: String(bounds.south),
         maxLat: String(bounds.north),
         minLon: String(bounds.west),
         maxLon: String(bounds.east),
-      };
-      if (initialRegion != null && initialRegion !== "") params.region = initialRegion;
-      if (initialQuery != null && initialQuery !== "") params.q = initialQuery;
-      if (initialArea != null && initialArea !== "") params.area = initialArea;
-      if (initialFilters?.billede) params.billede = "1";
-      if (initialFilters?.anmeldelser) params.anmeldelser = "1";
-      if (initialFilters?.bookbar) params.bookbar = "1";
-      if (initialFilters?.vand) params.vand = "1";
-      if (initialFilters?.toilet) params.toilet = "1";
-      if (initialFilters?.hund) params.hund = "1";
-      if (initialFilters?.baalplads) params.baalplads = "1";
-      if (initialFilters?.bord_baenk) params.bord_baenk = "1";
-      if (initialFilters?.strand) params.strand = "1";
-      if (initialFilters?.bruser) params.bruser = "1";
-      if (initialFilters?.gratis) params.gratis = "1";
-      if (initialFilters?.handicap) params.handicap = "1";
-      if (sortMode !== "standard") params.sort = sortMode;
+      });
       setLoading(true);
       try {
         const res = await fetch(`/api/soeg?${new URLSearchParams(params)}`);
@@ -247,7 +223,7 @@ export function SoegContent({
         setLoading(false);
       }
     },
-    [initialRegion, initialQuery, initialArea, initialFilters]
+    [initialRegion, buildApiParams]
   );
 
   // Filter shelters to only those visible on the map (split view after user pans/zooms)
