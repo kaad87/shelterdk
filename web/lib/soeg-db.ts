@@ -31,6 +31,11 @@ export interface SoegFilters {
   toilet?: boolean;
   hund?: boolean;
   baalplads?: boolean;
+  gratis?: boolean;
+  handicap?: boolean;
+  bord_baenk?: boolean;
+  strand?: boolean;
+  bruser?: boolean;
 }
 
 /** Bounding box for kortvisning – hent shelters inden for det synlige område. */
@@ -47,6 +52,8 @@ const BBOX_FETCH_LIMIT = 2000;
  * Hent én side shelters med valgfri region, søgetekst, area_slug, filtre og bbox.
  * Ved bbox hentes op til BBOX_FETCH_LIMIT og filtreres efter koordinater (location).
  */
+export type SoegSort = "standard" | "rating" | "reviews";
+
 export async function getSheltersPage(
   region: string | null,
   q: string | null,
@@ -54,7 +61,8 @@ export async function getSheltersPage(
   pageSize: number = SOEG_PAGE_SIZE,
   filters?: SoegFilters | null,
   bbox?: MapBbox | null,
-  areaSlug?: string | null
+  areaSlug?: string | null,
+  sort?: SoegSort | null
 ): Promise<SoegPageResult> {
   const supabase = createPublicClient();
   const useBbox = bbox && [bbox.minLat, bbox.maxLat, bbox.minLon, bbox.maxLon].every((n) => Number.isFinite(n));
@@ -64,9 +72,24 @@ export async function getSheltersPage(
   let query = supabase
     .from("shelters")
     .select(SHELTER_SELECT)
-    .is("duplicate_of_shelter_id", null)
-    .order("display_score", { ascending: false, nullsFirst: false })
-    .order("title", { ascending: true });
+    .is("duplicate_of_shelter_id", null);
+
+  // Apply sort order
+  if (sort === "rating") {
+    query = query
+      .order("google_rating", { ascending: false, nullsFirst: false })
+      .order("google_user_ratings_total", { ascending: false, nullsFirst: false })
+      .order("title", { ascending: true });
+  } else if (sort === "reviews") {
+    query = query
+      .order("google_user_ratings_total", { ascending: false, nullsFirst: false })
+      .order("google_rating", { ascending: false, nullsFirst: false })
+      .order("title", { ascending: true });
+  } else {
+    query = query
+      .order("display_score", { ascending: false, nullsFirst: false })
+      .order("title", { ascending: true });
+  }
 
   if (region && region.trim()) {
     query = query.eq("region", region.trim());
@@ -115,6 +138,21 @@ export async function getSheltersPage(
   if (filters?.baalplads) {
     query = query.filter("geofa_raw->>baalplads", "ilike", "%ja%");
   }
+  if (filters?.gratis) {
+    query = query.filter("geofa_raw->>betaling", "eq", "Nej");
+  }
+  if (filters?.handicap) {
+    query = query.or("geofa_raw->>handicap.eq.Handicapegnet,geofa_raw->>handicap.eq.Delvist handicapegnet");
+  }
+  if (filters?.bord_baenk) {
+    query = query.filter("geofa_raw->>bord_baenk", "eq", "Ja");
+  }
+  if (filters?.strand) {
+    query = query.filter("geofa_raw->>strand_naerhed", "eq", "Ja");
+  }
+  if (filters?.bruser) {
+    query = query.filter("geofa_raw->>bruser_bad", "eq", "Ja");
+  }
 
   let { data, error } = await query.range(from, toInclusive);
 
@@ -140,10 +178,23 @@ export async function getSheltersPage(
     let fallbackQuery = supabase
       .from("shelters")
       .select(SHELTER_SELECT_FALLBACK)
-      .is("duplicate_of_shelter_id", null)
-      .order("image_url", { ascending: true, nullsFirst: false })
-      .order("google_user_ratings_total", { ascending: false, nullsFirst: false })
-      .order("title", { ascending: true });
+      .is("duplicate_of_shelter_id", null);
+    if (sort === "rating") {
+      fallbackQuery = fallbackQuery
+        .order("google_rating", { ascending: false, nullsFirst: false })
+        .order("google_user_ratings_total", { ascending: false, nullsFirst: false })
+        .order("title", { ascending: true });
+    } else if (sort === "reviews") {
+      fallbackQuery = fallbackQuery
+        .order("google_user_ratings_total", { ascending: false, nullsFirst: false })
+        .order("google_rating", { ascending: false, nullsFirst: false })
+        .order("title", { ascending: true });
+    } else {
+      fallbackQuery = fallbackQuery
+        .order("image_url", { ascending: true, nullsFirst: false })
+        .order("google_user_ratings_total", { ascending: false, nullsFirst: false })
+        .order("title", { ascending: true });
+    }
     if (region && region.trim()) {
       fallbackQuery = fallbackQuery.eq("region", region.trim());
     }
@@ -186,6 +237,21 @@ export async function getSheltersPage(
     if (filters?.baalplads) {
       fallbackQuery = fallbackQuery.filter("geofa_raw->>baalplads", "ilike", "%ja%");
     }
+    if (filters?.gratis) {
+      fallbackQuery = fallbackQuery.filter("geofa_raw->>betaling", "eq", "Nej");
+    }
+    if (filters?.handicap) {
+      fallbackQuery = fallbackQuery.or("geofa_raw->>handicap.eq.Handicapegnet,geofa_raw->>handicap.eq.Delvist handicapegnet");
+    }
+    if (filters?.bord_baenk) {
+      fallbackQuery = fallbackQuery.filter("geofa_raw->>bord_baenk", "eq", "Ja");
+    }
+    if (filters?.strand) {
+      fallbackQuery = fallbackQuery.filter("geofa_raw->>strand_naerhed", "eq", "Ja");
+    }
+    if (filters?.bruser) {
+      fallbackQuery = fallbackQuery.filter("geofa_raw->>bruser_bad", "eq", "Ja");
+    }
     const { data: fallbackData } = await fallbackQuery.range(from, toInclusive);
     let list = (fallbackData as Shelter[]) ?? [];
     if (useBbox && bbox) {
@@ -216,7 +282,10 @@ export async function getSheltersPage(
   }
 
   let list = ((data as Shelter[]) ?? []).slice(0, pageSize);
-  list = [...list].sort(sortByImageAndScore);
+  // Only apply default client sort when using standard sort (server already sorted)
+  if (!sort || sort === "standard") {
+    list = [...list].sort(sortByImageAndScore);
+  }
   return {
     shelters: list,
     hasMore: list.length >= pageSize,

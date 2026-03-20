@@ -261,9 +261,33 @@ export function getFeatures(shelter: Shelter): ShelterFeature[] {
     else out.push({ label: "Betaling", value: payment });
   }
 
+  const toilet = getToilet(shelter);
+  if (toilet === "flush") out.push({ label: "Toilet" });
+  if (toilet === "mulch") out.push({ label: "Muldtoilet" });
+
   const water = getWater(shelter);
   if (water === true) out.push({ label: "Vand" });
   if (water === false) out.push({ label: "Ingen vand" });
+
+  // Bålplads (fra geofa_raw)
+  const baal = getStr(raw, "baalplads");
+  if (baal && baal.toLowerCase().includes("ja")) out.push({ label: "Bålplads" });
+
+  // Bord/bænke (fra geofa_raw)
+  const bb = getStr(raw, "bord_baenk");
+  if (bb && bb.toLowerCase().includes("ja")) out.push({ label: "Bord/bænke" });
+
+  // Hund tilladt (fra geofa_raw)
+  const pets = getPetsAllowed(shelter);
+  if (pets === true) out.push({ label: "Hund tilladt" });
+
+  // Strand nærhed (fra geofa_raw)
+  const strand = getStr(raw, "strand_naerhed");
+  if (strand && strand.toLowerCase().includes("ja")) out.push({ label: "Nær strand" });
+
+  // Bruser/bad (fra geofa_raw)
+  const bruser = getStr(raw, "bruser_bad");
+  if (bruser && bruser.toLowerCase().includes("ja")) out.push({ label: "Bruser/bad" });
 
   const book = getStr(raw, "book");
   if ((book || "").toLowerCase().includes("ja") || shelter.booking_url)

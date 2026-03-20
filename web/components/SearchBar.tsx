@@ -3,14 +3,21 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  Accessibility,
+  Armchair,
   ChevronDown,
+  Dog,
   Droplets,
+  Flame,
+  Gift,
   Image as ImageIcon,
+  ShowerHead,
   Star,
   CheckCircle,
   LayoutGrid,
   List,
   MapPin,
+  Umbrella,
   X,
 } from "lucide-react";
 import type { SoegFilters, SearchSuggestion } from "@/lib/soeg-db";
@@ -30,7 +37,14 @@ const FILTER_OPTIONS: {
   icon: React.ReactNode;
 }[] = [
   { key: "vand", label: "Vand", icon: <Droplets size={15} /> },
-  { key: "toilet", label: "Toilet", icon: <span className="text-sm leading-none">🚽</span> },
+  { key: "toilet", label: "Toilet", icon: <Droplets size={15} /> },
+  { key: "baalplads", label: "Bålplads", icon: <Flame size={15} /> },
+  { key: "hund", label: "Hund tilladt", icon: <Dog size={15} /> },
+  { key: "bord_baenk", label: "Bord/bænke", icon: <Armchair size={15} /> },
+  { key: "strand", label: "Strand", icon: <Umbrella size={15} /> },
+  { key: "bruser", label: "Bruser/bad", icon: <ShowerHead size={15} /> },
+  { key: "gratis", label: "Gratis", icon: <Gift size={15} /> },
+  { key: "handicap", label: "Handicapegnet", icon: <Accessibility size={15} /> },
   { key: "bookbar", label: "Bookbar", icon: <CheckCircle size={15} /> },
   { key: "billede", label: "Med billede", icon: <ImageIcon size={15} /> },
   { key: "anmeldelser", label: "Anmeldelser", icon: <Star size={15} /> },
@@ -140,6 +154,11 @@ export function SearchBar({
       if (active.toilet) params.set("toilet", "1");
       if (active.hund) params.set("hund", "1");
       if (active.baalplads) params.set("baalplads", "1");
+      if (active.bord_baenk) params.set("bord_baenk", "1");
+      if (active.strand) params.set("strand", "1");
+      if (active.bruser) params.set("bruser", "1");
+      if (active.gratis) params.set("gratis", "1");
+      if (active.handicap) params.set("handicap", "1");
       const s = params.toString();
       return "/soeg" + (s ? `?${s}` : "");
     },
@@ -373,37 +392,42 @@ export function SearchBar({
 
       {/* Filter chips — shown on search page */}
       {mode === "search" && (
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 -mb-1 scrollbar-hide" role="group" aria-label="Filtrer efter faciliteter">
-          {FILTER_OPTIONS.map(({ key, label, icon }) => {
-            const active = Boolean(filters[key]);
-            return (
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filtrer efter faciliteter">
+            {FILTER_OPTIONS.map(({ key, label, icon }) => {
+              const active = Boolean(filters[key]);
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => toggleFilter(key)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full text-[13px] sm:text-sm font-medium whitespace-nowrap transition-all duration-200 touch-manipulation border ${
+                    active
+                      ? "bg-primary text-white border-primary shadow-sm"
+                      : "bg-white text-primary/70 border-primary/15 hover:border-primary/30 hover:text-primary hover:shadow-sm"
+                  }`}
+                  aria-pressed={active}
+                >
+                  <span className={active ? "text-white" : "text-primary/50"}>{icon}</span>
+                  {label}
+                </button>
+              );
+            })}
+            {activeFilterCount > 0 && (
               <button
-                key={key}
                 type="button"
-                onClick={() => toggleFilter(key)}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 touch-manipulation border ${
-                  active
-                    ? "bg-primary text-white border-primary shadow-sm"
-                    : "bg-white text-primary/70 border-primary/15 hover:border-primary/30 hover:text-primary hover:shadow-sm"
-                }`}
-                aria-pressed={active}
+                onClick={clearAllFilters}
+                className="flex items-center gap-1 px-3 py-1.5 sm:py-2 rounded-full text-[13px] sm:text-sm font-medium text-primary/50 hover:text-primary hover:bg-primary/5 whitespace-nowrap transition-colors touch-manipulation"
+                aria-label="Ryd alle filtre"
               >
-                <span className={active ? "text-white" : "text-primary/50"}>{icon}</span>
-                {label}
+                <X size={14} />
+                Ryd filtre
               </button>
-            );
-          })}
-          {activeFilterCount > 0 && (
-            <button
-              type="button"
-              onClick={clearAllFilters}
-              className="flex items-center gap-1 px-3 py-2 rounded-full text-sm font-medium text-primary/50 hover:text-primary hover:bg-primary/5 whitespace-nowrap transition-colors touch-manipulation"
-              aria-label="Ryd alle filtre"
-            >
-              <X size={14} />
-              Ryd filtre
-            </button>
-          )}
+            )}
+          </div>
+          <p className="text-[11px] sm:text-xs text-primary/40 leading-snug">
+            Facilitetsoversigten er baseret på officielle data og udtræk fra beskrivelser — den kan være ufuldstændig.
+          </p>
         </div>
       )}
     </div>

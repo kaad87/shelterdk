@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { getSheltersPage, SOEG_PAGE_SIZE, type SoegFilters, type MapBbox } from "@/lib/soeg-db";
+import { getSheltersPage, SOEG_PAGE_SIZE, type SoegFilters, type SoegSort, type MapBbox } from "@/lib/soeg-db";
 import { filterSheltersByRegion } from "@/lib/soeg-filters";
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 
@@ -29,6 +29,11 @@ export async function GET(request: NextRequest) {
   if (searchParams.get("toilet") === "1") filters.toilet = true;
   if (searchParams.get("hund") === "1") filters.hund = true;
   if (searchParams.get("baalplads") === "1") filters.baalplads = true;
+  if (searchParams.get("gratis") === "1") filters.gratis = true;
+  if (searchParams.get("handicap") === "1") filters.handicap = true;
+  if (searchParams.get("bord_baenk") === "1") filters.bord_baenk = true;
+  if (searchParams.get("strand") === "1") filters.strand = true;
+  if (searchParams.get("bruser") === "1") filters.bruser = true;
 
   const minLat = parseNum(searchParams.get("minLat"));
   const maxLat = parseNum(searchParams.get("maxLat"));
@@ -43,15 +48,20 @@ export async function GET(request: NextRequest) {
   // også hvis der tidligere var valgt region-filter (fx “Aarhus”). Derfor ignorerer vi region
   // for bbox-forespørgsler.
   const regionForQuery = bbox ? null : region;
+  const sortParam = searchParams.get("sort") as SoegSort | null;
+  const sort: SoegSort | undefined = (sortParam === "rating" || sortParam === "reviews") ? sortParam : undefined;
+  const limitParam = parseInt(searchParams.get("limit") ?? "0", 10);
+  const pageSize = (limitParam > 0 && limitParam <= 500) ? limitParam : SOEG_PAGE_SIZE;
 
   let { shelters, hasMore } = await getSheltersPage(
     regionForQuery,
     q,
     page,
-    SOEG_PAGE_SIZE,
+    pageSize,
     Object.keys(filters).length ? filters : undefined,
     bbox,
-    area
+    area,
+    sort
   );
 
   if (region && !bbox) shelters = filterSheltersByRegion(shelters, region);

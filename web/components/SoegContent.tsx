@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { SearchBar } from "@/components/SearchBar";
 import { ShelterCard } from "@/components/ShelterCard";
 import { ShelterMap, type MapBounds } from "@/components/ShelterMap";
@@ -60,6 +60,45 @@ export function SoegContent({
 
   // Sorting
   const [sortMode, setSortMode] = useState<SortMode>("standard");
+  const prevSortMode = useRef<SortMode>("standard");
+
+  // Re-fetch from page 1 when sort mode changes
+  useEffect(() => {
+    if (sortMode === prevSortMode.current) return;
+    prevSortMode.current = sortMode;
+
+    const params: Record<string, string> = { page: "1" };
+    // Hent flere shelters til kortvisning, så pins ikke forsvinder
+    if (view === "map" || view === "split") params.limit = "200";
+    if (initialRegion != null && initialRegion !== "") params.region = initialRegion;
+    if (initialQuery != null && initialQuery !== "") params.q = initialQuery;
+    if (initialArea != null && initialArea !== "") params.area = initialArea;
+    if (initialFilters?.billede) params.billede = "1";
+    if (initialFilters?.anmeldelser) params.anmeldelser = "1";
+    if (initialFilters?.bookbar) params.bookbar = "1";
+    if (initialFilters?.vand) params.vand = "1";
+    if (initialFilters?.toilet) params.toilet = "1";
+    if (initialFilters?.hund) params.hund = "1";
+    if (initialFilters?.baalplads) params.baalplads = "1";
+    if (initialFilters?.bord_baenk) params.bord_baenk = "1";
+    if (initialFilters?.strand) params.strand = "1";
+    if (initialFilters?.bruser) params.bruser = "1";
+    if (initialFilters?.gratis) params.gratis = "1";
+    if (initialFilters?.handicap) params.handicap = "1";
+    if (sortMode !== "standard") params.sort = sortMode;
+
+    setLoading(true);
+    fetch(`/api/soeg?${new URLSearchParams(params)}`)
+      .then((r) => r.json())
+      .then((data) => {
+        const list: Shelter[] = filterSheltersByRegion(data.shelters ?? [], initialRegion);
+        setShelters(list);
+        setHasMore(Boolean(data.hasMore));
+        setNextPage(2);
+        setListDisplayCount(list.length);
+      })
+      .finally(() => setLoading(false));
+  }, [sortMode, view, initialRegion, initialQuery, initialArea, initialFilters]);
 
   useEffect(() => {
     setView(initialView);
@@ -86,6 +125,12 @@ export function SoegContent({
       if (initialFilters?.toilet) params.toilet = "1";
       if (initialFilters?.hund) params.hund = "1";
       if (initialFilters?.baalplads) params.baalplads = "1";
+      if (initialFilters?.bord_baenk) params.bord_baenk = "1";
+      if (initialFilters?.strand) params.strand = "1";
+      if (initialFilters?.bruser) params.bruser = "1";
+      if (initialFilters?.gratis) params.gratis = "1";
+      if (initialFilters?.handicap) params.handicap = "1";
+      if (sortMode !== "standard") params.sort = sortMode;
       const res = await fetch(`/api/soeg?${new URLSearchParams(params)}`);
       if (!res.ok) return;
       const data = await res.json();
@@ -180,6 +225,12 @@ export function SoegContent({
       if (initialFilters?.toilet) params.toilet = "1";
       if (initialFilters?.hund) params.hund = "1";
       if (initialFilters?.baalplads) params.baalplads = "1";
+      if (initialFilters?.bord_baenk) params.bord_baenk = "1";
+      if (initialFilters?.strand) params.strand = "1";
+      if (initialFilters?.bruser) params.bruser = "1";
+      if (initialFilters?.gratis) params.gratis = "1";
+      if (initialFilters?.handicap) params.handicap = "1";
+      if (sortMode !== "standard") params.sort = sortMode;
       setLoading(true);
       try {
         const res = await fetch(`/api/soeg?${new URLSearchParams(params)}`);
@@ -213,29 +264,9 @@ export function SoegContent({
       })
     : shelters;
 
-  // Apply sorting
-  const sortedShelters = useMemo(() => {
-    if (sortMode === "standard") return visibleShelters;
-    const sorted = [...visibleShelters];
-    if (sortMode === "rating") {
-      sorted.sort((a, b) => (b.google_rating ?? 0) - (a.google_rating ?? 0));
-    } else if (sortMode === "reviews") {
-      sorted.sort((a, b) => (b.google_user_ratings_total ?? 0) - (a.google_user_ratings_total ?? 0));
-    }
-    return sorted;
-  }, [visibleShelters, sortMode]);
-
-  // Also sort for list view
-  const sortedAllShelters = useMemo(() => {
-    if (sortMode === "standard") return shelters;
-    const sorted = [...shelters];
-    if (sortMode === "rating") {
-      sorted.sort((a, b) => (b.google_rating ?? 0) - (a.google_rating ?? 0));
-    } else if (sortMode === "reviews") {
-      sorted.sort((a, b) => (b.google_user_ratings_total ?? 0) - (a.google_user_ratings_total ?? 0));
-    }
-    return sorted;
-  }, [shelters, sortMode]);
+  // Server handles sorting — just use the arrays directly
+  const sortedShelters = visibleShelters;
+  const sortedAllShelters = shelters;
 
   return (
     <div className="space-y-8">
