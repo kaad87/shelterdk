@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { SearchBar } from "@/components/SearchBar";
 import { ShelterCard } from "@/components/ShelterCard";
 import { ShelterMap, type MapBounds } from "@/components/ShelterMap";
@@ -8,6 +9,19 @@ import type { Shelter } from "@/types/shelter";
 import type { SoegFilters } from "@/lib/soeg-db";
 import { filterSheltersByRegion } from "@/lib/soeg-filters";
 import { getLocationCoords } from "@/lib/shelter-detail";
+
+const FILTER_KEYS: (keyof SoegFilters)[] = [
+  "billede", "anmeldelser", "bookbar", "vand", "toilet", "hund",
+  "baalplads", "bord_baenk", "strand", "bruser", "gratis", "handicap",
+];
+
+function parseFiltersFromParams(sp: URLSearchParams): SoegFilters {
+  const f: SoegFilters = {};
+  for (const k of FILTER_KEYS) {
+    if (sp.get(k) === "1") (f as Record<string, boolean>)[k] = true;
+  }
+  return f;
+}
 
 type ViewMode = "list" | "map" | "split";
 type SortMode = "standard" | "rating" | "reviews";
@@ -38,6 +52,11 @@ export function SoegContent({
   initialFilters = {},
   view: initialView,
 }: SoegContentProps) {
+  const searchParams = useSearchParams();
+  const urlFilters = useMemo(() => parseFiltersFromParams(searchParams), [searchParams]);
+  const urlHasFilters = Object.values(urlFilters).some(Boolean);
+  const effectiveFilters = urlHasFilters ? urlFilters : initialFilters;
+
   const [shelters, setShelters] = useState<Shelter[]>(() =>
     filterSheltersByRegion(initialShelters, initialRegion)
   );
@@ -62,20 +81,19 @@ export function SoegContent({
   const [sortMode, setSortMode] = useState<SortMode>("standard");
   const prevSortMode = useRef<SortMode>("standard");
 
-  // Helper: build API params for current filters/sort/view
+  // Helper: build API params for current filters/sort/view (URL filters win in prod to fix cache)
   const buildApiParams = useCallback((extraParams?: Record<string, string>) => {
     const params: Record<string, string> = { page: "1", ...extraParams };
     if (view === "map" || view === "split") params.limit = "200";
     if (initialRegion != null && initialRegion !== "") params.region = initialRegion;
     if (initialQuery != null && initialQuery !== "") params.q = initialQuery;
     if (initialArea != null && initialArea !== "") params.area = initialArea;
-    const filterKeys: (keyof SoegFilters)[] = ["billede", "anmeldelser", "bookbar", "vand", "toilet", "hund", "baalplads", "bord_baenk", "strand", "bruser", "gratis", "handicap"];
-    for (const k of filterKeys) {
-      if (initialFilters?.[k]) params[k] = "1";
+    for (const k of FILTER_KEYS) {
+      if (effectiveFilters?.[k]) params[k] = "1";
     }
     if (sortMode !== "standard") params.sort = sortMode;
     return params;
-  }, [view, initialRegion, initialQuery, initialArea, initialFilters, sortMode]);
+  }, [view, initialRegion, initialQuery, initialArea, effectiveFilters, sortMode]);
 
   // Fetch page 1 from API and replace shelters
   const fetchPage1 = useCallback((params: Record<string, string>) => {
@@ -92,8 +110,8 @@ export function SoegContent({
       .finally(() => setLoading(false));
   }, [initialRegion]);
 
-  // On mount: if filters are active, re-fetch from API to avoid stale ISR cache
-  const hasActiveFilters = initialFilters && Object.values(initialFilters).some(Boolean);
+  // On mount: if URL or server indicates filters, refetch to avoid stale ISR/cache in production
+  const hasActiveFilters = effectiveFilters && Object.values(effectiveFilters).some(Boolean);
   const didInitialFetch = useRef(false);
   useEffect(() => {
     if (!hasActiveFilters || didInitialFetch.current) return;
@@ -251,7 +269,7 @@ export function SoegContent({
         initialRegion={initialRegion}
         initialQuery={initialQuery}
         initialArea={initialArea}
-        initialFilters={initialFilters}
+        initialFilters={effectiveFilters}
         view={view}
         onViewChange={handleViewChange}
       />
