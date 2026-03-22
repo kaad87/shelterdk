@@ -2,6 +2,31 @@ import { createPublicClient } from "@/utils/supabase/server-public";
 import type { Shelter } from "@/types/shelter";
 import { getLocationCoords, getDisplayScore, hasAnyImage } from "@/lib/shelter-detail";
 
+/**
+ * Geografiske synonymer: søgeord → kommuner/byer i databasen.
+ * Genereret automatisk fra shelter-koordinater og bounding boxes.
+ */
+const SEARCH_SYNONYMS: Record<string, string[]> = {
+  "sønderjylland": ["Abild","Bevtoft","Branderup","Bredebro","Brøns","Egernsund","Genner","Gråsten","Guderup","Haderslev","Hammelev","Hejsager Strand","Hellevad","Hjordkær","Holbøl","Hoptrup","Husum-Ballum","Kollund","Kruså","Møgeltønder","Nordborg","Rens","Sommersted","Sønderborg","Tønder","Vedsted","Visby","Øster Højst","Aabenraa","Årøsund"],
+  "nordjylland": ["Aggersund","Astrup","Aså","Birkelse","Bonderup","Brovst","Brønderslev","Erslev","Fjerritslev","Frederikshavn","Gandrup","Gærum","Halvrimmen","Hanstholm","Hjørring","Hou","Hundelev","Ingstrup","Jammerbugt","Klitmøller","Kvissel","Lyngså","Læsø","Løgstør","Mosbjerg","Præstbro","Rebild","Saltum","Sindal","Skovsgård","Støvring","Thisted","Thorup Strand","Tranum","Tversted","Tylstrup","Vadum","Vegger","Vestervig","Vilsted","Vilsund Vest","Vindblæs","Vodskov","Øster Hornum","Østervrå","Aabybro","Aalborg","Ålbæk","Aars"],
+  "midtjylland": ["Allingåbro","Arden","Bjerregrav","Bjerringbro","Bork Havn","Borris","Bruunshåb","Brædstrup","Bur","Bækmarksbro","Durup","Ebeltoft","Engesvang","Farsø","Fasterholt","Favrskov","Feldborg","Filskov","Gedsted","Givskud","Gjerlev","Gjesing","Glesborg","Glyngøre","Grindsted","Grønbjerg","Gylling","Hadsund","Hald","Hammel","Harridslev","Hatting","Haverslev","Havnstrup","Herning","Hinnerup","Hobro","Hodsager","Holstebro","Horsens","Hvide Sande","Hvilsom","Hørby","Idom Kirkeby","Ikast-Brande","Karup","Kibæk","Kjellerup","Klejtrup","Kloster","Knebel","Kragelund","Kølkær","Lemming","Lemvig","Lisbjerg","Mariagerfjord","Mejrup Kirkeby","Mellerup","Mesing","Morsø","Møldrup","Nordby","Norddjurs","Norup","Nørre Lyngvig","Nørre Snede","Odder","Randers","Rask Mølle","Ringkøbing","Ringkøbing-Skjern","Roslev","Rødding","Rønde","Samsø","Sejs","Silkeborg","Simmelkær","Skanderborg","Skarrild","Skelhøje","Skibbild","Skive","Skjern","Skødstrup","Sorring","Stakroge","Stauning","Stjær","Struer","Syddjurs","Sønder Felding","Sønder Nissum","Sønder Omme","Tarm","Thorsager","Thyborøn","Tim","Torrild","Tranbjerg","Uglev","Ulstrup","Valsgård","Velling","Vemb","Venø By","Vesthimmerlands","Viborg","Vinderup","Virksund","Voerladegård","Vrads","Vridsted","Ydby","Aale","Aalestrup","Aarhus","Årslev"],
+  "vestjylland": ["Agerbæk","Ansager","Bork Havn","Borris","Bur","Bækmarksbro","Feldborg","Glyngøre","Grimstrup","Grønbjerg","Hodsager","Holstebro","Hovborg","Hvide Sande","Idom Kirkeby","Kibæk","Kloster","Lemvig","Mejrup Kirkeby","Nordenskov","Nørre Lyngvig","Nørre Nebel","Ringkøbing","Ringkøbing-Skjern","Sig","Skarrild","Skibbild","Skjern","Stakroge","Stauning","Struer","Sønder Felding","Sønder Nissum","Sønder Omme","Tarm","Thyborøn","Tim","Varde","Vejrup","Velling","Vemb","Venø By","Vester Nebel","Vinderup","Årre"],
+  "østjylland": ["Allingåbro","Arden","Bjerregrav","Bjerringbro","Brædstrup","Ebeltoft","Favrskov","Gjerlev","Gjesing","Glesborg","Gylling","Hadsund","Hammel","Harridslev","Hatting","Haverslev","Hedensted","Hinnerup","Hobro","Horsens","Hvilsom","Hørby","Knebel","Lemming","Lisbjerg","Mariagerfjord","Mellerup","Mesing","Norddjurs","Norup","Odder","Randers","Rask Mølle","Rønde","Samsø","Sejs","Silkeborg","Skanderborg","Skødstrup","Sorring","Stjær","Syddjurs","Thorsager","Torrild","Tranbjerg","Ulstrup","Valsgård","Voerladegård","Aale","Aarhus","Årslev"],
+  "nordsjælland": ["Allerød","Birkerød","Egedal","Fredensborg","Frederikssund","Frederiksværk","Gadevang","Gammel Holte","Gribskov","Græsted","Gurre","Halsnæs","Helsinge","Helsingør","Hillerød","Humlebæk","Hundested","Hørsholm","Kagerup","Kregme","Lyngby-Taarbæk","Mårum","Rudersdal","Skodsborg","Snekkersten","Store Lyngby","Ølstykke"],
+  "sydsjælland": ["Bjæverskov","Bårse","Dalmose","Faxe","Faxe Ladeplads","Flakkebjerg","Gyrstinge","Klippinge","Lellinge","Lundby","Næstved","Ringsted","Rødvig","Slagelse","Sorø","Strøby","Strøby Egede","Vallensved","Vemmedrup","Vemmelev","Vordingborg","Øster Kippinge"],
+  "vestsjælland": ["Dalmose","Flakkebjerg","Gammel Tølløse","Gørlev","Hagested","Holbæk","Kalundborg","Odsherred","Ringsted","Rørby","Slagelse","Sorø","Store Fuglede Stationsby","Ubby","Udby","Vemmelev"],
+  "lolland-falster": ["Errindlev","Gedser","Grænge","Guldborgsund","Holeby","Horslunde","Hunseby","Kettinge","Lolland","Maribo","Nakskov","Nykøbing Falster","Nykøbing Strandhuse","Nørre Alslev","Nørre Vedby","Rødby","Stubbekøbing","Utterslev","Vålse","Øster Kippinge"],
+  "lolland": ["Errindlev","Holeby","Hunseby","Lolland","Maribo","Nakskov","Rødby","Utterslev"],
+  "falster": ["Gedser","Grænge","Guldborgsund","Nykøbing Falster","Nykøbing Strandhuse","Nørre Alslev","Nørre Vedby","Stubbekøbing","Vålse","Øster Kippinge"],
+  "bornholm": ["Gudhjem","Hasle","Nexø","Pedersker","Rø","Rønne","Tejn"],
+  "trekantsområdet": ["Fredericia","Hedensted","Jelling","Kolding","Middelfart","Vejle","Ødis"],
+  "sydfyn": ["Faaborg","Faaborg-Midtfyn","Ollerup","Svendborg","Vester Hæsinge","Ærø","Ærøskøbing"],
+  "nordfyn": ["Bogense","Hasmark Strand","Morud","Nordfyns","Otterup","Søndersø"],
+  "hovedstaden": ["Allerød","Ballerup","Birkerød","Egedal","Fredensborg","Frederikssund","Furesø","Gammel Holte","Gribskov","Halsnæs","Hedehusene","Helsingør","Hillerød","Høje-Taastrup","Hørsholm","Jyllinge","Lyngby-Taarbæk","Roskilde","Rudersdal","Skodsborg","Smørumnedre","Snekkersten","Solrød Strand","Tårnby","Vallensbæk Landsby","Værløse","Ølstykke"],
+  "copenhagen": ["Ballerup","Hedehusene","Høje-Taastrup","Lyngby-Taarbæk","Smørumnedre","Solrød Strand","Tårnby","Vallensbæk Landsby"],
+  "københavn": ["Ballerup","Hedehusene","Høje-Taastrup","Lyngby-Taarbæk","Smørumnedre","Solrød Strand","Tårnby","Vallensbæk Landsby"],
+};
+
 /** Sorter shelters: billede først, derefter score (billeder + anmeldelser), derefter titel. */
 function sortByImageAndScore(a: Shelter, b: Shelter): number {
   const aHas = hasAnyImage(a) ? 1 : 0;
@@ -111,9 +136,16 @@ export async function getSheltersPage(
 
     let orParts = `title.ilike.${pattern},region.ilike.${pattern},kommune.ilike.${pattern},place.ilike.${pattern}`;
     if (matchingAreas && matchingAreas.length > 0) {
-      // Tilføj area_slug matches til OR-filteret
       const areaSlugs = matchingAreas.map((a: { slug: string }) => `area_slug.eq.${a.slug}`).join(",");
       orParts += `,${areaSlugs}`;
+    }
+
+    // Geografiske synonymer: fx "Sønderjylland" → kommuner i det område
+    const synonymKey = term.toLowerCase();
+    const synonymKommuner = SEARCH_SYNONYMS[synonymKey];
+    if (synonymKommuner) {
+      const kommuneParts = synonymKommuner.map((k) => `kommune.eq.${k}`).join(",");
+      orParts += `,${kommuneParts}`;
     }
 
     query = query.or(orParts);
@@ -217,6 +249,11 @@ export async function getSheltersPage(
       let fbOrParts = `title.ilike.${pattern},region.ilike.${pattern},kommune.ilike.${pattern}`;
       if (fbAreas && fbAreas.length > 0) {
         fbOrParts += `,${fbAreas.map((a: { slug: string }) => `area_slug.eq.${a.slug}`).join(",")}`;
+      }
+      const fbSynonymKey = term.toLowerCase();
+      const fbSynonymKommuner = SEARCH_SYNONYMS[fbSynonymKey];
+      if (fbSynonymKommuner) {
+        fbOrParts += `,${fbSynonymKommuner.map((k) => `kommune.eq.${k}`).join(",")}`;
       }
       fallbackQuery = fallbackQuery.or(fbOrParts);
     }
@@ -344,6 +381,18 @@ export async function getSuggestions(prefix: string): Promise<SearchSuggestion[]
 
   const seen = new Set<string>();
   const results: SearchSuggestion[] = [];
+
+  // Geografiske synonymer som forslag (fx "Sønderjylland", "Nordjylland")
+  const lowerTermForSynonym = term.toLowerCase();
+  for (const key of Object.keys(SEARCH_SYNONYMS)) {
+    if (key.startsWith(lowerTermForSynonym) || key.includes(lowerTermForSynonym)) {
+      const displayName = key.charAt(0).toUpperCase() + key.slice(1);
+      if (!seen.has(key)) {
+        seen.add(key);
+        results.push({ name: displayName, type: "område" });
+      }
+    }
+  }
 
   // Byer først (eksakt prefix-match)
   for (const row of (kommuneRes.data as { kommune: string }[]) ?? []) {
