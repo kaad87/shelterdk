@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { CuratedRoutesClient } from "@/components/CuratedRoutesClient";
 import type { CuratedRouteIndex } from "@/types/curated-route";
-import routeIndex from "@/public/data/curated-routes-index.json";
+import routeIndex from "../../../public/data/curated-routes-index.json";
 
 export const metadata: Metadata = {
   title: "Vandreruter med shelters — Udforsk Danmarks bedste vandreruter",
