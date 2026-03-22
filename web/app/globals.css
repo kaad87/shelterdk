@@ -25,3 +25,33 @@ body {
   display: none;
 }
 
+/* Ruteplanner – numbered waypoint markers */
+.waypoint-marker {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #C5A059;
+  color: white;
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2.5px solid white;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+
+/* Ruteplanner – trail name tooltip */
+.trail-tooltip {
+  background: white !important;
+  border: 1px solid rgba(44, 62, 80, 0.1) !important;
+  border-radius: 0.5rem !important;
+  padding: 0.5rem 0.75rem !important;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1) !important;
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
+}
+.trail-tooltip::before {
+  display: none !important;
+}
+

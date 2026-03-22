@@ -26,6 +26,8 @@ export interface Shelter {
   toilet?: "flush" | "mulch" | "none" | "unknown" | null;
   /** Vand på pladsen (vandhane/drikkevand). */
   water?: boolean | null;
+  /** Antal pladser/sovepladser. */
+  capacity?: number | null;
   geofa_raw?: Record<string, unknown> | null;
   created_at?: string;
   updated_at?: string;
