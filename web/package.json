@@ -25,6 +25,7 @@
     "generate:favicon": "node scripts/generate-favicon.js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
     "@supabase/ssr": "^0.5.0",
     "@supabase/supabase-js": "^2.39.0",
     "leaflet": "^1.9.4",
