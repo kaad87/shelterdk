@@ -42,6 +42,8 @@ bookenshelter_captured_debug.json
 bookenshelter_sitemap_scraped.json
 naturstyrelsen_scraped.json
 public/data/trails.json
+public/data/curated-routes-index.json
+public/data/curated-routes.json
 
 # Behold eksempler
 !*.example
