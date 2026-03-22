@@ -27,6 +27,7 @@ const STATIC_PAGES: Array<{
   { path: "/shelter-med-hund", changeFrequency: "weekly", priority: 0.85 },
   { path: "/shelter-med-baalplads", changeFrequency: "weekly", priority: 0.85 },
   { path: "/omraade", changeFrequency: "weekly", priority: 0.8 },
+  { path: "/ruteplanner", changeFrequency: "monthly", priority: 0.5 },
   { path: "/guides", changeFrequency: "weekly", priority: 0.75 },
   { path: "/faq", changeFrequency: "monthly", priority: 0.8 },
   { path: "/privacy", changeFrequency: "monthly", priority: 0.5 },
