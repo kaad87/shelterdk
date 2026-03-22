@@ -41,6 +41,7 @@ geofa_shelters.geojson
 bookenshelter_captured_debug.json
 bookenshelter_sitemap_scraped.json
 naturstyrelsen_scraped.json
+public/data/trails.json
 
 # Behold eksempler
 !*.example
