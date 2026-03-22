@@ -18,6 +18,7 @@ import {
   List,
   MapPin,
   Umbrella,
+  Users,
   X,
 } from "lucide-react";
 import type { SoegFilters, SearchSuggestion } from "@/lib/soeg-db";
@@ -92,7 +93,7 @@ export function SearchBar({
   useEffect(() => {
     setFilters(initialFilters);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialFilters.billede, initialFilters.anmeldelser, initialFilters.bookbar, initialFilters.vand, initialFilters.toilet, initialFilters.hund, initialFilters.baalplads, initialFilters.bord_baenk, initialFilters.strand, initialFilters.bruser, initialFilters.gratis, initialFilters.handicap]);
+  }, [initialFilters.billede, initialFilters.anmeldelser, initialFilters.bookbar, initialFilters.vand, initialFilters.toilet, initialFilters.hund, initialFilters.baalplads, initialFilters.bord_baenk, initialFilters.strand, initialFilters.bruser, initialFilters.gratis, initialFilters.handicap, initialFilters.min_pladser]);
 
   // By-forslag: debounced fetch når brugeren skriver (min. 2 tegn).
   useEffect(() => {
@@ -160,6 +161,7 @@ export function SearchBar({
       if (active.bruser) params.set("bruser", "1");
       if (active.gratis) params.set("gratis", "1");
       if (active.handicap) params.set("handicap", "1");
+      if (active.min_pladser && active.min_pladser > 0) params.set("min_pladser", String(active.min_pladser));
       const s = params.toString();
       return "/soeg" + (s ? `?${s}` : "");
     },
@@ -414,7 +416,30 @@ export function SearchBar({
                 </button>
               );
             })}
-            {activeFilterCount > 0 && (
+            {/* Min. pladser input */}
+            <div className="flex items-center gap-1.5 px-3 py-1 sm:py-1.5 rounded-full border border-primary/15 bg-white text-[13px] sm:text-sm">
+              <Users size={15} className="text-primary/50 shrink-0" />
+              <span className="text-primary/70 whitespace-nowrap">Min.</span>
+              <input
+                type="number"
+                min={0}
+                max={50}
+                placeholder="–"
+                value={filters.min_pladser ?? ""}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value);
+                  const next = { ...filters, min_pladser: val > 0 ? val : undefined };
+                  setFilters(next);
+                  const url = buildSoegUrl(region, query, view, next);
+                  router.push(url);
+                }}
+                className="w-8 bg-transparent text-center text-primary font-medium focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                aria-label="Minimum antal pladser"
+              />
+              <span className="text-primary/70 whitespace-nowrap">pladser</span>
+            </div>
+
+            {(activeFilterCount > 0 || (filters.min_pladser && filters.min_pladser > 0)) && (
               <button
                 type="button"
                 onClick={clearAllFilters}

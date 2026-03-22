@@ -240,29 +240,37 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
               <ShareButtons title={shelter.title} url={`/shelter/${slug}`} />
             </div>
 
-            {features.length > 0 && (
-              <section className="mb-10">
-                <h2 className="font-serif text-xl font-bold text-primary mb-4">
-                  Faciliteter
-                </h2>
-                <div className="flex flex-wrap gap-2">
-                  {features.map((f, i) => (
-                    <div
-                      key={i}
-                      className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm text-primary"
-                    >
-                      <Check size={16} className="text-accent shrink-0" />
-                      <span>
-                        {f.label}
-                        {f.value != null && f.value !== "" && (
-                          <span className="text-primary/80"> · {f.value}</span>
-                        )}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
+            <section className="mb-10">
+              {features.length > 0 && (
+                <>
+                  <h2 className="font-serif text-xl font-bold text-primary mb-4">
+                    Faciliteter
+                  </h2>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {features.map((f, i) => (
+                      <div
+                        key={i}
+                        className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm text-primary"
+                      >
+                        <Check size={16} className="text-accent shrink-0" />
+                        <span>
+                          {f.label}
+                          {f.value != null && f.value !== "" && (
+                            <span className="text-primary/80"> · {f.value}</span>
+                          )}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+
+            </section>
+
+            <div className="mb-6">
+              <CommunityContributionPanel slug={slug} />
+              <CommunityApprovedSection slug={slug} shelter={shelter} />
+            </div>
 
             {facilityLinks.length > 0 && (
               <div className="mb-8 flex flex-wrap gap-2">
@@ -277,8 +285,6 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                 ))}
               </div>
             )}
-
-            <CommunityApprovedSection slug={slug} shelter={shelter} />
 
             {displayDescription && (
               <section className="mb-10">
@@ -339,8 +345,6 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
 
             {/* Mobile: show booking above reviews (aside moves below on mobile) */}
             <BookingCard className="mb-10 lg:hidden" />
-
-            <CommunityContributionPanel slug={slug} />
 
             {showReviews && reviews.length > 0 && (
               <section className="mb-10">

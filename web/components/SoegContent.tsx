@@ -20,6 +20,8 @@ function parseFiltersFromParams(sp: URLSearchParams): SoegFilters {
   for (const k of FILTER_KEYS) {
     if (sp.get(k) === "1") (f as Record<string, boolean>)[k] = true;
   }
+  const mp = parseInt(sp.get("min_pladser") ?? "0", 10);
+  if (mp > 0) f.min_pladser = mp;
   return f;
 }
 
@@ -54,7 +56,7 @@ export function SoegContent({
 }: SoegContentProps) {
   const searchParams = useSearchParams();
   const urlFilters = useMemo(() => parseFiltersFromParams(searchParams), [searchParams]);
-  const urlHasFilters = Object.values(urlFilters).some(Boolean);
+  const urlHasFilters = Object.values(urlFilters).some(v => v != null && v !== false && v !== 0);
   const effectiveFilters = urlHasFilters ? urlFilters : initialFilters;
 
   const [shelters, setShelters] = useState<Shelter[]>(() =>
@@ -90,6 +92,9 @@ export function SoegContent({
     if (initialArea != null && initialArea !== "") params.area = initialArea;
     for (const k of FILTER_KEYS) {
       if (effectiveFilters?.[k]) params[k] = "1";
+    }
+    if (effectiveFilters?.min_pladser && effectiveFilters.min_pladser > 0) {
+      params.min_pladser = String(effectiveFilters.min_pladser);
     }
     if (sortMode !== "standard") params.sort = sortMode;
     return params;

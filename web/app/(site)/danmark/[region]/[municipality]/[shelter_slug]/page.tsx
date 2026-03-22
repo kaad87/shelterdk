@@ -35,6 +35,7 @@ import {
   getPetsAllowed,
   isValidImageUrl,
   generateFallbackDescription,
+  getFirewood,
 } from "@/lib/shelter-detail";
 import { getShelterFaqItems, faqToJsonLd } from "@/lib/faq";
 import { getAreaBySlug } from "@/lib/area-db";
@@ -275,6 +276,7 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
       googleMapsUrl={googleMapsUrl}
       bookingUrl={bookingUrl}
       bookingFallbackHint={bookingFallbackHint}
+      firewood={getFirewood(shelter)}
       facilityLinks={facilityLinks}
       isBookable={isBookable(shelter)}
       shelterFaqItems={shelterFaqItems}

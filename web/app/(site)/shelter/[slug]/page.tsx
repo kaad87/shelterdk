@@ -25,6 +25,7 @@ import {
   getWater,
   getPetsAllowed,
   isValidImageUrl,
+  getFirewood,
 } from "@/lib/shelter-detail";
 import { slugifySegment } from "@/lib/slug";
 import { NO_KOMMUNE_SLUG } from "@/lib/danmark-silo";
@@ -263,6 +264,7 @@ export default async function ShelterPage({ params }: PageProps) {
       googleMapsUrl={googleMapsUrl}
       bookingUrl={bookingUrl}
       bookingFallbackHint={bookingFallbackHint}
+      firewood={getFirewood(shelter)}
       facilityLinks={facilityLinks}
       isBookable={isBookable(shelter)}
       shelterFaqItems={shelterFaqItems}

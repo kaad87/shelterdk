@@ -34,6 +34,8 @@ export async function GET(request: NextRequest) {
   if (searchParams.get("bord_baenk") === "1") filters.bord_baenk = true;
   if (searchParams.get("strand") === "1") filters.strand = true;
   if (searchParams.get("bruser") === "1") filters.bruser = true;
+  const minPladser = parseInt(searchParams.get("min_pladser") ?? "0", 10);
+  if (minPladser > 0) filters.min_pladser = minPladser;
 
   const minLat = parseNum(searchParams.get("minLat"));
   const maxLat = parseNum(searchParams.get("maxLat"));
