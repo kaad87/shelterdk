@@ -1,43 +1,38 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { createPublicClient } from "@/utils/supabase/server-public";
-import { RoutePlannerClient } from "@/components/RoutePlannerClient";
+import * as fs from "fs";
+import * as path from "path";
+import { CuratedRoutesClient } from "@/components/CuratedRoutesClient";
+import type { CuratedRouteIndex } from "@/types/curated-route";
 
 export const metadata: Metadata = {
-  title: "Ruteplanner - Planlæg din shelter-vandring",
+  title: "Vandreruter med shelters — Udforsk Danmarks bedste vandreruter",
   description:
-    "Planlæg din vandrerute mellem shelters i Danmark. Se vandreruter, beregn afstande og download GPX.",
+    "Udforsk over 200 vandreruter fra Naturstyrelsen med shelters langs vejen. Filtrer efter region og længde, og download GPX til din næste vandretur.",
 };
 
-export default async function RutePlannerPage() {
-  const supabase = createPublicClient();
-
-  const allShelters = [];
-  let from = 0;
-  const BATCH = 1000;
-  while (true) {
-    const { data, error } = await supabase
-      .from("shelters")
-      .select("id, slug, title, location, capacity, water, toilet")
-      .is("duplicate_of_shelter_id", null)
-      .not("location", "is", null)
-      .range(from, from + BATCH - 1);
-
-    if (error || !data || data.length === 0) break;
-    allShelters.push(...data);
-    if (data.length < BATCH) break;
-    from += BATCH;
+function loadRouteIndex(): CuratedRouteIndex[] {
+  try {
+    const filePath = path.join(process.cwd(), "public/data/curated-routes-index.json");
+    const raw = fs.readFileSync(filePath, "utf-8");
+    return JSON.parse(raw);
+  } catch {
+    return [];
   }
+}
+
+export default function RutePlannerPage() {
+  const index = loadRouteIndex();
 
   return (
     <Suspense
       fallback={
         <div className="flex items-center justify-center h-[calc(100vh-4rem)] bg-background">
-          <span className="text-primary/40 text-sm">Indlæser ruteplanner...</span>
+          <span className="text-primary/40 text-sm">Indlæser vandreruter...</span>
         </div>
       }
     >
-      <RoutePlannerClient shelters={allShelters} />
+      <CuratedRoutesClient initialIndex={index} />
     </Suspense>
   );
 }
