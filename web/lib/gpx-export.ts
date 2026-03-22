@@ -45,3 +45,60 @@ export function downloadGpx(waypoints: GpxWaypoint[]): void {
   a.click();
   URL.revokeObjectURL(url);
 }
+
+/**
+ * Generate GPX from a named route with GeoJSON track geometry and shelter waypoints.
+ */
+export function generateRouteGpx(
+  routeName: string,
+  trackGeometry: GeoJSON.MultiLineString | GeoJSON.LineString,
+  shelterWaypoints: GpxWaypoint[]
+): string {
+  const wptElements = shelterWaypoints
+    .map(
+      (w) =>
+        `  <wpt lat="${w.lat}" lon="${w.lon}">\n    <name>${escapeXml(w.name)}</name>\n  </wpt>`
+    )
+    .join("\n");
+
+  const lineArrays =
+    trackGeometry.type === "MultiLineString"
+      ? trackGeometry.coordinates
+      : [trackGeometry.coordinates];
+
+  const trksegs = lineArrays
+    .map((line) => {
+      const pts = line
+        .map(([lon, lat]) => `      <trkpt lat="${lat}" lon="${lon}" />`)
+        .join("\n");
+      return `    <trkseg>\n${pts}\n    </trkseg>`;
+    })
+    .join("\n");
+
+  const parts = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<gpx version="1.1" creator="ShelterDK Ruteplanner" xmlns="http://www.topografix.com/GPX/1/1">',
+  ];
+  if (wptElements) parts.push(wptElements);
+  parts.push(`  <trk>\n    <name>${escapeXml(routeName)}</name>\n${trksegs}\n  </trk>`);
+  parts.push("</gpx>");
+
+  return parts.join("\n");
+}
+
+/** Download GPX for a curated route. */
+export function downloadRouteGpx(
+  routeName: string,
+  slug: string,
+  trackGeometry: GeoJSON.MultiLineString | GeoJSON.LineString,
+  shelterWaypoints: GpxWaypoint[]
+): void {
+  const gpx = generateRouteGpx(routeName, trackGeometry, shelterWaypoints);
+  const blob = new Blob([gpx], { type: "application/gpx+xml" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${slug}.gpx`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
