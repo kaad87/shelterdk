@@ -8,6 +8,7 @@ import { RoutePlannerSidebar } from "./RoutePlannerSidebar";
 import { getLocationCoords } from "@/lib/shelter-detail";
 import { downloadGpx } from "@/lib/gpx-export";
 import type { GpxWaypoint } from "@/lib/gpx-export";
+import { haversineKm, formatDistance } from "@/lib/haversine";
 
 const RoutePlannerMap = dynamic(() => import("./RoutePlannerMap"), {
   ssr: false,
@@ -58,6 +59,7 @@ export function RoutePlannerClient({ shelters }: Props) {
   const [trailData, setTrailData] = useState<Trail[] | null>(null);
   const [trailError, setTrailError] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [sheetExpanded, setSheetExpanded] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -154,6 +156,16 @@ export function RoutePlannerClient({ shelters }: Props) {
     }
   }, [showTrails, trailData, trailError, showToast]);
 
+  const totalKm = useMemo(() => {
+    let sum = 0;
+    for (let i = 1; i < waypoints.length; i++) {
+      const a = getLocationCoords(waypoints[i - 1]);
+      const b = getLocationCoords(waypoints[i]);
+      if (a && b) sum += haversineKm(a.lat, a.lon, b.lat, b.lon);
+    }
+    return sum;
+  }, [waypoints]);
+
   return (
     <div className="flex flex-col md:flex-row h-[calc(100vh-4rem)]">
       <div className="flex-1 h-[60vh] md:h-full">
@@ -167,16 +179,43 @@ export function RoutePlannerClient({ shelters }: Props) {
         />
       </div>
 
-      <div className="w-full md:w-[340px] md:border-l border-primary/10 h-[40vh] md:h-full">
-        <RoutePlannerSidebar
-          waypoints={waypoints}
-          onRemove={handleRemove}
-          onMoveUp={handleMoveUp}
-          onMoveDown={handleMoveDown}
-          onClear={handleClear}
-          onDownloadGpx={handleDownloadGpx}
-          onShare={handleShare}
-        />
+      {/* Sidebar (desktop) / Bottom sheet (mobile) */}
+      <div
+        className={`w-full md:w-[340px] md:border-l border-primary/10 md:h-full transition-all duration-300 ${
+          sheetExpanded ? "h-[50vh]" : "h-auto max-h-[30vh]"
+        } md:max-h-full overflow-hidden`}
+      >
+        {/* Mobile drag handle */}
+        <button
+          onClick={() => setSheetExpanded(!sheetExpanded)}
+          className="md:hidden w-full flex justify-center py-2 bg-white border-t border-primary/10"
+          aria-label={sheetExpanded ? "Skjul panel" : "Vis panel"}
+        >
+          <div className="w-10 h-1 rounded-full bg-primary/20" />
+        </button>
+
+        {/* Mobile collapsed summary */}
+        {!sheetExpanded && waypoints.length > 0 && (
+          <button
+            onClick={() => setSheetExpanded(true)}
+            className="md:hidden w-full px-4 py-2 bg-white text-sm text-primary/60 border-t border-primary/10"
+          >
+            {waypoints.length} shelter{waypoints.length !== 1 ? "s" : ""} &middot;{" "}
+            {formatDistance(totalKm)}
+          </button>
+        )}
+
+        <div className="md:block h-full overflow-auto">
+          <RoutePlannerSidebar
+            waypoints={waypoints}
+            onRemove={handleRemove}
+            onMoveUp={handleMoveUp}
+            onMoveDown={handleMoveDown}
+            onClear={handleClear}
+            onDownloadGpx={handleDownloadGpx}
+            onShare={handleShare}
+          />
+        </div>
       </div>
 
       {toast && (
