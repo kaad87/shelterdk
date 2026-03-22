@@ -12,11 +12,11 @@ import {
 } from "lucide-react";
 import { haversineKm, formatDistance, estimateWalkingHours, formatWalkingTime } from "@/lib/haversine";
 import { getLocationCoords } from "@/lib/shelter-detail";
-import type { Shelter } from "@/types/shelter";
+import type { RoutePlannerShelter } from "@/types/shelter";
 import { useState } from "react";
 
 interface Props {
-  waypoints: Shelter[];
+  waypoints: RoutePlannerShelter[];
   onRemove: (index: number) => void;
   onMoveUp: (index: number) => void;
   onMoveDown: (index: number) => void;

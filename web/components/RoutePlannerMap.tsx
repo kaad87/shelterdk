@@ -13,7 +13,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Route } from "lucide-react";
 import { getLocationCoords } from "@/lib/shelter-detail";
-import type { Shelter } from "@/types/shelter";
+import type { RoutePlannerShelter } from "@/types/shelter";
 
 // Use same icon pattern as existing ShelterMap.tsx
 const DefaultIcon = L.icon({
@@ -60,9 +60,9 @@ interface Trail {
 }
 
 interface Props {
-  shelters: Shelter[];
-  waypoints: Shelter[];
-  onToggleShelter: (shelter: Shelter) => void;
+  shelters: RoutePlannerShelter[];
+  waypoints: RoutePlannerShelter[];
+  onToggleShelter: (shelter: RoutePlannerShelter) => void;
   showTrails: boolean;
   onToggleTrails: () => void;
   trailData: Trail[] | null;
@@ -103,7 +103,7 @@ function MapContent({
         if (!coords) return null;
         return { shelter: s, coords };
       })
-      .filter(Boolean) as { shelter: Shelter; coords: { lat: number; lon: number } }[];
+      .filter(Boolean) as { shelter: RoutePlannerShelter; coords: { lat: number; lon: number } }[];
   }, [shelters]);
 
   return (

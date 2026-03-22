@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import type { Shelter } from "@/types/shelter";
+import type { RoutePlannerShelter } from "@/types/shelter";
 import { RoutePlannerSidebar } from "./RoutePlannerSidebar";
 import { getLocationCoords } from "@/lib/shelter-detail";
 import { downloadGpx } from "@/lib/gpx-export";
@@ -28,7 +28,7 @@ interface Trail {
 const MAX_WAYPOINTS = 20;
 
 interface Props {
-  shelters: Shelter[];
+  shelters: RoutePlannerShelter[];
 }
 
 export function RoutePlannerClient({ shelters }: Props) {
@@ -36,7 +36,7 @@ export function RoutePlannerClient({ shelters }: Props) {
   const router = useRouter();
 
   const shelterBySlug = useMemo(() => {
-    const map = new Map<string, Shelter>();
+    const map = new Map<string, RoutePlannerShelter>();
     for (const s of shelters) map.set(s.slug, s);
     return map;
   }, [shelters]);
@@ -47,11 +47,11 @@ export function RoutePlannerClient({ shelters }: Props) {
     return w
       .split(",")
       .map((slug) => shelterBySlug.get(slug))
-      .filter(Boolean) as Shelter[];
+      .filter(Boolean) as RoutePlannerShelter[];
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const [waypoints, setWaypoints] = useState<Shelter[]>(initialWaypoints);
+  const [waypoints, setWaypoints] = useState<RoutePlannerShelter[]>(initialWaypoints);
   const [showTrails, setShowTrails] = useState(
     searchParams.get("trails") === "on"
   );
@@ -76,7 +76,7 @@ export function RoutePlannerClient({ shelters }: Props) {
   }, []);
 
   const handleToggleShelter = useCallback(
-    (shelter: Shelter) => {
+    (shelter: RoutePlannerShelter) => {
       setWaypoints((prev) => {
         const idx = prev.findIndex((w) => w.id === shelter.id);
         if (idx >= 0) {

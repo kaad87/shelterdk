@@ -192,6 +192,14 @@ export function getAccessDescription(shelter: Shelter): string | null {
   return getStr(RAW(shelter), "tilgaeng_beskriv", "tilgaeng_opl");
 }
 
+/** Bålplads fra geofa_raw. */
+export function getFirewood(shelter: Shelter): boolean | null {
+  const v = (getStr(RAW(shelter), "baalplads") || "").toLowerCase();
+  if (v.includes("ja")) return true;
+  if (v.includes("nej")) return false;
+  return null;
+}
+
 /** Vand på pladsen (vandhane/drikkevand). Foretrækker DB-kolonnen water, ellers geofa_raw.vandhane. */
 export function getWater(shelter: Shelter): boolean | null {
   if (shelter.water === true || shelter.water === false) return shelter.water;
@@ -516,7 +524,7 @@ export function generateFallbackDescription(shelter: Shelter): string | null {
 }
 
 /** Parse location (POINT(lon lat) eller GeoJSON) til { lat, lon } for kortlink. */
-export function getLocationCoords(shelter: Shelter): { lat: number; lon: number } | null {
+export function getLocationCoords(shelter: Pick<Shelter, "location">): { lat: number; lon: number } | null {
   const loc = shelter.location;
   if (!loc) return null;
   if (typeof loc === "object" && loc !== null && "coordinates" in loc) {

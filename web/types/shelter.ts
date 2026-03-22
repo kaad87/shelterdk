@@ -1,3 +1,14 @@
+/** Lightweight shelter type for route planner (minimal DB projection). */
+export interface RoutePlannerShelter {
+  id: string;
+  title: string;
+  slug: string;
+  location: string | null;
+  capacity?: number | null;
+  water?: boolean | null;
+  toilet?: "flush" | "mulch" | "none" | "unknown" | null;
+}
+
 export interface Shelter {
   id: string;
   title: string;
