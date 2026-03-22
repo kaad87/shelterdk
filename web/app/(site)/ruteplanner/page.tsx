@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import * as fs from "fs";
+import * as path from "path";
 import { CuratedRoutesClient } from "@/components/CuratedRoutesClient";
 import type { CuratedRouteIndex } from "@/types/curated-route";
-import routeIndex from "../../../public/data/curated-routes-index.json";
 
 export const metadata: Metadata = {
   title: "Vandreruter med shelters — Udforsk Danmarks bedste vandreruter",
@@ -11,7 +12,14 @@ export const metadata: Metadata = {
 };
 
 export default function RutePlannerPage() {
-  const index = routeIndex as CuratedRouteIndex[];
+  let index: CuratedRouteIndex[] = [];
+  try {
+    const filePath = path.join(process.cwd(), "public/data/curated-routes-index.json");
+    const raw = fs.readFileSync(filePath, "utf-8");
+    index = JSON.parse(raw);
+  } catch {
+    // fallback to empty
+  }
 
   return (
     <Suspense
