@@ -1,23 +1,23 @@
 // scripts/generate-route-descriptions.ts
 /**
- * Generate AI descriptions for curated routes using Claude API.
+ * Generate AI descriptions for curated routes using OpenAI API.
  * Reads curated-routes-index.json, generates descriptions for routes
  * that have empty descriptions, and writes back.
  *
- * Usage: ANTHROPIC_API_KEY=sk-... npx tsx scripts/generate-route-descriptions.ts
+ * Usage: OPENAI_API_KEY=sk-... npx tsx scripts/generate-route-descriptions.ts
  */
 
-import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 import * as fs from "fs";
 import * as path from "path";
 
-const apiKey = process.env.ANTHROPIC_API_KEY;
+const apiKey = process.env.OPENAI_API_KEY;
 if (!apiKey) {
-  console.error("Missing ANTHROPIC_API_KEY env var");
+  console.error("Missing OPENAI_API_KEY env var");
   process.exit(1);
 }
 
-const client = new Anthropic({ apiKey });
+const client = new OpenAI({ apiKey });
 
 const indexPath = path.resolve(__dirname, "../public/data/curated-routes-index.json");
 const fullPath = path.resolve(__dirname, "../public/data/curated-routes.json");
@@ -44,8 +44,8 @@ async function generateDescription(
 ): Promise<string> {
   const topShelters = shelterNames.slice(0, 5).join(", ");
 
-  const resp = await client.messages.create({
-    model: "claude-haiku-4-5-20251001",
+  const resp = await client.chat.completions.create({
+    model: "gpt-4o-mini",
     max_tokens: 200,
     messages: [
       {
@@ -57,8 +57,7 @@ Fokusér på naturoplevelsen og muligheden for overnatning i shelters. Skriv KUN
     ],
   });
 
-  const text = resp.content[0].type === "text" ? resp.content[0].text.trim() : "";
-  return text;
+  return resp.choices[0]?.message?.content?.trim() || "";
 }
 
 function sleep(ms: number) {
@@ -94,14 +93,13 @@ async function main() {
     } catch (err: any) {
       errors++;
       console.error(`Error for "${route.name}": ${err.message}`);
-      // If rate limited, wait longer
       if (err.status === 429) {
         console.log("Rate limited, waiting 30s...");
         await sleep(30000);
       }
     }
 
-    await sleep(200); // Be polite to the API
+    await sleep(100); // Be polite to the API
   }
 
   // Write back
