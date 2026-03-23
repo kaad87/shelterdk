@@ -1,9 +1,11 @@
 // lib/email.ts
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 const FROM_EMAIL = "ShelterDK <onboarding@resend.dev>";
+
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY);
+}
 
 export async function sendContactEmail(opts: {
   toEmail: string;
@@ -15,7 +17,7 @@ export async function sendContactEmail(opts: {
 }) {
   const { toEmail, toName, senderName, senderEmail, message, postTitle } = opts;
 
-  const { error } = await resend.emails.send({
+  const { error } = await getResend().emails.send({
     from: FROM_EMAIL,
     to: toEmail,
     replyTo: senderEmail,

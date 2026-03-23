@@ -11,6 +11,7 @@ const navLinks = [
   { label: "Shelter nær mig", href: "/shelter-naer-mig" },
   { label: "Områder", href: "/omraade" },
   { label: "Ruteplanner", href: "/ruteplanner" },
+  { label: "Turvenner", href: "/turvenner" },
   { label: "FAQ", href: "/faq" },
   { label: "Guides", href: "/guides" },
   { label: "Blog", href: "/blog" },
