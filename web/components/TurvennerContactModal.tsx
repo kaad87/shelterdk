@@ -70,7 +70,7 @@ export function TurvennerContactModal({ post, onClose }: Props) {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-5 sm:p-6">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm sm:max-w-lg p-5 sm:p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-serif text-lg font-bold text-primary">
             Kontakt {post.author_name}
@@ -134,7 +134,7 @@ export function TurvennerContactModal({ post, onClose }: Props) {
               value={form.message}
               onChange={(e) => setForm({ ...form, message: e.target.value })}
               className={`${inputClass} min-h-[100px]`}
-              placeholder="Skriv din besked her..."
+              placeholder="Fortæl kort om dig selv og hvorfor du gerne vil med på turen..."
             />
             <p className="text-xs text-primary/30 mt-1 text-right">
               {form.message.length}/1000

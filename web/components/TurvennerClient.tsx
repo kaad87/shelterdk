@@ -78,10 +78,26 @@ export function TurvennerClient() {
         </div>
       ) : posts.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-primary/40 mb-2">Ingen opslag endnu</p>
-          <p className="text-primary/30 text-sm">
-            Vær den første til at oprette et!
-          </p>
+          {region ? (
+            <>
+              <p className="text-primary/40 mb-2">
+                Ingen opslag i {region} endnu. Prøv en anden region eller vær den første!
+              </p>
+              <button
+                onClick={() => setRegion("")}
+                className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent/90 transition-colors"
+              >
+                Nulstil filter
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="text-primary/40 mb-2">Ingen opslag endnu</p>
+              <p className="text-primary/30 text-sm">
+                Vær den første til at oprette et!
+              </p>
+            </>
+          )}
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">

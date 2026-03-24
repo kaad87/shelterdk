@@ -21,7 +21,7 @@ export function RouteDetail({ route, shelters, onBack, onDownloadGpx, onShare }:
   const handleShare = () => {
     onShare();
     setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+    setTimeout(() => setCopied(false), 3500);
   };
 
   return (

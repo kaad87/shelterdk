@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { GLOBAL_FAQS, faqToJsonLd } from "@/lib/faq";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
+import { FaqAccordion } from "@/components/FaqAccordion";
 
 const PAGE_TITLE = "Ofte stillede spørgsmål om shelters i Danmark | ShelterDK";
 export const metadata: Metadata = {
@@ -40,21 +41,7 @@ export default function FaqPage() {
           </p>
         </header>
 
-        <section className="space-y-10" aria-label="FAQ-liste">
-          {GLOBAL_FAQS.map((item, index) => (
-            <article
-              key={index}
-              className="border-b border-primary/10 pb-10 last:border-0 last:pb-0"
-            >
-              <h2 className="font-serif text-xl font-bold text-primary mb-3">
-                {item.question}
-              </h2>
-              <p className="text-primary/90 leading-relaxed">
-                {item.answer}
-              </p>
-            </article>
-          ))}
-        </section>
+        <FaqAccordion items={GLOBAL_FAQS} />
 
         <section className="mt-12 border-t border-primary/10 pt-8">
           <h2 className="font-serif text-xl font-bold text-primary mb-4">

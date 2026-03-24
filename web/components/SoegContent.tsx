@@ -280,9 +280,19 @@ export function SoegContent({
       />
 
       {shelters.length === 0 && !loading ? (
-        <p className="text-primary/70 py-8">
-          Ingen shelters fundet. Prøv at ændre region eller søgetekst.
-        </p>
+        <div className="text-center py-12">
+          <p className="text-primary/70 text-lg mb-4">
+            Ingen shelters matcher din søgning. Prøv at justere dine filtre eller søg på noget andet.
+          </p>
+          {hasActiveFilters && (
+            <a
+              href={initialRegion ? `/soeg/${encodeURIComponent(initialRegion)}` : "/soeg"}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent/90 transition-colors"
+            >
+              Nulstil filtre
+            </a>
+          )}
+        </div>
       ) : view === "split" ? (
         <div className="grid grid-cols-1 lg:grid-cols-[1fr,minmax(380px,45%)] gap-0 min-h-[70vh] -mx-4 sm:-mx-6 lg:-mx-8">
           <div className="overflow-y-auto lg:max-h-[calc(100vh-12rem)] lg:pr-4 order-1 lg:order-1">
@@ -312,9 +322,12 @@ export function SoegContent({
                 <ShelterCard key={shelter.id} shelter={shelter} />
               ))}
             </div>
-            <div ref={sentinelRef} className="h-4 flex items-center justify-center">
+            <div ref={sentinelRef} className="py-6 flex items-center justify-center gap-2">
               {loading && (
-                <span className="text-primary/60 text-sm">Indlæser flere…</span>
+                <>
+                  <span className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+                  <span className="text-primary/60 text-sm">Indlæser flere shelters...</span>
+                </>
               )}
             </div>
           </div>
@@ -367,9 +380,12 @@ export function SoegContent({
               <ShelterCard key={shelter.id} shelter={shelter} />
             ))}
           </div>
-          <div ref={sentinelRef} className="h-4 flex items-center justify-center">
+          <div ref={sentinelRef} className="py-6 flex items-center justify-center gap-2">
             {loading && (
-              <span className="text-primary/60 text-sm">Indlæser flere…</span>
+              <>
+                <span className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+                <span className="text-primary/60 text-sm">Indlæser flere shelters...</span>
+              </>
             )}
           </div>
         </>

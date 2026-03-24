@@ -308,7 +308,8 @@ export function SearchBar({
             <ul
               id="byer-forslag"
               role="listbox"
-              className="absolute left-0 right-0 top-full z-[100] mt-1 py-1 bg-white border border-primary/10 rounded-xl shadow-lg max-h-60 overflow-auto"
+              aria-live="polite"
+              className="absolute left-0 right-0 top-full z-[100] mt-1 py-1 bg-white border border-primary/10 rounded-xl shadow-lg max-h-[60vh] overflow-y-auto"
             >
               {suggestLoading ? (
                 <li className="px-4 py-2 text-primary/60 text-sm">Henter forslag…</li>

@@ -81,9 +81,22 @@ export function ShelterCard({ shelter, onImageError, href, priority }: ShelterCa
     : embeddedPlaces?.photo_references;
   const photoRef = shelter.google_photo_ref ?? (Array.isArray(embeddedRefs) ? (embeddedRefs?.[0] ?? null) : null);
   const resolvedUrls = getResolvedPhotoUrls(shelter, photoRef);
-  const displayableUrls = resolvedUrls.filter(
-    (u) => u.startsWith("/api/google-photo") || isValidImageUrl(u)
-  );
+  const BROKEN_PATTERNS = [
+    "cookiebot.com",
+    "cookieinformation.com",
+    "pixel",
+    "tracking",
+    "1x1",
+    "spacer.gif",
+    "blank.gif",
+    "transparent.gif",
+  ];
+  const displayableUrls = resolvedUrls.filter((u) => {
+    if (!u.startsWith("/api/google-photo") && !isValidImageUrl(u)) return false;
+    if (!u.trim() || u.trim().length < 10) return false;
+    const lower = u.toLowerCase();
+    return !BROKEN_PATTERNS.some((pat) => lower.includes(pat));
+  });
   const proxiedSrcs = displayableUrls.map(getProxiedImageSrc);
 
   const [cardImageIndex, setCardImageIndex] = useState(0);

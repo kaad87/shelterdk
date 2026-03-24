@@ -19,7 +19,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 export function parseGpxFile(file: File): Promise<ParsedGpx> {
   return new Promise((resolve, reject) => {
     if (file.size > MAX_FILE_SIZE) {
-      reject(new Error("Filen er for stor (maks 5 MB)"));
+      reject(new Error("Filen er for stor (max 5 MB)"));
       return;
     }
 
@@ -41,7 +41,7 @@ export function parseGpxFile(file: File): Promise<ParsedGpx> {
         // Check for XML parse errors
         const parseError = doc.querySelector("parsererror");
         if (parseError) {
-          reject(new Error("Ugyldig GPX-fil (XML-fejl)"));
+          reject(new Error("Ugyldig GPX-fil \u2014 filen kunne ikke l\u00e6ses"));
           return;
         }
 
@@ -73,7 +73,7 @@ export function parseGpxFile(file: File): Promise<ParsedGpx> {
 
         if (points.length === 0) {
           reject(
-            new Error("Ingen rute-data fundet i GPX-filen (ingen trkpt eller rtept)")
+            new Error("Ingen rute-data fundet i GPX-filen. Filen skal indeholde trackpoints.")
           );
           return;
         }

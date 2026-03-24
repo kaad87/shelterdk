@@ -23,6 +23,7 @@ export function TurvennerCreateModal({ onClose, onCreated }: Props) {
   });
   const [creating, setCreating] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // Close on Escape
   const handleKeyDown = useCallback(
@@ -37,9 +38,34 @@ export function TurvennerCreateModal({ onClose, onCreated }: Props) {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
+  function validateFields(): Record<string, string> {
+    const errors: Record<string, string> = {};
+    const name = form.author_name.trim();
+    if (name.length < 2 || name.length > 60) {
+      errors.author_name = "Navn skal være mellem 2 og 60 tegn";
+    }
+    const email = form.author_email.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.author_email = "Indtast en gyldig email";
+    }
+    const titleVal = form.title.trim();
+    if (titleVal.length < 5 || titleVal.length > 100) {
+      errors.title = "Titel skal være mellem 5 og 100 tegn";
+    }
+    const desc = form.description.trim();
+    if (desc.length < 10 || desc.length > 500) {
+      errors.description = "Beskrivelse skal være mellem 10 og 500 tegn";
+    }
+    return errors;
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setMsg(null);
+    const errors = validateFields();
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
     setCreating(true);
     try {
       const res = await fetch("/api/turvenner", {
@@ -79,7 +105,7 @@ export function TurvennerCreateModal({ onClose, onCreated }: Props) {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-5 sm:p-6">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm sm:max-w-lg max-h-[90vh] overflow-y-auto p-5 sm:p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-serif text-xl font-bold text-primary">
             Opret opslag
@@ -110,12 +136,14 @@ export function TurvennerCreateModal({ onClose, onCreated }: Props) {
               type="text"
               required
               value={form.author_name}
-              onChange={(e) =>
-                setForm({ ...form, author_name: e.target.value })
-              }
-              className={inputClass}
+              onChange={(e) => {
+                setForm({ ...form, author_name: e.target.value });
+                if (fieldErrors.author_name) setFieldErrors((prev) => { const { author_name, ...rest } = prev; return rest; });
+              }}
+              className={`${inputClass}${fieldErrors.author_name ? " border-red-400" : ""}`}
               placeholder="Dit navn"
             />
+            {fieldErrors.author_name && <p className="text-xs text-red-500 mt-1">{fieldErrors.author_name}</p>}
           </div>
 
           <div>
@@ -127,12 +155,14 @@ export function TurvennerCreateModal({ onClose, onCreated }: Props) {
               type="email"
               required
               value={form.author_email}
-              onChange={(e) =>
-                setForm({ ...form, author_email: e.target.value })
-              }
-              className={inputClass}
+              onChange={(e) => {
+                setForm({ ...form, author_email: e.target.value });
+                if (fieldErrors.author_email) setFieldErrors((prev) => { const { author_email, ...rest } = prev; return rest; });
+              }}
+              className={`${inputClass}${fieldErrors.author_email ? " border-red-400" : ""}`}
               placeholder="din@email.dk"
             />
+            {fieldErrors.author_email && <p className="text-xs text-red-500 mt-1">{fieldErrors.author_email}</p>}
           </div>
 
           <div>
@@ -140,24 +170,38 @@ export function TurvennerCreateModal({ onClose, onCreated }: Props) {
             <input
               type="text"
               required
+              maxLength={100}
               value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
-              className={inputClass}
+              onChange={(e) => {
+                setForm({ ...form, title: e.target.value });
+                if (fieldErrors.title) setFieldErrors((prev) => { const { title, ...rest } = prev; return rest; });
+              }}
+              className={`${inputClass}${fieldErrors.title ? " border-red-400" : ""}`}
               placeholder="Fx: Weekendtur til Langeland"
             />
+            <div className="flex items-center justify-between mt-1">
+              {fieldErrors.title ? <p className="text-xs text-red-500">{fieldErrors.title}</p> : <span />}
+              <p className="text-xs text-primary/30 text-right">{form.title.length}/100</p>
+            </div>
           </div>
 
           <div>
             <label className={labelClass}>Beskrivelse *</label>
             <textarea
               required
+              maxLength={500}
               value={form.description}
-              onChange={(e) =>
-                setForm({ ...form, description: e.target.value })
-              }
-              className={`${inputClass} min-h-[80px]`}
+              onChange={(e) => {
+                setForm({ ...form, description: e.target.value });
+                if (fieldErrors.description) setFieldErrors((prev) => { const { description, ...rest } = prev; return rest; });
+              }}
+              className={`${inputClass} min-h-[80px]${fieldErrors.description ? " border-red-400" : ""}`}
               placeholder="Beskriv din tur og hvem du leder efter..."
             />
+            <div className="flex items-center justify-between mt-1">
+              {fieldErrors.description ? <p className="text-xs text-red-500">{fieldErrors.description}</p> : <span />}
+              <p className="text-xs text-primary/30 text-right">{form.description.length}/500</p>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">

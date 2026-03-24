@@ -40,6 +40,7 @@ export function ShelterGallery({
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [heroIndex, setHeroIndex] = useState(0);
   const [heroGaveUp, setHeroGaveUp] = useState(false);
+  const [showKeyboardHint, setShowKeyboardHint] = useState(false);
   const hasImages = proxiedUrls.length > 0;
   const mainImageUrl = hasImages && heroIndex < proxiedUrls.length ? proxiedUrls[heroIndex] : null;
   const isGoogleProxyUrl = mainImageUrl?.startsWith("/api/google-photo") ?? false;
@@ -53,6 +54,17 @@ export function ShelterGallery({
       setHeroGaveUp(true);
     }
   };
+
+  // Show keyboard hint for 3 seconds when lightbox opens
+  useEffect(() => {
+    if (lightboxIndex !== null && proxiedUrls.length > 1) {
+      setShowKeyboardHint(true);
+      const timer = setTimeout(() => setShowKeyboardHint(false), 3000);
+      return () => clearTimeout(timer);
+    } else {
+      setShowKeyboardHint(false);
+    }
+  }, [lightboxIndex !== null]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Tastaturstyring, når lightbox er åben
   useEffect(() => {
@@ -249,6 +261,22 @@ export function ShelterGallery({
             unoptimized={isUnoptimizedImageUrl(proxiedUrls[lightboxIndex])}
             onClick={(e) => e.stopPropagation()}
           />
+
+          {/* Keyboard navigation hint */}
+          {proxiedUrls.length > 1 && (
+            <span
+              className={`absolute bottom-6 left-1/2 -translate-x-1/2 text-white/70 text-xs bg-black/50 px-3 py-1.5 rounded-full transition-opacity duration-500 ${
+                showKeyboardHint ? "opacity-100" : "opacity-0 pointer-events-none"
+              }`}
+            >
+              Brug piletaster til at navigere
+            </span>
+          )}
+
+          {/* Aria-live announcement */}
+          <div aria-live="polite" className="sr-only">
+            Billede {lightboxIndex + 1} af {proxiedUrls.length}
+          </div>
         </div>
       )}
     </>

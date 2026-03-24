@@ -32,8 +32,36 @@ export function ShelterNaerMigClient() {
       return;
     }
 
+    // Detect platform for permission-denied instructions
+    function getPlatformPermissionHint(): string {
+      const ua = navigator.userAgent || "";
+      if (/iPad|iPhone|iPod/.test(ua)) {
+        return "På iPhone/iPad: Gå til Indstillinger → Anonymitet & Sikkerhed → Lokalitetstjenester, og slå det til for din browser.";
+      }
+      if (/Android/i.test(ua)) {
+        return "På Android: Gå til Indstillinger → Placering, og tjek at placering er slået til. Gå derefter til App-tilladelser for din browser og tillad placering.";
+      }
+      return "I din browser: Klik på lås-ikonet i adresselinjen og tillad adgang til placering for denne side.";
+    }
+
+    // Timeout fallback: if geolocation takes >15s, abort
+    let settled = false;
+    const timeoutId = setTimeout(() => {
+      if (!settled) {
+        settled = true;
+        setErrorMessage(null);
+        setStatus("error");
+        setErrorMessage(
+          "Det tog for lang tid at finde din placering. Prøv igen eller brug søgefunktionen."
+        );
+      }
+    }, 15000);
+
     navigator.geolocation.getCurrentPosition(
       async (position) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timeoutId);
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
         try {
@@ -59,13 +87,21 @@ export function ShelterNaerMigClient() {
         }
       },
       (err) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timeoutId);
         if (err.code === err.PERMISSION_DENIED) {
+          const hint = getPlatformPermissionHint();
           setErrorMessage(
-            "Vi har brug for din lokation for at vise shelters i nærheden. Tillad adgang til placering i browserindstillingerne og prøv igen."
+            `Vi har brug for din lokation for at vise shelters i nærheden. ${hint}`
           );
         } else if (err.code === err.POSITION_UNAVAILABLE) {
           setErrorMessage(
             "Placering kunne ikke bestemmes. Tjek at GPS/lokation er slået til og prøv igen."
+          );
+        } else if (err.code === err.TIMEOUT) {
+          setErrorMessage(
+            "Det tog for lang tid at finde din placering. Prøv igen eller brug søgefunktionen."
           );
         } else {
           setErrorMessage(
@@ -112,7 +148,15 @@ export function ShelterNaerMigClient() {
           role="alert"
           className="mt-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm"
         >
-          {errorMessage}
+          <p>{errorMessage}</p>
+          {errorMessage.includes("for lang tid") && (
+            <Link
+              href="/soeg"
+              className="inline-block mt-2 text-accent underline hover:text-accent/80"
+            >
+              Gå til søgefunktionen
+            </Link>
+          )}
         </div>
       )}
 
@@ -126,7 +170,14 @@ export function ShelterNaerMigClient() {
           </h2>
           {shelters.length === 0 ? (
             <p className="text-primary/70">
-              Ingen shelters med placering fundet i databasen.
+              Ingen shelters fundet i nærheden. Prøv at{" "}
+              <Link
+                href="/soeg"
+                className="text-accent hover:underline font-medium"
+              >
+                søge efter shelters i hele Danmark
+              </Link>
+              .
             </p>
           ) : (
             <ul className="space-y-3">
