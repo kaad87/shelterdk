@@ -36,7 +36,11 @@ export function TurvennerClient() {
 
   async function handleReport(post: TripPost) {
     if (!confirm("Er du sikker på du vil rapportere dette opslag?")) return;
-    await fetch(`/api/turvenner/${post.slug}/report`, { method: "POST" });
+    const res = await fetch(`/api/turvenner/${post.slug}/report`, { method: "POST" });
+    if (!res.ok) {
+      alert("Kunne ikke rapportere opslaget. Prøv igen.");
+      return;
+    }
     fetchPosts();
   }
 

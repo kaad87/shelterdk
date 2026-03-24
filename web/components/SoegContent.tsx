@@ -211,12 +211,19 @@ export function SoegContent({
     setView(v);
   }, []);
 
+  const boundsAbortRef = useRef<AbortController | null>(null);
+
   const fetchByBounds = useCallback(
     async (bounds: MapBounds) => {
       // Skip the very first bounds report (initial map render) so the list
       // shows all shelters until the user actually interacts with the map.
       boundsReportCount.current += 1;
       if (boundsReportCount.current <= 1) return;
+
+      // Abort any in-flight bounds fetch to prevent stale data overwriting newer data
+      if (boundsAbortRef.current) boundsAbortRef.current.abort();
+      const controller = new AbortController();
+      boundsAbortRef.current = controller;
 
       // Update map bounds so list filters to visible area
       setMapBounds(bounds);
@@ -232,7 +239,7 @@ export function SoegContent({
       });
       setLoading(true);
       try {
-        const res = await fetch(`/api/soeg?${new URLSearchParams(params)}`);
+        const res = await fetch(`/api/soeg?${new URLSearchParams(params)}`, { signal: controller.signal });
         if (!res.ok) return;
         const data = await res.json();
         let list: Shelter[] = filterSheltersByRegion(data.shelters ?? [], initialRegion);
@@ -242,6 +249,9 @@ export function SoegContent({
           const merged = filterSheltersByRegion([...byId.values()], initialRegion);
           return merged.length > 5000 ? merged.slice(0, 5000) : merged;
         });
+      } catch (err: unknown) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        throw err;
       } finally {
         setLoading(false);
       }

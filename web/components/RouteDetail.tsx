@@ -74,7 +74,7 @@ export function RouteDetail({ route, shelters, onBack, onDownloadGpx, onShare }:
               </div>
             </div>
             <span className="text-xs text-primary/40">
-              {formatDistance(shelter.distance_to_trail_km)} fra ruten
+              {formatDistance(shelter.distance_to_trail_km ?? 0)} fra ruten
             </span>
           </div>
         ))}

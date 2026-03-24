@@ -56,6 +56,10 @@ export function TurvennerCreateModal({ onClose, onCreated }: Props) {
     if (desc.length < 10 || desc.length > 500) {
       errors.description = "Beskrivelse skal være mellem 10 og 500 tegn";
     }
+    const spots = Number(form.spots_available);
+    if (!Number.isInteger(spots) || spots < 1 || spots > 10) {
+      errors.spots_available = "Antal pladser skal være mellem 1 og 10";
+    }
     return errors;
   }
 

@@ -64,13 +64,14 @@ export function ShelterGallery({
     } else {
       setShowKeyboardHint(false);
     }
-  }, [lightboxIndex !== null]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [lightboxIndex, proxiedUrls.length]);
 
   // Tastaturstyring, når lightbox er åben
   useEffect(() => {
-    if (lightboxIndex === null || proxiedUrls.length === 0) return;
+    if (proxiedUrls.length === 0) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (lightboxIndex === null) return;
       if (event.key === "Escape") {
         event.preventDefault();
         setLightboxIndex(null);

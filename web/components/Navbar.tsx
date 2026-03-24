@@ -34,6 +34,7 @@ export function Navbar() {
   const [suggestLoading, setSuggestLoading] = useState(false);
   const suggestRef = useRef<HTMLDivElement>(null);
   const fetchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const q = query.trim();
@@ -44,13 +45,20 @@ export function Navbar() {
         clearTimeout(fetchRef.current);
         fetchRef.current = null;
       }
+      if (abortRef.current) {
+        abortRef.current.abort();
+        abortRef.current = null;
+      }
       return;
     }
     if (fetchRef.current) clearTimeout(fetchRef.current);
     fetchRef.current = setTimeout(() => {
       fetchRef.current = null;
+      if (abortRef.current) abortRef.current.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
       setSuggestLoading(true);
-      fetch(`/api/soeg/byer?q=${encodeURIComponent(q)}`)
+      fetch(`/api/soeg/byer?q=${encodeURIComponent(q)}`, { signal: controller.signal })
         .then((r) => r.json())
         .then((arr: unknown) => {
           // Backwards-compat: ældre endpoint kan returnere `string[]` (bynavne)
@@ -76,6 +84,10 @@ export function Navbar() {
     }, 200);
     return () => {
       if (fetchRef.current) clearTimeout(fetchRef.current);
+      if (abortRef.current) {
+        abortRef.current.abort();
+        abortRef.current = null;
+      }
     };
   }, [query]);
 

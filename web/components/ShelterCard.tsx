@@ -200,7 +200,7 @@ export function ShelterCard({ shelter, onImageError, href, priority }: ShelterCa
                 )}
                 {hasToilet && (
                   <span className="flex items-center gap-0.5 text-primary/50 text-[11px]" title="Toilet" role="img" aria-label="Toilet">
-                    <span aria-hidden="true">🚽</span>
+                    <span aria-hidden="true">&#x1F6BD;</span>
                   </span>
                 )}
                 {pets === true && (

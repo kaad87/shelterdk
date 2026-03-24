@@ -23,6 +23,7 @@ export function FaqAccordion({ items }: Props) {
           <article key={index} className="py-0">
             <button
               type="button"
+              id={`faq-question-${index}`}
               onClick={() => toggle(index)}
               className="w-full flex items-center justify-between gap-4 py-5 text-left group"
               aria-expanded={isOpen}
