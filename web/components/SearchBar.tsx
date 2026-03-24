@@ -177,30 +177,18 @@ export function SearchBar({
   };
 
   const handleViewList = () => {
-    if (mode === "search") {
-      onViewChange?.("list");
-      router.push(buildSoegUrl(region, query, "list"), { scroll: false });
-    } else {
-      router.push(buildSoegUrl(region, query, "list"));
-    }
+    onViewChange?.("list");
+    router.push(buildSoegUrl(region, query, "list"), { scroll: false });
   };
 
   const handleViewSplit = () => {
-    if (mode === "search") {
-      onViewChange?.("split");
-      router.push(buildSoegUrl(region, query, "split"), { scroll: false });
-    } else {
-      router.push(buildSoegUrl(region, query, "split"));
-    }
+    onViewChange?.("split");
+    router.push(buildSoegUrl(region, query, "split"), { scroll: false });
   };
 
   const handleViewMap = () => {
-    if (mode === "search") {
-      onViewChange?.("map");
-      router.push(buildSoegUrl(region, query, "map"), { scroll: false });
-    } else {
-      router.push(buildSoegUrl(region, query, "map"));
-    }
+    onViewChange?.("map");
+    router.push(buildSoegUrl(region, query, "map"), { scroll: false });
   };
 
   const toggleFilter = useCallback(
@@ -208,7 +196,7 @@ export function SearchBar({
       const next = { ...filters, [key]: filters[key] ? undefined : true };
       setFilters(next);
       const url = buildSoegUrl(region, query, mode === "search" ? view : "split", next);
-      router.push(url);
+      router.push(url, { scroll: false });
     },
     [filters, region, query, view, mode, buildSoegUrl, router]
   );
@@ -219,7 +207,7 @@ export function SearchBar({
     const next: SoegFilters = {};
     setFilters(next);
     const url = buildSoegUrl(region, query, mode === "search" ? view : "split", next);
-    router.push(url);
+    router.push(url, { scroll: false });
   }, [region, query, view, mode, buildSoegUrl, router]);
 
   return (
@@ -279,7 +267,7 @@ export function SearchBar({
                 setSuggestIndex(-1);
                 inputRef.current?.blur();
                 const url = buildSoegUrl(region, name, mode === "search" ? view : "split", mode === "search" ? filters : undefined);
-                router.push(url);
+                router.push(url, { scroll: false });
               } else if (e.key === "Escape") {
                 setSuggestOpen(false);
                 setSuggestIndex(-1);
@@ -327,7 +315,7 @@ export function SearchBar({
                       setSuggestions([]);
                       inputRef.current?.blur();
                       const url = buildSoegUrl(region, suggestion.name, mode === "search" ? view : "split", mode === "search" ? filters : undefined);
-                      router.push(url);
+                      router.push(url, { scroll: false });
                     }}
                     className={`flex items-center justify-between px-4 py-3 sm:py-2.5 text-base sm:text-sm cursor-pointer touch-manipulation ${i === suggestIndex ? "bg-accent/15 text-primary" : "text-primary hover:bg-primary/5 active:bg-primary/10"}`}
                   >
@@ -432,7 +420,7 @@ export function SearchBar({
                   const next = { ...filters, min_pladser: val > 0 ? val : undefined };
                   setFilters(next);
                   const url = buildSoegUrl(region, query, view, next);
-                  router.push(url);
+                  router.push(url, { scroll: false });
                 }}
                 className="w-8 bg-transparent text-center text-primary font-medium focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 aria-label="Minimum antal pladser"
@@ -452,7 +440,7 @@ export function SearchBar({
               </button>
             )}
           </div>
-          <p className="text-[11px] sm:text-xs text-primary/40 leading-snug">
+          <p className="text-xs text-primary/40 leading-snug">
             Facilitetsoversigten er baseret på officielle data og udtræk fra beskrivelser — den kan være ufuldstændig.
           </p>
         </div>

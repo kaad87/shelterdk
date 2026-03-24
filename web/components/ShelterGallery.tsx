@@ -66,6 +66,14 @@ export function ShelterGallery({
     }
   }, [lightboxIndex, proxiedUrls.length]);
 
+  // Lock body scroll when lightbox is open
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const original = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = original; };
+  }, [lightboxIndex]);
+
   // Tastaturstyring, når lightbox er åben
   useEffect(() => {
     if (proxiedUrls.length === 0) return;

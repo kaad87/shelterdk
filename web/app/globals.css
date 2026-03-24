@@ -14,6 +14,7 @@
 body {
   background-color: var(--background);
   padding-bottom: var(--safe-area-inset-bottom);
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Hide scrollbar for filter chips */

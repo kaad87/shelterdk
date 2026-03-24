@@ -94,6 +94,24 @@ export function CuratedRoutesClient({ initialIndex }: Props) {
     setTimeout(() => setToast(null), 2500);
   }, []);
 
+  // Auto-load full route data on mount so the map shows real route lines
+  // instead of ugly bounding-box rectangles
+  useEffect(() => {
+    if (fullDataRef.current) return;
+    fetch("/data/curated-routes.json")
+      .then((r) => {
+        if (!r.ok) throw new Error("Fetch failed");
+        return r.json();
+      })
+      .then((data: CuratedRouteDataMap) => {
+        fullDataRef.current = data;
+        setRouteDataCache(data);
+      })
+      .catch(() => {
+        // Silently fail — rectangles remain as fallback
+      });
+  }, []);
+
   // Filter + sort
   const filteredRoutes = useMemo(() => {
     let result = routes;

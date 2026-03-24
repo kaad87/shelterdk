@@ -304,8 +304,8 @@ export function SoegContent({
           )}
         </div>
       ) : view === "split" ? (
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr,minmax(380px,45%)] gap-0 min-h-[70vh] -mx-4 sm:-mx-6 lg:-mx-8">
-          <div className="overflow-y-auto lg:max-h-[calc(100vh-12rem)] lg:pr-4 order-1 lg:order-1">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr,minmax(380px,45%)] gap-0 min-h-[600px] lg:min-h-[70vh] -mx-4 sm:-mx-6 lg:-mx-8">
+          <div className="overflow-y-auto lg:max-h-[calc(100vh-12rem)] lg:pr-4 order-2 lg:order-1">
             <div className="flex items-center justify-between mb-4 sticky top-0 bg-background/95 py-2 z-10">
             <p className="text-primary/70 text-sm">
               {visibleShelters.length} shelter{visibleShelters.length !== 1 ? "s" : ""}{" "}
@@ -341,7 +341,7 @@ export function SoegContent({
               )}
             </div>
           </div>
-          <div className="lg:sticky lg:top-24 lg:self-start rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[280px] sm:min-h-[360px] lg:min-h-[420px] h-[50vh] sm:h-[60vh] lg:h-[calc(100vh-8rem)] lg:max-h-[720px] order-2 lg:order-2 mb-6 lg:mb-0 flex flex-col">
+          <div className="lg:sticky lg:top-24 lg:self-start rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[280px] sm:min-h-[360px] lg:min-h-[420px] h-[320px] sm:h-[400px] lg:h-[calc(100vh-8rem)] lg:max-h-[720px] order-1 lg:order-2 mb-4 lg:mb-0 flex flex-col">
             <div className="flex-1 min-h-0 w-full relative">
               <ShelterMap
                 shelters={shelters}
@@ -358,7 +358,7 @@ export function SoegContent({
             Viser {shelters.length} shelter{shelters.length !== 1 ? "s" : ""} på kortet
             {loading && " · opdaterer…"}
           </p>
-          <div className="rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[400px] sm:min-h-[500px] md:min-h-[700px] h-[70vh] sm:h-[80vh] md:h-[85vh] max-h-[1400px] relative">
+          <div className="rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[400px] sm:min-h-[500px] md:min-h-[700px] h-[500px] sm:h-[600px] md:h-[85vh] max-h-[1400px] relative">
             <ShelterMap
               shelters={shelters}
               className="absolute inset-0 w-full h-full"

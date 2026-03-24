@@ -30,7 +30,12 @@ export function TurvennerContactModal({ post, onClose }: Props) {
 
   useEffect(() => {
     document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    const original = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = original;
+    };
   }, [handleKeyDown]);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -60,7 +65,7 @@ export function TurvennerContactModal({ post, onClose }: Props) {
   }
 
   const inputClass =
-    "w-full rounded-lg border border-primary/15 px-3 py-2 text-sm text-primary placeholder:text-primary/30 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent";
+    "w-full rounded-lg border border-primary/15 px-3 py-2.5 text-base sm:text-sm text-primary placeholder:text-primary/30 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent";
   const labelClass = "block text-sm font-medium text-primary/70 mb-1";
 
   return (
@@ -77,7 +82,8 @@ export function TurvennerContactModal({ post, onClose }: Props) {
           </h2>
           <button
             onClick={onClose}
-            className="text-primary/40 hover:text-primary"
+            className="flex items-center justify-center w-10 h-10 -mr-2 rounded-full text-primary/40 hover:text-primary hover:bg-primary/5 transition-colors touch-manipulation"
+            aria-label="Luk"
           >
             <X size={20} />
           </button>

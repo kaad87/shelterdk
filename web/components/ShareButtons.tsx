@@ -45,7 +45,7 @@ export function ShareButtons({ title, url }: ShareButtonsProps) {
       {mounted && typeof navigator !== "undefined" && "share" in navigator && (
         <button
           onClick={handleNativeShare}
-          className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary/5 text-primary/60 hover:bg-primary/10 hover:text-primary transition-colors"
+          className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary/5 text-primary/60 hover:bg-primary/10 hover:text-primary transition-colors touch-manipulation"
           title="Del"
           aria-label="Del"
         >
@@ -54,7 +54,7 @@ export function ShareButtons({ title, url }: ShareButtonsProps) {
       )}
       <button
         onClick={handleCopy}
-        className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary/5 text-primary/60 hover:bg-primary/10 hover:text-primary transition-colors"
+        className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary/5 text-primary/60 hover:bg-primary/10 hover:text-primary transition-colors touch-manipulation"
         title={copied ? "Kopieret!" : "Kopiér link"}
         aria-label="Kopiér link"
       >
@@ -64,7 +64,7 @@ export function ShareButtons({ title, url }: ShareButtonsProps) {
         href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary/5 text-primary/60 hover:bg-[#1877F2]/10 hover:text-[#1877F2] transition-colors"
+        className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary/5 text-primary/60 hover:bg-[#1877F2]/10 hover:text-[#1877F2] transition-colors touch-manipulation"
         title="Del på Facebook"
         aria-label="Del på Facebook"
       >
@@ -74,7 +74,7 @@ export function ShareButtons({ title, url }: ShareButtonsProps) {
         href={`https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary/5 text-primary/60 hover:bg-primary/10 hover:text-primary transition-colors"
+        className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary/5 text-primary/60 hover:bg-primary/10 hover:text-primary transition-colors touch-manipulation"
         title="Del på X/Twitter"
         aria-label="Del på X/Twitter"
       >

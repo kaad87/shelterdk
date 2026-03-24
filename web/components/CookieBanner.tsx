@@ -54,7 +54,7 @@ export function CookieBanner() {
         <div
           role="dialog"
           aria-label="Cookievalg"
-          className="fixed bottom-0 left-0 right-0 z-50 mx-auto max-w-4xl px-4 pb-4 pt-2 sm:px-6 sm:pb-6"
+          className="fixed bottom-0 left-0 right-0 z-50 mx-auto max-w-4xl px-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] pt-2 sm:px-6 sm:pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]"
         >
           <div className="rounded-xl border border-primary/20 bg-white shadow-lg ring-1 ring-black/5">
             <div className="p-4 sm:p-5">
