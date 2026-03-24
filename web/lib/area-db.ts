@@ -23,7 +23,7 @@ export function prepositionForArea(area: { slug: string }): "på" | "i" {
 }
 
 const SHELTER_SELECT =
-  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, water, geofa_raw, display_score";
+  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, water, display_score";
 const EMBED_SHELTER_LIMIT = 500;
 
 /** Hent alle områder (sorteret efter navn). */

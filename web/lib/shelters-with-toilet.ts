@@ -8,7 +8,7 @@ import type { Shelter } from "@/types/shelter";
 import { getDisplayScore, hasAnyImage } from "@/lib/shelter-detail";
 
 const SHELTER_SELECT =
-  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, toilet, geofa_raw, display_score";
+  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, toilet, display_score";
 
 function sortByImageAndScore(a: Shelter, b: Shelter): number {
   const aHas = hasAnyImage(a) ? 1 : 0;
