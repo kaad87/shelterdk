@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { TurvennerClient } from "@/components/TurvennerClient";
 
 export const metadata: Metadata = {
-  title: "Find Turvenner — ShelterDK",
+  title: "Find turvenner — ShelterDK",
   description:
-    "Find makkere til din næste sheltertur. Opret et opslag eller kontakt andre shelter-entusiaster.",
+    "Find makkere til din næste sheltertur. Opret et opslag eller kontakt andre shelter-entusiaster i Danmark.",
   alternates: { canonical: "https://shelterdk.dk/turvenner" },
   openGraph: {
-    title: "Find Turvenner — ShelterDK",
+    title: "Find turvenner — ShelterDK",
     description:
-      "Find makkere til din næste sheltertur. Opret et opslag eller kontakt andre shelter-entusiaster.",
+      "Find makkere til din næste sheltertur. Opret et opslag eller kontakt andre shelter-entusiaster i Danmark.",
     url: "/turvenner",
   },
 };
@@ -27,7 +28,15 @@ export default function TurvennerPage() {
             tag med på andres ture.
           </p>
         </div>
-        <TurvennerClient />
+        <Suspense
+          fallback={
+            <div className="text-center py-12 text-primary/30 text-sm">
+              Indlæser...
+            </div>
+          }
+        >
+          <TurvennerClient />
+        </Suspense>
       </div>
     </div>
   );
