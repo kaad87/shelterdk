@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { MapPin, Leaf, Compass } from "lucide-react";
+import { MapPin, Leaf, Compass, Route, Users } from "lucide-react";
 
 export const metadata: Metadata = {
   title: { absolute: "Om os | ShelterDK" },
@@ -72,6 +72,42 @@ export default function OmOsPage() {
                 Vi bygger på GeoFA og andre offentlige kilder. Billeder og
                 anmeldelser komplementerer dataene, så du kan træffe et godt
                 valg.
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-4">
+            <div className="rounded-full bg-accent/20 p-3 h-fit shrink-0">
+              <Route className="w-6 h-6 text-accent" />
+            </div>
+            <div>
+              <h2 className="font-serif text-xl font-bold text-primary mb-2">
+                Vandreruter
+              </h2>
+              <p className="text-primary/80 leading-relaxed">
+                Udforsk over 200 vandreruter fra Naturstyrelsen med shelters langs vejen.
+                Download GPX-filer eller upload din egen rute i vores{" "}
+                <Link href="/ruteplanner" className="text-accent hover:underline">
+                  ruteplanner
+                </Link>
+                .
+              </p>
+            </div>
+          </div>
+
+          <div className="flex gap-4">
+            <div className="rounded-full bg-accent/20 p-3 h-fit shrink-0">
+              <Users className="w-6 h-6 text-accent" />
+            </div>
+            <div>
+              <h2 className="font-serif text-xl font-bold text-primary mb-2">
+                Turvenner
+              </h2>
+              <p className="text-primary/80 leading-relaxed">
+                Find en makker til din næste sheltertur via vores{" "}
+                <Link href="/turvenner" className="text-accent hover:underline">
+                  turvenner-side
+                </Link>
+                . Opret et opslag eller tag med på andres ture.
               </p>
             </div>
           </div>

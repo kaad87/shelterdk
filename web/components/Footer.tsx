@@ -6,6 +6,8 @@ const footerLinks = [
   { label: "Shelter efter område", href: "/omraade" },
   { label: "Shelter med toilet", href: "/shelter-med-toilet" },
   { label: "Shelter med vand", href: "/shelter-med-vand" },
+  { label: "Vandreruter", href: "/ruteplanner" },
+  { label: "Turvenner", href: "/turvenner" },
   { label: "FAQ", href: "/faq" },
   { label: "Privatliv og cookies", href: "/privacy" },
   { label: "Om os", href: "/om-os" },

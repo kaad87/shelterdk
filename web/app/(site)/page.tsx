@@ -333,6 +333,42 @@ export default async function HomePage() {
       </section>
 
       <section
+        className="py-12 bg-background"
+        id="planlaeg-din-tur"
+        aria-labelledby="heading-planlaeg"
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <h2 id="heading-planlaeg" className="font-serif text-3xl font-bold text-primary mb-8 text-center">
+            Planlæg din sheltertur
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Link
+              href="/ruteplanner"
+              className="group rounded-xl border border-primary/10 bg-white p-6 hover:border-accent/30 hover:shadow-md transition-all"
+            >
+              <h3 className="font-serif text-xl font-bold text-primary mb-2 group-hover:text-accent transition-colors">
+                Vandreruter med shelters
+              </h3>
+              <p className="text-primary/70 text-sm leading-relaxed">
+                Udforsk over 200 vandreruter fra Naturstyrelsen med shelters langs vejen
+              </p>
+            </Link>
+            <Link
+              href="/turvenner"
+              className="group rounded-xl border border-primary/10 bg-white p-6 hover:border-accent/30 hover:shadow-md transition-all"
+            >
+              <h3 className="font-serif text-xl font-bold text-primary mb-2 group-hover:text-accent transition-colors">
+                Find turvenner
+              </h3>
+              <p className="text-primary/70 text-sm leading-relaxed">
+                Find en makker til din næste sheltertur
+              </p>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section
         className="pt-4 pb-12 bg-background"
         id="udforsk-efter-region"
         aria-labelledby="heading-region"

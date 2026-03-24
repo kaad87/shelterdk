@@ -340,6 +340,18 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                   </Link>
                   {" "}– det skal du vide
                 </li>
+                <li>
+                  <Link href="/ruteplanner" className="text-accent hover:underline">
+                    Vandreruter med shelters
+                  </Link>
+                  {" "}– udforsk ruter fra Naturstyrelsen
+                </li>
+                <li>
+                  <Link href="/turvenner" className="text-accent hover:underline">
+                    Find turvenner til din tur
+                  </Link>
+                  {" "}– del oplevelsen med andre
+                </li>
               </ul>
             </section>
 

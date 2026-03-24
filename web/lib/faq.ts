@@ -80,6 +80,16 @@ export const GLOBAL_FAQS: FaqItem[] = [
     answer:
       "Du kan bruge kontaktlinket i menuen eller footeren. Angiv gerne shelterside og hvad der er galt (fx forkert adresse, lukket plads eller manglende bookinglink), så kan vi rette det.",
   },
+  {
+    question: "Hvordan planlægger jeg en vandrerute med shelters?",
+    answer:
+      "På ShelterDK finder du en ruteplanner med over 200 vandreruter fra Naturstyrelsen. Du kan filtrere efter region og længde, se shelters langs ruten og downloade GPX-filer til din GPS eller telefon. Du kan også uploade din egen GPX-fil og finde shelters langs din rute.",
+  },
+  {
+    question: "Kan jeg finde nogen at dele en sheltertur med?",
+    answer:
+      "Ja. På ShelterDK's turvenner-side kan du oprette et opslag eller finde andre der søger en makker til en sheltertur. Du kan filtrere efter region og kontakte andre brugere direkte.",
+  },
 ];
 
 /**

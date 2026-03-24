@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import Link from "next/link";
 import { TurvennerClient } from "@/components/TurvennerClient";
 
 export const metadata: Metadata = {
@@ -37,6 +38,32 @@ export default function TurvennerPage() {
         >
           <TurvennerClient />
         </Suspense>
+
+        <section className="mt-12 pt-8 border-t border-primary/10">
+          <h2 className="font-serif text-lg font-bold text-primary mb-3">
+            Nyttige ressourcer
+          </h2>
+          <ul className="space-y-2 text-sm text-primary/80">
+            <li>
+              <Link href="/soeg" className="text-accent hover:underline">
+                Søg shelters
+              </Link>
+              {" "}– find det perfekte shelter til din tur
+            </li>
+            <li>
+              <Link href="/ruteplanner" className="text-accent hover:underline">
+                Vandreruter med GPX
+              </Link>
+              {" "}– udforsk ruter med shelters langs vejen
+            </li>
+            <li>
+              <Link href="/omraade" className="text-accent hover:underline">
+                Udforsk områder
+              </Link>
+              {" "}– find shelters efter område i Danmark
+            </li>
+          </ul>
+        </section>
       </div>
     </div>
   );

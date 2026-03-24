@@ -12,6 +12,7 @@ import type {
 import type { GpxWaypoint } from "@/lib/gpx-export";
 import type { GpxTrackPoint } from "@/lib/gpx-parser";
 import type { ShelterWithDistance, LightShelter } from "@/lib/shelter-distance";
+import Link from "next/link";
 import { RouteCard } from "./RouteCard";
 import { RouteDetail } from "./RouteDetail";
 import { GpxUploadButton, GpxUploadZone } from "./GpxUpload";
@@ -383,6 +384,32 @@ export function CuratedRoutesClient({ initialIndex }: Props) {
               ))}
             </div>
           )}
+
+          <section className="mt-10 pt-8 border-t border-primary/10">
+            <h2 className="font-serif text-lg font-bold text-primary mb-3">
+              Udforsk mere
+            </h2>
+            <ul className="space-y-2 text-sm text-primary/80">
+              <li>
+                <Link href="/soeg" className="text-accent hover:underline">
+                  Søg alle shelters
+                </Link>
+                {" "}– find shelters på kort og liste
+              </li>
+              <li>
+                <Link href="/turvenner" className="text-accent hover:underline">
+                  Find turvenner
+                </Link>
+                {" "}– del oplevelsen med andre
+              </li>
+              <li>
+                <Link href="/omraade" className="text-accent hover:underline">
+                  Udforsk områder
+                </Link>
+                {" "}– shelters efter område i Danmark
+              </li>
+            </ul>
+          </section>
         </div>
       )}
 

@@ -91,6 +91,16 @@ export default function FaqPage() {
                 → Guides til naturovernatning
               </Link>
             </li>
+            <li>
+              <Link href="/ruteplanner" className="text-accent hover:underline">
+                → Planlæg en vandrerute med shelters
+              </Link>
+            </li>
+            <li>
+              <Link href="/turvenner" className="text-accent hover:underline">
+                → Find nogen at dele en sheltertur med
+              </Link>
+            </li>
           </ul>
         </section>
       </div>
