@@ -10,8 +10,11 @@ import type {
   CuratedRouteDataMap,
 } from "@/types/curated-route";
 import type { GpxWaypoint } from "@/lib/gpx-export";
+import type { GpxTrackPoint } from "@/lib/gpx-parser";
+import type { ShelterWithDistance, LightShelter } from "@/lib/shelter-distance";
 import { RouteCard } from "./RouteCard";
 import { RouteDetail } from "./RouteDetail";
+import { GpxUploadButton, GpxUploadZone } from "./GpxUpload";
 import {
   RouteFilters,
   type RegionFilter,
@@ -53,6 +56,16 @@ export function CuratedRoutesClient({ initialIndex }: Props) {
   const [toast, setToast] = useState<string | null>(null);
   const fullDataRef = useRef<CuratedRouteDataMap | null>(null);
   const mapSectionRef = useRef<HTMLDivElement>(null);
+
+  // GPX Upload state
+  const [uploadMode, setUploadMode] = useState(false);
+  const [uploadedRoute, setUploadedRoute] = useState<GpxTrackPoint[] | null>(null);
+  const [uploadedShelters, setUploadedShelters] = useState<ShelterWithDistance[]>([]);
+  const [uploadRouteName, setUploadRouteName] = useState<string | null>(null);
+  const [uploadState, setUploadState] = useState<"idle" | "parsing" | "loaded" | "error">("idle");
+  const [radiusKm, setRadiusKm] = useState(2);
+  const [allShelters, setAllShelters] = useState<LightShelter[]>([]);
+  const sheltersFetchedRef = useRef(false);
 
   // URL sync — push when selecting/deselecting a route (so browser back works),
   // replace for filter changes (so history doesn't fill with filter tweaks)
@@ -182,6 +195,74 @@ export function CuratedRoutesClient({ initialIndex }: Props) {
     });
   }, [showToast]);
 
+  // Fetch lightweight shelter data for GPX matching (on first upload click)
+  const fetchShelters = useCallback(async () => {
+    if (sheltersFetchedRef.current) return;
+    sheltersFetchedRef.current = true;
+    try {
+      const resp = await fetch("/api/shelters/lightweight");
+      if (!resp.ok) throw new Error("Fetch failed");
+      const data = await resp.json();
+      setAllShelters(data.shelters ?? []);
+    } catch {
+      showToast("Kunne ikke hente shelter-data");
+      sheltersFetchedRef.current = false;
+    }
+  }, [showToast]);
+
+  const handleEnterUploadMode = useCallback(() => {
+    setSelectedSlug(null);
+    setUploadMode(true);
+    fetchShelters();
+  }, [fetchShelters]);
+
+  const handleExitUploadMode = useCallback(() => {
+    setUploadMode(false);
+    setUploadedRoute(null);
+    setUploadedShelters([]);
+    setUploadRouteName(null);
+    setUploadState("idle");
+    setRadiusKm(2);
+  }, []);
+
+  const handleRouteLoaded = useCallback(
+    (points: GpxTrackPoint[], shelters: ShelterWithDistance[], name: string | null) => {
+      setUploadedRoute(points);
+      setUploadedShelters(shelters);
+      setUploadRouteName(name);
+      setUploadState("loaded");
+      mapSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+    },
+    []
+  );
+
+  const handleUploadClear = useCallback(() => {
+    setUploadedRoute(null);
+    setUploadedShelters([]);
+    setUploadRouteName(null);
+    setUploadState("idle");
+  }, []);
+
+  const handleUploadDownload = useCallback(async () => {
+    if (!uploadedRoute || uploadedShelters.length === 0) return;
+    const { generateGpx, downloadGpx } = await import("@/lib/gpx-export");
+    const waypoints: GpxWaypoint[] = uploadedShelters.map((s) => ({
+      name: s.title,
+      lat: s.lat,
+      lon: s.lon,
+    }));
+    // Generate GPX with shelter waypoints
+    const gpxString = generateGpx(waypoints);
+    if (!gpxString) return;
+    const blob = new Blob([gpxString], { type: "application/gpx+xml" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "shelterdk-gpx-shelters.gpx";
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [uploadedRoute, uploadedShelters]);
+
   const selectedRoute = selectedSlug
     ? routes.find((r) => r.slug === selectedSlug) || null
     : null;
@@ -193,12 +274,21 @@ export function CuratedRoutesClient({ initialIndex }: Props) {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4">
-        <h1 className="font-serif text-3xl font-bold text-primary">
-          Vandreruter med shelters
-        </h1>
-        <p className="text-primary/60 text-base mt-2">
-          Udforsk {routes.length} vandreruter fra Naturstyrelsen med shelters langs vejen
-        </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h1 className="font-serif text-3xl font-bold text-primary">
+              Vandreruter med shelters
+            </h1>
+            <p className="text-primary/60 text-base mt-2">
+              {uploadMode
+                ? "Upload din GPX-fil og find shelters langs ruten"
+                : `Udforsk ${routes.length} vandreruter fra Naturstyrelsen med shelters langs vejen`}
+            </p>
+          </div>
+          {!uploadMode && !selectedSlug && (
+            <GpxUploadButton onClick={handleEnterUploadMode} />
+          )}
+        </div>
       </div>
 
       {/* Map */}
@@ -214,12 +304,14 @@ export function CuratedRoutesClient({ initialIndex }: Props) {
             selectedSlug={selectedSlug}
             onRouteClick={handleSelectRoute}
             allRouteData={fullDataRef.current}
+            uploadedRoute={uploadedRoute ?? undefined}
+            uploadedShelters={uploadedShelters.length > 0 ? uploadedShelters : undefined}
           />
         )}
       </div>
 
       {/* Detail overlay (when route selected) */}
-      {selectedRoute && selectedRouteData && (
+      {!uploadMode && selectedRoute && selectedRouteData && (
         <RouteDetail
           route={selectedRoute}
           shelters={selectedRouteData.shelters}
@@ -229,8 +321,32 @@ export function CuratedRoutesClient({ initialIndex }: Props) {
         />
       )}
 
-      {/* Filters + Card grid (when no route selected) */}
-      {!selectedSlug && (
+      {/* GPX Upload mode */}
+      {uploadMode && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <button
+            onClick={handleExitUploadMode}
+            className="text-sm text-accent hover:underline mb-4 inline-block"
+          >
+            &larr; Tilbage til kuraterede ruter
+          </button>
+
+          <GpxUploadZone
+            onRouteLoaded={handleRouteLoaded}
+            onClear={handleUploadClear}
+            onDownload={handleUploadDownload}
+            uploadedShelters={uploadedShelters}
+            uploadState={uploadState}
+            routeName={uploadRouteName}
+            radiusKm={radiusKm}
+            onRadiusChange={setRadiusKm}
+            allShelters={allShelters}
+          />
+        </div>
+      )}
+
+      {/* Filters + Card grid (when no route selected and not in upload mode) */}
+      {!selectedSlug && !uploadMode && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <RouteFilters
             region={region}

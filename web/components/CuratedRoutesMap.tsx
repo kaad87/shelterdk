@@ -9,11 +9,13 @@ import {
   Marker,
   Tooltip,
   Rectangle,
+  Polyline,
   useMap,
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { CuratedRouteIndex, CuratedRouteData } from "@/types/curated-route";
+import type { ShelterWithDistance } from "@/lib/shelter-distance";
 
 const DefaultIcon = L.icon({
   iconUrl: "/leaflet/marker-icon.png",
@@ -59,6 +61,10 @@ interface Props {
   onRouteClick?: (slug: string) => void;
   /** Full route data map for overview rendering (loaded lazily) */
   allRouteData: Record<string, CuratedRouteData> | null;
+  /** Uploaded GPX route points (lat/lon array) */
+  uploadedRoute?: { lat: number; lon: number }[];
+  /** Shelters near the uploaded route */
+  uploadedShelters?: ShelterWithDistance[];
 }
 
 /** Zoom to selected route bounds. */
@@ -216,12 +222,63 @@ function SelectedRoute({ routeData, slug }: { routeData: CuratedRouteData; slug:
   );
 }
 
+const UPLOADED_ROUTE_STYLE = {
+  color: "#3B82F6",
+  weight: 4,
+  opacity: 1,
+};
+
+/** Fit bounds to uploaded GPX route. */
+function FitUploadedBounds({ points }: { points: { lat: number; lon: number }[] }) {
+  const map = useMap();
+  useEffect(() => {
+    if (points.length === 0) return;
+    const bounds = L.latLngBounds(points.map((p) => [p.lat, p.lon] as [number, number]));
+    map.fitBounds(bounds, { padding: [40, 40] });
+  }, [map, points]);
+  return null;
+}
+
+/** Uploaded GPX route: polyline + shelter markers. */
+function UploadedRoute({
+  points,
+  shelters,
+}: {
+  points: { lat: number; lon: number }[];
+  shelters: ShelterWithDistance[];
+}) {
+  const positions: [number, number][] = points.map((p) => [p.lat, p.lon]);
+
+  return (
+    <>
+      <Polyline positions={positions} pathOptions={UPLOADED_ROUTE_STYLE} />
+
+      {shelters.map((shelter) => (
+        <Marker key={shelter.id} position={[shelter.lat, shelter.lon]}>
+          <Tooltip direction="top" offset={[0, -20]}>
+            <div>
+              <div className="text-sm font-medium">{shelter.title}</div>
+              <div className="text-xs text-gray-500">
+                {shelter.distanceKm} km fra ruten
+              </div>
+            </div>
+          </Tooltip>
+        </Marker>
+      ))}
+
+      <FitUploadedBounds points={points} />
+    </>
+  );
+}
+
 export default function CuratedRoutesMap({
   routeIndex,
   routeData,
   selectedSlug,
   onRouteClick,
   allRouteData,
+  uploadedRoute,
+  uploadedShelters,
 }: Props) {
   return (
     <div className="relative w-full h-full">
@@ -250,8 +307,16 @@ export default function CuratedRoutesMap({
           <SelectedRoute routeData={routeData} slug={selectedSlug} />
         )}
 
-        {/* Reset view when deselecting */}
-        <ResetView active={!selectedSlug} />
+        {/* Uploaded GPX route mode */}
+        {uploadedRoute && uploadedRoute.length > 0 && (
+          <UploadedRoute
+            points={uploadedRoute}
+            shelters={uploadedShelters ?? []}
+          />
+        )}
+
+        {/* Reset view when deselecting (only when no uploaded route) */}
+        <ResetView active={!selectedSlug && !uploadedRoute} />
       </MapContainer>
 
       {!selectedSlug && !allRouteData && (
