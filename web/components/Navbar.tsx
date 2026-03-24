@@ -6,7 +6,6 @@ import { Menu, Search, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
 const navLinks = [
-  { label: "Hjem", href: "/" },
   { label: "Søg shelters", href: "/soeg" },
   { label: "Shelter nær mig", href: "/shelter-naer-mig" },
   { label: "Områder", href: "/omraade" },
