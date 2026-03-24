@@ -54,14 +54,25 @@ export function CuratedRoutesClient({ initialIndex }: Props) {
   const fullDataRef = useRef<CuratedRouteDataMap | null>(null);
   const mapSectionRef = useRef<HTMLDivElement>(null);
 
-  // URL sync
+  // URL sync — push when selecting/deselecting a route (so browser back works),
+  // replace for filter changes (so history doesn't fill with filter tweaks)
+  const prevSlugRef = useRef(selectedSlug);
   useEffect(() => {
     const params = new URLSearchParams();
     if (region) params.set("region", region);
     if (length) params.set("laengde", length);
     if (selectedSlug) params.set("rute", selectedSlug);
     const qs = params.toString();
-    router.replace(`/ruteplanner${qs ? `?${qs}` : ""}`, { scroll: false });
+    const url = `/ruteplanner${qs ? `?${qs}` : ""}`;
+
+    const slugChanged = prevSlugRef.current !== selectedSlug;
+    prevSlugRef.current = selectedSlug;
+
+    if (slugChanged) {
+      router.push(url, { scroll: false });
+    } else {
+      router.replace(url, { scroll: false });
+    }
   }, [region, length, selectedSlug, router]);
 
   const showToast = useCallback((msg: string) => {
