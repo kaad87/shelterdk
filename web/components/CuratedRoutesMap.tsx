@@ -36,9 +36,9 @@ const ROUTE_STYLE = {
 };
 
 const OVERVIEW_ROUTE_STYLE = {
-  color: "#C5A059",
-  weight: 2,
-  opacity: 0.5,
+  color: "#E67E22",
+  weight: 3,
+  opacity: 0.7,
   lineCap: "round" as const,
   lineJoin: "round" as const,
 };
@@ -159,10 +159,11 @@ function OverviewRoutes({
               [maxLat, maxLon],
             ]}
             pathOptions={{
-              color: "#C5A059",
-              weight: 1,
-              opacity: 0.3,
-              fillOpacity: 0.05,
+              color: "#2C3E50",
+              weight: 2,
+              opacity: 0.6,
+              fillColor: "#C5A059",
+              fillOpacity: 0.15,
             }}
             eventHandlers={{
               click: () => onRouteClick?.(r.slug),
