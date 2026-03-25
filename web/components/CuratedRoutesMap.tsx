@@ -1,7 +1,7 @@
 // components/CuratedRoutesMap.tsx
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -111,44 +111,45 @@ function OverviewRoutes({
   allRouteData: Record<string, CuratedRouteData> | null;
   onRouteClick?: (slug: string) => void;
 }) {
-  // If full data is loaded, render actual route lines
+  // If full data is loaded, render each route as a Polyline.
+  // We use Polyline instead of GeoJSON because react-leaflet's GeoJSON
+  // component is immutable after mount and doesn't respond to filter changes.
   if (allRouteData) {
-    const geoJsonData: GeoJSON.FeatureCollection = {
-      type: "FeatureCollection" as const,
-      features: routeIndex
-        .filter((r) => allRouteData[r.slug])
-        .map((r) => ({
-          type: "Feature" as const,
-          properties: { slug: r.slug, name: r.name },
-          geometry: allRouteData[r.slug].geometry,
-        })),
-    };
-
     return (
-      <GeoJSON
-        key="overview-routes"
-        data={geoJsonData}
-        style={() => OVERVIEW_ROUTE_STYLE}
-        onEachFeature={(feature, layer) => {
-          if (feature.properties?.name) {
-            layer.bindTooltip(feature.properties.name, {
-              sticky: true,
-              className: "text-sm font-medium",
-            });
-          }
-          layer.on("mouseover", () => {
-            (layer as L.Path).setStyle(OVERVIEW_ROUTE_HOVER);
-          });
-          layer.on("mouseout", () => {
-            (layer as L.Path).setStyle(OVERVIEW_ROUTE_STYLE);
-          });
-          layer.on("click", () => {
-            if (onRouteClick && feature.properties?.slug) {
-              onRouteClick(feature.properties.slug);
+      <>
+        {routeIndex
+          .filter((r) => allRouteData[r.slug])
+          .map((r) => {
+            const geom = allRouteData[r.slug].geometry;
+            // Convert GeoJSON coordinates to Leaflet [lat, lng] positions
+            const positions: [number, number][][] = [];
+            if (geom.type === "LineString") {
+              positions.push(geom.coordinates.map(([lon, lat]: number[]) => [lat, lon] as [number, number]));
+            } else if (geom.type === "MultiLineString") {
+              for (const line of geom.coordinates) {
+                positions.push(line.map(([lon, lat]: number[]) => [lat, lon] as [number, number]));
+              }
             }
-          });
-        }}
-      />
+            return positions.map((pos, i) => (
+              <Polyline
+                key={`route-${r.slug}-${i}`}
+                positions={pos}
+                pathOptions={OVERVIEW_ROUTE_STYLE}
+                eventHandlers={{
+                  mouseover: (e) => {
+                    (e.target as L.Path).setStyle(OVERVIEW_ROUTE_HOVER);
+                    e.target.bindTooltip(r.name, { sticky: true, className: "text-sm font-medium" }).openTooltip();
+                  },
+                  mouseout: (e) => {
+                    (e.target as L.Path).setStyle(OVERVIEW_ROUTE_STYLE);
+                    e.target.closeTooltip();
+                  },
+                  click: () => onRouteClick?.(r.slug),
+                }}
+              />
+            ));
+          })}
+      </>
     );
   }
 

@@ -68,8 +68,15 @@ export function CuratedRoutesClient({ initialIndex }: Props) {
   const [allShelters, setAllShelters] = useState<LightShelter[]>([]);
   const sheltersFetchedRef = useRef(false);
 
-  // URL sync — push when selecting/deselecting a route (so browser back works),
-  // replace for filter changes (so history doesn't fill with filter tweaks)
+  // ── URL ↔ State sync ──────────────────────────────────────────────
+  // Two directions:
+  //   1) State → URL: when user clicks a route/filter, push/replace URL
+  //   2) URL → State: when user clicks browser back/forward, sync state from URL
+  //
+  // We use a ref to track whether *we* caused the URL change (to avoid loops).
+  const pushingRef = useRef(false);
+
+  // (1) State → URL
   const prevSlugRef = useRef(selectedSlug);
   useEffect(() => {
     const params = new URLSearchParams();
@@ -82,12 +89,30 @@ export function CuratedRoutesClient({ initialIndex }: Props) {
     const slugChanged = prevSlugRef.current !== selectedSlug;
     prevSlugRef.current = selectedSlug;
 
+    pushingRef.current = true;
     if (slugChanged) {
       router.push(url, { scroll: false });
     } else {
       router.replace(url, { scroll: false });
     }
   }, [region, length, selectedSlug, router]);
+
+  // (2) URL → State (browser back/forward)
+  const urlSlug = searchParams.get("rute") || null;
+  const urlRegion = (searchParams.get("region") as RegionFilter) || "";
+  const urlLength = (searchParams.get("laengde") as LengthFilter) || "";
+
+  useEffect(() => {
+    // If we just pushed this URL change ourselves, skip the sync back
+    if (pushingRef.current) {
+      pushingRef.current = false;
+      return;
+    }
+    // Browser navigation (back/forward) — sync state from URL
+    setSelectedSlug(urlSlug);
+    setRegion(urlRegion);
+    setLength(urlLength);
+  }, [urlSlug, urlRegion, urlLength]);
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
@@ -318,7 +343,7 @@ export function CuratedRoutesClient({ initialIndex }: Props) {
           </div>
         ) : (
           <CuratedRoutesMap
-            routeIndex={routes}
+            routeIndex={filteredRoutes}
             routeData={selectedRouteData}
             selectedSlug={selectedSlug}
             onRouteClick={handleSelectRoute}
