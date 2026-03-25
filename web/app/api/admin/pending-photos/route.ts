@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { createPublicClient } from "@/utils/supabase/server-public";
+import { createAdminClient } from "@/utils/supabase/server-admin";
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const supabase = createPublicClient();
+  const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("shelter_photo_submissions")
     .select(

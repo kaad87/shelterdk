@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { createPublicClient } from "@/utils/supabase/server-public";
+import { createAdminClient } from "@/utils/supabase/server-admin";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "Mangler submissionId" }, { status: 400 });
   }
 
-  const supabase = createPublicClient();
+  const supabase = createAdminClient();
 
   const { data: sub } = await supabase
     .from("shelter_photo_submissions")

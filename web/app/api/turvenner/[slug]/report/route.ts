@@ -1,6 +1,6 @@
 // app/api/turvenner/[slug]/report/route.ts
 import { NextRequest } from "next/server";
-import { createPublicClient } from "@/utils/supabase/server-public";
+import { createAdminClient } from "@/utils/supabase/server-admin";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +12,7 @@ export async function POST(
   context: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await context.params;
-  const supabase = createPublicClient();
+  const supabase = createAdminClient();
 
   const { data: post, error: fetchError } = await supabase
     .from("trip_posts")

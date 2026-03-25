@@ -1,6 +1,6 @@
 // app/api/turvenner/route.ts
 import { NextRequest } from "next/server";
-import { createPublicClient } from "@/utils/supabase/server-public";
+import { createAdminClient } from "@/utils/supabase/server-admin";
 import {
   validateCreateInput,
   generateSlug,
@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(request: NextRequest) {
   const region = request.nextUrl.searchParams.get("region") || "";
-  const supabase = createPublicClient();
+  const supabase = createAdminClient();
 
   let query = supabase
     .from("trip_posts")
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
     "unknown";
   const ipHash = createHash("sha256").update(ip).digest("hex").slice(0, 16);
 
-  const supabase = createPublicClient();
+  const supabase = createAdminClient();
 
   const oneDayAgo = new Date();
   oneDayAgo.setDate(oneDayAgo.getDate() - 1);

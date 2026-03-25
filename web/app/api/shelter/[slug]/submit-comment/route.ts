@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { createPublicClient } from "@/utils/supabase/server-public";
+import { createAdminClient } from "@/utils/supabase/server-admin";
 import { sanitizeCommentText, sanitizeSubmitterName } from "@/lib/community";
 
 export const dynamic = "force-dynamic";
@@ -8,7 +8,7 @@ async function getAuthUser(request: NextRequest) {
   const authHeader = request.headers.get("authorization") || "";
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
   if (!token) return null;
-  const supabase = createPublicClient();
+  const supabase = createAdminClient();
   const { data, error } = await supabase.auth.getUser(token);
   if (error || !data?.user) return null;
   return data.user;
@@ -41,7 +41,7 @@ export async function POST(
     return Response.json({ error: "Tip skal være mellem 10 og 1500 tegn." }, { status: 400 });
   }
 
-  const supabase = createPublicClient();
+  const supabase = createAdminClient();
   const { data: shelter, error: shelterError } = await supabase
     .from("shelters")
     .select("id")
