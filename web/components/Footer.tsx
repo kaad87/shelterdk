@@ -10,6 +10,7 @@ const footerLinks = [
   { label: "Turvenner", href: "/turvenner" },
   { label: "FAQ", href: "/faq" },
   { label: "Privatliv og cookies", href: "/privacy" },
+  { label: "Vilkår og betingelser", href: "/vilkaar" },
   { label: "Om os", href: "/om-os" },
   { label: "Blog", href: "/blog" },
   { label: "Kontakt", href: "/kontakt" },
@@ -39,7 +40,7 @@ export function Footer() {
             </Link>
             <p className="mt-3 text-white/80 text-sm leading-relaxed max-w-sm">
               Find dit næste shelter i Danmark – ét samlet kort over naturovernatning fra GeoFA,
-              Naturstyrelsen, Book en Shelter og flere. Billeder, anmeldelser og praktisk info.
+              Naturstyrelsen og kommunale kilder. Billeder, anmeldelser og praktisk info.
             </p>
           </div>
 

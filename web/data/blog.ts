@@ -57,7 +57,7 @@ Det er vigtigt at forstå forskellen mellem gratis shelters og bookbare shelters
 - Størst risiko for at være optaget i højsæsonen
 
 **Bookbare shelters:**
-- Kan reserveres via platforme som [Book en Shelter](https://bookenshelter.dk) eller [udinaturen.dk](https://udinaturen.dk)
+- Kan reserveres via [udinaturen.dk](https://udinaturen.dk) eller [book.naturstyrelsen.dk](https://book.naturstyrelsen.dk)
 - Koster typisk et mindre gebyr (ofte 30-100 kr. per nat)
 - Du har pladsen for dig selv eller din gruppe
 - Mere planlægningssikkerhed, især med børn
@@ -571,7 +571,7 @@ Vejret spiller også en stor rolle. Et shelter med tre vægge og tag beskytter m
 
 ## Bookbare vs. først-til-mølle shelters
 
-I Danmark er mange shelters gratis og fungerer efter først-til-mølle-princippet. Det betyder, at du risikerer at ankomme til et optaget shelter – især i sommerens weekender. Hvis du vil være sikker på din plads, kan du vælge et bookbart shelter via [Book en Shelter](https://bookenshelter.dk) eller [udinaturen.dk](https://udinaturen.dk).
+I Danmark er mange shelters gratis og fungerer efter først-til-mølle-princippet. Det betyder, at du risikerer at ankomme til et optaget shelter – især i sommerens weekender. Hvis du vil være sikker på din plads, kan du vælge et bookbart shelter via [udinaturen.dk](https://udinaturen.dk) eller [book.naturstyrelsen.dk](https://book.naturstyrelsen.dk).
 
 Booking er især en god idé når du:
 
@@ -792,7 +792,7 @@ Til ture med børn er det vigtigt at vælge et shelter, der er let tilgængeligt
 - **Bålplads** – børn elsker at lave mad over bål, og det er en aktivitet i sig selv
 - **Vand** – et vandløb, en sø eller havet i nærheden giver timers underholdning
 
-Book altid shelteren på forhånd via [Book en Shelter](https://bookenshelter.dk) eller [udinaturen.dk](https://udinaturen.dk), når du rejser med børn. Der er intet værre end at ankomme med trætte, sultne børn og finde pladsen optaget. Brug vores [sheltersøgning](/soeg) til at finde egnede pladser med de rette faciliteter.
+Book altid shelteren på forhånd via [udinaturen.dk](https://udinaturen.dk) eller [book.naturstyrelsen.dk](https://book.naturstyrelsen.dk), når du rejser med børn. Der er intet værre end at ankomme med trætte, sultne børn og finde pladsen optaget. Brug vores [sheltersøgning](/soeg) til at finde egnede pladser med de rette faciliteter.
 
 ## Aktiviteter der holder børn i gang
 
@@ -895,7 +895,7 @@ Sommerens lange dage giver op til 18 timers dagslys, og nattemperaturen sjælden
 
 Men sommeren bringer også udfordringer:
 
-- **Populære shelters bookes hurtigt** – reserver via [Book en Shelter](https://bookenshelter.dk) mindst 2–3 uger i forvejen
+- **Populære shelters bookes hurtigt** – reserver via [udinaturen.dk](https://udinaturen.dk) mindst 2–3 uger i forvejen
 - **Myg og flåter** – juni og juli er værst. Medbring myggespray med DEET og tjek for flåter dagligt
 - **Varme** – en let sovepose eller blot et lagen kan være nok. Medbring ekstra vand
 - **Solbeskyttelse** – solcreme, kasket og solbriller. Solen kan stå overraskende stærkt selv i skoven
@@ -1206,7 +1206,7 @@ Her er hvad du bør kigge efter:
 - **Bålplads** – et bål er hjertet af en romantisk shelteraften. Tjek at pladsen har en
 - **God adgang** – med mad, vin og ekstra komfort i rygsækken er en kort gåafstand en fordel
 
-Book via [Book en Shelter](https://bookenshelter.dk) eller [udinaturen.dk](https://udinaturen.dk) for at sikre, at I har pladsen helt for jer selv. Der er intet romantisk ved at dele shelter med en gruppe spejdere. Brug vores [sheltersøgning](/soeg) til at finde shelters med de rette faciliteter.
+Book via [udinaturen.dk](https://udinaturen.dk) eller [book.naturstyrelsen.dk](https://book.naturstyrelsen.dk) for at sikre, at I har pladsen helt for jer selv. Der er intet romantisk ved at dele shelter med en gruppe spejdere. Brug vores [sheltersøgning](/soeg) til at finde shelters med de rette faciliteter.
 
 ## Mad der sætter stemningen
 

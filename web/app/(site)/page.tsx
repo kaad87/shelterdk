@@ -279,7 +279,7 @@ export default async function HomePage() {
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-white/90 mb-4">
               Udforsk Danmarks shelters – ét samlet kort over naturovernatning fra
-              Geofa, Naturstyrelsen, Book en Shelter og flere.
+              Geodatastyrelsen, Naturstyrelsen og kommunale kilder.
             </p>
             <div className="flex flex-wrap gap-x-6 gap-y-1 text-white/70 text-sm mb-4">
               <span><strong className="text-white">{shelterCount}+</strong> shelters</span>
@@ -294,9 +294,61 @@ export default async function HomePage() {
         </div>
       </header>
 
+      {/* Redaktionel intro – unik tekst til SEO/AdSense */}
+      <section className="pt-8 pb-4 bg-background" aria-labelledby="heading-intro">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <p className="text-primary/70 text-sm sm:text-base leading-relaxed text-center max-w-2xl mx-auto">
+            ShelterDK samler {shelterCount}+ shelters fra Geodatastyrelsen,
+            Naturstyrelsen og kommunale kilder på ét kort – med billeder,
+            anmeldelser, faciliteter og vejrudsigt.
+          </p>
+          <nav
+            className="mt-4 flex flex-wrap justify-center gap-2"
+            aria-label="Hurtige links"
+          >
+            <Link
+              href="/soeg?bookbar=1"
+              className="rounded-full border border-accent/30 bg-accent/5 px-3.5 py-1.5 text-xs sm:text-sm font-medium text-accent hover:bg-accent/10 transition-colors"
+            >
+              Bookbare shelters
+            </Link>
+            <Link
+              href="/shelter-med-toilet"
+              className="rounded-full border border-primary/15 bg-white px-3.5 py-1.5 text-xs sm:text-sm font-medium text-primary/70 hover:border-accent/30 hover:text-accent transition-colors"
+            >
+              Med toilet
+            </Link>
+            <Link
+              href="/shelter-med-vand"
+              className="rounded-full border border-primary/15 bg-white px-3.5 py-1.5 text-xs sm:text-sm font-medium text-primary/70 hover:border-accent/30 hover:text-accent transition-colors"
+            >
+              Med vand
+            </Link>
+            <Link
+              href="/shelter-med-hund"
+              className="rounded-full border border-primary/15 bg-white px-3.5 py-1.5 text-xs sm:text-sm font-medium text-primary/70 hover:border-accent/30 hover:text-accent transition-colors"
+            >
+              Hundevenlige
+            </Link>
+            <Link
+              href="/shelter-med-baalplads"
+              className="rounded-full border border-primary/15 bg-white px-3.5 py-1.5 text-xs sm:text-sm font-medium text-primary/70 hover:border-accent/30 hover:text-accent transition-colors"
+            >
+              Med bålplads
+            </Link>
+            <Link
+              href="/guides"
+              className="rounded-full border border-primary/15 bg-white px-3.5 py-1.5 text-xs sm:text-sm font-medium text-primary/70 hover:border-accent/30 hover:text-accent transition-colors"
+            >
+              Guides
+            </Link>
+          </nav>
+        </div>
+      </section>
+
       {featuredShelters.length > 0 && (
         <section
-          className="pt-12 pb-8 bg-background"
+          className="pt-8 pb-6 bg-background"
           id="udforsk-shelters"
           aria-labelledby="heading-udforsk-shelters"
         >
@@ -313,7 +365,7 @@ export default async function HomePage() {
       )}
 
       <section
-        className="pt-4 pb-12 bg-background"
+        className="pt-4 pb-8 bg-background"
         id="kort"
         aria-labelledby="heading-kort"
       >
@@ -333,7 +385,7 @@ export default async function HomePage() {
       </section>
 
       <section
-        className="py-12 bg-background"
+        className="py-8 bg-background"
         id="planlaeg-din-tur"
         aria-labelledby="heading-planlaeg"
       >
@@ -369,7 +421,7 @@ export default async function HomePage() {
       </section>
 
       <section
-        className="pt-4 pb-12 bg-background"
+        className="pt-4 pb-8 bg-background"
         id="udforsk-efter-region"
         aria-labelledby="heading-region"
       >
@@ -406,7 +458,7 @@ export default async function HomePage() {
       </section>
 
       <section
-        className="py-16 bg-background"
+        className="py-8 bg-background"
         id="populaere-omraader"
         aria-labelledby="heading-populaere-omraader"
       >

@@ -34,6 +34,7 @@ const STATIC_PAGES: Array<{
   { path: "/blog", changeFrequency: "weekly", priority: 0.7 },
   { path: "/om-os", changeFrequency: "monthly", priority: 0.7 },
   { path: "/kontakt", changeFrequency: "monthly", priority: 0.7 },
+  { path: "/vilkaar", changeFrequency: "monthly", priority: 0.5 },
 ];
 
 function entry(

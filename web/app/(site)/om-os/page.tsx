@@ -5,11 +5,11 @@ import { MapPin, Leaf, Compass, Route, Users } from "lucide-react";
 export const metadata: Metadata = {
   title: { absolute: "Om os | ShelterDK" },
   description:
-    "ShelterDK samler shelters i hele Danmark – GeoFA, Naturstyrelsen, Book en Shelter og mere. Find overnatning i naturen på ét kort.",
+    "ShelterDK samler shelters i hele Danmark – GeoFA, Naturstyrelsen, udinaturen.dk og mere. Find overnatning i naturen på ét kort.",
   alternates: { canonical: "https://shelterdk.dk/om-os" },
   openGraph: {
     title: "Om os | ShelterDK",
-    description: "ShelterDK samler shelters i hele Danmark – GeoFA, Naturstyrelsen, Book en Shelter og mere. Find overnatning i naturen på ét kort.",
+    description: "ShelterDK samler shelters i hele Danmark – GeoFA, Naturstyrelsen, udinaturen.dk og mere. Find overnatning i naturen på ét kort.",
     url: "/om-os",
   },
 };
@@ -24,7 +24,7 @@ export default function OmOsPage() {
 
         <p className="text-primary/90 text-lg leading-relaxed mb-8">
           ShelterDK er et lille projekt der samler shelters fra hele Danmark på
-          ét sted. Vi kobler data fra GeoFA, Naturstyrelsen, Book en Shelter og
+          ét sted. Vi kobler data fra GeoFA, Naturstyrelsen, udinaturen.dk og
           andre kilder – så du kan finde overnatningspladser i naturen med
           billeder, anmeldelser og praktisk info.
         </p>

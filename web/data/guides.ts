@@ -204,7 +204,7 @@ Der er grundlæggende to typer shelters i Danmark:
 
 ### Bookbare shelters
 
-Nogle shelters kan reserveres på forhånd, enten via kommunens bookingsystem eller gennem platforme som Book et Shelter. Det giver tryghed for, at pladsen er ledig, og er særligt en fordel i weekender og ferier.
+Nogle shelters kan reserveres på forhånd, enten via kommunens bookingsystem eller gennem [udinaturen.dk](https://udinaturen.dk). Det giver tryghed for, at pladsen er ledig, og er særligt en fordel i weekender og ferier.
 
 ### Først-til-mølle
 

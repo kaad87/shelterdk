@@ -18,7 +18,7 @@ export const GLOBAL_FAQS: FaqItem[] = [
   {
     question: "Hvor finder jeg shelters i Danmark?",
     answer:
-      "ShelterDK samler shelters fra hele Danmark på ét kort. Du kan søge efter region, by eller område og filtrere på fx bookbare shelters eller dem med billeder og anmeldelser. Data kommer fra GeoFA, Naturstyrelsen, udinaturen.dk og Book en Shelter.",
+      "ShelterDK samler shelters fra hele Danmark på ét kort. Du kan søge efter region, by eller område og filtrere på fx bookbare shelters eller dem med billeder og anmeldelser. Data kommer fra GeoFA, Naturstyrelsen og udinaturen.dk.",
   },
   {
     question: "Er shelters i Danmark gratis?",
@@ -28,7 +28,7 @@ export const GLOBAL_FAQS: FaqItem[] = [
   {
     question: "Kan man booke et shelter i Danmark?",
     answer:
-      "Ja. En del shelters kan bookes på forhånd via udinaturen.dk, book.naturstyrelsen.dk eller Book en Shelter. På ShelterDK kan du filtrere søgningen på «Bookbar» for kun at se shelters med bookingmulighed. Bookbare shelters er særligt anbefalet i højsæsonen.",
+      "Ja. En del shelters kan bookes på forhånd via udinaturen.dk eller book.naturstyrelsen.dk. På ShelterDK kan du filtrere søgningen på «Bookbar» for kun at se shelters med bookingmulighed. Bookbare shelters er særligt anbefalet i højsæsonen.",
   },
   {
     question: "Er der toilet på shelterpladser i Danmark?",
