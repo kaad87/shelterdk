@@ -166,7 +166,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "ShelterDK – Find dit næste shelter i Danmark",
     description: "Udforsk shelters i hele Danmark. Find overnatningspladser i naturen med kort, billeder og anmeldelser.",
-    url: "https://shelterdk.dk",
+    url: "/",
   },
 };
 
@@ -439,7 +439,7 @@ export default async function HomePage() {
                   >
                     <Image
                       src={region.image}
-                      alt=""
+                      alt={`Shelters i ${region.name}`}
                       fill
                       className="object-cover transition-transform duration-300 group-hover:scale-110"
                       sizes="(max-width: 768px) 100vw, 33vw"
@@ -476,7 +476,7 @@ export default async function HomePage() {
                   >
                     <Image
                       src={area.image}
-                      alt=""
+                      alt={`Shelters i ${area.name}`}
                       fill
                       className="object-cover transition-transform duration-300 group-hover:scale-110"
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

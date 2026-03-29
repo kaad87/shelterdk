@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Mail, MessageSquare } from "lucide-react";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 
 export const metadata: Metadata = {
   title: { absolute: "Kontakt | ShelterDK" },
@@ -15,6 +16,8 @@ export const metadata: Metadata = {
 
 export default function KontaktPage() {
   return (
+    <>
+    <BreadcrumbSchema items={[{ label: "Hjem", href: "/" }, { label: "Kontakt" }]} />
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
         <h1 className="font-serif text-4xl font-bold text-primary mb-8">
@@ -71,5 +74,6 @@ export default function KontaktPage() {
         </p>
       </div>
     </div>
+    </>
   );
 }

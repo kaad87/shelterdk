@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 
 export const metadata: Metadata = {
   title: { absolute: "Vilkår og betingelser | ShelterDK" },
@@ -16,6 +17,8 @@ export const metadata: Metadata = {
 
 export default function VilkaarPage() {
   return (
+    <>
+    <BreadcrumbSchema items={[{ label: "Hjem", href: "/" }, { label: "Vilkår og betingelser" }]} />
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
         <header className="mb-12">
@@ -164,5 +167,6 @@ export default function VilkaarPage() {
         </p>
       </div>
     </div>
+    </>
   );
 }

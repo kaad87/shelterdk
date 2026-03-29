@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 
 export const metadata: Metadata = {
   title: { absolute: "Privatliv og cookies | ShelterDK" },
@@ -15,6 +16,8 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
+    <>
+    <BreadcrumbSchema items={[{ label: "Hjem", href: "/" }, { label: "Privatliv og cookies" }]} />
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
         <header className="mb-12">
@@ -90,5 +93,6 @@ export default function PrivacyPage() {
         </p>
       </div>
     </div>
+    </>
   );
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
 import { TurvennerClient } from "@/components/TurvennerClient";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 
 export const metadata: Metadata = {
   title: "Find turvenner — ShelterDK",
@@ -18,6 +19,8 @@ export const metadata: Metadata = {
 
 export default function TurvennerPage() {
   return (
+    <>
+    <BreadcrumbSchema items={[{ label: "Hjem", href: "/" }, { label: "Turvenner" }]} />
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         <div className="mb-8">
@@ -66,5 +69,6 @@ export default function TurvennerPage() {
         </section>
       </div>
     </div>
+    </>
   );
 }

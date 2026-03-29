@@ -107,7 +107,7 @@ export default async function GuidePage({ params }: PageProps) {
         {guide.coverImage && (
           <Image
             src={guide.coverImage}
-            alt=""
+            alt={guide.title}
             fill
             className="object-cover opacity-40"
             sizes="100vw"

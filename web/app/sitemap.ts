@@ -20,7 +20,6 @@ const STATIC_PAGES: Array<{
   priority: number;
 }> = [
   { path: "", changeFrequency: "daily", priority: 1 },
-  { path: "/soeg", changeFrequency: "weekly", priority: 0.9 },
   { path: "/shelter-naer-mig", changeFrequency: "weekly", priority: 0.88 },
   { path: "/shelter-med-toilet", changeFrequency: "weekly", priority: 0.85 },
   { path: "/shelter-med-vand", changeFrequency: "weekly", priority: 0.85 },
@@ -35,6 +34,7 @@ const STATIC_PAGES: Array<{
   { path: "/om-os", changeFrequency: "monthly", priority: 0.7 },
   { path: "/kontakt", changeFrequency: "monthly", priority: 0.7 },
   { path: "/vilkaar", changeFrequency: "monthly", priority: 0.5 },
+  { path: "/turvenner", changeFrequency: "weekly", priority: 0.6 },
 ];
 
 function entry(

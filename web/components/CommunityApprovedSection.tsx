@@ -110,7 +110,7 @@ export function CommunityApprovedSection({ slug, shelter }: CommunityApprovedSec
                   >
                     <img
                       src={url}
-                      alt="Community-billede"
+                      alt={`Community-billede af ${shelter.title || "shelter"}`}
                       className="h-28 w-full object-cover"
                       loading="lazy"
                     />

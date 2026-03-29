@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { MapPin, Leaf, Compass, Route, Users } from "lucide-react";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 
 export const metadata: Metadata = {
   title: { absolute: "Om os | ShelterDK" },
@@ -16,6 +17,8 @@ export const metadata: Metadata = {
 
 export default function OmOsPage() {
   return (
+    <>
+    <BreadcrumbSchema items={[{ label: "Hjem", href: "/" }, { label: "Om os" }]} />
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
         <h1 className="font-serif text-4xl font-bold text-primary mb-8">
@@ -122,5 +125,6 @@ export default function OmOsPage() {
         </p>
       </div>
     </div>
+    </>
   );
 }
