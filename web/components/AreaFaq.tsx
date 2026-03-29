@@ -2,7 +2,7 @@ import type { FaqItem } from "@/lib/faq";
 
 interface AreaFaqProps {
   areaName: string;
-  preposition?: "i" | "på";
+  preposition?: string;
   items: FaqItem[];
   jsonLd?: string;
 }

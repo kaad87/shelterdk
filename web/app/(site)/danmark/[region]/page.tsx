@@ -6,6 +6,7 @@ import { getDistinctRegions, slugifySegment, NO_KOMMUNE_SLUG } from "@/lib/danma
 import { segmentSlugToName } from "@/lib/slug";
 import { getSheltersPage } from "@/lib/soeg-db";
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
+import { prepositionForRegionName } from "@/lib/area-db";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { ShelterListSchema } from "@/components/seo/ShelterListSchema";
 import { SoegContent } from "@/components/SoegContent";
@@ -22,11 +23,6 @@ export const revalidate = 86400;
 
 const MAP_VIEW_PAGE_SIZE = 1000;
 
-function prepositionForRegionName(region: string): "i" | "på" {
-  const r = (region || "").trim().toLowerCase();
-  if (r === "fyn" || r === "sjælland" || r === "bornholm") return "på";
-  return "i";
-}
 
 export async function generateStaticParams() {
   const regions = await getDistinctRegions();

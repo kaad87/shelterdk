@@ -29,7 +29,7 @@ import {
 } from "@/lib/shelter-detail";
 import { slugifySegment } from "@/lib/slug";
 import { NO_KOMMUNE_SLUG } from "@/lib/danmark-silo";
-import { getAreaBySlug } from "@/lib/area-db";
+import { getAreaBySlug, prepositionForArea } from "@/lib/area-db";
 import { getWeatherForecast } from "@/lib/weather";
 import { ShelterDetailContent } from "@/components/ShelterDetailContent";
 import { ShelterSchema } from "@/components/seo/ShelterSchema";
@@ -251,6 +251,7 @@ export default async function ShelterPage({ params }: PageProps) {
       city={city}
       areaSlug={area ? areaSlug : undefined}
       areaName={area?.name ?? undefined}
+      areaPreposition={area ? prepositionForArea(area) : undefined}
       showReviews={showReviews}
       allPhotoUrls={allPhotoUrls}
       displayDescription={displayDescription}

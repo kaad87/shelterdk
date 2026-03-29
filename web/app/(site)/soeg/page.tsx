@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { getSheltersPage, SOEG_PAGE_SIZE, type SoegFilters } from "@/lib/soeg-db";
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
-import { getAreaBySlug, prepositionForArea } from "@/lib/area-db";
+import { getAreaBySlug, prepositionForArea, prepositionForRegionName } from "@/lib/area-db";
 import { AreaFaq } from "@/components/AreaFaq";
 import { getAreaFaqItems, faqToJsonLd, type FaqItem } from "@/lib/faq";
 
@@ -27,11 +27,7 @@ const DEFAULT_METADATA: Metadata = {
   },
 };
 
-function prepositionForRegionName(region: string): "i" | "på" {
-  const r = (region || "").trim().toLowerCase();
-  if (r === "fyn" || r === "sjælland" || r === "bornholm") return "på";
-  return "i";
-}
+
 
 export async function generateMetadata(props: {
   searchParams: Promise<{ area?: string; region?: string }>;

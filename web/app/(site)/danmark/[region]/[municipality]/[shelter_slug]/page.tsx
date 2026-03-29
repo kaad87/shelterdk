@@ -38,7 +38,7 @@ import {
   getFirewood,
 } from "@/lib/shelter-detail";
 import { getShelterFaqItems, faqToJsonLd } from "@/lib/faq";
-import { getAreaBySlug } from "@/lib/area-db";
+import { getAreaBySlug, prepositionForArea } from "@/lib/area-db";
 import { getWeatherForecast } from "@/lib/weather";
 import { ShelterDetailContent } from "@/components/ShelterDetailContent";
 import { ShelterSchema } from "@/components/seo/ShelterSchema";
@@ -263,6 +263,7 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
         city={city}
         areaSlug={area ? areaSlug : undefined}
         areaName={area?.name ?? undefined}
+        areaPreposition={area ? prepositionForArea(area) : undefined}
       showReviews={showReviews}
       allPhotoUrls={allPhotoUrls}
       displayDescription={displayDescription}

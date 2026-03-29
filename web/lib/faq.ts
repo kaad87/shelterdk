@@ -167,7 +167,7 @@ export function getShelterFaqItems(
 /** Byg area-specifikke FAQ-spørgsmål til områder/landsdele (fx \"Shelters på Bornholm\"). */
 export function getAreaFaqItems(
   areaName: string,
-  preposition: "i" | "på" = "i"
+  preposition: string = "i"
 ): FaqItem[] {
   const inArea = `${preposition} ${areaName}`;
   const onArea = `${preposition} ${areaName}`;

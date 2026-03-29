@@ -13,6 +13,7 @@ import {
 } from "@/lib/danmark-silo";
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 import { segmentSlugToName } from "@/lib/slug";
+import { prepositionForRegionName } from "@/lib/area-db";
 import { ShelterCard } from "@/components/ShelterCard";
 import { getWater, getToilet, getPetsAllowed } from "@/lib/shelter-detail";
 import type { Shelter } from "@/types/shelter";
@@ -77,11 +78,7 @@ function shelterHref(region: string, kommune: string | null, slug: string): stri
   return `/danmark/${r}/${m}/${slug}`;
 }
 
-function prepositionForRegionName(region: string): "i" | "på" {
-  const r = (region || "").trim().toLowerCase();
-  if (r === "fyn" || r === "sjælland" || r === "bornholm") return "på";
-  return "i";
-}
+
 
 function MunicipalityProse({
   shelters,

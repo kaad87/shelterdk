@@ -24,6 +24,7 @@ import type { DailyForecast } from "@/lib/weather";
 import type { Shelter } from "@/types/shelter";
 import type { FaqItem } from "@/lib/faq";
 import { formatRelativeTimeDa } from "@/lib/relative-time-da";
+import { prepositionForRegionName } from "@/lib/area-db";
 
 export interface BreadcrumbLink {
   label: string;
@@ -35,9 +36,11 @@ interface ShelterDetailContentProps {
   slug: string;
   breadcrumbs: BreadcrumbLink[];
   city: string | null;
-  /** Område til intern linking: "Se alle shelters i [område]" */
+  /** Område til intern linking: "Se alle shelters på/i/ved [område]" */
   areaSlug?: string | null;
   areaName?: string | null;
+  /** Forholdsord for området (i/på/ved) */
+  areaPreposition?: string;
   /** Bålplads – når data findes. */
   firewood?: boolean | null;
   /** Links til relaterede filterlister (fx shelter-med-toilet, shelter-med-vand). */
@@ -78,6 +81,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
     city,
     areaSlug = null,
     areaName = null,
+    areaPreposition = "i",
     firewood = null,
     facilityLinks = [],
     showReviews,
@@ -193,7 +197,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
               href={`/omraade/${areaSlug}`}
               className="text-accent font-medium hover:underline"
             >
-              Se alle shelters i {areaName} →
+              Se alle shelters {areaPreposition} {areaName} →
             </Link>
           </p>
         )}
@@ -323,9 +327,9 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                 {breadcrumbs.length >= 2 && breadcrumbs[1]?.href && (
                   <li>
                     <Link href={breadcrumbs[1].href} className="text-accent hover:underline">
-                      Shelters i {breadcrumbs[1].label}
+                      Shelters {prepositionForRegionName(breadcrumbs[1].label)} {breadcrumbs[1].label}
                     </Link>
-                    {" "}– alle shelters i regionen
+                    {" "}– alle shelters {prepositionForRegionName(breadcrumbs[1].label)} regionen
                   </li>
                 )}
                 <li>
