@@ -69,6 +69,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://lh3.googleusercontent.com" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
         <link rel="dns-prefetch" href="https://maps.geoapify.com" />
+        <link rel="dns-prefetch" href="https://tags.srv.stackadapt.com" />
         {process.env.NEXT_PUBLIC_ADSENSE_PUB_ID && (
           <Script
             async
@@ -85,6 +86,10 @@ export default function RootLayout({
         >
           Spring til indhold
         </a>
+        <Script
+          id="stackadapt-events"
+          strategy="afterInteractive"
+        >{`!function(s,a,e,v,n,t,z){if(s.saq)return;n=s.saq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!s._saq)s._saq=n;n.push=n;n.loaded=!0;n.version='1.0';n.queue=[];t=a.createElement(e);t.async=!0;t.src=v;z=a.getElementsByTagName(e)[0];z.parentNode.insertBefore(t,z)}(window,document,'script','https://tags.srv.stackadapt.com/events.js');saq('ts', '2PGo6zJNYMlKgu4KYK8bjA');`}</Script>
         {children}
       </body>
     </html>
