@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     locale: "da_DK",
     images: [
       {
-        url: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&q=80&auto=format&fit=crop",
+        url: "/og-default.jpg",
         width: 1200,
         height: 630,
         alt: "Shelter i dansk natur",
