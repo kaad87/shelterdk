@@ -168,6 +168,18 @@ export default async function ShelterMedVandPage() {
               shelter med bålplads
             </Link>
             {" · "}
+            <Link href="/shelter-med-strand" className="text-accent hover:underline">
+              shelter ved stranden
+            </Link>
+            {" · "}
+            <Link href="/shelter-med-bruser" className="text-accent hover:underline">
+              shelter med bruser
+            </Link>
+            {" · "}
+            <Link href="/shelter-booking" className="text-accent hover:underline">
+              book shelter
+            </Link>
+            {" · "}
             <Link href="/soeg" className="text-accent hover:underline">
               søg alle shelters
             </Link>
