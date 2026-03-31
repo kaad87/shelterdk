@@ -1,6 +1,7 @@
 {
   "name": "shelterdk",
   "private": true,
+  "workspaces": ["shared", "web", "app"],
   "scripts": {
     "backfill:municipality": "cd web && npm run backfill:municipality",
     "backfill:municipality:alle": "cd web && npm run backfill:municipality:alle",
