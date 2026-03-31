@@ -3,6 +3,7 @@ import { useLocalSearchParams, Stack } from "expo-router";
 import { useShelterDetail } from "../../hooks/use-shelter-detail";
 import { getFeatures, getCapacity, getAddress, getLocationCoords } from "@shared/lib/shelter-detail";
 import { MapPin, ExternalLink } from "lucide-react-native";
+import { PhotoUpload } from "../../components/PhotoUpload";
 
 export default function ShelterDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
@@ -61,6 +62,9 @@ export default function ShelterDetailScreen() {
               <Text style={styles.bookingText}>Book shelter</Text>
             </Pressable>
           )}
+
+          <Text style={styles.sectionTitle}>Del et billede</Text>
+          <PhotoUpload shelterId={shelter.id} />
         </View>
       </ScrollView>
     </>
@@ -80,6 +84,7 @@ const styles = StyleSheet.create({
   featureChip: { backgroundColor: "#e8f0e8", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
   featureText: { fontSize: 12, color: "#1a3a2a" },
   description: { fontSize: 15, color: "#333", lineHeight: 22, marginBottom: 16 },
+  sectionTitle: { fontSize: 18, fontWeight: "bold", color: "#1a3a2a", marginTop: 8 },
   bookingButton: {
     backgroundColor: "#1a3a2a",
     flexDirection: "row",
