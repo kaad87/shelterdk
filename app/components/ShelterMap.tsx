@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, forwardRef, useImperativeHandle } from "react";
 import { StyleSheet, View } from "react-native";
 import Mapbox from "@rnmapbox/maps";
 import type { Shelter } from "@shared/types/shelter";
@@ -12,8 +12,27 @@ interface Props {
   userLocation?: { lat: number; lon: number } | null;
 }
 
-export function ShelterMap({ shelters, onShelterPress, userLocation }: Props) {
+export interface ShelterMapRef {
+  centerOnUser: () => void;
+}
+
+export const ShelterMap = forwardRef<ShelterMapRef, Props>(function ShelterMap(
+  { shelters, onShelterPress, userLocation },
+  ref
+) {
   const cameraRef = useRef<Mapbox.Camera>(null);
+
+  useImperativeHandle(ref, () => ({
+    centerOnUser() {
+      if (userLocation) {
+        cameraRef.current?.setCamera({
+          centerCoordinate: [userLocation.lon, userLocation.lat],
+          zoomLevel: 12,
+          animationDuration: 1000,
+        });
+      }
+    },
+  }));
 
   const features: GeoJSON.FeatureCollection = {
     type: "FeatureCollection",
@@ -36,7 +55,7 @@ export function ShelterMap({ shelters, onShelterPress, userLocation }: Props) {
         <Mapbox.Camera
           ref={cameraRef}
           defaultSettings={{
-            centerCoordinate: [10.0, 56.0], // Center of Denmark
+            centerCoordinate: [10.0, 56.0],
             zoomLevel: 6,
           }}
         />
@@ -91,7 +110,7 @@ export function ShelterMap({ shelters, onShelterPress, userLocation }: Props) {
       </Mapbox.MapView>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
