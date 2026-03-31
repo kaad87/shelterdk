@@ -1,16 +1,22 @@
-import { View, Text, StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { useRouter } from "expo-router";
+import { ShelterMap } from "../../components/ShelterMap";
+import { useShelters } from "../../hooks/use-shelters";
 
 export default function MapTab() {
+  const { data: shelters } = useShelters();
+  const router = useRouter();
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Kort</Text>
-      <Text style={styles.subtitle}>Kort kommer her</Text>
+      <ShelterMap
+        shelters={shelters ?? []}
+        onShelterPress={(s) => router.push(`/shelter/${s.slug}`)}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#f5f5f0" },
-  title: { fontSize: 24, fontWeight: "bold", color: "#1a3a2a" },
-  subtitle: { fontSize: 16, color: "#666", marginTop: 8 },
+  container: { flex: 1 },
 });

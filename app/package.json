@@ -11,6 +11,7 @@
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/netinfo": "11.4.1",
+    "@rnmapbox/maps": "^10.3.0",
     "@shelterdk/shared": "^1.0.0",
     "@supabase/supabase-js": "^2.101.0",
     "@tanstack/react-query": "^5.95.2",

@@ -48,7 +48,10 @@
           "photosPermission": "ShelterDK bruger dine billeder til at uploade shelter-fotos."
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      ["@rnmapbox/maps", {
+        "RNMapboxMapsDownloadToken": "YOUR_MAPBOX_SECRET_TOKEN"
+      }]
     ],
     "scheme": "shelterdk"
   }
