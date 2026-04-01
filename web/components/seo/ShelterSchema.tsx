@@ -122,6 +122,41 @@ export function ShelterSchema({
     !payment || (typeof payment === "string" && payment.toLowerCase().includes("nej"));
   const priceRange = isFree ? "0" : undefined;
 
+  const containedInPlace: Record<string, unknown>[] = [];
+  if (region && region !== "Danmark") {
+    containedInPlace.push({
+      "@type": "AdministrativeArea",
+      name: region,
+    });
+  }
+  if (locality) {
+    containedInPlace.push({
+      "@type": "AdministrativeArea",
+      name: locality,
+    });
+  }
+
+  const hasMap = canonicalPath ? `${BASE_URL}${canonicalPath}#kort` : undefined;
+
+  const additionalProperties: Record<string, unknown>[] = [];
+  const geofa = shelter.geofa_raw as Record<string, unknown> | null;
+  if (geofa) {
+    if (String(geofa.baalplads ?? "").toLowerCase().includes("ja")) {
+      additionalProperties.push({ "@type": "PropertyValue", name: "Bålplads", value: "Ja" });
+    }
+    if (String(geofa.hunde_tilladt ?? "").toLowerCase().includes("ja")) {
+      additionalProperties.push({ "@type": "PropertyValue", name: "Hund tilladt", value: "Ja" });
+    }
+    if (String(geofa.strand_naerhed ?? "") === "Ja") {
+      additionalProperties.push({ "@type": "PropertyValue", name: "Nær strand", value: "Ja" });
+    }
+    if (String(geofa.bord_baenk ?? "") === "Ja") {
+      additionalProperties.push({ "@type": "PropertyValue", name: "Bord/bænk", value: "Ja" });
+    }
+  }
+
+  const numberOfRooms = useLodgingBusiness && shelter.capacity ? shelter.capacity : undefined;
+
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": useLodgingBusiness ? "LodgingBusiness" : "Campground",
@@ -149,6 +184,10 @@ export function ShelterSchema({
           ratingCount,
         },
       }),
+    ...(containedInPlace.length > 0 && { containedInPlace }),
+    ...(hasMap && { hasMap }),
+    ...(additionalProperties.length > 0 && { additionalProperty: additionalProperties }),
+    ...(numberOfRooms && { numberOfRooms }),
   };
 
   // Remove undefined so JSON-LD is valid
