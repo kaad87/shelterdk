@@ -8,6 +8,8 @@ import {
 import { slugifySegment } from "@/lib/slug";
 import { getGuides } from "@/data/guides";
 import { getBlogPosts } from "@/data/blog";
+import { getFilterRegionCount } from "@/lib/fakta-db";
+import { FILTER_CONFIGS, REGION_SLUGS, REGION_NAMES } from "@/lib/cross-page-config";
 
 const BASE_URL = "https://shelterdk.dk";
 const BATCH_SIZE = 1000;
@@ -131,6 +133,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Statiske sider
   for (const { path, changeFrequency, priority } of STATIC_PAGES) {
     entries.push(entry(`${BASE_URL}${path || "/"}`, changeFrequency, priority));
+  }
+
+  // Fakta pages
+  const FAKTA_PAGES = [
+    "/fakta/shelters-i-danmark",
+    "/fakta/shelters-med-faciliteter",
+    "/fakta/bedste-shelters",
+    "/fakta/gratis-shelters",
+    "/fakta/shelters-i-nationalparker",
+  ];
+  for (const path of FAKTA_PAGES) {
+    entries.push(entry(`${BASE_URL}${path}`, "weekly", 0.85));
+  }
+
+  // Cross pages (filter × region) — only include combos with 5+ shelters
+  for (const config of Object.values(FILTER_CONFIGS)) {
+    for (const regionSlug of REGION_SLUGS) {
+      const regionName = REGION_NAMES[regionSlug];
+      if (!regionName) continue;
+      const count = await getFilterRegionCount(config.filterKey, regionName);
+      if (count >= 5) {
+        entries.push(entry(`${BASE_URL}${config.parentHref}/${regionSlug}`, "weekly", 0.7));
+      }
+    }
   }
 
   // Regioner: dedikerede landingssider med kort
