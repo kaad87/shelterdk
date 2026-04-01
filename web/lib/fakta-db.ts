@@ -1,0 +1,311 @@
+import { createPublicClient } from "@/utils/supabase/server-public";
+import type { Shelter } from "@/types/shelter";
+import { getLocationCoords } from "@/lib/shelter-detail";
+import { classifyShelterToParks, NATIONAL_PARKS } from "@/lib/national-parks";
+
+const SHELTER_SELECT =
+  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, toilet, water, capacity, display_score, geofa_raw, google_places!shelters_google_place_id_fkey(photo_references)";
+
+/** Total shelter count (non-duplicate). */
+export async function getTotalShelterCount(): Promise<number> {
+  const supabase = createPublicClient();
+  const { count, error } = await supabase
+    .from("shelters")
+    .select("id", { count: "exact", head: true })
+    .is("duplicate_of_shelter_id", null);
+  if (error) {
+    console.error("fakta-db: getTotalShelterCount", error);
+    return 0;
+  }
+  return count ?? 0;
+}
+
+/** Shelter count per region. Returns sorted array of { region, count }. */
+export async function getCountPerRegion(): Promise<
+  { region: string; count: number }[]
+> {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("shelters")
+    .select("region")
+    .is("duplicate_of_shelter_id", null)
+    .not("region", "is", null)
+    .neq("region", "")
+    .neq("region", "Danmark");
+  if (error || !data) return [];
+
+  const counts = new Map<string, number>();
+  for (const row of data as { region: string }[]) {
+    const r = (row.region || "").trim();
+    if (!r) continue;
+    counts.set(r, (counts.get(r) ?? 0) + 1);
+  }
+  return Array.from(counts.entries())
+    .map(([region, count]) => ({ region, count }))
+    .sort((a, b) => b.count - a.count);
+}
+
+export interface FacilityCounts {
+  toilet: number;
+  water: number;
+  baalplads: number;
+  hund: number;
+  strand: number;
+  bruser: number;
+  bookbar: number;
+  gratis: number;
+}
+
+/** Count shelters for each facility type. */
+export async function getFacilityCounts(): Promise<FacilityCounts> {
+  const supabase = createPublicClient();
+  const base = () =>
+    supabase
+      .from("shelters")
+      .select("id", { count: "exact", head: true })
+      .is("duplicate_of_shelter_id", null);
+
+  const [toilet, water, baalplads, hund, strand, bruser, bookbar, gratis] =
+    await Promise.all([
+      base().in("toilet", ["flush", "mulch"]),
+      base().eq("water", true),
+      base().filter("geofa_raw->>baalplads", "ilike", "%ja%"),
+      base().filter("geofa_raw->>hunde_tilladt", "ilike", "%ja%"),
+      base().filter("geofa_raw->>strand_naerhed", "eq", "Ja"),
+      base().filter("geofa_raw->>bruser_bad", "eq", "Ja"),
+      base().not("booking_url", "is", null).neq("booking_url", ""),
+      base().filter("geofa_raw->>betaling", "eq", "Nej"),
+    ]);
+
+  return {
+    toilet: toilet.count ?? 0,
+    water: water.count ?? 0,
+    baalplads: baalplads.count ?? 0,
+    hund: hund.count ?? 0,
+    strand: strand.count ?? 0,
+    bruser: bruser.count ?? 0,
+    bookbar: bookbar.count ?? 0,
+    gratis: gratis.count ?? 0,
+  };
+}
+
+/** Facility counts scoped to a single region. */
+export async function getFacilityCountsForRegion(
+  region: string
+): Promise<FacilityCounts> {
+  const supabase = createPublicClient();
+  const base = () =>
+    supabase
+      .from("shelters")
+      .select("id", { count: "exact", head: true })
+      .is("duplicate_of_shelter_id", null)
+      .eq("region", region);
+
+  const [toilet, water, baalplads, hund, strand, bruser, bookbar, gratis] =
+    await Promise.all([
+      base().in("toilet", ["flush", "mulch"]),
+      base().eq("water", true),
+      base().filter("geofa_raw->>baalplads", "ilike", "%ja%"),
+      base().filter("geofa_raw->>hunde_tilladt", "ilike", "%ja%"),
+      base().filter("geofa_raw->>strand_naerhed", "eq", "Ja"),
+      base().filter("geofa_raw->>bruser_bad", "eq", "Ja"),
+      base().not("booking_url", "is", null).neq("booking_url", ""),
+      base().filter("geofa_raw->>betaling", "eq", "Nej"),
+    ]);
+
+  return {
+    toilet: toilet.count ?? 0,
+    water: water.count ?? 0,
+    baalplads: baalplads.count ?? 0,
+    hund: hund.count ?? 0,
+    strand: strand.count ?? 0,
+    bruser: bruser.count ?? 0,
+    bookbar: bookbar.count ?? 0,
+    gratis: gratis.count ?? 0,
+  };
+}
+
+/** Top-N shelters by Google rating (with minimum review count). */
+export async function getTopRatedShelters(
+  limit: number = 10,
+  minReviews: number = 3
+): Promise<Shelter[]> {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("shelters")
+    .select(SHELTER_SELECT)
+    .is("duplicate_of_shelter_id", null)
+    .not("google_rating", "is", null)
+    .gte("google_user_ratings_total", minReviews)
+    .order("google_rating", { ascending: false })
+    .order("google_user_ratings_total", { ascending: false })
+    .limit(limit);
+  if (error) {
+    console.error("fakta-db: getTopRatedShelters", error);
+    return [];
+  }
+  return (data as Shelter[]) ?? [];
+}
+
+/** Average Google rating across all shelters with a rating. */
+export async function getAverageRating(): Promise<number | null> {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("shelters")
+    .select("google_rating")
+    .is("duplicate_of_shelter_id", null)
+    .not("google_rating", "is", null);
+  if (error || !data || data.length === 0) return null;
+  const ratings = (data as { google_rating: number }[]).map(
+    (r) => r.google_rating
+  );
+  const avg = ratings.reduce((sum, r) => sum + r, 0) / ratings.length;
+  return Math.round(avg * 10) / 10;
+}
+
+/** Count of shelters per filter for a given region. Used to check 5-shelter threshold. */
+export async function getFilterRegionCount(
+  filterKey: string,
+  region: string
+): Promise<number> {
+  const supabase = createPublicClient();
+  let query = supabase
+    .from("shelters")
+    .select("id", { count: "exact", head: true })
+    .is("duplicate_of_shelter_id", null)
+    .eq("region", region);
+
+  switch (filterKey) {
+    case "toilet":
+      query = query.in("toilet", ["flush", "mulch"]);
+      break;
+    case "vand":
+      query = query.eq("water", true);
+      break;
+    case "baalplads":
+      query = query.filter("geofa_raw->>baalplads", "ilike", "%ja%");
+      break;
+    case "hund":
+      query = query.filter("geofa_raw->>hunde_tilladt", "ilike", "%ja%");
+      break;
+    case "strand":
+      query = query.filter("geofa_raw->>strand_naerhed", "eq", "Ja");
+      break;
+    case "bruser":
+      query = query.filter("geofa_raw->>bruser_bad", "eq", "Ja");
+      break;
+    case "booking":
+      query = query.not("booking_url", "is", null).neq("booking_url", "");
+      break;
+    default:
+      return 0;
+  }
+
+  const { count, error } = await query;
+  if (error) {
+    console.error(
+      `fakta-db: getFilterRegionCount(${filterKey}, ${region})`,
+      error
+    );
+    return 0;
+  }
+  return count ?? 0;
+}
+
+/** Shelters matching a filter + region combo. Used by cross pages. */
+export async function getSheltersForFilterRegion(
+  filterKey: string,
+  region: string,
+  limit: number = 200
+): Promise<Shelter[]> {
+  const supabase = createPublicClient();
+  let query = supabase
+    .from("shelters")
+    .select(SHELTER_SELECT)
+    .is("duplicate_of_shelter_id", null)
+    .eq("region", region)
+    .order("display_score", { ascending: false, nullsFirst: false })
+    .order("title", { ascending: true })
+    .limit(limit);
+
+  switch (filterKey) {
+    case "toilet":
+      query = query.in("toilet", ["flush", "mulch"]);
+      break;
+    case "vand":
+      query = query.eq("water", true);
+      break;
+    case "baalplads":
+      query = query.filter("geofa_raw->>baalplads", "ilike", "%ja%");
+      break;
+    case "hund":
+      query = query.filter("geofa_raw->>hunde_tilladt", "ilike", "%ja%");
+      break;
+    case "strand":
+      query = query.filter("geofa_raw->>strand_naerhed", "eq", "Ja");
+      break;
+    case "bruser":
+      query = query.filter("geofa_raw->>bruser_bad", "eq", "Ja");
+      break;
+    case "booking":
+      query = query.not("booking_url", "is", null).neq("booking_url", "");
+      break;
+    default:
+      return [];
+  }
+
+  const { data, error } = await query;
+  if (error) {
+    console.error(`fakta-db: getSheltersForFilterRegion`, error);
+    return [];
+  }
+  return (data as Shelter[]) ?? [];
+}
+
+/** Shelters in national parks. Returns { parkName, shelters[] }. */
+export async function getSheltersInNationalParks(): Promise<
+  { parkName: string; parkSlug: string; shelters: Shelter[] }[]
+> {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("shelters")
+    .select(SHELTER_SELECT)
+    .is("duplicate_of_shelter_id", null);
+  if (error || !data) return [];
+
+  const parkMap = new Map<string, Shelter[]>();
+  for (const park of NATIONAL_PARKS) {
+    parkMap.set(park.name, []);
+  }
+
+  for (const shelter of data as Shelter[]) {
+    const coords = getLocationCoords(shelter);
+    if (!coords) continue;
+    const parks = classifyShelterToParks(coords.lat, coords.lon);
+    for (const parkName of parks) {
+      parkMap.get(parkName)?.push(shelter);
+    }
+  }
+
+  return NATIONAL_PARKS.map((park) => ({
+    parkName: park.name,
+    parkSlug: park.slug,
+    shelters: parkMap.get(park.name) ?? [],
+  }));
+}
+
+/** Kommune breakdown for a filter+region combo. */
+export async function getKommuneBreakdownForFilterRegion(
+  filterKey: string,
+  region: string
+): Promise<{ kommune: string; count: number }[]> {
+  const shelters = await getSheltersForFilterRegion(filterKey, region, 1000);
+  const counts = new Map<string, number>();
+  for (const s of shelters) {
+    const k = (s.kommune || "Ukendt").trim();
+    counts.set(k, (counts.get(k) ?? 0) + 1);
+  }
+  return Array.from(counts.entries())
+    .map(([kommune, count]) => ({ kommune, count }))
+    .sort((a, b) => b.count - a.count);
+}
