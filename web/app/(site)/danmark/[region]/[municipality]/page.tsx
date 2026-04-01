@@ -16,6 +16,8 @@ import { segmentSlugToName } from "@/lib/slug";
 import { prepositionForRegionName } from "@/lib/area-db";
 import { ShelterCard } from "@/components/ShelterCard";
 import { getWater, getToilet, getPetsAllowed } from "@/lib/shelter-detail";
+import { generateMunicipalityPageFaq } from "@/lib/fakta-faq";
+import { faqToJsonLd } from "@/lib/faq";
 import type { Shelter } from "@/types/shelter";
 
 interface PageProps {
@@ -184,6 +186,22 @@ export default async function DanmarkMunicipalityPage({ params }: PageProps) {
   const shelters = await enrichSheltersWithGooglePhotoRef(rawShelters);
   const displayName = municipalityName ?? "Ukendt kommune";
 
+  const withToilet = shelters.filter((s) => {
+    const t = getToilet(s);
+    return t && t !== "none" && t !== "unknown";
+  }).length;
+  const withWater = shelters.filter((s) => getWater(s) === true).length;
+  const freeCount = shelters.filter(
+    (s) => !s.booking_url || String(s.booking_url).trim() === ""
+  ).length;
+
+  const municipalityFaq = generateMunicipalityPageFaq(displayName, {
+    totalCount: shelters.length,
+    freeCount,
+    toiletCount: withToilet,
+    waterCount: withWater,
+  });
+
   return (
     <>
     <BreadcrumbSchema items={[
@@ -247,6 +265,27 @@ export default async function DanmarkMunicipalityPage({ params }: PageProps) {
           regionName={regionName}
           regionSlug={regionSlug}
         />
+
+        {/* FAQ with JSON-LD */}
+        {shelters.length > 0 && (
+          <section className="mt-12 pt-8 border-t border-primary/10">
+            <h2 className="font-serif text-xl font-bold text-primary mb-6">
+              Ofte stillede spørgsmål om shelters i {displayName}
+            </h2>
+            <dl className="space-y-6">
+              {municipalityFaq.map((item) => (
+                <div key={item.question}>
+                  <dt className="font-semibold text-primary mb-1">{item.question}</dt>
+                  <dd className="text-primary/80 leading-relaxed">{item.answer}</dd>
+                </div>
+              ))}
+            </dl>
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: JSON.stringify(faqToJsonLd(municipalityFaq)) }}
+            />
+          </section>
+        )}
       </div>
     </div>
     </>

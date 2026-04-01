@@ -113,6 +113,33 @@ export function generateRegionPageFaq(
   ];
 }
 
+interface MunicipalityPageFaqData {
+  totalCount: number;
+  freeCount: number;
+  toiletCount: number;
+  waterCount: number;
+}
+
+export function generateMunicipalityPageFaq(
+  municipalityName: string,
+  data: MunicipalityPageFaqData
+): FaqItem[] {
+  return [
+    {
+      question: `Hvor mange shelters er der i ${municipalityName}?`,
+      answer: `Der er ${data.totalCount} shelters i ${municipalityName} registreret på ShelterDK.`,
+    },
+    {
+      question: `Hvilke faciliteter har shelters i ${municipalityName}?`,
+      answer: `${data.toiletCount} shelters har toilet og ${data.waterCount} har vand i ${municipalityName}.`,
+    },
+    {
+      question: `Er der gratis shelters i ${municipalityName}?`,
+      answer: `Ja, ${data.freeCount} ud af ${data.totalCount} shelters i ${municipalityName} er gratis.`,
+    },
+  ];
+}
+
 interface CrossPageFaqData {
   count: number;
   avgRating: number | null;
