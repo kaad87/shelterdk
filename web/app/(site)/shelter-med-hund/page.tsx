@@ -7,6 +7,9 @@ import { slugifySegment } from "@/lib/slug";
 import { ShelterCard } from "@/components/ShelterCard";
 import { ShelterMap } from "@/components/ShelterMap";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
+import { DataSummaryBlock } from "@/components/DataSummaryBlock";
+import { getFilterRegionCount, getCountPerRegion } from "@/lib/fakta-db";
+import { REGION_SLUGS, REGION_NAMES } from "@/lib/cross-page-config";
 
 const HUND_FAQ: FaqItem[] = [
   { question: "Skal hunden være i snor på shelterpladser?", answer: "Ja, i perioden 1. april til 30. september skal hunde altid føres i snor i danske skove og naturområder – også på shelterpladser. Resten af året må hunde gå løse hvis de er under fuld kontrol, men tjek altid lokal skiltning." },
@@ -47,6 +50,15 @@ function shelterHref(
 export default async function ShelterMedHundPage() {
   const shelters = await getSheltersWithPets(200);
 
+  // Fetch summary data for DataSummaryBlock
+  const regionCounts = await Promise.all(
+    REGION_SLUGS.map(async (slug) => ({
+      region: REGION_NAMES[slug],
+      count: await getFilterRegionCount("hund", REGION_NAMES[slug]),
+    }))
+  );
+  const totalForFilter = regionCounts.reduce((sum, r) => sum + r.count, 0);
+
   return (
     <>
     <BreadcrumbSchema items={[{ label: "Hjem", href: "/" }, { label: "Søg shelters", href: "/soeg" }, { label: "Shelter med hund" }]} />
@@ -79,6 +91,15 @@ export default async function ShelterMedHundPage() {
             Tag hunden med på tur og oplev naturovernatning i Danmark.
           </p>
         </header>
+
+        <DataSummaryBlock
+          headline={`${totalForFilter} shelters med hund i Danmark`}
+          regionBreakdown={regionCounts}
+          crossPageLinks={REGION_SLUGS.map((slug) => ({
+            label: `Hundevenlige shelters i ${REGION_NAMES[slug]}`,
+            href: `/shelter-med-hund/${slug}`,
+          }))}
+        />
 
         {shelters.length > 0 ? (
           <section className="mb-12 -mx-4 sm:-mx-6 lg:-mx-8">

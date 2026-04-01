@@ -8,6 +8,9 @@ import { ShelterCard } from "@/components/ShelterCard";
 import { ShelterMap } from "@/components/ShelterMap";
 import { getToilet } from "@/lib/shelter-detail";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
+import { DataSummaryBlock } from "@/components/DataSummaryBlock";
+import { getFilterRegionCount, getCountPerRegion } from "@/lib/fakta-db";
+import { REGION_SLUGS, REGION_NAMES } from "@/lib/cross-page-config";
 
 const TOILET_FAQ: FaqItem[] = [
   { question: "Hvad er et muldtoilet på en shelterplads?", answer: "Et muldtoilet (også kaldet tørkloset) er et toilet uden vandskyl, der bruger naturlig nedbrydning. Det er det mest almindelige toilettype på shelterpladser i Danmark. Man tilfører typisk savsmuld eller lignende efter brug for at reducere lugt og fremme kompostering." },
@@ -53,6 +56,15 @@ const TOILET_LABELS: Record<string, string> = {
 export default async function ShelterMedToiletPage() {
   const shelters = await getSheltersWithToilet(200);
 
+  // Fetch summary data for DataSummaryBlock
+  const regionCounts = await Promise.all(
+    REGION_SLUGS.map(async (slug) => ({
+      region: REGION_NAMES[slug],
+      count: await getFilterRegionCount("toilet", REGION_NAMES[slug]),
+    }))
+  );
+  const totalForFilter = regionCounts.reduce((sum, r) => sum + r.count, 0);
+
   return (
     <>
     <BreadcrumbSchema items={[{ label: "Hjem", href: "/" }, { label: "Søg shelters", href: "/soeg" }, { label: "Shelter med toilet" }]} />
@@ -85,6 +97,15 @@ export default async function ShelterMedToiletPage() {
             toilet eller muldtoilet/tørkloset. Perfekt til dig der vil have faciliteter tæt på.
           </p>
         </header>
+
+        <DataSummaryBlock
+          headline={`${totalForFilter} shelters med toilet i Danmark`}
+          regionBreakdown={regionCounts}
+          crossPageLinks={REGION_SLUGS.map((slug) => ({
+            label: `Shelters med toilet i ${REGION_NAMES[slug]}`,
+            href: `/shelter-med-toilet/${slug}`,
+          }))}
+        />
 
         {shelters.length > 0 ? (
           <section className="mb-12 -mx-4 sm:-mx-6 lg:-mx-8">

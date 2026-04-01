@@ -7,6 +7,9 @@ import { slugifySegment } from "@/lib/slug";
 import { ShelterCard } from "@/components/ShelterCard";
 import { ShelterMap } from "@/components/ShelterMap";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
+import { DataSummaryBlock } from "@/components/DataSummaryBlock";
+import { getFilterRegionCount, getCountPerRegion } from "@/lib/fakta-db";
+import { REGION_SLUGS, REGION_NAMES } from "@/lib/cross-page-config";
 
 const SHOWER_FAQ: FaqItem[] = [
   { question: "Har shelters i Danmark bruser?", answer: "Nogle shelterpladser i Danmark har adgang til bruser eller badefaciliteter. Det er dog langt fra alle — de fleste primitive shelterpladser har ikke bruser. På ShelterDK kan du filtrere efter shelters med bruser/bad for at finde pladser med denne facilitet." },
@@ -40,6 +43,15 @@ function shelterHref(region: string | null, kommune: string | null, slug: string
 export default async function ShelterMedBruserPage() {
   const shelters = await getSheltersWithShower(200);
 
+  // Fetch summary data for DataSummaryBlock
+  const regionCounts = await Promise.all(
+    REGION_SLUGS.map(async (slug) => ({
+      region: REGION_NAMES[slug],
+      count: await getFilterRegionCount("bruser", REGION_NAMES[slug]),
+    }))
+  );
+  const totalForFilter = regionCounts.reduce((sum, r) => sum + r.count, 0);
+
   return (
     <>
     <BreadcrumbSchema items={[{ label: "Hjem", href: "/" }, { label: "Søg shelters", href: "/soeg" }, { label: "Shelter med bruser" }]} />
@@ -62,6 +74,15 @@ export default async function ShelterMedBruserPage() {
             Perfekt til længere ture eller familier der vil have lidt ekstra komfort i naturen.
           </p>
         </header>
+
+        <DataSummaryBlock
+          headline={`${totalForFilter} shelters med bruser i Danmark`}
+          regionBreakdown={regionCounts}
+          crossPageLinks={REGION_SLUGS.map((slug) => ({
+            label: `Shelters med bruser i ${REGION_NAMES[slug]}`,
+            href: `/shelter-med-bruser/${slug}`,
+          }))}
+        />
 
         {shelters.length > 0 ? (
           <section className="mb-12 -mx-4 sm:-mx-6 lg:-mx-8">

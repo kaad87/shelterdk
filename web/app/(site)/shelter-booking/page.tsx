@@ -3,6 +3,9 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
+import { DataSummaryBlock } from "@/components/DataSummaryBlock";
+import { getFilterRegionCount, getCountPerRegion } from "@/lib/fakta-db";
+import { REGION_SLUGS, REGION_NAMES } from "@/lib/cross-page-config";
 
 const BOOKING_FAQ: FaqItem[] = [
   { question: "Hvor kan man booke shelter i Danmark?", answer: "Du kan booke shelters via udinaturen.dk (Friluftsrådet), book.naturstyrelsen.dk (Naturstyrelsen) og kommunernes egne bookingsystemer. På ShelterDK kan du filtrere efter bookbare shelters og finde direkte links til booking." },
@@ -27,7 +30,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ShelterBookingPage() {
+export default async function ShelterBookingPage() {
+  // Fetch summary data for DataSummaryBlock
+  const regionCounts = await Promise.all(
+    REGION_SLUGS.map(async (slug) => ({
+      region: REGION_NAMES[slug],
+      count: await getFilterRegionCount("booking", REGION_NAMES[slug]),
+    }))
+  );
+  const totalForFilter = regionCounts.reduce((sum, r) => sum + r.count, 0);
+
   return (
     <>
     <BreadcrumbSchema items={[{ label: "Hjem", href: "/" }, { label: "Shelter-booking" }]} />
@@ -49,6 +61,15 @@ export default function ShelterBookingPage() {
             reservere.
           </p>
         </header>
+
+        <DataSummaryBlock
+          headline={`${totalForFilter} bookbare shelters i Danmark`}
+          regionBreakdown={regionCounts}
+          crossPageLinks={REGION_SLUGS.map((slug) => ({
+            label: `Bookbare shelters i ${REGION_NAMES[slug]}`,
+            href: `/shelter-booking/${slug}`,
+          }))}
+        />
 
         <article className="prose prose-primary max-w-none text-primary/90">
 
