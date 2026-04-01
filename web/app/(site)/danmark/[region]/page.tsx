@@ -11,6 +11,11 @@ import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { ShelterListSchema } from "@/components/seo/ShelterListSchema";
 import { SoegContent } from "@/components/SoegContent";
 import { getRegionContent } from "@/data/region-content";
+import { DataSummaryBlock } from "@/components/DataSummaryBlock";
+import { getFacilityCountsForRegion, getTopRatedShelters } from "@/lib/fakta-db";
+import { generateRegionPageFaq } from "@/lib/fakta-faq";
+import { faqToJsonLd } from "@/lib/faq";
+import { FILTER_CONFIGS, REGION_SLUGS, REGION_NAMES } from "@/lib/cross-page-config";
 
 interface PageProps {
   params: Promise<{ region: string }>;
@@ -68,13 +73,34 @@ export default async function DanmarkRegionPage({ params }: PageProps) {
 
   const prep = prepositionForRegionName(regionName);
 
-  const { shelters: rawShelters, hasMore: initialHasMore } = await getSheltersPage(
-    regionName,
-    null,
-    1,
-    MAP_VIEW_PAGE_SIZE
-  );
+  const [{ shelters: rawShelters, hasMore: initialHasMore }, facilityCounts, topRated] =
+    await Promise.all([
+      getSheltersPage(regionName, null, 1, MAP_VIEW_PAGE_SIZE),
+      getFacilityCountsForRegion(regionName),
+      getTopRatedShelters(1, 3),
+    ]);
   const initialShelters = await enrichSheltersWithGooglePhotoRef(rawShelters);
+
+  const totalCount = initialShelters.length;
+  const freeCount = facilityCounts.gratis;
+  const topInRegion = topRated.find(
+    (s) => (s.region ?? "").trim() === regionName
+  );
+
+  const faqItems = generateRegionPageFaq(regionName, prep, {
+    totalCount,
+    freeCount,
+    facilityCounts,
+    avgRating: null,
+    topShelterName: topInRegion?.title?.trim() ?? null,
+  });
+
+  const crossPageLinks = Object.values(FILTER_CONFIGS)
+    .slice(0, 5)
+    .map((c) => ({
+      label: `${c.filterLabelLong} ${prep} ${regionName}`,
+      href: `${c.parentHref}/${regionSlug}`,
+    }));
 
   const breadcrumbItems = [
     { label: "Hjem", href: "/" },
@@ -115,6 +141,11 @@ export default async function DanmarkRegionPage({ params }: PageProps) {
               Shelter efter område →
             </Link>
           </p>
+
+          <DataSummaryBlock
+            headline={`${regionName} har ${totalCount} shelters. ${freeCount} er gratis, ${facilityCounts.toilet} har toilet.`}
+            crossPageLinks={crossPageLinks}
+          />
 
           <Suspense fallback={<div className="h-14 bg-primary/5 rounded-xl animate-pulse mb-8" />}>
             <SoegContent
@@ -166,6 +197,25 @@ export default async function DanmarkRegionPage({ params }: PageProps) {
               </section>
             );
           })()}
+
+          {/* FAQ with JSON-LD */}
+          <section className="mt-12 pt-8 border-t border-primary/10">
+            <h2 className="font-serif text-xl font-bold text-primary mb-6">
+              Ofte stillede spørgsmål om shelters {prep} {regionName}
+            </h2>
+            <dl className="space-y-6">
+              {faqItems.map((item) => (
+                <div key={item.question}>
+                  <dt className="font-semibold text-primary mb-1">{item.question}</dt>
+                  <dd className="text-primary/80 leading-relaxed">{item.answer}</dd>
+                </div>
+              ))}
+            </dl>
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: JSON.stringify(faqToJsonLd(faqItems)) }}
+            />
+          </section>
         </div>
       </div>
     </>
