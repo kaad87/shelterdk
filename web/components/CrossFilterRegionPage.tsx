@@ -66,7 +66,10 @@ export function CrossFilterRegionPage({
       <ShelterListSchema
         name={`${filterLabelLong} ${inRegion}`}
         shelters={shelters}
-        hrefFn={(s) => shelterHref(s.region ?? null, s.kommune ?? null, s.slug)}
+        hrefFn={(s) => {
+          const shelter = shelters.find((x) => x.id === s.id);
+          return shelterHref(shelter?.region ?? null, shelter?.kommune ?? null, s.slug);
+        }}
       />
       <div className="min-h-screen bg-background">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
