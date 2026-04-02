@@ -1,0 +1,58 @@
+{
+  "expo": {
+    "name": "ShelterDK",
+    "slug": "shelterdk",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1a3a2a"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1a3a2a"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "dk.shelterdk.app",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "CAMERA",
+        "READ_MEDIA_IMAGES",
+        "FOREGROUND_SERVICE_LOCATION"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "ShelterDK bruger din position til at vise shelters nær dig og tracke dine ture.",
+          "isAndroidBackgroundLocationEnabled": true
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "ShelterDK bruger kameraet til at tage billeder af shelters."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "ShelterDK bruger dine billeder til at uploade shelter-fotos."
+        }
+      ],
+      "expo-sqlite",
+      ["@rnmapbox/maps", {
+        "RNMapboxMapsDownloadToken": "YOUR_MAPBOX_SECRET_TOKEN"
+      }]
+    ],
+    "scheme": "shelterdk"
+  }
+}

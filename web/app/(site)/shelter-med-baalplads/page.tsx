@@ -7,6 +7,9 @@ import { slugifySegment } from "@/lib/slug";
 import { ShelterCard } from "@/components/ShelterCard";
 import { ShelterMap } from "@/components/ShelterMap";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
+import { DataSummaryBlock } from "@/components/DataSummaryBlock";
+import { getFilterRegionCount, getCountPerRegion } from "@/lib/fakta-db";
+import { REGION_SLUGS, REGION_NAMES } from "@/lib/cross-page-config";
 
 const BAAL_FAQ: FaqItem[] = [
   { question: "Hvornår er der bålforbud i Danmark?", answer: "Bålforbud udstedes af lokale beredskaber i perioder med tørke og forhøjet brandfare, typisk om sommeren. Tjek altid Beredskabsstyrelsens hjemmeside eller lokal skiltning inden du tænder bål. Ved bålforbud må du heller ikke bruge gasblus eller engangsgrill i naturen." },
@@ -47,6 +50,15 @@ function shelterHref(
 export default async function ShelterMedBaalpladsPage() {
   const shelters = await getSheltersWithFirewood(200);
 
+  // Fetch summary data for DataSummaryBlock
+  const regionCounts = await Promise.all(
+    REGION_SLUGS.map(async (slug) => ({
+      region: REGION_NAMES[slug],
+      count: await getFilterRegionCount("baalplads", REGION_NAMES[slug]),
+    }))
+  );
+  const totalForFilter = regionCounts.reduce((sum, r) => sum + r.count, 0);
+
   return (
     <>
     <BreadcrumbSchema items={[{ label: "Hjem", href: "/" }, { label: "Søg shelters", href: "/soeg" }, { label: "Shelter med bålplads" }]} />
@@ -79,6 +91,15 @@ export default async function ShelterMedBaalpladsPage() {
             ved et bål og naturen på tæt hold – det bedste af dansk naturovernatning.
           </p>
         </header>
+
+        <DataSummaryBlock
+          headline={`${totalForFilter} shelters med bålplads i Danmark`}
+          regionBreakdown={regionCounts}
+          crossPageLinks={REGION_SLUGS.map((slug) => ({
+            label: `Shelters med bålplads i ${REGION_NAMES[slug]}`,
+            href: `/shelter-med-baalplads/${slug}`,
+          }))}
+        />
 
         {shelters.length > 0 ? (
           <section className="mb-12 -mx-4 sm:-mx-6 lg:-mx-8">
@@ -165,6 +186,18 @@ export default async function ShelterMedBaalpladsPage() {
             {" · "}
             <Link href="/shelter-med-hund" className="text-accent hover:underline">
               hundevenlige shelters
+            </Link>
+            {" · "}
+            <Link href="/shelter-med-strand" className="text-accent hover:underline">
+              shelter ved stranden
+            </Link>
+            {" · "}
+            <Link href="/shelter-med-bruser" className="text-accent hover:underline">
+              shelter med bruser
+            </Link>
+            {" · "}
+            <Link href="/shelter-booking" className="text-accent hover:underline">
+              book shelter
             </Link>
             {" · "}
             <Link href="/soeg" className="text-accent hover:underline">

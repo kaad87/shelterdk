@@ -7,6 +7,9 @@ import { slugifySegment } from "@/lib/slug";
 import { ShelterCard } from "@/components/ShelterCard";
 import { ShelterMap } from "@/components/ShelterMap";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
+import { DataSummaryBlock } from "@/components/DataSummaryBlock";
+import { getFilterRegionCount, getCountPerRegion } from "@/lib/fakta-db";
+import { REGION_SLUGS, REGION_NAMES } from "@/lib/cross-page-config";
 
 const VAND_FAQ: FaqItem[] = [
   { question: "Er vandet på shelterpladser drikkevand?", answer: "Det varierer fra plads til plads. Nogle shelterpladser har vandhaner med godkendt drikkevand, mens andre kun har vand til opvask. Tjek altid lokal skiltning ved vandhanen, og medtag drikkevand som backup hvis du er i tvivl." },
@@ -47,6 +50,15 @@ function shelterHref(
 export default async function ShelterMedVandPage() {
   const shelters = await getSheltersWithWater(200);
 
+  // Fetch summary data for DataSummaryBlock
+  const regionCounts = await Promise.all(
+    REGION_SLUGS.map(async (slug) => ({
+      region: REGION_NAMES[slug],
+      count: await getFilterRegionCount("vand", REGION_NAMES[slug]),
+    }))
+  );
+  const totalForFilter = regionCounts.reduce((sum, r) => sum + r.count, 0);
+
   return (
     <>
     <BreadcrumbSchema items={[{ label: "Hjem", href: "/" }, { label: "Søg shelters", href: "/soeg" }, { label: "Shelter med vand" }]} />
@@ -79,6 +91,15 @@ export default async function ShelterMedVandPage() {
             adgang til drikkevand. Perfekt til dig der vil have vand tæt på uden at medbringe alt.
           </p>
         </header>
+
+        <DataSummaryBlock
+          headline={`${totalForFilter} shelters med vand i Danmark`}
+          regionBreakdown={regionCounts}
+          crossPageLinks={REGION_SLUGS.map((slug) => ({
+            label: `Shelters med vand i ${REGION_NAMES[slug]}`,
+            href: `/shelter-med-vand/${slug}`,
+          }))}
+        />
 
         {shelters.length > 0 ? (
           <section className="mb-12 -mx-4 sm:-mx-6 lg:-mx-8">
@@ -166,6 +187,18 @@ export default async function ShelterMedVandPage() {
             {" · "}
             <Link href="/shelter-med-baalplads" className="text-accent hover:underline">
               shelter med bålplads
+            </Link>
+            {" · "}
+            <Link href="/shelter-med-strand" className="text-accent hover:underline">
+              shelter ved stranden
+            </Link>
+            {" · "}
+            <Link href="/shelter-med-bruser" className="text-accent hover:underline">
+              shelter med bruser
+            </Link>
+            {" · "}
+            <Link href="/shelter-booking" className="text-accent hover:underline">
+              book shelter
             </Link>
             {" · "}
             <Link href="/soeg" className="text-accent hover:underline">
