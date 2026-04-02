@@ -1,8 +1,7 @@
 import { createPublicClient } from "@/utils/supabase/server-public";
+import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
-export const fetchCache = "force-no-store";
-export const revalidate = 0;
 
 const DEFAULT_LIMIT = 12;
 const MAX_LIMIT = 24;
@@ -35,5 +34,7 @@ export async function GET(request: Request) {
     return Response.json({ error: error.message }, { status: 500 });
   }
 
-  return Response.json({ posts: data ?? [] });
+  const res = NextResponse.json({ posts: data ?? [] });
+  res.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-revalidate=86400");
+  return res;
 }

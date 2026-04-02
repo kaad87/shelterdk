@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import Script from "next/script";
 import { DM_Sans, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
@@ -64,20 +63,16 @@ export default function RootLayout({
   return (
     <html lang="da" className={`${dmSans.variable} ${playfair.variable}`}>
       <head>
-        {/* S1: Preconnect & dns-prefetch for critical external origins */}
         <link rel="preconnect" href="https://lh3.googleusercontent.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://lh3.googleusercontent.com" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
-        <link rel="dns-prefetch" href="https://maps.geoapify.com" />
-        <link rel="dns-prefetch" href="https://tags.srv.stackadapt.com" />
-        {process.env.NEXT_PUBLIC_ADSENSE_PUB_ID && (
-          <Script
-            async
-            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_PUB_ID}`}
-            crossOrigin="anonymous"
-            strategy="lazyOnload"
-          />
-        )}
+        <link rel="dns-prefetch" href="https://tile.openstreetmap.org" />
+        {/* Google Consent Mode v2 defaults — must run synchronously before any Google tag */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('consent','default',{'ad_storage':'denied','ad_user_data':'denied','ad_personalization':'denied','analytics_storage':'denied'});try{if(localStorage.getItem('shelterdk_consent')==='accept'){gtag('consent','update',{'ad_storage':'granted','ad_user_data':'granted','ad_personalization':'granted','analytics_storage':'granted'});}}catch(e){}`,
+          }}
+        />
       </head>
       <body className="min-h-screen flex flex-col font-sans antialiased bg-background">
         <a
@@ -86,10 +81,6 @@ export default function RootLayout({
         >
           Spring til indhold
         </a>
-        <Script
-          id="stackadapt-events"
-          strategy="afterInteractive"
-        >{`!function(s,a,e,v,n,t,z){if(s.saq)return;n=s.saq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!s._saq)s._saq=n;n.push=n;n.loaded=!0;n.version='1.0';n.queue=[];t=a.createElement(e);t.async=!0;t.src=v;z=a.getElementsByTagName(e)[0];z.parentNode.insertBefore(t,z)}(window,document,'script','https://tags.srv.stackadapt.com/events.js');saq('ts', '2PGo6zJNYMlKgu4KYK8bjA');`}</Script>
         {children}
       </body>
     </html>

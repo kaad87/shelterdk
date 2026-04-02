@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { Mail, CheckCircle, Loader2 } from "lucide-react";
 import { useState, FormEvent } from "react";
+import { trackNewsletterSignup } from "@/lib/tracking";
 
 interface Props {
   variant?: "inline" | "compact";
@@ -15,6 +17,7 @@ export default function NewsletterSignup({
   className = "",
 }: Props) {
   const [email, setEmail] = useState("");
+  const [honeypot, setHoneypot] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -29,7 +32,7 @@ export default function NewsletterSignup({
       const res = await fetch("/api/newsletter/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), source }),
+        body: JSON.stringify({ email: email.trim(), source, website: honeypot }),
       });
 
       const data = await res.json();
@@ -41,6 +44,7 @@ export default function NewsletterSignup({
       }
 
       setStatus("success");
+      trackNewsletterSignup(source);
     } catch {
       setStatus("error");
       setErrorMsg("Kunne ikke oprette forbindelse. Prøv igen.");
@@ -71,6 +75,16 @@ export default function NewsletterSignup({
             </p>
             <form onSubmit={handleSubmit} className="space-y-2">
               <input
+                type="text"
+                name="website"
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+                autoComplete="off"
+                tabIndex={-1}
+                aria-hidden="true"
+                className="absolute opacity-0 h-0 w-0 overflow-hidden pointer-events-none"
+              />
+              <input
                 type="email"
                 required
                 placeholder="Din email"
@@ -93,6 +107,10 @@ export default function NewsletterSignup({
             {status === "error" && (
               <p className="text-red-600 text-xs mt-2">{errorMsg}</p>
             )}
+            <p className="text-primary/40 text-[10px] leading-relaxed mt-2">
+              Vi gemmer kun din email til nyhedsbrevet. Du kan altid afmelde dig.{" "}
+              <Link href="/privacy" className="underline hover:text-primary/60">Privatlivspolitik</Link>
+            </p>
           </>
         )}
       </div>
@@ -128,6 +146,16 @@ export default function NewsletterSignup({
               className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
             >
               <input
+                type="text"
+                name="website"
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+                autoComplete="off"
+                tabIndex={-1}
+                aria-hidden="true"
+                className="absolute opacity-0 h-0 w-0 overflow-hidden pointer-events-none"
+              />
+              <input
                 type="email"
                 required
                 placeholder="Din email-adresse"
@@ -150,6 +178,10 @@ export default function NewsletterSignup({
             {status === "error" && (
               <p className="text-red-600 text-sm mt-3">{errorMsg}</p>
             )}
+            <p className="text-primary/40 text-xs mt-3">
+              Vi gemmer kun din email til nyhedsbrevet. Du kan altid afmelde dig.{" "}
+              <Link href="/privacy" className="underline hover:text-primary/60">Privatlivspolitik</Link>
+            </p>
           </>
         )}
       </div>

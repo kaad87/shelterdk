@@ -34,7 +34,6 @@ function BlogCard({ post, index }: { post: BlogPost; index: number }) {
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-105"
               sizes="(max-width: 768px) 100vw, 50vw"
-              unoptimized
             />
             <span className="absolute top-3 left-3 bg-accent text-white text-xs font-medium px-2.5 py-1 rounded-full">
               {post.category}
@@ -124,7 +123,6 @@ export function BlogContent({ posts, categories }: BlogContentProps) {
             priority
             className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
             sizes="100vw"
-            unoptimized
           />
           <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/50 to-transparent" />
           <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-10 md:p-16">

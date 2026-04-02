@@ -2,7 +2,6 @@ import { Suspense } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { CookieBanner } from "@/components/CookieBanner";
-import { CollectPageView } from "@/components/CollectPageView";
 
 export default function SiteLayout({
   children,
@@ -12,9 +11,6 @@ export default function SiteLayout({
   return (
     <>
       <CookieBanner />
-      <Suspense fallback={null}>
-        <CollectPageView />
-      </Suspense>
       <Suspense fallback={<header className="h-16 border-b border-primary/10" />}>
         <Navbar />
       </Suspense>

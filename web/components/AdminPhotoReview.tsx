@@ -16,6 +16,8 @@ import {
   Camera,
   MessageSquare,
   Plus,
+  Mail,
+  Download,
 } from "lucide-react";
 import { getProxiedImageSrc } from "@/lib/image-proxy";
 import { FACILITY_FIELDS } from "@/lib/community";
@@ -28,7 +30,7 @@ declare global {
 
 const STORAGE_KEY = "shelterdk-admin-secret";
 
-type TabKey = "photos" | "community" | "instagram";
+type TabKey = "photos" | "community" | "instagram" | "newsletter";
 
 type Submission = {
   id: string;
@@ -63,6 +65,13 @@ type IgPost = {
   reviewed_at: string | null;
 };
 
+type NewsletterSub = {
+  id: string;
+  email: string;
+  source: string;
+  created_at: string;
+};
+
 const HASHTAGS = [
   { tag: "sheltertur", label: "Shelterture" },
   { tag: "natinaturen", label: "Nat i Naturen" },
@@ -78,6 +87,7 @@ const TAB_CONFIG: { key: TabKey; label: string; icon: typeof Camera }[] = [
   { key: "photos", label: "Billeder", icon: Camera },
   { key: "community", label: "Community", icon: MessageSquare },
   { key: "instagram", label: "Instagram", icon: Instagram },
+  { key: "newsletter", label: "Nyhedsbrev", icon: Mail },
 ];
 
 export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKey }) {
@@ -87,6 +97,7 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
   const [communitySubmissions, setCommunitySubmissions] = useState<CommunitySubmission[]>([]);
   const [igPosts, setIgPosts] = useState<IgPost[]>([]);
   const [igSetupRequired, setIgSetupRequired] = useState(false);
+  const [nlSubs, setNlSubs] = useState<NewsletterSub[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [actingId, setActingId] = useState<string | null>(null);
@@ -126,7 +137,7 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
     setError("");
     try {
       const ts = Date.now();
-      const [photoRes, communityRes, igRes] = await Promise.all([
+      const [photoRes, communityRes, igRes, nlRes] = await Promise.all([
         fetch(`/api/admin/pending-photos?t=${ts}`, {
           headers: { "x-admin-secret": s },
           cache: "no-store",
@@ -139,14 +150,19 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
           headers: { "x-admin-secret": s },
           cache: "no-store",
         }),
+        fetch(`/api/admin/newsletter?t=${ts}`, {
+          headers: { "x-admin-secret": s },
+          cache: "no-store",
+        }),
       ]);
-      if (photoRes.status === 401 || communityRes.status === 401 || igRes.status === 401) {
+      if (photoRes.status === 401 || communityRes.status === 401 || igRes.status === 401 || nlRes.status === 401) {
         setError("Ugyldig kode");
         sessionStorage.removeItem(STORAGE_KEY);
         setSecret("");
         setSubmissions([]);
         setCommunitySubmissions([]);
         setIgPosts([]);
+        setNlSubs([]);
         return;
       }
       if (!photoRes.ok || !communityRes.ok) {
@@ -169,6 +185,11 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
           setIgSetupRequired(false);
           setIgPosts(igData.posts ?? []);
         }
+      }
+
+      if (nlRes.ok) {
+        const nlData = await nlRes.json();
+        setNlSubs(nlData.subscribers ?? []);
       }
     } finally {
       setLoading(false);
@@ -207,6 +228,7 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
     setSubmissions([]);
     setCommunitySubmissions([]);
     setIgPosts([]);
+    setNlSubs([]);
   };
 
   const act = async (
@@ -343,6 +365,7 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
     photos: submissions.length,
     community: communitySubmissions.length,
     instagram: igPending.length,
+    newsletter: nlSubs.length,
   };
 
   // ── Login screen ──
@@ -769,6 +792,110 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
               icon={Instagram}
               text="Ingen Instagram-opslag endnu. Tilføj et link ovenfor eller vælg et forslag."
             />
+          )}
+        </div>
+      )}
+
+      {/* Newsletter tab */}
+      {tab === "newsletter" && !loading && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-primary/60">
+              {nlSubs.length} tilmeldt{nlSubs.length !== 1 ? "e" : ""}
+            </p>
+            {nlSubs.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  const csv = [
+                    "email,source,created_at",
+                    ...nlSubs.map(
+                      (s) => `${s.email},${s.source},${s.created_at}`
+                    ),
+                  ].join("\n");
+                  const blob = new Blob([csv], { type: "text/csv" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `newsletter-subscribers-${new Date().toISOString().slice(0, 10)}.csv`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-primary/5 px-3 py-2 text-xs font-medium text-primary/70 hover:bg-primary/10 transition-colors"
+              >
+                <Download size={14} />
+                Eksportér CSV
+              </button>
+            )}
+          </div>
+
+          {nlSubs.length === 0 ? (
+            <EmptyState icon={Mail} text="Ingen tilmeldinger endnu." />
+          ) : (
+            <div className="rounded-xl border border-primary/10 overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-primary/[0.03] text-left text-primary/60">
+                    <th className="px-4 py-2.5 font-medium">Email</th>
+                    <th className="px-4 py-2.5 font-medium hidden sm:table-cell">Kilde</th>
+                    <th className="px-4 py-2.5 font-medium hidden sm:table-cell">Dato</th>
+                    <th className="px-4 py-2.5 font-medium w-10"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-primary/5">
+                  {nlSubs.map((sub) => (
+                    <tr key={sub.id} className="hover:bg-primary/[0.02]">
+                      <td className="px-4 py-3 text-primary">{sub.email}</td>
+                      <td className="px-4 py-3 text-primary/50 hidden sm:table-cell">
+                        <span className="inline-block rounded-md bg-primary/5 px-2 py-0.5 text-xs">
+                          {sub.source}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-primary/50 hidden sm:table-cell">
+                        {new Date(sub.created_at).toLocaleDateString("da-DK", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </td>
+                      <td className="px-4 py-3">
+                        <button
+                          type="button"
+                          title="Slet"
+                          onClick={async () => {
+                            if (!confirm(`Slet ${sub.email}?`)) return;
+                            setActingId(sub.id);
+                            try {
+                              const res = await fetch("/api/admin/newsletter", {
+                                method: "DELETE",
+                                headers: {
+                                  "Content-Type": "application/json",
+                                  "x-admin-secret": secret,
+                                },
+                                body: JSON.stringify({ id: sub.id }),
+                              });
+                              if (res.ok) {
+                                setNlSubs((prev) => prev.filter((s) => s.id !== sub.id));
+                              }
+                            } finally {
+                              setActingId(null);
+                            }
+                          }}
+                          disabled={actingId === sub.id}
+                          className="text-primary/30 hover:text-red-500 transition-colors disabled:opacity-40"
+                        >
+                          {actingId === sub.id ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : (
+                            <Trash2 size={14} />
+                          )}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       )}

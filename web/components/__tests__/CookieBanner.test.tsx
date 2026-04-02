@@ -5,14 +5,16 @@ import { CookieBanner } from "../CookieBanner";
 vi.mock("next/script", () => ({
   default: function MockScript({
     id,
+    children,
     dangerouslySetInnerHTML,
   }: {
-    id: string;
+    id?: string;
+    children?: string;
     dangerouslySetInnerHTML?: { __html: string };
   }) {
     return (
-      <div data-testid="gtm-script" data-id={id}>
-        {dangerouslySetInnerHTML?.__html ? "GTM loaded" : null}
+      <div data-testid={`script-${id ?? "anon"}`} data-id={id}>
+        {dangerouslySetInnerHTML?.__html ?? children ?? null}
       </div>
     );
   },
@@ -83,28 +85,35 @@ describe("CookieBanner", () => {
     expect(screen.queryByRole("dialog", { name: /cookievalg/i })).not.toBeInTheDocument();
   });
 
-  it("viser GTM Script når samtykke er accept", () => {
+  it("viser GTM script altid (Consent Mode v2)", () => {
     render(<CookieBanner />);
-    fireEvent.click(screen.getByRole("button", { name: /acceptér alle/i }));
-    expect(screen.getByTestId("gtm-script")).toBeInTheDocument();
+    expect(screen.getByTestId("script-gtm")).toBeInTheDocument();
   });
 
-  it("viser IKKE GTM Script når samtykke er necessary", () => {
+  it("viser StackAdapt kun ved accept", () => {
+    render(<CookieBanner />);
+    expect(screen.queryByTestId("script-stackadapt-events")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /acceptér alle/i }));
+    expect(screen.getByTestId("script-stackadapt-events")).toBeInTheDocument();
+  });
+
+  it("viser IKKE StackAdapt ved necessary", () => {
     render(<CookieBanner />);
     fireEvent.click(screen.getByRole("button", { name: /kun nødvendige/i }));
-    expect(screen.queryByTestId("gtm-script")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("script-stackadapt-events")).not.toBeInTheDocument();
   });
 
-  it("skjuler banner og viser GTM når accept allerede er gemt", () => {
+  it("skjuler banner og viser StackAdapt når accept allerede er gemt", () => {
     storage.setStore(CONSENT_KEY, "accept");
     render(<CookieBanner />);
-    expect(screen.getByTestId("gtm-script")).toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: /cookievalg/i })).not.toBeInTheDocument();
+    expect(screen.getByTestId("script-stackadapt-events")).toBeInTheDocument();
   });
 
   it("skjuler banner når necessary allerede er gemt", () => {
     storage.setStore(CONSENT_KEY, "necessary");
     render(<CookieBanner />);
     expect(screen.queryByRole("dialog", { name: /cookievalg/i })).not.toBeInTheDocument();
-    expect(screen.queryByTestId("gtm-script")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("script-stackadapt-events")).not.toBeInTheDocument();
   });
 });

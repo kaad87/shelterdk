@@ -9,9 +9,17 @@ import { AuthorBio } from "@/components/AuthorBio";
 import { ArticleFaq } from "@/components/ArticleFaq";
 import { ShelterCTA } from "@/components/ShelterCTA";
 import { ShareExperience } from "@/components/ShareExperience";
-import { InstagramFeed } from "@/components/InstagramFeed";
-import NewsletterSignup from "@/components/NewsletterSignup";
+import dynamic from "next/dynamic";
 import { ArrowLeft, Calendar, Clock } from "lucide-react";
+
+const InstagramFeed = dynamic(
+  () => import("@/components/InstagramFeed").then((m) => ({ default: m.InstagramFeed })),
+  { ssr: false }
+);
+const NewsletterSignup = dynamic(
+  () => import("@/components/NewsletterSignup"),
+  { ssr: false }
+);
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -110,7 +118,6 @@ export default async function BlogPostPage({ params }: PageProps) {
             priority
             className="object-cover"
             sizes="100vw"
-            unoptimized
           />
           <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/50 to-transparent" />
           <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-10 md:p-16">
@@ -202,7 +209,6 @@ export default async function BlogPostPage({ params }: PageProps) {
                         fill
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
                         sizes="(max-width: 640px) 100vw, 33vw"
-                        unoptimized
                       />
                       <span className="absolute top-2 left-2 bg-accent text-white text-[10px] font-medium px-2 py-0.5 rounded-full">
                         {related.category}

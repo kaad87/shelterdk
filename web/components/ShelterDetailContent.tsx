@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import {
   ExternalLink,
@@ -21,6 +22,7 @@ import { WeatherWidget } from "@/components/WeatherWidget";
 import { CommunityContributionPanel } from "@/components/CommunityContributionPanel";
 import { CommunityApprovedSection } from "@/components/CommunityApprovedSection";
 import NewsletterSignup from "@/components/NewsletterSignup";
+import { trackShelterView, trackOutboundClick } from "@/lib/tracking";
 import type { DailyForecast } from "@/lib/weather";
 import type { Shelter } from "@/types/shelter";
 import type { FaqItem } from "@/lib/faq";
@@ -106,6 +108,11 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
     weatherForecast = null,
   } = props;
 
+  useEffect(() => {
+    trackShelterView(shelter.title, slug);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug]);
+
   const BookingCard = ({ className = "" }: { className?: string }) => (
     <div className={`rounded-2xl border border-primary/10 bg-white shadow-sm p-6 ${className}`}>
       {bookingUrl ? (
@@ -114,6 +121,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
             href={bookingUrl}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackOutboundClick(bookingUrl!, "Book shelter")}
             className="flex items-center justify-center gap-2 w-full bg-accent text-white font-semibold px-6 py-4 rounded-xl hover:bg-accent/90 transition-colors"
           >
             <ExternalLink size={20} />
@@ -491,6 +499,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
             href={bookingUrl}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackOutboundClick(bookingUrl!, "Book dette shelter")}
             aria-label={`Book ${shelter.title} – åbner i nyt vindue`}
             className="flex items-center justify-center gap-2 w-full bg-accent text-white text-center font-semibold py-3 rounded-lg hover:bg-accent/90 transition-colors"
           >

@@ -7,6 +7,7 @@ import Link from "next/link";
 const CONSENT_KEY = "shelterdk_consent";
 const CONSENT_COOKIE = "shelterdk_consent";
 const COOKIE_MAX_AGE_DAYS = 365;
+const GTM_ID = "GTM-MT8S798N";
 
 export type ConsentChoice = "accept" | "necessary";
 
@@ -30,7 +31,31 @@ function setConsentStorage(choice: ConsentChoice) {
   }
 }
 
-const GTM_ID = "GTM-MT8S798N";
+function updateGtagConsent(granted: boolean) {
+  const w = window as unknown as { dataLayer: unknown[] };
+  w.dataLayer = w.dataLayer || [];
+  const state = granted ? "granted" : "denied";
+  w.dataLayer.push([
+    "consent",
+    "update",
+    {
+      ad_storage: state,
+      ad_user_data: state,
+      ad_personalization: state,
+      analytics_storage: state,
+    },
+  ]);
+}
+
+export function resetCookieConsent() {
+  try {
+    localStorage.removeItem(CONSENT_KEY);
+    document.cookie = `${CONSENT_COOKIE}=; path=/; max-age=0`;
+    window.location.reload();
+  } catch {
+    // ignore
+  }
+}
 
 export function CookieBanner() {
   const [consent, setConsent] = useState<ConsentChoice | null>(null);
@@ -44,12 +69,52 @@ export function CookieBanner() {
   const handleChoice = (choice: ConsentChoice) => {
     setConsentStorage(choice);
     setConsent(choice);
+    updateGtagConsent(choice === "accept");
   };
 
   const showBanner = mounted && consent === null;
 
   return (
     <>
+      {/* GTM — always loads, respects Consent Mode v2 (cookieless pings when denied) */}
+      <Script
+        id="gtm"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','${GTM_ID}');`,
+        }}
+      />
+      <noscript>
+        <iframe
+          src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+          height="0"
+          width="0"
+          style={{ display: "none", visibility: "hidden" }}
+          title="Google Tag Manager"
+        />
+      </noscript>
+
+      {/* AdSense — respects Consent Mode (non-personalized ads when denied) */}
+      {process.env.NEXT_PUBLIC_ADSENSE_PUB_ID && (
+        <Script
+          async
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_PUB_ID}`}
+          crossOrigin="anonymous"
+          strategy="lazyOnload"
+        />
+      )}
+
+      {/* StackAdapt — no cookieless mode, only loads on explicit accept */}
+      {consent === "accept" && (
+        <Script id="stackadapt-events" strategy="afterInteractive">
+          {`!function(s,a,e,v,n,t,z){if(s.saq)return;n=s.saq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!s._saq)s._saq=n;n.push=n;n.loaded=!0;n.version='1.0';n.queue=[];t=a.createElement(e);t.async=!0;t.src=v;z=a.getElementsByTagName(e)[0];z.parentNode.insertBefore(t,z)}(window,document,'script','https://tags.srv.stackadapt.com/events.js');saq('ts','2PGo6zJNYMlKgu4KYK8bjA');`}
+        </Script>
+      )}
+
       {showBanner && (
         <div
           role="dialog"
@@ -87,31 +152,6 @@ export function CookieBanner() {
             </div>
           </div>
         </div>
-      )}
-
-      {consent === "accept" && (
-        <>
-          <Script
-            id="gtm"
-            strategy="afterInteractive"
-            dangerouslySetInnerHTML={{
-              __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','${GTM_ID}');`,
-            }}
-          />
-          <noscript>
-            <iframe
-              src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
-              height="0"
-              width="0"
-              style={{ display: "none", visibility: "hidden" }}
-              title="Google Tag Manager"
-            />
-          </noscript>
-        </>
       )}
     </>
   );

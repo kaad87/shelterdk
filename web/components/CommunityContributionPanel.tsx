@@ -18,6 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { createBrowserSupabaseClient } from "@/utils/supabase/browser";
+import { trackCommunitySubmit } from "@/lib/tracking";
 import {
   FACILITY_FIELDS,
   type FacilityFieldKey,
@@ -159,6 +160,7 @@ export function CommunityContributionPanel({
       }
       setFacilityMessage("Tak! Sendt til godkendelse.");
       setActiveFacility(null);
+      trackCommunitySubmit("facilities");
     } catch {
       setFacilityMessage("Kunne ikke sende. Prøv igen.");
     } finally {
@@ -196,6 +198,7 @@ export function CommunityContributionPanel({
       }
       setCommentText("");
       setCommentMessage(data.message || "Tak! Dit tip er sendt til godkendelse.");
+      trackCommunitySubmit("comment");
     } catch {
       setCommentMessage("Kunne ikke sende tip. Prøv igen.");
     } finally {
@@ -226,6 +229,7 @@ export function CommunityContributionPanel({
       }
       setPhotoFile(null);
       setPhotoMessage(data.message || "Tak! Billedet er sendt til godkendelse.");
+      trackCommunitySubmit("photo");
     } catch {
       setPhotoMessage("Kunne ikke sende billede. Prøv igen.");
     } finally {

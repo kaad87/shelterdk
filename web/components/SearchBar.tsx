@@ -22,6 +22,7 @@ import {
   X,
 } from "lucide-react";
 import type { SoegFilters, SearchSuggestion } from "@/lib/soeg-db";
+import { trackSearch, trackFilter } from "@/lib/tracking";
 
 const REGIONS = [
   { value: "", label: "Hele Danmark" },
@@ -173,6 +174,8 @@ export function SearchBar({
     const hasSearch = region || query.trim();
     const initialView: ViewMode = hasSearch ? "split" : (mode === "search" ? view : "split");
     const url = buildSoegUrl(region, query, initialView);
+    const activeCount = FILTER_OPTIONS.filter(({ key }) => filters[key]).length;
+    trackSearch(query.trim() || "(tom)", region, activeCount);
     router.push(url);
   };
 
@@ -193,8 +196,10 @@ export function SearchBar({
 
   const toggleFilter = useCallback(
     (key: keyof SoegFilters) => {
-      const next = { ...filters, [key]: filters[key] ? undefined : true };
+      const willBeActive = !filters[key];
+      const next = { ...filters, [key]: willBeActive ? true : undefined };
       setFilters(next);
+      trackFilter(key, willBeActive);
       const url = buildSoegUrl(region, query, mode === "search" ? view : "split", next);
       router.push(url, { scroll: false });
     },

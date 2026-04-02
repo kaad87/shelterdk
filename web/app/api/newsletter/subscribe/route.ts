@@ -5,11 +5,15 @@ export const dynamic = "force-dynamic";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(request: Request) {
-  let body: { email?: string; source?: string };
+  let body: { email?: string; source?: string; website?: string };
   try {
     body = await request.json();
   } catch {
     return Response.json({ error: "Ugyldig JSON" }, { status: 400 });
+  }
+
+  if (body.website) {
+    return Response.json({ ok: true });
   }
 
   const email = body.email?.trim().toLowerCase();

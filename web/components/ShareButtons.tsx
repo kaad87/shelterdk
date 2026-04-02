@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Share2, Link2, Facebook, Check } from "lucide-react";
+import { trackShare } from "@/lib/tracking";
 
 interface ShareButtonsProps {
   title: string;
@@ -23,6 +24,7 @@ export function ShareButtons({ title, url }: ShareButtonsProps) {
     if (navigator.share) {
       try {
         await navigator.share({ title, url: fullUrl });
+        trackShare("native", "shelter");
       } catch {
         // User cancelled
       }
@@ -33,6 +35,7 @@ export function ShareButtons({ title, url }: ShareButtonsProps) {
     try {
       await navigator.clipboard.writeText(fullUrl);
       setCopied(true);
+      trackShare("copy_link", "shelter");
       setTimeout(() => setCopied(false), 2000);
     } catch {
       // Fallback
@@ -64,6 +67,7 @@ export function ShareButtons({ title, url }: ShareButtonsProps) {
         href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => trackShare("facebook", "shelter")}
         className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary/5 text-primary/60 hover:bg-[#1877F2]/10 hover:text-[#1877F2] transition-colors touch-manipulation"
         title="Del på Facebook"
         aria-label="Del på Facebook"
@@ -74,6 +78,7 @@ export function ShareButtons({ title, url }: ShareButtonsProps) {
         href={`https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => trackShare("twitter", "shelter")}
         className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary/5 text-primary/60 hover:bg-primary/10 hover:text-primary transition-colors touch-manipulation"
         title="Del på X/Twitter"
         aria-label="Del på X/Twitter"

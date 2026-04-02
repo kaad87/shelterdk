@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { MapPin, Tent, ExternalLink } from "lucide-react";
+import { CookieResetButton } from "@/components/CookieResetButton";
 
 const footerLinks = [
   { label: "Søg shelters", href: "/soeg" },
@@ -60,6 +61,9 @@ export function Footer() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <CookieResetButton />
+              </li>
             </ul>
           </div>
 

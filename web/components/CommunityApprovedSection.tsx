@@ -32,8 +32,8 @@ export function CommunityApprovedSection({ slug, shelter }: CommunityApprovedSec
   useEffect(() => {
     let active = true;
     Promise.all([
-      fetch(`/api/shelter/${slug}/comments`, { cache: "no-store" }).then((r) => r.json()),
-      fetch(`/api/shelter/${slug}/community-facts`, { cache: "no-store" }).then((r) => r.json()),
+      fetch(`/api/shelter/${slug}/comments`, { next: { revalidate: 300 } }).then((r) => r.json()),
+      fetch(`/api/shelter/${slug}/community-facts`, { next: { revalidate: 300 } }).then((r) => r.json()),
     ])
       .then(([commentsRes, factsRes]) => {
         if (!active) return;

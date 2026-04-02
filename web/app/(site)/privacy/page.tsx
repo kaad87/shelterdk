@@ -43,15 +43,17 @@ export default function PrivacyPage() {
               </li>
               <li>
                 <strong>Valgfrie cookies</strong> – Statistik og forbedring via Google Tag Manager
-                (GTM). Disse indlæses kun, hvis du vælger &quot;Acceptér alle&quot; i
-                cookiebanneren.
+                (GTM) og Google Analytics. GTM indlæses altid, men bruger Google Consent Mode v2 —
+                når du vælger &quot;Kun nødvendige&quot;, sættes ingen tracking-cookies, og der
+                sendes kun anonyme, aggregerede signaler. Vælger du &quot;Acceptér alle&quot;,
+                aktiveres fuld statistik og personaliserede annoncer.
               </li>
             </ul>
             <p className="text-primary/80 leading-relaxed mt-4">
-              Hvis du vælger &quot;Kun nødvendige&quot;, sender vi alligevel anonyme sidevisninger
-              fra serveren til vores statistik (én pr. side, uden cookie eller kendetegn, der
-              kan følge dig på tværs af sider). Det bruges kun til at forstå, hvilke sider der
-              bruges mest.
+              Hvis du vælger &quot;Kun nødvendige&quot;, sender Google Tag Manager anonymiserede
+              signaler uden cookies (Google Consent Mode v2). Disse bruges af Google til at
+              modellere aggregeret statistik — ingen personlige data indsamles. Derudover kan
+              der vises kontekstuelle (ikke-personaliserede) annoncer via AdSense.
             </p>
             <p className="text-primary/80 leading-relaxed mt-4">
               Dit valg gemmes i din browser (localStorage og en cookie) i op til ét år. Du kan
@@ -67,11 +69,33 @@ export default function PrivacyPage() {
             <p className="text-primary/80 leading-relaxed">
               ShelterDK henter shelterdata fra offentlige kilder (bl.a. GeoFA, Naturstyrelsen,
               kommuner). Vi indsamler ikke persondata fra dig, medmindre du aktivt sender os noget
-              (fx via kontakt eller upload af billeder). Hvis du accepterer valgfrie cookies, kan
-              tjenester som Google Analytics (via GTM) indsamle data om din brug af siden – se
-              Googles privatlivspolitik for detaljer. Ved &quot;Kun nødvendige&quot; sendes kun
-              anonyme sidevisninger fra serveren (ingen profilering).
+              (fx via kontakt, upload af billeder eller tilmelding til nyhedsbrev). Hvis du
+              accepterer valgfrie cookies, kan tjenester som Google Analytics (via GTM) og
+              StackAdapt indsamle data om din brug af siden – se deres respektive
+              privatlivspolitikker for detaljer. Ved &quot;Kun nødvendige&quot; kører GTM i
+              Consent Mode (ingen cookies, kun anonyme signaler).
             </p>
+          </section>
+
+          <section>
+            <h2 className="font-serif text-2xl font-bold text-primary mt-8 mb-4">Nyhedsbrev</h2>
+            <p className="text-primary/80 leading-relaxed">
+              Hvis du tilmelder dig vores nyhedsbrev, gemmer vi din email-adresse i en sikker database
+              (Supabase) udelukkende til at sende dig nyhedsbreve om shelterture, nye pladser og
+              sæsonguides. Vi deler ikke din email med tredjeparter.
+            </p>
+            <ul className="list-disc pl-6 text-primary/80 space-y-2 mt-4">
+              <li>
+                <strong>Hvad vi gemmer</strong> – Din email og hvilken side du tilmeldte dig fra.
+              </li>
+              <li>
+                <strong>Hvor længe</strong> – Indtil du afmelder dig.
+              </li>
+              <li>
+                <strong>Afmelding</strong> – Du kan til enhver tid afmelde dig via et link i
+                nyhedsbrevet, eller ved at kontakte os.
+              </li>
+            </ul>
           </section>
 
           <section>

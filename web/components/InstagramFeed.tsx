@@ -22,7 +22,7 @@ export function InstagramFeed({
 
   useEffect(() => {
     let cancelled = false;
-    fetch(`/api/instagram/feed?limit=${limit}`, { cache: "no-store" })
+    fetch(`/api/instagram/feed?limit=${limit}`)
       .then((r) => r.json())
       .then((d: { posts?: FeedPost[]; setupRequired?: boolean }) => {
         if (!cancelled) setPosts(d.posts ?? []);
