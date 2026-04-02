@@ -36,7 +36,7 @@ const BLOG_POSTS: BlogPost[] = [
     coverImage:
       "https://images.unsplash.com/photo-1471513671800-b09c87e1497c?w=1200&q=80&auto=format&fit=crop",
     readingTime: 4,
-    content: `Danmark er et af de bedste lande i Europa, hvis du vil overnatte gratis i naturen. Hundredvis af shelters er frit tilgængelige for alle, og det koster ikke en krone at bruge dem. Men hvordan finder du dem, hvad er reglerne, og hvad kan du forvente? I denne guide giver vi dig det fulde overblik over <a href="/fakta/gratis-shelters">gratis shelters i Danmark</a>.
+    content: `Danmark er et af de bedste lande i Europa, hvis du vil overnatte gratis i naturen. Hundredvis af shelters er frit tilgængelige for alle, og det koster ikke en krone at bruge dem. Men hvordan finder du dem, hvad er reglerne, og hvad kan du forvente? I denne guide giver vi dig det fulde overblik over [gratis shelters i Danmark](/fakta/gratis-shelters).
 
 ![Shelter i dansk skov med bålplads](https://images.unsplash.com/photo-1471513671800-b09c87e1497c?w=1200&q=80&auto=format&fit=crop)
 
@@ -66,7 +66,7 @@ Hvis du er fleksibel med din rejseplan og gerne vil spare penge, er gratis shelt
 
 ## Hvor finder man gratis shelters?
 
-Der findes flere gode kilder til at finde gratis shelters i Danmark. Se <a href="/fakta/shelters-i-danmark">den samlede statistik over alle shelters</a> eller brug vores <a href="/soeg">sheltersøgning</a> til at filtrere efter område og se placeringer på kortet. Naturstyrelsen driver en stor del af landets gratis shelters, og deres hjemmeside har opdaterede oplysninger om tilgængelighed og faciliteter.
+Der findes flere gode kilder til at finde gratis shelters i Danmark. Se [den samlede statistik over alle shelters](/fakta/shelters-i-danmark) eller brug vores [sheltersøgning](/soeg) til at filtrere efter område og se placeringer på kortet. Naturstyrelsen driver en stor del af landets gratis shelters, og deres hjemmeside har opdaterede oplysninger om tilgængelighed og faciliteter.
 
 De mest populære områder for gratis shelters inkluderer:
 
@@ -90,7 +90,7 @@ Læs mere om, hvad du skal pakke, i vores <a href="/guides/pakkeliste-til-shelte
 
 ## Regler og god opførsel
 
-Selvom gratis shelters er åbne for alle, er der stadig regler, du skal overholde. Overnatning i shelters er tilladt på de udpegede pladser – se <a href="/fakta/gratis-shelters">oversigt over gratis shelters</a> – men du må som udgangspunkt ikke slå lejr andre steder i skoven uden tilladelse. Læs mere om de juridiske rammer i vores <a href="/guides/regler-for-shelter-og-teltning-i-danmark">guide til regler for shelter og teltning</a>.
+Selvom gratis shelters er åbne for alle, er der stadig regler, du skal overholde. Overnatning i shelters er tilladt på de udpegede pladser – se [oversigt over gratis shelters](/fakta/gratis-shelters) – men du må som udgangspunkt ikke slå lejr andre steder i skoven uden tilladelse. Læs mere om de juridiske rammer i vores <a href="/guides/regler-for-shelter-og-teltning-i-danmark">guide til regler for shelter og teltning</a>.
 
 De vigtigste regler for gratis shelters:
 
@@ -163,7 +163,7 @@ På en teltplads skal du medbringe dit eget telt, hvilket giver dig mere privatl
 
 ## Fordele ved shelter
 
-Shelters har en række klare fordele, som gør dem populære blandt friluftsfolk (se <a href="/fakta/shelters-i-danmark">alle shelters i Danmark</a>):
+Shelters har en række klare fordele, som gør dem populære blandt friluftsfolk (se [alle shelters i Danmark](/fakta/shelters-i-danmark)):
 
 - **Lettere oppakning** – du skal ikke bære telt, heringe og stænger
 - **Hurtig opstilling** – du ankommer og lægger dig til rette. Intet besvær med at rejse telt i mørke eller regn
@@ -248,7 +248,7 @@ For begyndere og dem, der vil rejse let, er shelters det oplagte valg. De giver 
     coverImage:
       "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1200&q=80&auto=format&fit=crop",
     readingTime: 5,
-    content: `Danmark har over tusind shelters spredt ud over hele landet – se vores <a href="/fakta/bedste-shelters">liste over de bedst bedømte shelters</a> baseret på Google-anmeldelser. Nogle steder skiller sig ud med en helt særlig beliggenhed, fantastiske faciliteter eller en stemning, der gør oplevelsen uforglemmelig. Vi har samlet vores bud på de 10 bedste shelters i Danmark, baseret på beliggenhed, tilstand, omgivelser og den samlede oplevelse.
+    content: `Danmark har over tusind shelters spredt ud over hele landet – se vores [liste over de bedst bedømte shelters](/fakta/bedste-shelters) baseret på Google-anmeldelser. Nogle steder skiller sig ud med en helt særlig beliggenhed, fantastiske faciliteter eller en stemning, der gør oplevelsen uforglemmelig. Vi har samlet vores bud på de 10 bedste shelters i Danmark, baseret på beliggenhed, tilstand, omgivelser og den samlede oplevelse.
 
 ![Dansk kystlandskab med shelter](https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1200&q=80&auto=format&fit=crop)
 
@@ -340,7 +340,7 @@ Planlæg din tur med tid og omhu, og husk at de mest populære shelters kan vær
 
 ## Efterårets særlige stemning
 
-Der er noget magisk ved at sidde ved et bål i en efterårsskov – find <a href="/shelter-med-baalplads">shelters med bålplads</a> til din efterårstur. Bladene skifter farve fra grønt til guld, orange og dybt rødt, og skovbunden dufter af jord og nedfaldne blade. Lyset er blødt og varmt, og solnedgangene kommer tidligt og maler himlen i dramatiske farver.
+Der er noget magisk ved at sidde ved et bål i en efterårsskov – find [shelters med bålplads](/shelter-med-baalplads) til din efterårstur. Bladene skifter farve fra grønt til guld, orange og dybt rødt, og skovbunden dufter af jord og nedfaldne blade. Lyset er blødt og varmt, og solnedgangene kommer tidligt og maler himlen i dramatiske farver.
 
 Efteråret byder også på langt færre besøgende end sommeren. De mest populære shelters, der er umulige at få i juli, står ofte tomme en tirsdag i oktober. Det giver ro, plads og mulighed for at nyde naturen i dit eget tempo.
 
@@ -700,7 +700,7 @@ God etikette er ikke kompliceret – det handler om sund fornuft og respekt. Hvi
     coverImage:
       "https://images.unsplash.com/photo-1563565615879-0a8fb26cd6ec?w=1200&q=80&auto=format&fit=crop",
     readingTime: 4,
-    content: `Danmark er et lille land med en overraskende stor variation i landskaber – og det afspejles i shelteroplevelserne. Fra Nordjyllands vilde kystlandskaber til <a href="/danmark/bornholm">Bornholms</a> klippekyster og <a href="/danmark/sjaelland">Sjællands</a> dybe bøgeskove er der shelter til enhver smag. Se også alle <a href="/danmark/jylland">shelters i Jylland</a> og <a href="/danmark/fyn">shelters på Fyn</a>. Her tager vi dig med på en rundtur i de bedste regioner for naturovernatning.
+    content: `Danmark er et lille land med en overraskende stor variation i landskaber – og det afspejles i shelteroplevelserne. Fra Nordjyllands vilde kystlandskaber til [Bornholms](/danmark/bornholm) klippekyster og [Sjællands](/danmark/sjaelland) dybe bøgeskove er der shelter til enhver smag. Se også alle [shelters i Jylland](/danmark/jylland) og [shelters på Fyn](/danmark/fyn). Her tager vi dig med på en rundtur i de bedste regioner for naturovernatning.
 
 ![Dansk skovlandskab med morgendis](https://images.unsplash.com/photo-1767948156403-1f764878374c?w=1200&q=80&auto=format&fit=crop)
 
@@ -788,9 +788,9 @@ Du kan også udforske [udinaturen.dk](https://udinaturen.dk) for yderligere info
 Til ture med børn er det vigtigt at vælge et shelter, der er let tilgængeligt. Lange vandreture med tung oppakning er sjældent en succes med små ben. Her er hvad du bør kigge efter:
 
 - **Kort gåafstand fra parkering** – helst under 1 km, især med børn under 6 år
-- **<a href="/shelter-med-toilet">Toilet i nærheden</a>** – det gør alt meget lettere, især med mindre børn
+- **[Toilet i nærheden](/shelter-med-toilet)** – det gør alt meget lettere, især med mindre børn
 - **Bålplads** – børn elsker at lave mad over bål, og det er en aktivitet i sig selv
-- **<a href="/shelter-med-vand">Vand</a>** – et vandløb, en sø eller havet i nærheden giver timers underholdning
+- **[Vand](/shelter-med-vand)** – et vandløb, en sø eller havet i nærheden giver timers underholdning
 
 Book altid shelteren på forhånd via [udinaturen.dk](https://udinaturen.dk) eller [book.naturstyrelsen.dk](https://book.naturstyrelsen.dk), når du rejser med børn. Der er intet værre end at ankomme med trætte, sultne børn og finde pladsen optaget. Brug vores [sheltersøgning](/soeg) til at finde egnede pladser med de rette faciliteter.
 
