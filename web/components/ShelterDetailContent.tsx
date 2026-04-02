@@ -20,6 +20,7 @@ import { ShareButtons } from "@/components/ShareButtons";
 import { WeatherWidget } from "@/components/WeatherWidget";
 import { CommunityContributionPanel } from "@/components/CommunityContributionPanel";
 import { CommunityApprovedSection } from "@/components/CommunityApprovedSection";
+import NewsletterSignup from "@/components/NewsletterSignup";
 import type { DailyForecast } from "@/lib/weather";
 import type { Shelter } from "@/types/shelter";
 import type { FaqItem } from "@/lib/faq";
@@ -477,6 +478,8 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
               </h2>
               <ShelterFacts shelter={shelter} coords={coords} firewood={firewood} />
             </div>
+
+            <NewsletterSignup variant="compact" source="shelter" />
           </aside>
         </div>
       </div>

@@ -14,6 +14,11 @@ const InstagramFeed = dynamic(
   { ssr: false }
 );
 
+const NewsletterSignup = dynamic(
+  () => import("@/components/NewsletterSignup"),
+  { ssr: false }
+);
+
 const MapComponent = dynamic(
   () => import("@/components/MapComponent").then((m) => ({ default: m.MapComponent })),
   { ssr: false }
@@ -422,6 +427,12 @@ export default async function HomePage() {
               </p>
             </Link>
           </div>
+        </div>
+      </section>
+
+      <section className="py-8 bg-background">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <NewsletterSignup variant="inline" source="homepage" />
         </div>
       </section>
 
