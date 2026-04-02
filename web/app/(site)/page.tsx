@@ -9,6 +9,11 @@ import { SearchBar } from "@/components/SearchBar";
 import { createPublicClient } from "@/utils/supabase/server-public";
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 
+const InstagramFeed = dynamic(
+  () => import("@/components/InstagramFeed").then((m) => ({ default: m.InstagramFeed })),
+  { ssr: false }
+);
+
 const MapComponent = dynamic(
   () => import("@/components/MapComponent").then((m) => ({ default: m.MapComponent })),
   { ssr: false }
@@ -417,6 +422,12 @@ export default async function HomePage() {
               </p>
             </Link>
           </div>
+        </div>
+      </section>
+
+      <section className="py-8 bg-background" id="instagram" aria-labelledby="heading-instagram">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <InstagramFeed title="Shelter-stemning fra Instagram" limit={6} />
         </div>
       </section>
 

@@ -1,13 +1,34 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Check, X, Loader2, Lock, RefreshCw } from "lucide-react";
+import Script from "next/script";
+import {
+  Check,
+  X,
+  Loader2,
+  Lock,
+  RefreshCw,
+  Trash2,
+  ExternalLink,
+  Instagram,
+  Camera,
+  MessageSquare,
+  Plus,
+} from "lucide-react";
 import { getProxiedImageSrc } from "@/lib/image-proxy";
 import { FACILITY_FIELDS } from "@/lib/community";
 
+declare global {
+  interface Window {
+    instgrm?: { Embeds: { process: () => void } };
+  }
+}
+
 const STORAGE_KEY = "shelterdk-admin-secret";
+
+type TabKey = "photos" | "community" | "instagram";
 
 type Submission = {
   id: string;
@@ -33,15 +54,62 @@ type CommunitySubmission = {
   shelter: { title: string; slug: string } | null;
 };
 
-export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: "photos" | "community" }) {
+type IgPost = {
+  id: string;
+  post_url: string;
+  status: string;
+  moderation_note: string | null;
+  created_at: string;
+  reviewed_at: string | null;
+};
+
+const HASHTAGS = [
+  { tag: "sheltertur", label: "Shelterture" },
+  { tag: "natinaturen", label: "Nat i Naturen" },
+  { tag: "primitvovernatning", label: "Primitiv overnatning" },
+  { tag: "shelterliv", label: "Shelterliv" },
+  { tag: "friluftsliv", label: "Friluftsliv DK" },
+  { tag: "bålhygge", label: "Bålhygge" },
+  { tag: "udinaturen", label: "Ud i naturen" },
+  { tag: "shelterplads", label: "Shelterplads" },
+];
+
+const TAB_CONFIG: { key: TabKey; label: string; icon: typeof Camera }[] = [
+  { key: "photos", label: "Billeder", icon: Camera },
+  { key: "community", label: "Community", icon: MessageSquare },
+  { key: "instagram", label: "Instagram", icon: Instagram },
+];
+
+export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKey }) {
   const [secret, setSecret] = useState("");
   const [inputSecret, setInputSecret] = useState("");
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [communitySubmissions, setCommunitySubmissions] = useState<CommunitySubmission[]>([]);
+  const [igPosts, setIgPosts] = useState<IgPost[]>([]);
+  const [igSetupRequired, setIgSetupRequired] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [actingId, setActingId] = useState<string | null>(null);
-  const [tab, setTab] = useState<"photos" | "community">(initialTab);
+  const [tab, setTab] = useState<TabKey>(initialTab);
+  const [newIgUrl, setNewIgUrl] = useState("");
+  const [igScriptReady, setIgScriptReady] = useState(false);
+  const embedRef = useRef(0);
+
+  const processEmbeds = useCallback(() => {
+    if (typeof window !== "undefined" && window.instgrm?.Embeds) {
+      window.instgrm.Embeds.process();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!igScriptReady || tab !== "instagram") return;
+    embedRef.current += 1;
+    const ver = embedRef.current;
+    const t = setTimeout(() => {
+      if (ver === embedRef.current) processEmbeds();
+    }, 300);
+    return () => clearTimeout(t);
+  }, [igScriptReady, tab, igPosts, processEmbeds]);
 
   const loadStored = useCallback(() => {
     if (typeof window === "undefined") return;
@@ -53,63 +121,76 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: "phot
     loadStored();
   }, [loadStored]);
 
-  const fetchPending = useCallback(
-    async (s: string) => {
-      setLoading(true);
-      setError("");
-      try {
-        const ts = Date.now();
-        const [photoRes, communityRes] = await Promise.all([
-          fetch(`/api/admin/pending-photos?t=${ts}`, {
-            headers: { "x-admin-secret": s },
-            cache: "no-store",
-          }),
-          fetch(`/api/admin/pending-community?t=${ts}`, {
-            headers: { "x-admin-secret": s },
-            cache: "no-store",
-          }),
-        ]);
-        if (photoRes.status === 401 || communityRes.status === 401) {
-          setError("Ugyldig kode");
-          sessionStorage.removeItem(STORAGE_KEY);
-          setSecret("");
-          setSubmissions([]);
-          setCommunitySubmissions([]);
-          return;
-        }
-        if (!photoRes.ok || !communityRes.ok) {
-          setError("Kunne ikke hente liste");
-          return;
-        }
-        const [photoData, communityData] = await Promise.all([
-          photoRes.json(),
-          communityRes.json(),
-        ]);
-        setSubmissions(photoData.submissions ?? []);
-        setCommunitySubmissions(communityData.submissions ?? []);
-      } finally {
-        setLoading(false);
+  const fetchAll = useCallback(async (s: string) => {
+    setLoading(true);
+    setError("");
+    try {
+      const ts = Date.now();
+      const [photoRes, communityRes, igRes] = await Promise.all([
+        fetch(`/api/admin/pending-photos?t=${ts}`, {
+          headers: { "x-admin-secret": s },
+          cache: "no-store",
+        }),
+        fetch(`/api/admin/pending-community?t=${ts}`, {
+          headers: { "x-admin-secret": s },
+          cache: "no-store",
+        }),
+        fetch(`/api/admin/instagram?t=${ts}`, {
+          headers: { "x-admin-secret": s },
+          cache: "no-store",
+        }),
+      ]);
+      if (photoRes.status === 401 || communityRes.status === 401 || igRes.status === 401) {
+        setError("Ugyldig kode");
+        sessionStorage.removeItem(STORAGE_KEY);
+        setSecret("");
+        setSubmissions([]);
+        setCommunitySubmissions([]);
+        setIgPosts([]);
+        return;
       }
-    },
-    []
-  );
+      if (!photoRes.ok || !communityRes.ok) {
+        setError("Kunne ikke hente liste");
+        return;
+      }
+      const [photoData, communityData] = await Promise.all([
+        photoRes.json(),
+        communityRes.json(),
+      ]);
+      setSubmissions(photoData.submissions ?? []);
+      setCommunitySubmissions(communityData.submissions ?? []);
+
+      if (igRes.ok) {
+        const igData = await igRes.json();
+        if (igData.setupRequired) {
+          setIgSetupRequired(true);
+          setIgPosts([]);
+        } else {
+          setIgSetupRequired(false);
+          setIgPosts(igData.posts ?? []);
+        }
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (secret) {
       sessionStorage.setItem(STORAGE_KEY, secret);
-      fetchPending(secret);
+      fetchAll(secret);
     } else {
       setSubmissions([]);
     }
-  }, [secret, fetchPending]);
+  }, [secret, fetchAll]);
 
   useEffect(() => {
     if (!secret) return;
     const id = window.setInterval(() => {
-      fetchPending(secret);
-    }, 10000);
+      fetchAll(secret);
+    }, 15000);
     return () => window.clearInterval(id);
-  }, [secret, fetchPending]);
+  }, [secret, fetchAll]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,6 +206,7 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: "phot
     setInputSecret("");
     setSubmissions([]);
     setCommunitySubmissions([]);
+    setIgPosts([]);
   };
 
   const act = async (
@@ -166,54 +248,164 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: "phot
     }
   };
 
+  // ── Instagram actions ──
+
+  const igSubmit = async (url: string) => {
+    if (!secret || !url.trim()) return;
+    setActingId("ig-new");
+    setError("");
+    try {
+      const res = await fetch("/api/admin/instagram-submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-secret": secret },
+        body: JSON.stringify({ postUrl: url.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Kunne ikke tilføje");
+        return;
+      }
+      if (data.message) setError(data.message);
+      setNewIgUrl("");
+      await fetchAll(secret);
+    } finally {
+      setActingId(null);
+    }
+  };
+
+  const igApprove = async (id: string) => {
+    if (!secret) return;
+    setActingId(id);
+    try {
+      const res = await fetch("/api/admin/instagram-approve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-secret": secret },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || "Fejl");
+        return;
+      }
+      await fetchAll(secret);
+    } finally {
+      setActingId(null);
+    }
+  };
+
+  const igReject = async (id: string) => {
+    if (!secret) return;
+    setActingId(id);
+    try {
+      const res = await fetch("/api/admin/instagram-reject", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-secret": secret },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || "Fejl");
+        return;
+      }
+      await fetchAll(secret);
+    } finally {
+      setActingId(null);
+    }
+  };
+
+  const igRemove = async (id: string) => {
+    if (!secret) return;
+    if (!confirm("Fjerne dette opslag fra databasen?")) return;
+    setActingId(id);
+    try {
+      const res = await fetch("/api/admin/instagram-remove", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-secret": secret },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || "Fejl");
+        return;
+      }
+      await fetchAll(secret);
+    } finally {
+      setActingId(null);
+    }
+  };
+
+  const igPending = igPosts.filter((p) => p.status === "pending");
+  const igApproved = igPosts.filter((p) => p.status === "approved");
+  const igRejected = igPosts.filter((p) => p.status === "rejected");
+
+  // ── badge counts ──
+  const badgeCounts: Record<TabKey, number> = {
+    photos: submissions.length,
+    community: communitySubmissions.length,
+    instagram: igPending.length,
+  };
+
+  // ── Login screen ──
+
   if (!secret) {
     return (
-      <div className="mx-auto max-w-md rounded-xl border border-primary/10 bg-white p-6 shadow-sm">
-        <div className="flex items-center gap-2 text-primary mb-4">
-          <Lock size={20} />
-          <h1 className="font-serif text-xl font-bold">Admin – godkend billeder</h1>
+      <div className="mx-auto max-w-sm">
+        <div className="rounded-2xl border border-primary/10 bg-white p-8 shadow-lg shadow-primary/5">
+          <div className="flex flex-col items-center gap-3 mb-6">
+            <div className="w-12 h-12 rounded-full bg-primary/5 flex items-center justify-center">
+              <Lock size={22} className="text-primary/70" />
+            </div>
+            <h1 className="font-serif text-xl font-bold text-primary">Admin panel</h1>
+            <p className="text-sm text-primary/60 text-center">
+              Godkend billeder, community-bidrag og kurater Instagram-opslag.
+            </p>
+          </div>
+          <form onSubmit={handleLogin} className="space-y-3">
+            <input
+              type="password"
+              value={inputSecret}
+              onChange={(e) => setInputSecret(e.target.value)}
+              className="w-full rounded-xl border border-primary/15 bg-primary/[0.02] px-4 py-3 text-primary placeholder:text-primary/40 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition"
+              placeholder="Indtast admin-kode"
+              autoComplete="current-password"
+            />
+            <button
+              type="submit"
+              className="w-full rounded-xl bg-accent py-3 text-white font-semibold hover:bg-accent/90 transition-colors shadow-sm"
+            >
+              Log ind
+            </button>
+          </form>
+          {error && <p className="mt-4 text-sm text-red-600 text-center">{error}</p>}
         </div>
-        <form onSubmit={handleLogin} className="space-y-4">
-          <label className="block text-sm font-medium text-primary">
-            Indtast admin-kode
-          </label>
-          <input
-            type="password"
-            value={inputSecret}
-            onChange={(e) => setInputSecret(e.target.value)}
-            className="w-full rounded-lg border border-primary/20 px-3 py-2 text-primary"
-            placeholder="Kode"
-            autoComplete="current-password"
-          />
-          <button
-            type="submit"
-            className="w-full rounded-lg bg-accent py-2 text-white font-medium hover:bg-accent/90"
-          >
-            Log ind
-          </button>
-        </form>
-        {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
       </div>
     );
   }
 
+  // ── Main panel ──
+
   return (
-    <div className="mx-auto max-w-4xl">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="font-serif text-2xl font-bold text-primary">Community moderation</h1>
+    <div className="mx-auto max-w-5xl">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="font-serif text-2xl font-bold text-primary">Moderation</h1>
+          <p className="text-sm text-primary/60 mt-1">Godkend indhold fra brugere og kurater Instagram-feed.</p>
+        </div>
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => secret && fetchPending(secret)}
-            className="inline-flex items-center gap-1.5 text-sm text-primary/70 hover:text-primary"
+            onClick={() => secret && fetchAll(secret)}
+            disabled={loading}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-primary/15 bg-white px-3 py-2 text-sm text-primary/70 hover:text-primary hover:border-primary/30 transition-colors shadow-sm"
           >
-            <RefreshCw size={14} />
+            <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
             Opdater
           </button>
           <button
             type="button"
             onClick={handleLogout}
-            className="text-sm text-primary/70 hover:text-primary"
+            className="text-sm text-primary/50 hover:text-primary transition-colors"
           >
             Log ud
           </button>
@@ -221,196 +413,433 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: "phot
       </div>
 
       {error && (
-        <p className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+        <div className="mb-6 rounded-xl bg-red-50 border border-red-100 p-4 text-sm text-red-700">
           {error}
-        </p>
+          <button
+            type="button"
+            onClick={() => setError("")}
+            className="ml-3 text-red-500 hover:text-red-700 font-medium"
+          >
+            Luk
+          </button>
+        </div>
       )}
 
-      <div className="mb-5 inline-flex rounded-lg border border-primary/15 bg-white p-1">
-        <button
-          type="button"
-          onClick={() => setTab("photos")}
-          className={`px-3 py-1.5 rounded-md text-sm ${
-            tab === "photos" ? "bg-primary text-white" : "text-primary/75 hover:bg-primary/5"
-          }`}
-        >
-          Billeder ({submissions.length})
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("community")}
-          className={`px-3 py-1.5 rounded-md text-sm ${
-            tab === "community" ? "bg-primary text-white" : "text-primary/75 hover:bg-primary/5"
-          }`}
-        >
-          Kommentarer og faciliteter ({communitySubmissions.length})
-        </button>
+      {/* Tabs */}
+      <div className="mb-6 flex gap-1 rounded-xl border border-primary/10 bg-primary/[0.02] p-1.5">
+        {TAB_CONFIG.map(({ key, label, icon: Icon }) => {
+          const count = badgeCounts[key];
+          const isActive = tab === key;
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setTab(key)}
+              className={`flex-1 inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
+                isActive
+                  ? "bg-white text-primary shadow-sm"
+                  : "text-primary/55 hover:text-primary/80 hover:bg-white/50"
+              }`}
+            >
+              <Icon size={16} />
+              <span className="hidden sm:inline">{label}</span>
+              {count > 0 && (
+                <span
+                  className={`min-w-[20px] rounded-full px-1.5 py-0.5 text-xs font-semibold leading-none ${
+                    isActive ? "bg-accent text-white" : "bg-primary/10 text-primary/60"
+                  }`}
+                >
+                  {count}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
-      {loading ? (
-        <div className="flex items-center gap-2 text-primary/70">
-          <Loader2 size={20} className="animate-spin" />
-          Henter…
+      {/* Loading state */}
+      {loading && submissions.length === 0 && communitySubmissions.length === 0 && igPosts.length === 0 && (
+        <div className="flex flex-col items-center gap-3 py-16 text-primary/50">
+          <Loader2 size={28} className="animate-spin" />
+          <p className="text-sm">Henter data…</p>
         </div>
-      ) : tab === "photos" && submissions.length === 0 ? (
-        <p className="text-primary/70">Ingen billeder venter på godkendelse.</p>
-      ) : tab === "photos" ? (
-        <ul className="space-y-6">
-          {submissions.map((s) => (
-            <li
-              key={s.id}
-              className="flex flex-wrap gap-6 rounded-xl border border-primary/10 bg-white p-4 sm:flex-nowrap"
-            >
-              <div className="relative h-32 w-full shrink-0 overflow-hidden rounded-lg bg-primary/5 sm:w-48">
-                {s.image_url ? (
-                  <Image
-                    src={getProxiedImageSrc(s.image_url)}
-                    alt={`Forslag til billede for ${s.shelter?.title ?? "shelter"}`}
-                    fill
-                    className="object-cover"
-                    unoptimized
-                    sizes="192px"
-                  />
-                ) : (
-                  <span className="text-primary/50 text-sm">Ingen forhåndsvisning</span>
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="font-medium text-primary">
-                  {s.shelter?.title ?? "Ukendt shelter"}
-                </p>
-                {s.shelter?.slug && (
-                  <Link
-                    href={`/shelter/${s.shelter.slug}`}
-                    className="text-sm text-accent hover:underline"
-                  >
-                    Se shelter →
-                  </Link>
-                )}
-                {s.submitter_email && (
-                  <p className="mt-1 text-sm text-primary/70">
-                    Indsender: {s.submitter_email}
-                  </p>
-                )}
-                <p className="text-primary/60 text-xs mt-1">
-                  {new Date(s.created_at).toLocaleString("da-DK")}
-                </p>
-              </div>
-              <div className="flex shrink-0 gap-2">
-                <button
-                  type="button"
-                  onClick={() => act(s.id, "approve")}
-                  disabled={actingId != null}
-                  className="inline-flex items-center gap-1 rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
-                >
-                  {actingId === s.id ? (
-                    <Loader2 size={16} className="animate-spin" />
-                  ) : (
-                    <Check size={16} />
-                  )}
-                  Godkend
-                </button>
-                <button
-                  type="button"
-                  onClick={() => act(s.id, "reject")}
-                  disabled={actingId != null}
-                  className="inline-flex items-center gap-1 rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
-                >
-                  {actingId === s.id ? (
-                    <Loader2 size={16} className="animate-spin" />
-                  ) : (
-                    <X size={16} />
-                  )}
-                  Afvis
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      ) : communitySubmissions.length === 0 ? (
-        <p className="text-primary/70">Ingen community-indsendelser venter på godkendelse.</p>
-      ) : (
-        <ul className="space-y-4">
-          {communitySubmissions.map((s) => (
-            <li
-              key={s.id}
-              className="rounded-xl border border-primary/10 bg-white p-4"
-            >
-              <div className="flex items-start justify-between gap-4 flex-wrap">
-                <div>
-                  <p className="font-medium text-primary">
-                    {s.shelter?.title ?? "Ukendt shelter"}
-                  </p>
-                  {s.shelter?.slug && (
-                    <Link
-                      href={`/shelter/${s.shelter.slug}`}
-                      className="text-sm text-accent hover:underline"
-                    >
-                      Se shelter →
-                    </Link>
-                  )}
-                  <p className="mt-1 text-xs text-primary/60">
-                    {new Date(s.created_at).toLocaleString("da-DK")}
-                    {s.submitter_name ? ` · ${s.submitter_name}` : ""}
-                    {s.submitter_email ? ` · ${s.submitter_email}` : ""}
-                  </p>
-                </div>
-                <span className="rounded-full bg-primary/10 px-2 py-1 text-xs text-primary">
-                  {s.type === "comment" ? "Kommentar" : "Faciliteter"}
-                </span>
-              </div>
-
-              {s.type === "comment" ? (
-                <p className="mt-3 text-sm text-primary/90 whitespace-pre-line">
-                  {String((s.payload as { text?: string } | null)?.text ?? "")}
-                </p>
-              ) : (
-                <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                  {FACILITY_FIELDS.map((f) => {
-                    const val = (s.payload as Record<string, string> | null)?.[f.key];
-                    if (!val) return null;
-                    const label = val === "yes" ? "Ja" : val === "no" ? "Nej" : "Ved ikke";
-                    return (
-                      <div key={f.key} className="rounded border border-primary/10 px-2 py-1 text-primary/85">
-                        {f.label}: <strong>{label}</strong>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              <div className="mt-4 flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => act(s.id, "approve", "community")}
-                  disabled={actingId != null}
-                  className="inline-flex items-center gap-1 rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
-                >
-                  {actingId === s.id ? (
-                    <Loader2 size={16} className="animate-spin" />
-                  ) : (
-                    <Check size={16} />
-                  )}
-                  Godkend
-                </button>
-                <button
-                  type="button"
-                  onClick={() => act(s.id, "reject", "community")}
-                  disabled={actingId != null}
-                  className="inline-flex items-center gap-1 rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
-                >
-                  {actingId === s.id ? (
-                    <Loader2 size={16} className="animate-spin" />
-                  ) : (
-                    <X size={16} />
-                  )}
-                  Afvis
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
       )}
+
+      {/* Photos tab */}
+      {tab === "photos" && !loading && (
+        submissions.length === 0 ? (
+          <EmptyState icon={Camera} text="Ingen billeder venter på godkendelse." />
+        ) : (
+          <ul className="space-y-4">
+            {submissions.map((s) => (
+              <li
+                key={s.id}
+                className="flex flex-wrap gap-5 rounded-2xl border border-primary/10 bg-white p-5 shadow-sm sm:flex-nowrap"
+              >
+                <div className="relative h-36 w-full shrink-0 overflow-hidden rounded-xl bg-primary/5 sm:w-52">
+                  {s.image_url ? (
+                    <Image
+                      src={getProxiedImageSrc(s.image_url)}
+                      alt={`Forslag til billede for ${s.shelter?.title ?? "shelter"}`}
+                      fill
+                      className="object-cover"
+                      unoptimized
+                      sizes="208px"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <Camera size={24} className="text-primary/30" />
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1 flex flex-col justify-between">
+                  <div>
+                    <p className="font-semibold text-primary">{s.shelter?.title ?? "Ukendt shelter"}</p>
+                    {s.shelter?.slug && (
+                      <Link href={`/shelter/${s.shelter.slug}`} className="text-sm text-accent hover:underline">
+                        Se shelter →
+                      </Link>
+                    )}
+                    {s.submitter_email && (
+                      <p className="mt-1 text-sm text-primary/60">Indsender: {s.submitter_email}</p>
+                    )}
+                    <p className="text-primary/50 text-xs mt-1">
+                      {new Date(s.created_at).toLocaleString("da-DK")}
+                    </p>
+                  </div>
+                  <div className="flex gap-2 mt-3">
+                    <ActionButton
+                      variant="approve"
+                      onClick={() => act(s.id, "approve")}
+                      loading={actingId === s.id}
+                      disabled={actingId != null}
+                    />
+                    <ActionButton
+                      variant="reject"
+                      onClick={() => act(s.id, "reject")}
+                      loading={actingId === s.id}
+                      disabled={actingId != null}
+                    />
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )
+      )}
+
+      {/* Community tab */}
+      {tab === "community" && !loading && (
+        communitySubmissions.length === 0 ? (
+          <EmptyState icon={MessageSquare} text="Ingen community-bidrag venter på godkendelse." />
+        ) : (
+          <ul className="space-y-4">
+            {communitySubmissions.map((s) => (
+              <li key={s.id} className="rounded-2xl border border-primary/10 bg-white p-5 shadow-sm">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
+                  <div>
+                    <p className="font-semibold text-primary">{s.shelter?.title ?? "Ukendt shelter"}</p>
+                    {s.shelter?.slug && (
+                      <Link href={`/shelter/${s.shelter.slug}`} className="text-sm text-accent hover:underline">
+                        Se shelter →
+                      </Link>
+                    )}
+                    <p className="mt-1 text-xs text-primary/50">
+                      {new Date(s.created_at).toLocaleString("da-DK")}
+                      {s.submitter_name ? ` · ${s.submitter_name}` : ""}
+                      {s.submitter_email ? ` · ${s.submitter_email}` : ""}
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-primary/[0.06] px-3 py-1 text-xs font-medium text-primary/70">
+                    {s.type === "comment" ? "Kommentar" : "Faciliteter"}
+                  </span>
+                </div>
+
+                {s.type === "comment" ? (
+                  <p className="mt-4 text-sm text-primary/85 whitespace-pre-line bg-primary/[0.02] rounded-xl p-4 border border-primary/5">
+                    {String((s.payload as { text?: string } | null)?.text ?? "")}
+                  </p>
+                ) : (
+                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                    {FACILITY_FIELDS.map((f) => {
+                      const val = (s.payload as Record<string, string> | null)?.[f.key];
+                      if (!val) return null;
+                      const label = val === "yes" ? "Ja" : val === "no" ? "Nej" : "Ved ikke";
+                      return (
+                        <div key={f.key} className="rounded-lg border border-primary/10 px-3 py-2 text-primary/80 bg-primary/[0.02]">
+                          {f.label}: <strong>{label}</strong>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                <div className="mt-4 flex gap-2">
+                  <ActionButton
+                    variant="approve"
+                    onClick={() => act(s.id, "approve", "community")}
+                    loading={actingId === s.id}
+                    disabled={actingId != null}
+                  />
+                  <ActionButton
+                    variant="reject"
+                    onClick={() => act(s.id, "reject", "community")}
+                    loading={actingId === s.id}
+                    disabled={actingId != null}
+                  />
+                </div>
+              </li>
+            ))}
+          </ul>
+        )
+      )}
+
+      {/* Instagram tab */}
+      {tab === "instagram" && !loading && (
+        <div className="space-y-6">
+          <Script
+            src="https://www.instagram.com/embed.js"
+            strategy="lazyOnload"
+            onLoad={() => {
+              setIgScriptReady(true);
+              processEmbeds();
+            }}
+          />
+
+          {igSetupRequired && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900">
+              Tabellen <code className="font-mono bg-amber-100 px-1 rounded">instagram_posts</code> findes
+              ikke endnu. Kør migration{" "}
+              <code className="font-mono bg-amber-100 px-1 rounded">030_instagram_posts.sql</code> i Supabase
+              SQL Editor.
+            </div>
+          )}
+
+          {/* Add URL */}
+          <section className="rounded-2xl border border-primary/10 bg-white p-6 shadow-sm">
+            <h2 className="font-semibold text-primary mb-1">Tilføj Instagram-opslag</h2>
+            <p className="text-sm text-primary/60 mb-4">
+              Indsæt et link til et opslag, reel eller tv-klip. Godkendte opslag vises på blog- og faktasider.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="url"
+                value={newIgUrl}
+                onChange={(e) => setNewIgUrl(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && igSubmit(newIgUrl)}
+                placeholder="https://www.instagram.com/p/..."
+                className="flex-1 rounded-xl border border-primary/15 bg-primary/[0.02] px-4 py-2.5 text-sm placeholder:text-primary/40 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition"
+              />
+              <button
+                type="button"
+                onClick={() => igSubmit(newIgUrl)}
+                disabled={actingId === "ig-new" || !newIgUrl.trim()}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-accent text-white font-semibold px-5 py-2.5 text-sm hover:bg-accent/90 disabled:opacity-40 transition-colors shadow-sm"
+              >
+                {actingId === "ig-new" ? <Loader2 className="animate-spin" size={16} /> : <Plus size={16} />}
+                Tilføj
+              </button>
+            </div>
+          </section>
+
+          {/* Hashtag browser */}
+          <section className="rounded-2xl border border-primary/10 bg-white p-6 shadow-sm">
+            <h3 className="font-semibold text-primary mb-1">Find opslag via hashtags</h3>
+            <p className="text-sm text-primary/60 mb-4">
+              Åbn et hashtag på Instagram, find et fedt lokalt opslag, og kopier linket herover.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {HASHTAGS.map((h) => (
+                <a
+                  key={h.tag}
+                  href={`https://www.instagram.com/explore/tags/${h.tag}/`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group inline-flex items-center gap-1.5 rounded-full border border-primary/10 bg-primary/[0.02] px-4 py-2 text-sm text-primary/70 hover:border-accent/40 hover:text-accent hover:bg-accent/5 transition-all"
+                >
+                  <span className="text-primary/40 group-hover:text-accent transition-colors">#</span>
+                  {h.label}
+                  <ExternalLink size={12} className="opacity-0 group-hover:opacity-60 transition-opacity" />
+                </a>
+              ))}
+            </div>
+          </section>
+
+          {/* Pending */}
+          {igPending.length > 0 && (
+            <section>
+              <h2 className="font-serif text-lg font-bold text-primary mb-4">
+                Afventer godkendelse
+                <span className="ml-2 inline-flex items-center justify-center min-w-[22px] rounded-full bg-amber-100 text-amber-800 px-1.5 py-0.5 text-xs font-semibold">
+                  {igPending.length}
+                </span>
+              </h2>
+              <div className="grid gap-6 sm:grid-cols-2">
+                {igPending.map((p) => (
+                  <div key={p.id} className="rounded-2xl border-2 border-amber-200 bg-white overflow-hidden shadow-sm">
+                    <div className="p-3">
+                      <IgEmbed url={p.post_url} />
+                    </div>
+                    <div className="flex items-center justify-between gap-2 border-t border-primary/10 px-4 py-3 bg-primary/[0.02]">
+                      <a
+                        href={p.post_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-primary/40 hover:text-accent inline-flex items-center gap-1"
+                      >
+                        <ExternalLink size={12} /> Åbn
+                      </a>
+                      <div className="flex gap-2">
+                        <ActionButton
+                          variant="approve"
+                          onClick={() => igApprove(p.id)}
+                          loading={actingId === p.id}
+                          disabled={actingId != null}
+                        />
+                        <ActionButton
+                          variant="reject"
+                          onClick={() => igReject(p.id)}
+                          loading={actingId === p.id}
+                          disabled={actingId != null}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Approved */}
+          {igApproved.length > 0 && (
+            <section>
+              <h2 className="font-serif text-lg font-bold text-primary mb-4">
+                Godkendt
+                <span className="ml-2 inline-flex items-center justify-center min-w-[22px] rounded-full bg-emerald-100 text-emerald-800 px-1.5 py-0.5 text-xs font-semibold">
+                  {igApproved.length}
+                </span>
+              </h2>
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {igApproved.map((p) => (
+                  <div key={p.id} className="rounded-2xl border border-emerald-200 bg-white overflow-hidden shadow-sm">
+                    <div className="p-3">
+                      <IgEmbed url={p.post_url} />
+                    </div>
+                    <div className="flex items-center justify-between gap-2 border-t border-primary/10 px-4 py-3 bg-primary/[0.02]">
+                      <a
+                        href={p.post_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-primary/40 hover:text-accent inline-flex items-center gap-1"
+                      >
+                        <ExternalLink size={12} /> Åbn
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => igRemove(p.id)}
+                        disabled={actingId === p.id}
+                        className="inline-flex items-center gap-1.5 text-red-500 hover:text-red-700 text-sm transition-colors"
+                      >
+                        <Trash2 size={14} /> Fjern
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Rejected */}
+          {igRejected.length > 0 && (
+            <section>
+              <h2 className="text-sm font-semibold text-primary/50 mb-2">Afvist ({igRejected.length})</h2>
+              <ul className="space-y-1 text-xs text-primary/40">
+                {igRejected.map((p) => (
+                  <li key={p.id} className="break-all">
+                    {p.post_url.replace("https://www.instagram.com/", "")}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {/* Empty state */}
+          {!igSetupRequired && igPosts.length === 0 && !loading && (
+            <EmptyState
+              icon={Instagram}
+              text="Ingen Instagram-opslag endnu. Tilføj et link ovenfor eller vælg et forslag."
+            />
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ActionButton({
+  variant,
+  onClick,
+  loading: isLoading,
+  disabled,
+}: {
+  variant: "approve" | "reject";
+  onClick: () => void;
+  loading: boolean;
+  disabled: boolean;
+}) {
+  const isApprove = variant === "approve";
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium transition-colors shadow-sm disabled:opacity-40 ${
+        isApprove
+          ? "bg-emerald-600 text-white hover:bg-emerald-700"
+          : "bg-white border border-primary/15 text-primary/70 hover:bg-red-50 hover:text-red-600 hover:border-red-200"
+      }`}
+    >
+      {isLoading ? (
+        <Loader2 size={15} className="animate-spin" />
+      ) : isApprove ? (
+        <Check size={15} />
+      ) : (
+        <X size={15} />
+      )}
+      {isApprove ? "Godkend" : "Afvis"}
+    </button>
+  );
+}
+
+function IgEmbed({ url }: { url: string }) {
+  return (
+    <blockquote
+      className="instagram-media"
+      data-instgrm-permalink={url}
+      data-instgrm-version="14"
+      data-instgrm-captioned=""
+      style={{
+        background: "#FFF",
+        border: 0,
+        borderRadius: "8px",
+        boxShadow: "none",
+        margin: 0,
+        maxWidth: "100%",
+        minWidth: "200px",
+        padding: 0,
+        width: "100%",
+      }}
+    />
+  );
+}
+
+function EmptyState({ icon: Icon, text }: { icon: typeof Camera; text: string }) {
+  return (
+    <div className="flex flex-col items-center gap-3 py-16 text-primary/40">
+      <div className="w-14 h-14 rounded-full bg-primary/[0.04] flex items-center justify-center">
+        <Icon size={24} />
+      </div>
+      <p className="text-sm">{text}</p>
     </div>
   );
 }

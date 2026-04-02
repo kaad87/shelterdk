@@ -6,10 +6,10 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
-  title: { absolute: "Admin – Billeder | ShelterDK" },
+  title: { absolute: "Admin – Instagram | ShelterDK" },
 };
 
-export default function AdminBillederPage() {
+export default function AdminInstagramPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
       <nav className="mb-6 text-sm text-primary/60">
@@ -21,9 +21,9 @@ export default function AdminBillederPage() {
           Admin
         </Link>
         <span className="mx-1.5">/</span>
-        <span className="text-primary font-medium">Billeder</span>
+        <span className="text-primary font-medium">Instagram</span>
       </nav>
-      <AdminPhotoReview initialTab="photos" />
+      <AdminPhotoReview initialTab="instagram" />
     </div>
   );
 }

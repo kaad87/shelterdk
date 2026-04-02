@@ -9,6 +9,7 @@ import { AuthorBio } from "@/components/AuthorBio";
 import { ArticleFaq } from "@/components/ArticleFaq";
 import { ShelterCTA } from "@/components/ShelterCTA";
 import { ShareExperience } from "@/components/ShareExperience";
+import { InstagramFeed } from "@/components/InstagramFeed";
 import { ArrowLeft, Calendar, Clock } from "lucide-react";
 
 interface PageProps {
@@ -169,6 +170,8 @@ export default async function BlogPostPage({ params }: PageProps) {
 
           {/* FAQ section */}
           {post.faq && post.faq.length > 0 && <ArticleFaq items={post.faq} />}
+
+          <InstagramFeed title="Shelter-stemning fra Instagram" className="mt-12" />
 
           {/* Share experience */}
           <ShareExperience />

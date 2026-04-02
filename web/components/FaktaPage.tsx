@@ -4,6 +4,7 @@ import { ChevronRight } from "lucide-react";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { DatasetSchema } from "@/components/seo/DatasetSchema";
 import { ShelterCard } from "@/components/ShelterCard";
+import { InstagramFeed } from "@/components/InstagramFeed";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import { slugifySegment } from "@/lib/slug";
 import type { Shelter } from "@/types/shelter";
@@ -145,6 +146,8 @@ export function FaktaPage({
           )}
 
           {children}
+
+          <InstagramFeed title="Shelter-stemning fra Instagram" className="mt-12" />
 
           {/* FAQ */}
           <section className="mt-12 pt-8 border-t border-primary/10">
