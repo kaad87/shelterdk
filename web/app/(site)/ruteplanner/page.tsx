@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import * as fs from "fs";
 import * as path from "path";
+import Link from "next/link";
 import { CuratedRoutesClient } from "@/components/CuratedRoutesClient";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import type { CuratedRouteIndex } from "@/types/curated-route";
@@ -19,15 +20,18 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RutePlannerPage() {
-  let index: CuratedRouteIndex[] = [];
+function loadIndex(): CuratedRouteIndex[] {
   try {
     const filePath = path.join(process.cwd(), "public/data/curated-routes-index.json");
     const raw = fs.readFileSync(filePath, "utf-8");
-    index = JSON.parse(raw);
+    return JSON.parse(raw);
   } catch {
-    // fallback to empty
+    return [];
   }
+}
+
+export default function RutePlannerPage() {
+  const index = loadIndex();
 
   return (
     <>
@@ -41,6 +45,31 @@ export default function RutePlannerPage() {
     >
       <CuratedRoutesClient initialIndex={index} />
     </Suspense>
+
+    {/* Server-rendered route links for crawler discoverability */}
+    {index.length > 0 && (
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 border-t border-primary/10">
+        <h2 className="font-serif text-lg font-bold text-primary mb-4">
+          Alle {index.length} vandreruter
+        </h2>
+        <div className="columns-1 sm:columns-2 lg:columns-3 gap-4">
+          {index
+            .sort((a, b) => b.shelter_count - a.shelter_count)
+            .map((route) => (
+            <Link
+              key={route.slug}
+              href={`/ruteplanner/${route.slug}`}
+              className="block py-1.5 text-sm text-primary/70 hover:text-accent transition-colors truncate"
+            >
+              {route.name}
+              <span className="text-primary/40 ml-1">
+                · {route.length_km} km · {route.shelter_count} shelters
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+    )}
     </>
   );
 }
