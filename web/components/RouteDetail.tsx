@@ -96,6 +96,13 @@ export function RouteDetail({ route, shelters, onBack, onDownloadGpx, onShare }:
           {copied ? "Kopieret!" : "Del rute"}
         </button>
       </div>
+
+      <Link
+        href={`/ruteplanner/${route.slug}`}
+        className="inline-block mt-4 text-sm text-accent hover:underline transition-colors"
+      >
+        Se fuld rutebeskrivelse →
+      </Link>
     </div>
   );
 }

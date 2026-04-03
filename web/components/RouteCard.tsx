@@ -7,48 +7,33 @@ import type { CuratedRouteIndex } from "@/types/curated-route";
 
 interface Props {
   route: CuratedRouteIndex;
-  isSelected: boolean;
-  onClick: () => void;
 }
 
-export function RouteCard({ route, isSelected, onClick }: Props) {
+export function RouteCard({ route }: Props) {
   return (
-    <div className="relative">
-      <button
-        onClick={onClick}
-        className={`w-full text-left rounded-2xl border bg-white shadow-sm p-5 transition-all duration-200 cursor-pointer ${
-          isSelected
-            ? "border-accent ring-2 ring-accent/20"
-            : "border-primary/10 hover:border-accent/40 hover:shadow-md"
-        }`}
-      >
-        <h3 className="font-serif text-lg font-semibold text-primary leading-tight">
-          {route.name}
-        </h3>
-        <div className="flex items-center gap-3 mt-2 text-sm text-primary/50">
-          <span className="flex items-center gap-1">
-            <Ruler size={14} />
-            {route.length_km} km
-          </span>
-          <span className="flex items-center gap-1">
-            <MapPin size={14} />
-            {route.shelter_count} shelters
-          </span>
-        </div>
-        <p className="text-xs text-primary/40 mt-1">{route.region}</p>
-        {route.description && (
-          <p className="text-sm text-primary/60 mt-3 line-clamp-2">
-            {route.description}
-          </p>
-        )}
-      </button>
-      <Link
-        href={`/ruteplanner/${route.slug}`}
-        className="absolute bottom-3 right-4 text-[11px] text-accent/60 hover:text-accent hover:underline transition-colors"
-        tabIndex={-1}
-      >
-        Se rutedetaljer →
-      </Link>
-    </div>
+    <Link
+      href={`/ruteplanner/${route.slug}`}
+      className="block rounded-2xl border border-primary/10 bg-white shadow-sm p-5 transition-all duration-200 hover:border-accent/40 hover:shadow-md"
+    >
+      <h3 className="font-serif text-lg font-semibold text-primary leading-tight">
+        {route.name}
+      </h3>
+      <div className="flex items-center gap-3 mt-2 text-sm text-primary/50">
+        <span className="flex items-center gap-1">
+          <Ruler size={14} />
+          {route.length_km} km
+        </span>
+        <span className="flex items-center gap-1">
+          <MapPin size={14} />
+          {route.shelter_count} shelters
+        </span>
+      </div>
+      <p className="text-xs text-primary/40 mt-1">{route.region}</p>
+      {route.description && (
+        <p className="text-sm text-primary/60 mt-3 line-clamp-2">
+          {route.description}
+        </p>
+      )}
+    </Link>
   );
 }

@@ -8,13 +8,13 @@ create or replace function public.get_shelters_in_bbox(
   p_vest double precision
 )
 returns table (
-  id bigint,
+  id uuid,
   title text,
   slug text,
   location text,
   image_url text,
-  image_urls text[],
-  user_image_urls text[],
+  image_urls jsonb,
+  user_image_urls jsonb,
   google_rating double precision,
   google_user_ratings_total integer,
   google_place_id text,

@@ -399,13 +399,13 @@ export async function getSheltersInNationalParks(): Promise<
     .not("location", "is", null);
   if (locError || !locationData) return [];
 
-  const parkShelterIds = new Map<string, Set<number>>();
+  const parkShelterIds = new Map<string, Set<string>>();
   for (const park of NATIONAL_PARKS) {
     parkShelterIds.set(park.name, new Set());
   }
 
-  const allParkIds = new Set<number>();
-  for (const row of locationData as { id: number; location: string }[]) {
+  const allParkIds = new Set<string>();
+  for (const row of locationData as { id: string; location: string }[]) {
     const coords = getLocationCoords(row as unknown as Shelter);
     if (!coords) continue;
     const parks = classifyShelterToParks(coords.lat, coords.lon);
@@ -430,7 +430,7 @@ export async function getSheltersInNationalParks(): Promise<
     .in("id", Array.from(allParkIds));
   if (fullError || !fullData) return [];
 
-  const shelterById = new Map<number, Shelter>();
+  const shelterById = new Map<string, Shelter>();
   for (const s of fullData as Shelter[]) {
     shelterById.set(s.id, s);
   }

@@ -6,7 +6,6 @@ import { useSearchParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import type {
   CuratedRouteIndex,
-  CuratedRouteData,
   CuratedRouteDataMap,
 } from "@/types/curated-route";
 import type { GpxWaypoint } from "@/lib/gpx-export";
@@ -14,7 +13,6 @@ import type { GpxTrackPoint } from "@/lib/gpx-parser";
 import type { ShelterWithDistance, LightShelter } from "@/lib/shelter-distance";
 import Link from "next/link";
 import { RouteCard } from "./RouteCard";
-import { RouteDetail } from "./RouteDetail";
 import { GpxUploadButton, GpxUploadZone } from "./GpxUpload";
 import {
   RouteFilters,
@@ -40,11 +38,7 @@ export function CuratedRoutesClient({ initialIndex }: Props) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // State
   const [routes] = useState(initialIndex);
-  const [selectedSlug, setSelectedSlug] = useState<string | null>(
-    searchParams.get("rute") || null
-  );
   const [region, setRegion] = useState<RegionFilter>(
     (searchParams.get("region") as RegionFilter) || ""
   );
@@ -53,7 +47,6 @@ export function CuratedRoutesClient({ initialIndex }: Props) {
   );
   const [sort, setSort] = useState<SortOption>("shelters");
   const [routeDataCache, setRouteDataCache] = useState<CuratedRouteDataMap>({});
-  const [loadingRoute, setLoadingRoute] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const fullDataRef = useRef<CuratedRouteDataMap | null>(null);
   const mapSectionRef = useRef<HTMLDivElement>(null);
@@ -68,59 +61,38 @@ export function CuratedRoutesClient({ initialIndex }: Props) {
   const [allShelters, setAllShelters] = useState<LightShelter[]>([]);
   const sheltersFetchedRef = useRef(false);
 
-  // ── URL ↔ State sync ──────────────────────────────────────────────
-  // Two directions:
-  //   1) State → URL: when user clicks a route/filter, push/replace URL
-  //   2) URL → State: when user clicks browser back/forward, sync state from URL
-  //
-  // We use a ref to track whether *we* caused the URL change (to avoid loops).
+  // URL ↔ filter sync
   const pushingRef = useRef(false);
 
-  // (1) State → URL
-  const prevSlugRef = useRef(selectedSlug);
   useEffect(() => {
     const params = new URLSearchParams();
     if (region) params.set("region", region);
     if (length) params.set("laengde", length);
-    if (selectedSlug) params.set("rute", selectedSlug);
     const qs = params.toString();
     const url = `/ruteplanner${qs ? `?${qs}` : ""}`;
 
-    const slugChanged = prevSlugRef.current !== selectedSlug;
-    prevSlugRef.current = selectedSlug;
-
     pushingRef.current = true;
-    if (slugChanged) {
-      router.push(url, { scroll: false });
-    } else {
-      router.replace(url, { scroll: false });
-    }
-  }, [region, length, selectedSlug, router]);
+    router.replace(url, { scroll: false });
+  }, [region, length, router]);
 
-  // (2) URL → State (browser back/forward)
-  const urlSlug = searchParams.get("rute") || null;
   const urlRegion = (searchParams.get("region") as RegionFilter) || "";
   const urlLength = (searchParams.get("laengde") as LengthFilter) || "";
 
   useEffect(() => {
-    // If we just pushed this URL change ourselves, skip the sync back
     if (pushingRef.current) {
       pushingRef.current = false;
       return;
     }
-    // Browser navigation (back/forward) — sync state from URL
-    setSelectedSlug(urlSlug);
     setRegion(urlRegion);
     setLength(urlLength);
-  }, [urlSlug, urlRegion, urlLength]);
+  }, [urlRegion, urlLength]);
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 2500);
   }, []);
 
-  // Auto-load full route data on mount so the map shows real route lines
-  // instead of ugly bounding-box rectangles
+  // Load full route data so the map shows real route lines
   useEffect(() => {
     if (fullDataRef.current) return;
     fetch("/data/curated-routes.json")
@@ -132,9 +104,7 @@ export function CuratedRoutesClient({ initialIndex }: Props) {
         fullDataRef.current = data;
         setRouteDataCache(data);
       })
-      .catch(() => {
-        // Silently fail — rectangles remain as fallback
-      });
+      .catch(() => {});
   }, []);
 
   // Filter + sort
@@ -166,80 +136,14 @@ export function CuratedRoutesClient({ initialIndex }: Props) {
     return result;
   }, [routes, region, length, sort]);
 
-  // Lazy-load full route data
-  const loadRouteData = useCallback(
-    async (slug: string): Promise<CuratedRouteData | null> => {
-      if (routeDataCache[slug]) return routeDataCache[slug];
-
-      // Load full file on first request
-      if (!fullDataRef.current) {
-        setLoadingRoute(true);
-        try {
-          const resp = await fetch("/data/curated-routes.json");
-          if (!resp.ok) throw new Error("Fetch failed");
-          const data: CuratedRouteDataMap = await resp.json();
-          fullDataRef.current = data;
-          setRouteDataCache(data);
-        } catch {
-          showToast("Kunne ikke indlæse rutedetaljer");
-          setLoadingRoute(false);
-          return null;
-        }
-        setLoadingRoute(false);
-      }
-
-      return fullDataRef.current?.[slug] || null;
+  const handleMapRouteClick = useCallback(
+    (slug: string) => {
+      router.push(`/ruteplanner/${slug}`);
     },
-    [routeDataCache, showToast]
+    [router]
   );
 
-  const handleSelectRoute = useCallback(
-    async (slug: string) => {
-      if (selectedSlug === slug) {
-        setSelectedSlug(null);
-        return;
-      }
-      setSelectedSlug(slug);
-      await loadRouteData(slug);
-      // Scroll to map
-      mapSectionRef.current?.scrollIntoView({ behavior: "smooth" });
-    },
-    [selectedSlug, loadRouteData]
-  );
-
-  const handleBack = useCallback(() => {
-    setSelectedSlug(null);
-  }, []);
-
-  const handleDownloadGpx = useCallback(async () => {
-    if (!selectedSlug) return;
-    const data = await loadRouteData(selectedSlug);
-    if (!data) return;
-    const selectedRoute = routes.find((r) => r.slug === selectedSlug);
-    if (!selectedRoute) return;
-
-    // Dynamic import to avoid loading GPX code until needed
-    const { downloadRouteGpx } = await import("@/lib/gpx-export");
-    const waypoints: GpxWaypoint[] = data.shelters.map((s) => ({
-      name: s.title,
-      lat: s.lat,
-      lon: s.lon,
-    }));
-    downloadRouteGpx(
-      selectedRoute.name,
-      selectedRoute.slug,
-      data.geometry,
-      waypoints
-    );
-  }, [selectedSlug, routes, loadRouteData]);
-
-  const handleShare = useCallback(() => {
-    navigator.clipboard.writeText(window.location.href).catch(() => {
-      showToast("Kunne ikke kopiere link");
-    });
-  }, [showToast]);
-
-  // Fetch lightweight shelter data for GPX matching (on first upload click)
+  // GPX Upload handlers
   const fetchShelters = useCallback(async () => {
     if (sheltersFetchedRef.current) return;
     sheltersFetchedRef.current = true;
@@ -255,7 +159,6 @@ export function CuratedRoutesClient({ initialIndex }: Props) {
   }, [showToast]);
 
   const handleEnterUploadMode = useCallback(() => {
-    setSelectedSlug(null);
     setUploadMode(true);
     fetchShelters();
   }, [fetchShelters]);
@@ -289,13 +192,12 @@ export function CuratedRoutesClient({ initialIndex }: Props) {
 
   const handleUploadDownload = useCallback(async () => {
     if (!uploadedRoute || uploadedShelters.length === 0) return;
-    const { generateGpx, downloadGpx } = await import("@/lib/gpx-export");
+    const { generateGpx } = await import("@/lib/gpx-export");
     const waypoints: GpxWaypoint[] = uploadedShelters.map((s) => ({
       name: s.title,
       lat: s.lat,
       lon: s.lon,
     }));
-    // Generate GPX with shelter waypoints
     const gpxString = generateGpx(waypoints);
     if (!gpxString) return;
     const blob = new Blob([gpxString], { type: "application/gpx+xml" });
@@ -306,13 +208,6 @@ export function CuratedRoutesClient({ initialIndex }: Props) {
     a.click();
     URL.revokeObjectURL(url);
   }, [uploadedRoute, uploadedShelters]);
-
-  const selectedRoute = selectedSlug
-    ? routes.find((r) => r.slug === selectedSlug) || null
-    : null;
-  const selectedRouteData = selectedSlug
-    ? routeDataCache[selectedSlug] || null
-    : null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -329,7 +224,7 @@ export function CuratedRoutesClient({ initialIndex }: Props) {
                 : `Udforsk ${routes.length} vandreruter fra Naturstyrelsen med shelters langs vejen`}
             </p>
           </div>
-          {!uploadMode && !selectedSlug && (
+          {!uploadMode && (
             <GpxUploadButton onClick={handleEnterUploadMode} />
           )}
         </div>
@@ -337,33 +232,16 @@ export function CuratedRoutesClient({ initialIndex }: Props) {
 
       {/* Map */}
       <div ref={mapSectionRef} className="w-full h-[40vh] md:h-[40vh]">
-        {loadingRoute ? (
-          <div className="w-full h-full bg-primary/5 animate-pulse flex items-center justify-center">
-            <span className="text-primary/30 text-sm">Indlæser rute...</span>
-          </div>
-        ) : (
-          <CuratedRoutesMap
-            routeIndex={filteredRoutes}
-            routeData={selectedRouteData}
-            selectedSlug={selectedSlug}
-            onRouteClick={handleSelectRoute}
-            allRouteData={fullDataRef.current}
-            uploadedRoute={uploadedRoute ?? undefined}
-            uploadedShelters={uploadedShelters.length > 0 ? uploadedShelters : undefined}
-          />
-        )}
-      </div>
-
-      {/* Detail overlay (when route selected) */}
-      {!uploadMode && selectedRoute && selectedRouteData && (
-        <RouteDetail
-          route={selectedRoute}
-          shelters={selectedRouteData.shelters}
-          onBack={handleBack}
-          onDownloadGpx={handleDownloadGpx}
-          onShare={handleShare}
+        <CuratedRoutesMap
+          routeIndex={filteredRoutes}
+          routeData={null}
+          selectedSlug={null}
+          onRouteClick={handleMapRouteClick}
+          allRouteData={fullDataRef.current}
+          uploadedRoute={uploadedRoute ?? undefined}
+          uploadedShelters={uploadedShelters.length > 0 ? uploadedShelters : undefined}
         />
-      )}
+      </div>
 
       {/* GPX Upload mode */}
       {uploadMode && (
@@ -389,8 +267,8 @@ export function CuratedRoutesClient({ initialIndex }: Props) {
         </div>
       )}
 
-      {/* Filters + Card grid (when no route selected and not in upload mode) */}
-      {!selectedSlug && !uploadMode && (
+      {/* Filters + Card grid */}
+      {!uploadMode && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <RouteFilters
             region={region}
@@ -418,12 +296,7 @@ export function CuratedRoutesClient({ initialIndex }: Props) {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
               {filteredRoutes.map((route) => (
-                <RouteCard
-                  key={route.id}
-                  route={route}
-                  isSelected={selectedSlug === route.slug}
-                  onClick={() => handleSelectRoute(route.slug)}
-                />
+                <RouteCard key={route.id} route={route} />
               ))}
             </div>
           )}

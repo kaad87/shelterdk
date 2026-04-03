@@ -215,14 +215,14 @@ export default async function RouteDetailPage({ params }: PageProps) {
           {/* Interactive ruteplanner link */}
           <section className="mb-10 rounded-xl border border-accent/20 bg-accent/5 p-6 text-center">
             <p className="text-primary/80 mb-3">
-              Se ruten på kort og download GPX-fil i vores interaktive ruteplanner
+              Udforsk alle vandreruter med shelters på kortet
             </p>
             <Link
-              href={`/ruteplanner?rute=${slug}`}
+              href="/ruteplanner"
               className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-accent text-white font-medium text-sm hover:bg-accent/90 transition-colors"
             >
               <MapPin size={16} />
-              Åbn i ruteplanner
+              Se alle vandreruter
             </Link>
           </section>
 
