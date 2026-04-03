@@ -1,9 +1,10 @@
 import { NextRequest } from "next/server";
 import { getSuggestions } from "@/lib/soeg-db";
 
-// CRITICAL: force-dynamic prevents Netlify CDN from caching this route.
-// Without this, Netlify caches the first response and serves it for ALL
-// query parameters, breaking autocomplete after a few minutes.
+// CRITICAL: Autocomplete must not be cached on shared CDNs. Even with
+// force-dynamic, Cache-Control: public + s-maxage can still be honored at
+// the edge with a cache key that omits ?q=, so every user sees one stale list
+// (e.g. only "F…" matches). Use private, no-store for correct per-query results.
 export const dynamic = "force-dynamic";
 
 /**
@@ -17,7 +18,7 @@ export async function GET(request: NextRequest) {
   const suggestions = await getSuggestions(q);
   return Response.json(suggestions, {
     headers: {
-      "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=7200",
+      "Cache-Control": "private, no-store, max-age=0",
     },
   });
 }
