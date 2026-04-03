@@ -1,4 +1,6 @@
 import type { MetadataRoute } from "next";
+import fs from "node:fs";
+import path from "node:path";
 import { createPublicClient } from "@/utils/supabase/server-public";
 import {
   getDistinctRegions,
@@ -10,6 +12,7 @@ import { getGuides } from "@/data/guides";
 import { getBlogPosts } from "@/data/blog";
 import { getFilterRegionCount } from "@/lib/fakta-db";
 import { FILTER_CONFIGS, REGION_SLUGS, REGION_NAMES } from "@/lib/cross-page-config";
+import type { CuratedRouteIndex } from "@/types/curated-route";
 
 const BASE_URL = "https://shelterdk.dk";
 const BATCH_SIZE = 1000;
@@ -31,7 +34,11 @@ const STATIC_PAGES: Array<{
   { path: "/shelter-med-bruser", changeFrequency: "weekly", priority: 0.85 },
   { path: "/shelter-booking", changeFrequency: "weekly", priority: 0.85 },
   { path: "/omraade", changeFrequency: "weekly", priority: 0.8 },
-  { path: "/ruteplanner", changeFrequency: "monthly", priority: 0.5 },
+  { path: "/ruteplanner", changeFrequency: "monthly", priority: 0.7 },
+  { path: "/handicapvenlige-shelters", changeFrequency: "weekly", priority: 0.85 },
+  { path: "/shelter-til-cykeltur", changeFrequency: "weekly", priority: 0.85 },
+  { path: "/shelter-naer-vand", changeFrequency: "weekly", priority: 0.85 },
+  { path: "/shelter-til-familier", changeFrequency: "weekly", priority: 0.85 },
   { path: "/guides", changeFrequency: "weekly", priority: 0.75 },
   { path: "/faq", changeFrequency: "monthly", priority: 0.8 },
   { path: "/privacy", changeFrequency: "monthly", priority: 0.5 },
@@ -157,6 +164,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         entries.push(entry(`${BASE_URL}${config.parentHref}/${regionSlug}`, "weekly", 0.7));
       }
     }
+  }
+
+  // Vandreruter: /ruteplanner/[slug]
+  try {
+    const routeIndexPath = path.join(process.cwd(), "public/data/curated-routes-index.json");
+    const routeIndex: CuratedRouteIndex[] = JSON.parse(fs.readFileSync(routeIndexPath, "utf-8"));
+    for (const route of routeIndex) {
+      entries.push(entry(`${BASE_URL}/ruteplanner/${route.slug}`, "monthly", 0.65));
+    }
+  } catch {
+    // curated-routes-index.json not available at build time
   }
 
   // Regioner: dedikerede landingssider med kort
