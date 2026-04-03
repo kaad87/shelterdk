@@ -69,5 +69,9 @@ export async function GET(request: NextRequest) {
   if (region && !bbox) shelters = filterSheltersByRegion(shelters, region);
   shelters = await enrichSheltersWithGooglePhotoRef(shelters);
 
-  return Response.json({ shelters, hasMore });
+  return Response.json({ shelters, hasMore }, {
+    headers: {
+      "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+    },
+  });
 }

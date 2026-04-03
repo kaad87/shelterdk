@@ -12,7 +12,7 @@ import { getAreaFaqItems, faqToJsonLd, type FaqItem } from "@/lib/faq";
 const MAP_VIEW_PAGE_SIZE = 200;
 import { SoegContent } from "@/components/SoegContent";
 
-export const revalidate = 300; // ISR: revalider søgesiden hvert 5. min
+export const revalidate = 3600; // ISR: revalider søgesiden hver time
 
 const DEFAULT_METADATA: Metadata = {
   title: { absolute: "Søg shelters | ShelterDK" },

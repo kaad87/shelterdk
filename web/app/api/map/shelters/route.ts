@@ -51,5 +51,9 @@ export async function GET(request: NextRequest) {
   }
 
   const shelters = (data ?? []) as Shelter[];
-  return Response.json({ shelters });
+  return Response.json({ shelters }, {
+    headers: {
+      "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+    },
+  });
 }

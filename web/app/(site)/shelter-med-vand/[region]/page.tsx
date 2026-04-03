@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CrossFilterRegionPage } from "@/components/CrossFilterRegionPage";
-import { getFilterRegionCount, getSheltersForFilterRegion, getKommuneBreakdownForFilterRegion } from "@/lib/fakta-db";
+import { getFilterRegionCount, getSheltersForFilterRegion, getKommuneBreakdownForFilterRegion, getFreeCountForFilterRegion } from "@/lib/fakta-db";
 import { generateCrossPageFaq } from "@/lib/fakta-faq";
 import { FILTER_CONFIGS, REGION_NAMES, REGION_SLUGS, getOtherRegionLinks, getOtherFilterLinks } from "@/lib/cross-page-config";
 import { prepositionForRegionName } from "@/lib/area-db";
@@ -58,10 +58,7 @@ export default async function Page({ params }: PageProps) {
 
   if (shelters.length < MIN_SHELTERS) notFound();
 
-  const freeCount = shelters.filter((s) => {
-    const raw = s.geofa_raw as Record<string, unknown> | null;
-    return raw && String(raw.betaling ?? "").toLowerCase() === "nej";
-  }).length;
+  const freeCount = await getFreeCountForFilterRegion(FILTER.filterKey, regionName);
 
   const rated = shelters.filter((s) => s.google_rating != null);
   const topShelter = rated.sort((a, b) => (b.google_rating ?? 0) - (a.google_rating ?? 0))[0];

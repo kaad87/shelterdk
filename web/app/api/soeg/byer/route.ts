@@ -17,9 +17,7 @@ export async function GET(request: NextRequest) {
   const suggestions = await getSuggestions(q);
   return Response.json(suggestions, {
     headers: {
-      // No CDN caching — each autocomplete keystroke must hit the server.
-      // Supabase queries are fast (~50ms) so this is fine.
-      "Cache-Control": "private, no-store, max-age=0",
+      "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=7200",
     },
   });
 }

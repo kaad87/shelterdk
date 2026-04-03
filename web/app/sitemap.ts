@@ -14,6 +14,8 @@ import { getFilterRegionCount } from "@/lib/fakta-db";
 import { FILTER_CONFIGS, REGION_SLUGS, REGION_NAMES } from "@/lib/cross-page-config";
 import type { CuratedRouteIndex } from "@/types/curated-route";
 
+export const revalidate = 86400;
+
 const BASE_URL = "https://shelterdk.dk";
 const BATCH_SIZE = 1000;
 
