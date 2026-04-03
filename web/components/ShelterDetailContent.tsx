@@ -332,15 +332,20 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                 </h2>
                 <ul className="space-y-2">
                   {nearbyRoutes.slice(0, 5).map((route) => (
-                    <li key={route.slug} className="flex items-center justify-between">
+                    <li key={route.slug} className="flex items-center justify-between gap-3">
                       <Link
                         href={`/ruteplanner/${route.slug}`}
-                        className="text-sm text-accent hover:underline font-medium"
+                        className="text-sm text-accent hover:underline font-medium min-w-0 truncate"
                       >
                         {route.name}
                       </Link>
-                      <span className="text-xs text-primary/50 shrink-0 ml-2">
-                        {route.length_km} km · {route.distance_km < 0.1 ? "på ruten" : `${route.distance_km} km`}
+                      <span className="text-xs text-primary/40 shrink-0 text-right">
+                        <span className="block">{route.length_km} km rute</span>
+                        <span className="block">
+                          {route.distance_km < 0.1
+                            ? "Direkte på ruten"
+                            : `${route.distance_km} km herfra`}
+                        </span>
                       </span>
                     </li>
                   ))}

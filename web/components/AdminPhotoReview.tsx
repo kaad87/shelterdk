@@ -18,6 +18,9 @@ import {
   Plus,
   Mail,
   Download,
+  Inbox,
+  Archive,
+  Eye,
 } from "lucide-react";
 import { getProxiedImageSrc } from "@/lib/image-proxy";
 import { FACILITY_FIELDS } from "@/lib/community";
@@ -30,7 +33,7 @@ declare global {
 
 const STORAGE_KEY = "shelterdk-admin-secret";
 
-type TabKey = "photos" | "community" | "instagram" | "newsletter";
+type TabKey = "photos" | "community" | "instagram" | "newsletter" | "contact";
 
 type Submission = {
   id: string;
@@ -72,6 +75,16 @@ type NewsletterSub = {
   created_at: string;
 };
 
+type ContactMessage = {
+  id: string;
+  name: string;
+  email: string;
+  category: string;
+  message: string;
+  status: string;
+  created_at: string;
+};
+
 const HASHTAGS = [
   { tag: "sheltertur", label: "Shelterture" },
   { tag: "natinaturen", label: "Nat i Naturen" },
@@ -88,6 +101,7 @@ const TAB_CONFIG: { key: TabKey; label: string; icon: typeof Camera }[] = [
   { key: "community", label: "Community", icon: MessageSquare },
   { key: "instagram", label: "Instagram", icon: Instagram },
   { key: "newsletter", label: "Nyhedsbrev", icon: Mail },
+  { key: "contact", label: "Beskeder", icon: Inbox },
 ];
 
 export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKey }) {
@@ -98,6 +112,7 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
   const [igPosts, setIgPosts] = useState<IgPost[]>([]);
   const [igSetupRequired, setIgSetupRequired] = useState(false);
   const [nlSubs, setNlSubs] = useState<NewsletterSub[]>([]);
+  const [contactMsgs, setContactMsgs] = useState<ContactMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [actingId, setActingId] = useState<string | null>(null);
@@ -137,7 +152,7 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
     setError("");
     try {
       const ts = Date.now();
-      const [photoRes, communityRes, igRes, nlRes] = await Promise.all([
+      const [photoRes, communityRes, igRes, nlRes, contactRes] = await Promise.all([
         fetch(`/api/admin/pending-photos?t=${ts}`, {
           headers: { "x-admin-secret": s },
           cache: "no-store",
@@ -154,6 +169,10 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
           headers: { "x-admin-secret": s },
           cache: "no-store",
         }),
+        fetch(`/api/admin/contact?t=${ts}`, {
+          headers: { "x-admin-secret": s },
+          cache: "no-store",
+        }),
       ]);
       if (photoRes.status === 401 || communityRes.status === 401 || igRes.status === 401 || nlRes.status === 401) {
         setError("Ugyldig kode");
@@ -163,6 +182,7 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
         setCommunitySubmissions([]);
         setIgPosts([]);
         setNlSubs([]);
+        setContactMsgs([]);
         return;
       }
       if (!photoRes.ok || !communityRes.ok) {
@@ -190,6 +210,11 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
       if (nlRes.ok) {
         const nlData = await nlRes.json();
         setNlSubs(nlData.subscribers ?? []);
+      }
+
+      if (contactRes.ok) {
+        const contactData = await contactRes.json();
+        setContactMsgs(contactData.messages ?? []);
       }
     } finally {
       setLoading(false);
@@ -229,6 +254,7 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
     setCommunitySubmissions([]);
     setIgPosts([]);
     setNlSubs([]);
+    setContactMsgs([]);
   };
 
   const act = async (
@@ -361,11 +387,13 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
   const igRejected = igPosts.filter((p) => p.status === "rejected");
 
   // ── badge counts ──
+  const unreadMsgs = contactMsgs.filter((m) => m.status === "unread");
   const badgeCounts: Record<TabKey, number> = {
     photos: submissions.length,
     community: communitySubmissions.length,
     instagram: igPending.length,
     newsletter: nlSubs.length,
+    contact: unreadMsgs.length,
   };
 
   // ── Login screen ──
@@ -895,6 +923,160 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Contact messages tab */}
+      {tab === "contact" && !loading && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-primary/60">
+              {unreadMsgs.length} ulæst{unreadMsgs.length !== 1 ? "e" : ""} af {contactMsgs.length} total
+            </p>
+          </div>
+
+          {contactMsgs.length === 0 ? (
+            <EmptyState icon={Inbox} text="Ingen beskeder endnu." />
+          ) : (
+            <div className="space-y-3">
+              {contactMsgs.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`rounded-xl border p-4 transition-colors ${
+                    msg.status === "unread"
+                      ? "border-accent/30 bg-accent/[0.03]"
+                      : msg.status === "archived"
+                        ? "border-primary/5 bg-primary/[0.01] opacity-60"
+                        : "border-primary/10 bg-white"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium text-sm text-primary">{msg.name}</span>
+                        <a
+                          href={`mailto:${msg.email}`}
+                          className="text-xs text-accent hover:underline"
+                        >
+                          {msg.email}
+                        </a>
+                        <span className="inline-block rounded-md bg-primary/5 px-2 py-0.5 text-xs text-primary/50">
+                          {msg.category === "fejl" ? "Fejl i data"
+                            : msg.category === "forslag" ? "Forslag"
+                            : msg.category === "andet" ? "Andet"
+                            : "Generel"}
+                        </span>
+                        {msg.status === "unread" && (
+                          <span className="inline-block w-2 h-2 rounded-full bg-accent" />
+                        )}
+                      </div>
+                      <p className="text-xs text-primary/40 mt-0.5">
+                        {new Date(msg.created_at).toLocaleDateString("da-DK", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {msg.status === "unread" && (
+                        <button
+                          type="button"
+                          title="Markér som læst"
+                          disabled={actingId === msg.id}
+                          onClick={async () => {
+                            setActingId(msg.id);
+                            try {
+                              const res = await fetch("/api/admin/contact", {
+                                method: "PATCH",
+                                headers: {
+                                  "Content-Type": "application/json",
+                                  "x-admin-secret": secret,
+                                },
+                                body: JSON.stringify({ id: msg.id, status: "read" }),
+                              });
+                              if (res.ok) {
+                                setContactMsgs((prev) =>
+                                  prev.map((m) => m.id === msg.id ? { ...m, status: "read" } : m)
+                                );
+                              }
+                            } finally {
+                              setActingId(null);
+                            }
+                          }}
+                          className="p-1.5 text-primary/30 hover:text-accent transition-colors disabled:opacity-40"
+                        >
+                          {actingId === msg.id ? <Loader2 size={14} className="animate-spin" /> : <Eye size={14} />}
+                        </button>
+                      )}
+                      {msg.status !== "archived" && (
+                        <button
+                          type="button"
+                          title="Arkivér"
+                          disabled={actingId === msg.id}
+                          onClick={async () => {
+                            setActingId(msg.id);
+                            try {
+                              const res = await fetch("/api/admin/contact", {
+                                method: "PATCH",
+                                headers: {
+                                  "Content-Type": "application/json",
+                                  "x-admin-secret": secret,
+                                },
+                                body: JSON.stringify({ id: msg.id, status: "archived" }),
+                              });
+                              if (res.ok) {
+                                setContactMsgs((prev) =>
+                                  prev.map((m) => m.id === msg.id ? { ...m, status: "archived" } : m)
+                                );
+                              }
+                            } finally {
+                              setActingId(null);
+                            }
+                          }}
+                          className="p-1.5 text-primary/30 hover:text-primary/60 transition-colors disabled:opacity-40"
+                        >
+                          {actingId === msg.id ? <Loader2 size={14} className="animate-spin" /> : <Archive size={14} />}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        title="Slet"
+                        disabled={actingId === msg.id}
+                        onClick={async () => {
+                          if (!confirm(`Slet besked fra ${msg.name}?`)) return;
+                          setActingId(msg.id);
+                          try {
+                            const res = await fetch("/api/admin/contact", {
+                              method: "DELETE",
+                              headers: {
+                                "Content-Type": "application/json",
+                                "x-admin-secret": secret,
+                              },
+                              body: JSON.stringify({ id: msg.id }),
+                            });
+                            if (res.ok) {
+                              setContactMsgs((prev) => prev.filter((m) => m.id !== msg.id));
+                            }
+                          } finally {
+                            setActingId(null);
+                          }
+                        }}
+                        className="p-1.5 text-primary/30 hover:text-red-500 transition-colors disabled:opacity-40"
+                      >
+                        {actingId === msg.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-sm text-primary/80 whitespace-pre-wrap leading-relaxed">
+                    {msg.message}
+                  </p>
+                </div>
+              ))}
             </div>
           )}
         </div>
