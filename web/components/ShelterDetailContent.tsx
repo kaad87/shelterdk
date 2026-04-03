@@ -226,7 +226,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
               shelterId={shelter.id}
             />
 
-            <div className="flex flex-wrap gap-x-6 gap-y-3 mb-8 text-primary/90">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mb-8 text-primary/90">
               {city && (
                 <span className="flex items-center gap-2">
                   <MapPin size={18} className="text-accent shrink-0" />
@@ -250,10 +250,9 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                   )}
                 </span>
               )}
-            </div>
-
-            <div className="mb-6">
-              <ShareButtons title={shelter.title} url={`/shelter/${slug}`} />
+              <span className="ml-auto">
+                <ShareButtons title={shelter.title} url={`/shelter/${slug}`} />
+              </span>
             </div>
 
             <section className="mb-10">

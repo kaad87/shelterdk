@@ -23,9 +23,14 @@ const config: Config = {
           "0%": { opacity: "0", transform: "translateY(16px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
+        popIn: {
+          "0%": { opacity: "0", transform: "translateY(-4px) scale(0.97)" },
+          "100%": { opacity: "1", transform: "translateY(0) scale(1)" },
+        },
       },
       animation: {
         "fade-in-up": "fadeInUp 0.4s ease-out both",
+        "pop-in": "popIn 0.15s ease-out both",
       },
     },
   },
