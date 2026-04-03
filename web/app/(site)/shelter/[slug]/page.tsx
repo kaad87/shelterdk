@@ -33,6 +33,7 @@ import { getAreaBySlug, prepositionForArea } from "@/lib/area-db";
 import { getWeatherForecast } from "@/lib/weather";
 import { ShelterDetailContent } from "@/components/ShelterDetailContent";
 import { ShelterSchema } from "@/components/seo/ShelterSchema";
+import { getRoutesForShelter } from "@/lib/shelter-routes";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { NearbySheltersWithinRadius } from "@/components/NearbySheltersWithinRadius";
 
@@ -267,6 +268,7 @@ export default async function ShelterPage({ params }: PageProps) {
       bookingFallbackHint={bookingFallbackHint}
       firewood={getFirewood(shelter)}
       facilityLinks={facilityLinks}
+      nearbyRoutes={getRoutesForShelter(slug)}
       isBookable={isBookable(shelter)}
       shelterFaqItems={shelterFaqItems}
       shelterFaqJsonLd={shelterFaqJsonLd}

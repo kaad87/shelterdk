@@ -103,6 +103,9 @@ export default async function NationalparkerPage() {
               <Link href="/fakta/shelters-i-danmark" className="text-sm bg-accent/10 text-accent font-medium px-4 py-2 rounded-full hover:bg-accent/20">Shelters i Danmark</Link>
               <Link href="/guides/shelter-i-nationalparker" className="text-sm bg-accent/10 text-accent font-medium px-4 py-2 rounded-full hover:bg-accent/20">Guide: Nationalparker</Link>
               <Link href="/fakta/bedste-shelters" className="text-sm bg-accent/10 text-accent font-medium px-4 py-2 rounded-full hover:bg-accent/20">Bedste shelters</Link>
+              <Link href="/fakta/gratis-shelters" className="text-sm bg-accent/10 text-accent font-medium px-4 py-2 rounded-full hover:bg-accent/20">Gratis shelters</Link>
+              <Link href="/blog/de-bedste-regioner" className="text-sm bg-accent/10 text-accent font-medium px-4 py-2 rounded-full hover:bg-accent/20">Bedste regioner for shelterture</Link>
+              <Link href="/guides/shelter-for-begyndere-forste-tur" className="text-sm bg-accent/10 text-accent font-medium px-4 py-2 rounded-full hover:bg-accent/20">Begynderguide</Link>
             </div>
           </section>
         </div>

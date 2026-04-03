@@ -48,6 +48,8 @@ interface ShelterDetailContentProps {
   firewood?: boolean | null;
   /** Links til relaterede filterlister (fx shelter-med-toilet, shelter-med-vand). */
   facilityLinks?: { label: string; href: string }[];
+  /** Vandreruter der passerer dette shelter (fra reverse index). */
+  nearbyRoutes?: { slug: string; name: string; length_km: number; distance_km: number }[];
   showReviews: boolean;
   allPhotoUrls: string[];
   displayDescription: string | null;
@@ -87,6 +89,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
     areaPreposition = "i",
     firewood = null,
     facilityLinks = [],
+    nearbyRoutes = [],
     showReviews,
     allPhotoUrls,
     displayDescription,
@@ -321,6 +324,38 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
               </section>
             )}
 
+            {/* Vandreruter nær dette shelter */}
+            {nearbyRoutes.length > 0 && (
+              <section className="mb-10 bg-accent/[0.04] border border-accent/15 rounded-xl p-5">
+                <h2 className="font-serif text-lg font-bold text-primary mb-3">
+                  Vandreruter nær dette shelter
+                </h2>
+                <ul className="space-y-2">
+                  {nearbyRoutes.slice(0, 5).map((route) => (
+                    <li key={route.slug} className="flex items-center justify-between">
+                      <Link
+                        href={`/ruteplanner/${route.slug}`}
+                        className="text-sm text-accent hover:underline font-medium"
+                      >
+                        {route.name}
+                      </Link>
+                      <span className="text-xs text-primary/50 shrink-0 ml-2">
+                        {route.length_km} km · {route.distance_km < 0.1 ? "på ruten" : `${route.distance_km} km`}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                {nearbyRoutes.length > 5 && (
+                  <Link
+                    href="/ruteplanner"
+                    className="text-xs text-accent hover:underline mt-3 inline-block"
+                  >
+                    Se alle {nearbyRoutes.length} ruter →
+                  </Link>
+                )}
+              </section>
+            )}
+
             {/* Nyttige ressourcer – intern linking for SEO */}
             <section className="mb-10 bg-primary/[0.03] border border-primary/10 rounded-xl p-5">
               <h2 className="font-serif text-lg font-bold text-primary mb-3">
@@ -352,6 +387,23 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                     Regler for shelter og teltning
                   </Link>
                   {" "}– det skal du vide
+                </li>
+                <li>
+                  <Link href="/guides/shelter-for-begyndere-forste-tur" className="text-accent hover:underline">
+                    Shelter for begyndere
+                  </Link>
+                  {" "}– kom godt i gang
+                </li>
+                <li>
+                  <Link href="/blog/gratis-shelters-i-danmark" className="text-accent hover:underline">
+                    Gratis shelters i Danmark
+                  </Link>
+                  {" "}– komplet guide
+                </li>
+                <li>
+                  <Link href="/fakta/shelters-i-danmark" className="text-accent hover:underline">
+                    Shelters i Danmark – tal og fakta
+                  </Link>
                 </li>
                 <li>
                   <Link href="/ruteplanner" className="text-accent hover:underline">

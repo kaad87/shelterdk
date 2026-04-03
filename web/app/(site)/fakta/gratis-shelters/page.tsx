@@ -53,8 +53,11 @@ export default async function GratisSheltersPage() {
       relatedLinks={[
         { label: "Shelters i Danmark", href: "/fakta/shelters-i-danmark" },
         { label: "Gratis shelters guide", href: "/blog/gratis-shelters-i-danmark" },
+        { label: "Bedste shelters", href: "/fakta/bedste-shelters" },
+        { label: "Faciliteter", href: "/fakta/shelters-med-faciliteter" },
         { label: "Book shelter", href: "/shelter-booking" },
         { label: "Regler for shelter", href: "/guides/regler-for-shelter-og-teltning-i-danmark" },
+        { label: "Shelter for begyndere", href: "/guides/shelter-for-begyndere-forste-tur" },
       ]}
       datasetName="Gratis shelters i Danmark"
       datasetDescription={`Oversigt over ${facilities.gratis} gratis shelters i Danmark`}

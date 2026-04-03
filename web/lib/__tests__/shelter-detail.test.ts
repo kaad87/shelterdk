@@ -58,7 +58,7 @@ describe("getLocationCoords", () => {
   });
 
   it("parser GeoJSON coordinates", () => {
-    const s = mk({ location: { coordinates: [10.0, 55.5] } });
+    const s = mk({ location: { coordinates: [10.0, 55.5] } as unknown as string });
     expect(getLocationCoords(s)).toEqual({ lon: 10.0, lat: 55.5 });
   });
 });

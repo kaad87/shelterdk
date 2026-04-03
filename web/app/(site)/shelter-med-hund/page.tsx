@@ -176,32 +176,27 @@ export default async function ShelterMedHundPage() {
 
           <p>
             Se også:{" "}
-            <Link href="/shelter-med-toilet" className="text-accent hover:underline">
-              shelter med toilet
-            </Link>
+            <Link href="/shelter-til-familier" className="text-accent hover:underline">shelter til familier</Link>
             {" · "}
-            <Link href="/shelter-med-vand" className="text-accent hover:underline">
-              shelter med vand
-            </Link>
+            <Link href="/shelter-til-cykeltur" className="text-accent hover:underline">shelter til cykeltur</Link>
             {" · "}
-            <Link href="/shelter-med-baalplads" className="text-accent hover:underline">
-              shelter med bålplads
-            </Link>
+            <Link href="/shelter-naer-vand" className="text-accent hover:underline">shelter nær vand</Link>
             {" · "}
-            <Link href="/shelter-med-strand" className="text-accent hover:underline">
-              shelter ved stranden
-            </Link>
+            <Link href="/handicapvenlige-shelters" className="text-accent hover:underline">handicapvenlige shelters</Link>
             {" · "}
-            <Link href="/shelter-med-bruser" className="text-accent hover:underline">
-              shelter med bruser
-            </Link>
+            <Link href="/shelter-med-toilet" className="text-accent hover:underline">shelter med toilet</Link>
             {" · "}
-            <Link href="/shelter-booking" className="text-accent hover:underline">
-              book shelter
-            </Link>
+            <Link href="/shelter-med-vand" className="text-accent hover:underline">shelter med vand</Link>
             {" · "}
-            <Link href="/soeg" className="text-accent hover:underline">
-              søg alle shelters
+            <Link href="/shelter-med-baalplads" className="text-accent hover:underline">shelter med bålplads</Link>
+            {" · "}
+            <Link href="/shelter-med-strand" className="text-accent hover:underline">shelter ved stranden</Link>
+            {" · "}
+            <Link href="/shelter-med-bruser" className="text-accent hover:underline">shelter med bruser</Link>
+            {" · "}
+            <Link href="/shelter-booking" className="text-accent hover:underline">book shelter</Link>
+            {" · "}
+            <Link href="/soeg" className="text-accent hover:underline">søg alle shelters
             </Link>
             .
           </p>

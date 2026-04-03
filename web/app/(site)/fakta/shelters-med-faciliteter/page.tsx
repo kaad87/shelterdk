@@ -52,7 +52,10 @@ export default async function FaciliteterPage() {
       relatedLinks={[
         { label: "Shelters i Danmark", href: "/fakta/shelters-i-danmark" },
         { label: "Gratis shelters", href: "/fakta/gratis-shelters" },
+        { label: "Bedste shelters", href: "/fakta/bedste-shelters" },
         { label: "Pakkeliste til sheltertur", href: "/guides/pakkeliste-til-sheltertur" },
+        { label: "Sådan vælger du shelter", href: "/guides/saadan-finder-du-det-perfekte-shelter" },
+        { label: "Udstyr for begyndere", href: "/blog/udstyr-guide-begyndere" },
       ]}
       datasetName="Facilitetsoversigt for shelters i Danmark"
       datasetDescription={`Facilitetsstatistik for ${total} shelters: toilet, vand, b\u00e5lplads og mere`}

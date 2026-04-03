@@ -150,6 +150,14 @@ export default async function ShelterMedBruserPage() {
 
           <p>
             Se også:{" "}
+            <Link href="/shelter-til-familier" className="text-accent hover:underline">shelter til familier</Link>
+            {" · "}
+            <Link href="/shelter-til-cykeltur" className="text-accent hover:underline">shelter til cykeltur</Link>
+            {" · "}
+            <Link href="/shelter-naer-vand" className="text-accent hover:underline">shelter nær vand</Link>
+            {" · "}
+            <Link href="/handicapvenlige-shelters" className="text-accent hover:underline">handicapvenlige shelters</Link>
+            {" · "}
             <Link href="/shelter-med-toilet" className="text-accent hover:underline">shelter med toilet</Link>
             {" · "}
             <Link href="/shelter-med-vand" className="text-accent hover:underline">shelter med vand</Link>
@@ -160,8 +168,7 @@ export default async function ShelterMedBruserPage() {
             {" · "}
             <Link href="/shelter-med-hund" className="text-accent hover:underline">hundevenlige shelters</Link>
             {" · "}
-            <Link href="/soeg" className="text-accent hover:underline">søg alle shelters</Link>
-            .
+            <Link href="/soeg" className="text-accent hover:underline">søg alle shelters</Link>.
           </p>
         </section>
 

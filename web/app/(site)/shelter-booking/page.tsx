@@ -202,6 +202,22 @@ export default async function ShelterBookingPage() {
               — tag hunden med
             </li>
             <li>
+              <Link href="/handicapvenlige-shelters" className="text-accent hover:underline">Handicapvenlige shelters</Link>{" "}
+              — tilgængelige overnatningspladser
+            </li>
+            <li>
+              <Link href="/shelter-til-familier" className="text-accent hover:underline">Shelter til familier</Link>{" "}
+              — børnevenlige shelters med faciliteter
+            </li>
+            <li>
+              <Link href="/shelter-til-cykeltur" className="text-accent hover:underline">Shelter til cykeltur</Link>{" "}
+              — overnat langs cykelruter
+            </li>
+            <li>
+              <Link href="/shelter-naer-vand" className="text-accent hover:underline">Shelter nær vand</Link>{" "}
+              — strand, sø og å
+            </li>
+            <li>
               <Link href="/shelter-naer-mig" className="text-accent hover:underline">Shelter nær mig</Link>{" "}
               — find det nærmeste shelter
             </li>

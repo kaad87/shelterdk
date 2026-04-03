@@ -40,7 +40,7 @@ export const FILTER_CONFIGS: Record<string, FilterConfig> = {
     filterLabelLong: "Hundevenlige shelters",
     parentHref: "/shelter-med-hund",
     relatedBlogLinks: [
-      { label: "Shelter for begyndere", href: "/guides/shelter-for-begyndere" },
+      { label: "Shelter for begyndere", href: "/guides/shelter-for-begyndere-forste-tur" },
     ],
   },
   strand: {
@@ -57,7 +57,10 @@ export const FILTER_CONFIGS: Record<string, FilterConfig> = {
     filterLabel: "bruser",
     filterLabelLong: "Shelters med bruser",
     parentHref: "/shelter-med-bruser",
-    relatedBlogLinks: [],
+    relatedBlogLinks: [
+      { label: "Pakkeliste til sheltertur", href: "/guides/pakkeliste-til-sheltertur" },
+      { label: "Sådan vælger du det perfekte shelter", href: "/guides/saadan-finder-du-det-perfekte-shelter" },
+    ],
   },
   booking: {
     filterKey: "booking",
@@ -66,6 +69,16 @@ export const FILTER_CONFIGS: Record<string, FilterConfig> = {
     parentHref: "/shelter-booking",
     relatedBlogLinks: [
       { label: "Gratis shelters guide", href: "/blog/gratis-shelters-i-danmark" },
+    ],
+  },
+  handicap: {
+    filterKey: "handicap",
+    filterLabel: "handicap",
+    filterLabelLong: "Handicapvenlige shelters",
+    parentHref: "/handicapvenlige-shelters",
+    relatedBlogLinks: [
+      { label: "Shelter for begyndere", href: "/guides/shelter-for-begyndere-forste-tur" },
+      { label: "Sådan vælger du shelter", href: "/guides/saadan-finder-du-det-perfekte-shelter" },
     ],
   },
 };

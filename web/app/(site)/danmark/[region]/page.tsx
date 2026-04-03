@@ -189,10 +189,18 @@ export default async function DanmarkRegionPage({ params }: PageProps) {
                   <Link href="/shelter-med-hund" className="text-accent hover:underline">hundevenlige shelters</Link>{" "}
                   eller{" "}
                   <Link href="/shelter-med-baalplads" className="text-accent hover:underline">shelter med bålplads</Link>.
+                </p>
+                <p className="mt-4">
                   Læs også vores{" "}
-                  <Link href="/guides/pakkeliste-til-sheltertur" className="text-accent hover:underline">pakkeliste til sheltertur</Link>{" "}
+                  <Link href="/guides/pakkeliste-til-sheltertur" className="text-accent hover:underline">pakkeliste til sheltertur</Link>,{" "}
+                  <Link href="/guides/regler-for-shelter-og-teltning-i-danmark" className="text-accent hover:underline">regler for shelter og teltning</Link>{" "}
                   og{" "}
-                  <Link href="/guides/regler-for-shelter-og-teltning-i-danmark" className="text-accent hover:underline">regler for shelter og teltning</Link>.
+                  <Link href="/guides/shelter-for-begyndere-forste-tur" className="text-accent hover:underline">begynderguiden</Link>.{" "}
+                  Se også{" "}
+                  <Link href="/blog/de-bedste-regioner" className="text-accent hover:underline">de bedste regioner for shelterture</Link>,{" "}
+                  <Link href="/blog/gratis-shelters-i-danmark" className="text-accent hover:underline">gratis shelters i Danmark</Link>{" "}
+                  og{" "}
+                  <Link href="/fakta/shelters-i-danmark" className="text-accent hover:underline">tal og fakta om shelters</Link>.
                 </p>
               </section>
             );

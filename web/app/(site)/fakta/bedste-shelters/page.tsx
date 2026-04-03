@@ -47,7 +47,10 @@ export default async function BedsteSheltersPage() {
         { label: "Shelters i Danmark", href: "/fakta/shelters-i-danmark" },
         { label: "De 10 bedste shelters (blog)", href: "/blog/de-10-bedste-shelters" },
         { label: "Gratis shelters", href: "/fakta/gratis-shelters" },
-        { label: "Shelter for begyndere", href: "/guides/shelter-for-begyndere" },
+        { label: "Faciliteter", href: "/fakta/shelters-med-faciliteter" },
+        { label: "Shelter for begyndere", href: "/guides/shelter-for-begyndere-forste-tur" },
+        { label: "De bedste regioner", href: "/blog/de-bedste-regioner" },
+        { label: "Sådan vælger du shelter", href: "/guides/saadan-finder-du-det-perfekte-shelter" },
       ]}
       datasetName="Bedste shelters i Danmark - Ranking"
       datasetDescription="Top-rated shelters baseret p\u00e5 Google-anmeldelser"

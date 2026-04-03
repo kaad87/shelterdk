@@ -183,6 +183,21 @@ export default async function BlogPostPage({ params }: PageProps) {
 
           <NewsletterSignup variant="inline" source="blog" className="mt-12" />
 
+          {/* Cross-links for topic cluster connectivity */}
+          <section className="mt-12 pt-8 border-t border-primary/10">
+            <h2 className="font-serif text-lg font-bold text-primary mb-3">Udforsk mere</h2>
+            <div className="flex flex-wrap gap-2">
+              <Link href="/danmark/jylland" className="text-sm bg-accent/10 text-accent font-medium px-3 py-1.5 rounded-full hover:bg-accent/20 transition-colors">Shelters i Jylland</Link>
+              <Link href="/danmark/sjaelland" className="text-sm bg-accent/10 text-accent font-medium px-3 py-1.5 rounded-full hover:bg-accent/20 transition-colors">Shelters på Sjælland</Link>
+              <Link href="/danmark/fyn" className="text-sm bg-accent/10 text-accent font-medium px-3 py-1.5 rounded-full hover:bg-accent/20 transition-colors">Shelters på Fyn</Link>
+              <Link href="/danmark/bornholm" className="text-sm bg-accent/10 text-accent font-medium px-3 py-1.5 rounded-full hover:bg-accent/20 transition-colors">Shelters på Bornholm</Link>
+              <Link href="/fakta/shelters-i-danmark" className="text-sm bg-accent/10 text-accent font-medium px-3 py-1.5 rounded-full hover:bg-accent/20 transition-colors">Fakta om shelters</Link>
+              <Link href="/fakta/gratis-shelters" className="text-sm bg-accent/10 text-accent font-medium px-3 py-1.5 rounded-full hover:bg-accent/20 transition-colors">Gratis shelters</Link>
+              <Link href="/guides/shelter-for-begyndere-forste-tur" className="text-sm bg-accent/10 text-accent font-medium px-3 py-1.5 rounded-full hover:bg-accent/20 transition-colors">Begynderguide</Link>
+              <Link href="/guides/pakkeliste-til-sheltertur" className="text-sm bg-accent/10 text-accent font-medium px-3 py-1.5 rounded-full hover:bg-accent/20 transition-colors">Pakkeliste</Link>
+            </div>
+          </section>
+
           {/* Share experience */}
           <ShareExperience />
 

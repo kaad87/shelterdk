@@ -63,8 +63,14 @@ export default async function SheltersIDanmarkPage() {
         { label: "Gratis shelters", href: "/fakta/gratis-shelters" },
         { label: "Faciliteter", href: "/fakta/shelters-med-faciliteter" },
         { label: "Nationalparker", href: "/fakta/shelters-i-nationalparker" },
-        { label: "Guide for begyndere", href: "/guides/shelter-for-begyndere" },
+        { label: "Shelter til cykeltur", href: "/shelter-til-cykeltur" },
+        { label: "Shelter nær vand", href: "/shelter-naer-vand" },
+        { label: "Shelter til familier", href: "/shelter-til-familier" },
+        { label: "Handicapvenlige shelters", href: "/handicapvenlige-shelters" },
+        { label: "Guide for begyndere", href: "/guides/shelter-for-begyndere-forste-tur" },
         { label: "Regler for shelter", href: "/guides/regler-for-shelter-og-teltning-i-danmark" },
+        { label: "De bedste regioner", href: "/blog/de-bedste-regioner" },
+        { label: "Shelter vs. teltplads", href: "/blog/shelter-vs-teltplads" },
       ]}
       datasetName="Shelters i Danmark - Komplet statistik"
       datasetDescription={`Opdateret statistik over alle ${total} shelters i Danmark`}

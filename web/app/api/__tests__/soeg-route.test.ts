@@ -18,8 +18,8 @@ import { getSheltersPage } from "@/lib/soeg-db";
 
 const mockGetSheltersPage = vi.mocked(getSheltersPage);
 
-function mockRequest(url: string): Request {
-  return new Request(url);
+function mockRequest(url: string) {
+  return new Request(url) as unknown as import("next/server").NextRequest;
 }
 
 describe("GET /api/soeg", () => {

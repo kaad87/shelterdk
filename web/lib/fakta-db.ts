@@ -54,6 +54,7 @@ export interface FacilityCounts {
   bruser: number;
   bookbar: number;
   gratis: number;
+  handicap: number;
 }
 
 /** Count shelters for each facility type. */
@@ -65,7 +66,7 @@ export async function getFacilityCounts(): Promise<FacilityCounts> {
       .select("id", { count: "exact", head: true })
       .is("duplicate_of_shelter_id", null);
 
-  const [toilet, water, baalplads, hund, strand, bruser, bookbar, gratis] =
+  const [toilet, water, baalplads, hund, strand, bruser, bookbar, gratis, handicap] =
     await Promise.all([
       base().in("toilet", ["flush", "mulch"]),
       base().eq("water", true),
@@ -75,6 +76,7 @@ export async function getFacilityCounts(): Promise<FacilityCounts> {
       base().filter("geofa_raw->>bruser_bad", "eq", "Ja"),
       base().not("booking_url", "is", null).neq("booking_url", ""),
       base().filter("geofa_raw->>betaling", "eq", "Nej"),
+      base().or("geofa_raw->>handicap.eq.Handicapegnet,geofa_raw->>handicap.eq.Delvist handicapegnet"),
     ]);
 
   return {
@@ -86,6 +88,7 @@ export async function getFacilityCounts(): Promise<FacilityCounts> {
     bruser: bruser.count ?? 0,
     bookbar: bookbar.count ?? 0,
     gratis: gratis.count ?? 0,
+    handicap: handicap.count ?? 0,
   };
 }
 
@@ -101,7 +104,7 @@ export async function getFacilityCountsForRegion(
       .is("duplicate_of_shelter_id", null)
       .eq("region", region);
 
-  const [toilet, water, baalplads, hund, strand, bruser, bookbar, gratis] =
+  const [toilet, water, baalplads, hund, strand, bruser, bookbar, gratis, handicap] =
     await Promise.all([
       base().in("toilet", ["flush", "mulch"]),
       base().eq("water", true),
@@ -111,6 +114,7 @@ export async function getFacilityCountsForRegion(
       base().filter("geofa_raw->>bruser_bad", "eq", "Ja"),
       base().not("booking_url", "is", null).neq("booking_url", ""),
       base().filter("geofa_raw->>betaling", "eq", "Nej"),
+      base().or("geofa_raw->>handicap.eq.Handicapegnet,geofa_raw->>handicap.eq.Delvist handicapegnet"),
     ]);
 
   return {
@@ -122,6 +126,7 @@ export async function getFacilityCountsForRegion(
     bruser: bruser.count ?? 0,
     bookbar: bookbar.count ?? 0,
     gratis: gratis.count ?? 0,
+    handicap: handicap.count ?? 0,
   };
 }
 
@@ -197,6 +202,11 @@ export async function getFilterRegionCount(
     case "booking":
       query = query.not("booking_url", "is", null).neq("booking_url", "");
       break;
+    case "handicap":
+      query = query.or(
+        "geofa_raw->>handicap.eq.Handicapegnet,geofa_raw->>handicap.eq.Delvist handicapegnet"
+      );
+      break;
     default:
       return 0;
   }
@@ -250,6 +260,11 @@ export async function getSheltersForFilterRegion(
     case "booking":
       query = query.not("booking_url", "is", null).neq("booking_url", "");
       break;
+    case "handicap":
+      query = query.or(
+        "geofa_raw->>handicap.eq.Handicapegnet,geofa_raw->>handicap.eq.Delvist handicapegnet"
+      );
+      break;
     default:
       return [];
   }
@@ -257,6 +272,62 @@ export async function getSheltersForFilterRegion(
   const { data, error } = await query;
   if (error) {
     console.error(`fakta-db: getSheltersForFilterRegion`, error);
+    return [];
+  }
+  return (data as Shelter[]) ?? [];
+}
+
+/** Shelters near beach / water nationally. */
+export async function getStrandShelters(limit: number = 200): Promise<Shelter[]> {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("shelters")
+    .select(SHELTER_SELECT)
+    .is("duplicate_of_shelter_id", null)
+    .filter("geofa_raw->>strand_naerhed", "eq", "Ja")
+    .order("display_score", { ascending: false, nullsFirst: false })
+    .order("title", { ascending: true })
+    .limit(limit);
+  if (error) {
+    console.error("fakta-db: getStrandShelters", error);
+    return [];
+  }
+  return (data as Shelter[]) ?? [];
+}
+
+/** Family-friendly shelters: capacity >= 4, toilet, water. */
+export async function getFamilyShelters(limit: number = 200): Promise<Shelter[]> {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("shelters")
+    .select(SHELTER_SELECT)
+    .is("duplicate_of_shelter_id", null)
+    .gte("capacity", 4)
+    .in("toilet", ["flush", "mulch"])
+    .eq("water", true)
+    .order("display_score", { ascending: false, nullsFirst: false })
+    .order("title", { ascending: true })
+    .limit(limit);
+  if (error) {
+    console.error("fakta-db: getFamilyShelters", error);
+    return [];
+  }
+  return (data as Shelter[]) ?? [];
+}
+
+/** Handicap-accessible shelters nationally. */
+export async function getHandicapShelters(limit: number = 200): Promise<Shelter[]> {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("shelters")
+    .select(SHELTER_SELECT)
+    .is("duplicate_of_shelter_id", null)
+    .or("geofa_raw->>handicap.eq.Handicapegnet,geofa_raw->>handicap.eq.Delvist handicapegnet")
+    .order("display_score", { ascending: false, nullsFirst: false })
+    .order("title", { ascending: true })
+    .limit(limit);
+  if (error) {
+    console.error("fakta-db: getHandicapShelters", error);
     return [];
   }
   return (data as Shelter[]) ?? [];
