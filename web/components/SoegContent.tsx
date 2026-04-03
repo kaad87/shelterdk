@@ -296,7 +296,7 @@ export function SoegContent({
           </p>
           {hasActiveFilters && (
             <a
-              href={initialRegion ? `/soeg/${encodeURIComponent(initialRegion)}` : "/soeg"}
+              href={initialRegion ? `/soeg?region=${encodeURIComponent(initialRegion)}` : "/soeg"}
               className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent/90 transition-colors"
             >
               Nulstil filtre

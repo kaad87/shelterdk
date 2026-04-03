@@ -3,6 +3,7 @@ export interface FilterConfig {
   filterLabel: string;
   filterLabelLong: string;
   parentHref: string;
+  minSheltersForRegion: number;
   relatedBlogLinks: { label: string; href: string }[];
 }
 
@@ -12,6 +13,7 @@ export const FILTER_CONFIGS: Record<string, FilterConfig> = {
     filterLabel: "toilet",
     filterLabelLong: "Shelters med toilet",
     parentHref: "/shelter-med-toilet",
+    minSheltersForRegion: 5,
     relatedBlogLinks: [
       { label: "Regler for shelter", href: "/guides/regler-for-shelter-og-teltning-i-danmark" },
     ],
@@ -21,6 +23,7 @@ export const FILTER_CONFIGS: Record<string, FilterConfig> = {
     filterLabel: "vand",
     filterLabelLong: "Shelters med vand",
     parentHref: "/shelter-med-vand",
+    minSheltersForRegion: 5,
     relatedBlogLinks: [
       { label: "Pakkeliste til sheltertur", href: "/guides/pakkeliste-til-sheltertur" },
     ],
@@ -30,6 +33,7 @@ export const FILTER_CONFIGS: Record<string, FilterConfig> = {
     filterLabel: "bålplads",
     filterLabelLong: "Shelters med bålplads",
     parentHref: "/shelter-med-baalplads",
+    minSheltersForRegion: 5,
     relatedBlogLinks: [
       { label: "Shelter i efteråret", href: "/blog/shelter-i-efteraaret" },
     ],
@@ -39,6 +43,7 @@ export const FILTER_CONFIGS: Record<string, FilterConfig> = {
     filterLabel: "hund",
     filterLabelLong: "Hundevenlige shelters",
     parentHref: "/shelter-med-hund",
+    minSheltersForRegion: 5,
     relatedBlogLinks: [
       { label: "Shelter for begyndere", href: "/guides/shelter-for-begyndere-forste-tur" },
     ],
@@ -48,6 +53,7 @@ export const FILTER_CONFIGS: Record<string, FilterConfig> = {
     filterLabel: "strand",
     filterLabelLong: "Shelters nær strand",
     parentHref: "/shelter-med-strand",
+    minSheltersForRegion: 5,
     relatedBlogLinks: [
       { label: "Shelter i efteråret", href: "/blog/shelter-i-efteraaret" },
     ],
@@ -57,6 +63,7 @@ export const FILTER_CONFIGS: Record<string, FilterConfig> = {
     filterLabel: "bruser",
     filterLabelLong: "Shelters med bruser",
     parentHref: "/shelter-med-bruser",
+    minSheltersForRegion: 5,
     relatedBlogLinks: [
       { label: "Pakkeliste til sheltertur", href: "/guides/pakkeliste-til-sheltertur" },
       { label: "Sådan vælger du det perfekte shelter", href: "/guides/saadan-finder-du-det-perfekte-shelter" },
@@ -67,6 +74,7 @@ export const FILTER_CONFIGS: Record<string, FilterConfig> = {
     filterLabel: "booking",
     filterLabelLong: "Bookbare shelters",
     parentHref: "/shelter-booking",
+    minSheltersForRegion: 5,
     relatedBlogLinks: [
       { label: "Gratis shelters guide", href: "/blog/gratis-shelters-i-danmark" },
     ],
@@ -76,6 +84,7 @@ export const FILTER_CONFIGS: Record<string, FilterConfig> = {
     filterLabel: "handicap",
     filterLabelLong: "Handicapvenlige shelters",
     parentHref: "/handicapvenlige-shelters",
+    minSheltersForRegion: 3,
     relatedBlogLinks: [
       { label: "Shelter for begyndere", href: "/guides/shelter-for-begyndere-forste-tur" },
       { label: "Sådan vælger du shelter", href: "/guides/saadan-finder-du-det-perfekte-shelter" },

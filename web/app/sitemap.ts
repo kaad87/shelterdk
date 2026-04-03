@@ -25,6 +25,7 @@ const STATIC_PAGES: Array<{
   priority: number;
 }> = [
   { path: "", changeFrequency: "daily", priority: 1 },
+  { path: "/soeg", changeFrequency: "daily", priority: 0.9 },
   { path: "/shelter-naer-mig", changeFrequency: "weekly", priority: 0.88 },
   { path: "/shelter-med-toilet", changeFrequency: "weekly", priority: 0.85 },
   { path: "/shelter-med-vand", changeFrequency: "weekly", priority: 0.85 },
@@ -154,13 +155,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entries.push(entry(`${BASE_URL}${path}`, "weekly", 0.85));
   }
 
-  // Cross pages (filter × region) — only include combos with 5+ shelters
+  // Cross pages (filter × region) — threshold per filter (matches generateStaticParams)
   for (const config of Object.values(FILTER_CONFIGS)) {
     for (const regionSlug of REGION_SLUGS) {
       const regionName = REGION_NAMES[regionSlug];
       if (!regionName) continue;
       const count = await getFilterRegionCount(config.filterKey, regionName);
-      if (count >= 5) {
+      if (count >= config.minSheltersForRegion) {
         entries.push(entry(`${BASE_URL}${config.parentHref}/${regionSlug}`, "weekly", 0.7));
       }
     }

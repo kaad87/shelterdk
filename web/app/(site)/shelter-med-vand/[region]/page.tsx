@@ -9,7 +9,7 @@ import { getDistinctRegions } from "@/lib/danmark-silo";
 import { slugifySegment } from "@/lib/slug";
 
 const FILTER = FILTER_CONFIGS["vand"];
-const MIN_SHELTERS = 5;
+const MIN_SHELTERS = FILTER.minSheltersForRegion;
 
 export const revalidate = 86400;
 export const dynamicParams = false;
