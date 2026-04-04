@@ -396,6 +396,32 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* ===== MOBILE REGION GRID (< md) ===== */}
+      <section className="md:hidden py-6 bg-background" aria-labelledby="heading-region-mobile">
+        <div className="mx-auto px-4">
+          <h2 id="heading-region-mobile" className="font-serif text-xl font-bold text-primary mb-4">
+            Udforsk efter område
+          </h2>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { name: "Jylland", href: "/danmark/jylland", count: "700+", gradient: "from-[#2c3e2d] to-[#4a6b4a]" },
+              { name: "Sjælland", href: "/danmark/sjaelland", count: "500+", gradient: "from-[#2b3a5e] to-[#4a6b8a]" },
+              { name: "Fyn", href: "/danmark/fyn", count: "250+", gradient: "from-[#5e4a2b] to-[#8a7b4a]" },
+              { name: "Bornholm", href: "/danmark/bornholm", count: "30+", gradient: "from-[#4a2b5e] to-[#6b4a8a]" },
+            ].map((r) => (
+              <Link
+                key={r.href}
+                href={r.href}
+                className={`rounded-xl bg-gradient-to-br ${r.gradient} p-4 text-white active:scale-[0.97] transition-transform touch-manipulation`}
+              >
+                <div className="font-serif text-lg font-bold">{r.name}</div>
+                <div className="text-sm text-white/70">{r.count} shelters</div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section
         className="pt-4 pb-8 bg-background"
         id="kort"
@@ -465,7 +491,7 @@ export default async function HomePage() {
       </section>
 
       <section
-        className="pt-4 pb-8 bg-background"
+        className="hidden md:block pt-4 pb-8 bg-background"
         id="udforsk-efter-region"
         aria-labelledby="heading-region"
       >
@@ -502,7 +528,7 @@ export default async function HomePage() {
       </section>
 
       <section
-        className="py-8 bg-background"
+        className="hidden md:block py-8 bg-background"
         id="populaere-omraader"
         aria-labelledby="heading-populaere-omraader"
       >
