@@ -411,15 +411,13 @@ export function SoegContent({
               )}
             </div>
           </div>
-          <div className="lg:sticky lg:top-24 lg:self-start rounded-xl overflow-hidden border border-primary/10 bg-primary/5 h-[160px] sm:h-[200px] lg:min-h-[420px] lg:h-[calc(100vh-8rem)] lg:max-h-[720px] order-1 lg:order-2 mb-4 lg:mb-0 flex flex-col relative">
-            <div className="flex-1 min-h-0 w-full relative">
+          <div className="compact-map lg:sticky lg:top-24 lg:self-start rounded-xl overflow-hidden border border-primary/10 bg-primary/5 h-[160px] sm:h-[200px] lg:min-h-[420px] lg:h-[calc(100vh-8rem)] lg:max-h-[720px] order-1 lg:order-2 mb-4 lg:mb-0 relative">
               <ShelterMap
                 shelters={shelters}
                 className="absolute inset-0 w-full h-full"
                 onBoundsChange={fetchByBounds}
                 initialRegion={initialRegion}
               />
-            </div>
             <FloatingViewToggle view={view} onList={handleViewList} onSplit={handleViewSplit} onMap={handleViewMap} position="absolute" />
           </div>
         </div>

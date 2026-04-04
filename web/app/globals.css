@@ -26,4 +26,10 @@ body {
   display: none;
 }
 
+/* Compact map: force leaflet container to respect parent height */
+.compact-map .leaflet-container {
+  min-height: 0 !important;
+  height: 100% !important;
+}
+
 
