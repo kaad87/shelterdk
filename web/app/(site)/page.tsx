@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { WebSiteSchema } from "@/components/seo/WebSiteSchema";
 import { FrontPageShelterGrid } from "@/components/FrontPageShelterGrid";
 import { SearchBar } from "@/components/SearchBar";
+import { MobileHomePills } from "@/components/MobileHomePills";
 import { createPublicClient } from "@/utils/supabase/server-public";
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 
@@ -321,8 +322,11 @@ export default async function HomePage() {
         </div>
       </header>
 
-      {/* Redaktionel intro – unik tekst til SEO/AdSense */}
-      <section className="pt-8 pb-4 bg-background" aria-labelledby="heading-intro">
+      {/* ===== MOBILE PILLS (< md) ===== */}
+      <MobileHomePills />
+
+      {/* ===== DESKTOP: Redaktionel intro + pills (md+) ===== */}
+      <section className="hidden md:block pt-8 pb-4 bg-background" aria-labelledby="heading-intro">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <p className="text-primary/70 text-sm sm:text-base leading-relaxed text-center max-w-2xl mx-auto">
             ShelterDK samler {shelterCount}+ shelters fra Geodatastyrelsen,
