@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { WebSiteSchema } from "@/components/seo/WebSiteSchema";
 import { FrontPageShelterGrid } from "@/components/FrontPageShelterGrid";
 import { SearchBar } from "@/components/SearchBar";
+import { MobileHomePills } from "@/components/MobileHomePills";
 import { createPublicClient } from "@/utils/supabase/server-public";
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 
@@ -276,9 +277,26 @@ export default async function HomePage() {
   return (
     <>
       <WebSiteSchema />
-      {/* Semantisk: side-intro med én h1 – godt for SEO og skærmlæsere */}
+      {/* ===== MOBILE HERO (< md) ===== */}
       <header
-        className="relative bg-gradient-to-br from-primary via-primary/95 to-primary/90 text-white min-h-[320px] sm:min-h-[380px] md:min-h-[420px] flex flex-col justify-end"
+        className="md:hidden bg-gradient-to-br from-[#2c3e2d] to-[#1a2b1a] text-white px-4 pt-14 pb-6"
+        aria-label="Introduktion"
+      >
+        <h1 className="font-serif text-2xl font-bold mb-3">
+          Find dit næste shelter
+        </h1>
+        <Link
+          href="/soeg"
+          className="flex items-center gap-2 bg-white rounded-xl px-4 py-3 text-primary/50 text-sm"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-primary/40"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <span>Søg by, område eller shelter…</span>
+        </Link>
+      </header>
+
+      {/* ===== DESKTOP HERO (md+) ===== */}
+      <header
+        className="hidden md:flex relative bg-gradient-to-br from-primary via-primary/95 to-primary/90 text-white min-h-[420px] flex-col justify-end"
         aria-label="Introduktion"
       >
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1920&q=80&auto=format&fit=crop')] bg-cover bg-center opacity-25" aria-hidden />
@@ -304,8 +322,11 @@ export default async function HomePage() {
         </div>
       </header>
 
-      {/* Redaktionel intro – unik tekst til SEO/AdSense */}
-      <section className="pt-8 pb-4 bg-background" aria-labelledby="heading-intro">
+      {/* ===== MOBILE PILLS (< md) ===== */}
+      <MobileHomePills />
+
+      {/* ===== DESKTOP: Redaktionel intro + pills (md+) ===== */}
+      <section className="hidden md:block pt-8 pb-4 bg-background" aria-labelledby="heading-intro">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <p className="text-primary/70 text-sm sm:text-base leading-relaxed text-center max-w-2xl mx-auto">
             ShelterDK samler {shelterCount}+ shelters fra Geodatastyrelsen,
@@ -364,7 +385,8 @@ export default async function HomePage() {
         >
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 id="heading-udforsk-shelters" className="font-serif text-3xl font-bold text-primary mb-8 text-center">
-              Udforsk shelters
+              <span className="md:hidden">Populære shelters</span>
+              <span className="hidden md:inline">Udforsk shelters</span>
             </h2>
             <FrontPageShelterGrid
               shelters={featuredShelters}
@@ -373,6 +395,32 @@ export default async function HomePage() {
           </div>
         </section>
       )}
+
+      {/* ===== MOBILE REGION GRID (< md) ===== */}
+      <section className="md:hidden py-6 bg-background" aria-labelledby="heading-region-mobile">
+        <div className="mx-auto px-4">
+          <h2 id="heading-region-mobile" className="font-serif text-xl font-bold text-primary mb-4">
+            Udforsk efter område
+          </h2>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { name: "Jylland", href: "/danmark/jylland", count: "700+", gradient: "from-[#2c3e2d] to-[#4a6b4a]" },
+              { name: "Sjælland", href: "/danmark/sjaelland", count: "500+", gradient: "from-[#2b3a5e] to-[#4a6b8a]" },
+              { name: "Fyn", href: "/danmark/fyn", count: "250+", gradient: "from-[#5e4a2b] to-[#8a7b4a]" },
+              { name: "Bornholm", href: "/danmark/bornholm", count: "30+", gradient: "from-[#4a2b5e] to-[#6b4a8a]" },
+            ].map((r) => (
+              <Link
+                key={r.href}
+                href={r.href}
+                className={`rounded-xl bg-gradient-to-br ${r.gradient} p-4 text-white active:scale-[0.97] transition-transform touch-manipulation`}
+              >
+                <div className="font-serif text-lg font-bold">{r.name}</div>
+                <div className="text-sm text-white/70">{r.count} shelters</div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <section
         className="pt-4 pb-8 bg-background"
@@ -443,7 +491,7 @@ export default async function HomePage() {
       </section>
 
       <section
-        className="pt-4 pb-8 bg-background"
+        className="hidden md:block pt-4 pb-8 bg-background"
         id="udforsk-efter-region"
         aria-labelledby="heading-region"
       >
@@ -480,7 +528,7 @@ export default async function HomePage() {
       </section>
 
       <section
-        className="py-8 bg-background"
+        className="hidden md:block py-8 bg-background"
         id="populaere-omraader"
         aria-labelledby="heading-populaere-omraader"
       >
