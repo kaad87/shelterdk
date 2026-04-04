@@ -38,16 +38,16 @@ const FILTER_OPTIONS: {
   label: string;
   icon: React.ReactNode;
 }[] = [
-  { key: "vand", label: "Vand", icon: <Droplets size={15} /> },
   { key: "toilet", label: "Toilet", icon: <Droplets size={15} /> },
   { key: "baalplads", label: "Bålplads", icon: <Flame size={15} /> },
+  { key: "bookbar", label: "Bookbar", icon: <CheckCircle size={15} /> },
+  { key: "gratis", label: "Gratis", icon: <Gift size={15} /> },
+  { key: "vand", label: "Vand", icon: <Droplets size={15} /> },
   { key: "hund", label: "Hund tilladt", icon: <Dog size={15} /> },
-  { key: "bord_baenk", label: "Bord/bænke", icon: <Armchair size={15} /> },
   { key: "strand", label: "Strand", icon: <Umbrella size={15} /> },
   { key: "bruser", label: "Bruser/bad", icon: <ShowerHead size={15} /> },
-  { key: "gratis", label: "Gratis", icon: <Gift size={15} /> },
   { key: "handicap", label: "Handicapegnet", icon: <Accessibility size={15} /> },
-  { key: "bookbar", label: "Bookbar", icon: <CheckCircle size={15} /> },
+  { key: "bord_baenk", label: "Bord/bænke", icon: <Armchair size={15} /> },
   { key: "billede", label: "Med billede", icon: <ImageIcon size={15} /> },
   { key: "anmeldelser", label: "Anmeldelser", icon: <Star size={15} /> },
 ];
@@ -225,13 +225,13 @@ export function SearchBar({
         }
       >
         {/* Region + søgefelt */}
-        <div className="flex flex-col sm:flex-row flex-1 min-w-0 gap-2 sm:gap-0 sm:border-r border-primary/10">
-        <div className="relative flex-shrink-0 sm:border-r-0">
+        <div className="flex flex-row flex-1 min-w-0 gap-0 border-r border-primary/10">
+        <div className="relative flex-shrink-0">
           <select
             name="region"
             value={region}
             onChange={(e) => setRegion(e.target.value)}
-            className="w-full sm:w-auto min-w-0 sm:min-w-[160px] appearance-none bg-accent/15 text-primary font-medium py-3.5 pl-4 pr-10 text-base sm:text-sm rounded-xl sm:rounded-l-xl sm:rounded-r-none focus:outline-none focus:ring-2 focus:ring-accent/50 cursor-pointer touch-manipulation"
+            className="w-[110px] md:w-auto md:min-w-[160px] appearance-none bg-accent/15 text-primary font-medium py-3 md:py-3.5 pl-3 md:pl-4 pr-8 md:pr-10 text-sm rounded-l-xl rounded-r-none focus:outline-none focus:ring-2 focus:ring-accent/50 cursor-pointer touch-manipulation"
             aria-label="Vælg region"
           >
             {REGIONS.map((r) => (
@@ -241,7 +241,7 @@ export function SearchBar({
             ))}
           </select>
           <ChevronDown
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary/70 pointer-events-none"
+            className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-primary/70 pointer-events-none"
             aria-hidden
           />
         </div>
@@ -279,7 +279,7 @@ export function SearchBar({
               }
             }}
             placeholder="Indtast område eller by"
-            className="w-full py-3.5 pl-4 pr-9 text-primary placeholder:text-primary/50 bg-transparent border-0 focus:outline-none focus:ring-0 text-base sm:text-sm touch-manipulation"
+            className="w-full py-3 md:py-3.5 pl-3 md:pl-4 pr-9 text-primary placeholder:text-primary/50 bg-transparent border-0 focus:outline-none focus:ring-0 text-sm touch-manipulation"
             aria-label="Søg efter område eller by"
             aria-autocomplete="list"
             aria-expanded={suggestOpen}
@@ -338,7 +338,7 @@ export function SearchBar({
 
         {/* View toggles (search mode only) */}
         {mode === "search" && (
-          <div className="flex items-stretch border-t sm:border-t-0 border-primary/10 pt-2 sm:pt-0 sm:border-l flex-shrink-0">
+          <div className="hidden md:flex items-stretch border-primary/10 border-l flex-shrink-0">
             <div className="flex items-stretch rounded-lg sm:rounded-r-xl overflow-hidden border border-primary/10 sm:border-0 flex-shrink-0 ml-auto">
               <button
                 type="button"
@@ -390,7 +390,7 @@ export function SearchBar({
       {/* Filter chips — shown on search page */}
       {mode === "search" && (
         <div className="space-y-2">
-          <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filtrer efter faciliteter">
+          <div className="flex md:flex-wrap items-center gap-2 overflow-x-auto md:overflow-x-visible scrollbar-hide flex-nowrap" role="group" aria-label="Filtrer efter faciliteter">
             {FILTER_OPTIONS.map(({ key, label, icon }) => {
               const active = Boolean(filters[key]);
               return (
@@ -398,7 +398,7 @@ export function SearchBar({
                   key={key}
                   type="button"
                   onClick={() => toggleFilter(key)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full text-[13px] sm:text-sm font-medium whitespace-nowrap transition-all duration-200 touch-manipulation border ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 md:px-3.5 md:py-2 rounded-full text-[13px] md:text-sm font-medium whitespace-nowrap shrink-0 transition-all duration-200 touch-manipulation border ${
                     active
                       ? "bg-primary text-white border-primary shadow-sm"
                       : "bg-white text-primary/70 border-primary/15 hover:border-primary/30 hover:text-primary hover:shadow-sm"
@@ -411,7 +411,7 @@ export function SearchBar({
               );
             })}
             {/* Min. pladser input */}
-            <div className="flex items-center gap-1.5 px-3 py-1 sm:py-1.5 rounded-full border border-primary/15 bg-white text-[13px] sm:text-sm">
+            <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-primary/15 bg-white text-sm">
               <Users size={15} className="text-primary/50 shrink-0" />
               <span className="text-primary/70 whitespace-nowrap">Min.</span>
               <input
@@ -437,7 +437,7 @@ export function SearchBar({
               <button
                 type="button"
                 onClick={clearAllFilters}
-                className="flex items-center gap-1 px-3 py-1.5 sm:py-2 rounded-full text-[13px] sm:text-sm font-medium text-primary/50 hover:text-primary hover:bg-primary/5 whitespace-nowrap transition-colors touch-manipulation"
+                className="flex items-center gap-1 px-3 py-1.5 md:py-2 rounded-full text-[13px] md:text-sm font-medium text-primary/50 hover:text-primary hover:bg-primary/5 whitespace-nowrap shrink-0 transition-colors touch-manipulation"
                 aria-label="Ryd alle filtre"
               >
                 <X size={14} />
