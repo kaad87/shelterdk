@@ -276,9 +276,26 @@ export default async function HomePage() {
   return (
     <>
       <WebSiteSchema />
-      {/* Semantisk: side-intro med én h1 – godt for SEO og skærmlæsere */}
+      {/* ===== MOBILE HERO (< md) ===== */}
       <header
-        className="relative bg-gradient-to-br from-primary via-primary/95 to-primary/90 text-white min-h-[320px] sm:min-h-[380px] md:min-h-[420px] flex flex-col justify-end"
+        className="md:hidden bg-gradient-to-br from-[#2c3e2d] to-[#1a2b1a] text-white px-4 pt-14 pb-6"
+        aria-label="Introduktion"
+      >
+        <h1 className="font-serif text-2xl font-bold mb-3">
+          Find dit næste shelter
+        </h1>
+        <Link
+          href="/soeg"
+          className="flex items-center gap-2 bg-white rounded-xl px-4 py-3 text-primary/50 text-sm"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-primary/40"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <span>Søg by, område eller shelter…</span>
+        </Link>
+      </header>
+
+      {/* ===== DESKTOP HERO (md+) ===== */}
+      <header
+        className="hidden md:flex relative bg-gradient-to-br from-primary via-primary/95 to-primary/90 text-white min-h-[420px] flex-col justify-end"
         aria-label="Introduktion"
       >
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1920&q=80&auto=format&fit=crop')] bg-cover bg-center opacity-25" aria-hidden />
