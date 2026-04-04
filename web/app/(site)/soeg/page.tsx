@@ -142,7 +142,7 @@ export default async function SoegPage({ searchParams }: SoegPageProps) {
     <BreadcrumbSchema items={breadcrumbItems} />
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-        <nav className="mb-8 flex flex-wrap items-center gap-3">
+        <nav className="hidden md:flex mb-8 flex-wrap items-center gap-3">
           <Link
             href="/"
             className="text-primary/80 hover:text-accent text-sm font-medium"
@@ -158,19 +158,19 @@ export default async function SoegPage({ searchParams }: SoegPageProps) {
           </Link>
         </nav>
 
-        <h1 className="font-serif text-3xl font-bold text-primary mb-2">
+        <h1 className="font-serif text-2xl md:text-3xl font-bold text-primary mb-1 md:mb-2">
           {areaInfo
             ? `Shelters ${prepositionForArea(areaInfo)} ${areaInfo.name}`
             : "Søg shelters"}
         </h1>
         {areaInfo ? (
-          <section className="mb-8" aria-label="Om området">
+          <section className="mb-4 md:mb-8" aria-label="Om området">
             {areaInfo.description ? (
-              <p className="text-primary/90 text-lg leading-relaxed max-w-3xl">
+              <p className="text-primary/90 text-sm md:text-lg leading-relaxed max-w-3xl">
                 {areaInfo.description}
               </p>
             ) : (
-              <p className="text-primary/80 max-w-3xl">
+              <p className="text-primary/80 max-w-3xl text-sm md:text-base">
                 Udforsk shelters og naturovernatning i {areaInfo.name}. Her finder du overnatningspladser med kort,
                 billeder og book muligheder – både åbne shelterpladser og lukkede shelters.
               </p>
@@ -182,7 +182,7 @@ export default async function SoegPage({ searchParams }: SoegPageProps) {
             </p>
           </section>
         ) : (
-          <p className="text-primary/80 mb-8">
+          <p className="text-primary/80 mb-4 md:mb-8 text-sm md:text-base">
             Shelters i Danmark
             {(region || q || area) ? " (filtreret)" : ""}
             {" – "}
