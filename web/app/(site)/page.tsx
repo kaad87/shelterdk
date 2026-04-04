@@ -385,7 +385,8 @@ export default async function HomePage() {
         >
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 id="heading-udforsk-shelters" className="font-serif text-3xl font-bold text-primary mb-8 text-center">
-              Udforsk shelters
+              <span className="md:hidden">Populære shelters</span>
+              <span className="hidden md:inline">Udforsk shelters</span>
             </h2>
             <FrontPageShelterGrid
               shelters={featuredShelters}

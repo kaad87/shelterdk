@@ -8,23 +8,41 @@ interface FrontPageShelterGridProps {
   maxVisible?: number;
 }
 
-/** Viser shelter-kort på forsiden. Billedfejl vises som placeholder – ingen udskiftning så listen ikke "hopper". */
+/** Viser shelter-kort på forsiden. Mobil: horisontalt karrusel. Desktop: grid. */
 export function FrontPageShelterGrid({
   shelters,
   maxVisible = 12,
 }: FrontPageShelterGridProps) {
   const toShow = shelters.slice(0, maxVisible);
-  const priorityCount = 6; // Above-the-fold kort får priority for LCP
+  const priorityCount = 6;
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-5">
-      {toShow.map((shelter, index) => (
-        <ShelterCard
-          key={shelter.id}
-          shelter={shelter}
-          priority={index < priorityCount}
-        />
-      ))}
-    </div>
+    <>
+      {/* Mobile: horizontal carousel */}
+      <div className="md:hidden flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
+        {toShow.map((shelter, index) => (
+          <div
+            key={shelter.id}
+            className="shrink-0 w-[200px] snap-start"
+          >
+            <ShelterCard
+              shelter={shelter}
+              priority={index < 2}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop: existing grid */}
+      <div className="hidden md:grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-5">
+        {toShow.map((shelter, index) => (
+          <ShelterCard
+            key={shelter.id}
+            shelter={shelter}
+            priority={index < priorityCount}
+          />
+        ))}
+      </div>
+    </>
   );
 }
