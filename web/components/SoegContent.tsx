@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
+import { List, LayoutGrid, MapPin } from "lucide-react";
 import { SearchBar } from "@/components/SearchBar";
 import { ShelterCard } from "@/components/ShelterCard";
 import { ShelterMap, type MapBounds } from "@/components/ShelterMap";
@@ -27,6 +28,52 @@ function parseFiltersFromParams(sp: URLSearchParams): SoegFilters {
 
 type ViewMode = "list" | "map" | "split";
 type SortMode = "standard" | "rating" | "reviews";
+
+function FloatingViewToggle({
+  view,
+  onList,
+  onSplit,
+  onMap,
+  position = "absolute",
+}: {
+  view: ViewMode;
+  onList: () => void;
+  onSplit: () => void;
+  onMap: () => void;
+  position?: "absolute" | "fixed";
+}) {
+  const posClass = position === "fixed"
+    ? "fixed bottom-4 right-4 shadow-lg z-50"
+    : "absolute bottom-2 right-2 shadow-md z-10";
+  return (
+    <div className={`${posClass} flex gap-1 bg-white/95 rounded-lg border border-primary/10 p-1 md:hidden`}>
+      <button
+        type="button"
+        onClick={onList}
+        className={`p-1.5 rounded ${view === "list" ? "bg-primary/15 text-primary" : "text-primary/50"}`}
+        aria-label="Kun liste"
+      >
+        <List className="w-4 h-4" />
+      </button>
+      <button
+        type="button"
+        onClick={onSplit}
+        className={`p-1.5 rounded ${view === "split" ? "bg-primary/15 text-primary" : "text-primary/50"}`}
+        aria-label="Liste og kort"
+      >
+        <LayoutGrid className="w-4 h-4" />
+      </button>
+      <button
+        type="button"
+        onClick={onMap}
+        className={`p-1.5 rounded ${view === "map" ? "bg-primary/15 text-primary" : "text-primary/50"}`}
+        aria-label="Kun kort"
+      >
+        <MapPin className="w-4 h-4" />
+      </button>
+    </div>
+  );
+}
 
 function prepositionForRegionName(region: string): "i" | "på" {
   const r = (region || "").trim().toLowerCase();
@@ -211,6 +258,29 @@ export function SoegContent({
     setView(v);
   }, []);
 
+  const router = useRouter();
+
+  const buildViewUrl = useCallback((newView: ViewMode) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("view", newView);
+    return "/soeg?" + params.toString();
+  }, [searchParams]);
+
+  const handleViewList = useCallback(() => {
+    setView("list");
+    router.push(buildViewUrl("list"), { scroll: false });
+  }, [buildViewUrl, router]);
+
+  const handleViewSplit = useCallback(() => {
+    setView("split");
+    router.push(buildViewUrl("split"), { scroll: false });
+  }, [buildViewUrl, router]);
+
+  const handleViewMap = useCallback(() => {
+    setView("map");
+    router.push(buildViewUrl("map"), { scroll: false });
+  }, [buildViewUrl, router]);
+
   const boundsAbortRef = useRef<AbortController | null>(null);
 
   const fetchByBounds = useCallback(
@@ -305,7 +375,7 @@ export function SoegContent({
         </div>
       ) : view === "split" ? (
         <div className="grid grid-cols-1 lg:grid-cols-[1fr,minmax(380px,45%)] gap-0 min-h-[600px] lg:min-h-[70vh] -mx-4 sm:-mx-6 lg:-mx-8">
-          <div className="overflow-y-auto lg:max-h-[calc(100vh-12rem)] lg:pr-4 order-2 lg:order-1">
+          <div className="overflow-y-auto lg:max-h-[calc(100vh-12rem)] lg:pr-4 order-1 lg:order-1">
             <div className="flex items-center justify-between mb-4 sticky top-0 bg-background/95 py-2 z-10">
             <p className="text-primary/70 text-sm">
               {visibleShelters.length} shelter{visibleShelters.length !== 1 ? "s" : ""}{" "}
@@ -341,7 +411,7 @@ export function SoegContent({
               )}
             </div>
           </div>
-          <div className="lg:sticky lg:top-24 lg:self-start rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[280px] sm:min-h-[360px] lg:min-h-[420px] h-[320px] sm:h-[400px] lg:h-[calc(100vh-8rem)] lg:max-h-[720px] order-1 lg:order-2 mb-4 lg:mb-0 flex flex-col">
+          <div className="lg:sticky lg:top-24 lg:self-start rounded-xl overflow-hidden border border-primary/10 bg-primary/5 h-[160px] sm:h-[200px] lg:min-h-[420px] lg:h-[calc(100vh-8rem)] lg:max-h-[720px] order-2 lg:order-2 mt-4 lg:mt-0 flex flex-col relative">
             <div className="flex-1 min-h-0 w-full relative">
               <ShelterMap
                 shelters={shelters}
@@ -350,6 +420,7 @@ export function SoegContent({
                 initialRegion={initialRegion}
               />
             </div>
+            <FloatingViewToggle view={view} onList={handleViewList} onSplit={handleViewSplit} onMap={handleViewMap} position="absolute" />
           </div>
         </div>
       ) : view === "map" ? (
@@ -366,6 +437,7 @@ export function SoegContent({
               initialRegion={initialRegion}
             />
           </div>
+          <FloatingViewToggle view={view} onList={handleViewList} onSplit={handleViewSplit} onMap={handleViewMap} position="fixed" />
         </>
       ) : (
         <>
@@ -398,6 +470,7 @@ export function SoegContent({
               </>
             )}
           </div>
+          <FloatingViewToggle view={view} onList={handleViewList} onSplit={handleViewSplit} onMap={handleViewMap} position="fixed" />
         </>
       )}
     </div>
