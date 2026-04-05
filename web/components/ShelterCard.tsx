@@ -31,6 +31,7 @@ function FrontPageCardImage({
   timeoutRef,
   loadedRef,
   priority,
+  blurDataUrl,
 }: {
   src: string;
   alt: string;
@@ -38,6 +39,7 @@ function FrontPageCardImage({
   timeoutRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null>;
   loadedRef: React.MutableRefObject<boolean>;
   priority?: boolean;
+  blurDataUrl?: string;
 }) {
   const onErrorRef = useRef(onError);
   onErrorRef.current = onError;
@@ -73,6 +75,9 @@ function FrontPageCardImage({
       onError={() => onErrorRef.current()}
       onLoad={handleLoad}
       priority={priority}
+      {...(blurDataUrl
+        ? { placeholder: "blur" as const, blurDataURL: blurDataUrl }
+        : {})}
     />
   );
 }
@@ -252,6 +257,7 @@ export function ShelterCard({ shelter, onImageError, href, priority }: ShelterCa
             timeoutRef={timeoutRef}
             loadedRef={loadedRef}
             priority={priority && cardImageIndex === 0}
+            blurDataUrl={cardImageIndex === 0 ? shelter.blur_data_url ?? undefined : undefined}
           />
         ) : (
           <Image
@@ -264,6 +270,9 @@ export function ShelterCard({ shelter, onImageError, href, priority }: ShelterCa
             unoptimized={currentSrc ? isUnoptimizedImageUrl(currentSrc) : false}
             onError={handleImageError}
             priority={priority && cardImageIndex === 0}
+            {...(shelter.blur_data_url && cardImageIndex === 0
+              ? { placeholder: "blur" as const, blurDataURL: shelter.blur_data_url }
+              : {})}
           />
         )}
         {ratingBadge}
