@@ -94,108 +94,122 @@ async function main() {
   const sharp = require(path.join(__dirname, "..", "web", "node_modules", "sharp"));
   const supabase = createClient(supabaseUrl, serviceKey);
 
-  // Fetch shelters without blur
-  let query = supabase
-    .from("shelters")
-    .select("id, slug, image_url, image_urls, user_image_urls, google_place_id")
-    .is("blur_data_url", null)
-    .is("duplicate_of_shelter_id", null)
-    .order("display_score", { ascending: false, nullsFirst: false });
-
-  if (limit) query = query.limit(limit);
-
-  const { data: shelters, error } = await query;
-  if (error) {
-    console.error("Query error:", error.message);
-    process.exit(1);
-  }
-
-  console.log(`Found ${shelters.length} shelters without blur_data_url`);
-  if (dryRun) {
-    const withGoogle = shelters.filter(s => s.google_place_id).length;
-    const withDirect = shelters.filter(s => {
-      const urls = [s.image_url, ...(s.image_urls || []), ...(s.user_image_urls || [])].filter(u => u && u.trim().length > 10);
-      return urls.some(u => !isGoogleImageUrl(u));
-    }).length;
-    console.log(`  ${withGoogle} with google_place_id, ${withDirect} with direct image URLs`);
-    console.log("Dry run — not updating anything");
-    return;
-  }
-
+  const PAGE_SIZE = 1000;
   let success = 0;
   let skipped = 0;
   let googleFetched = 0;
   let directFetched = 0;
+  let totalFound = 0;
 
-  // Process in batches of CONCURRENCY
-  for (let i = 0; i < shelters.length; i += CONCURRENCY) {
-    const batch = shelters.slice(i, i + CONCURRENCY);
-    await Promise.all(batch.map(async (shelter) => {
-      try {
-        // Collect all image URLs
-        const urls = [
-          shelter.image_url,
-          ...(shelter.image_urls || []),
-          ...(shelter.user_image_urls || []),
-        ].filter((u) => u && typeof u === "string" && u.trim().length > 10);
+  // Loop in pages (Supabase default limit is 1000)
+  while (true) {
+    let query = supabase
+      .from("shelters")
+      .select("id, slug, image_url, image_urls, user_image_urls, google_place_id")
+      .is("blur_data_url", null)
+      .is("duplicate_of_shelter_id", null)
+      .order("display_score", { ascending: false, nullsFirst: false })
+      .limit(limit ? Math.min(limit - totalFound, PAGE_SIZE) : PAGE_SIZE);
 
-        // Try direct (non-Google) URLs first
-        const directUrl = urls.find(u => !isGoogleImageUrl(u));
-        let buf = null;
+    const { data: shelters, error } = await query;
+    if (error) {
+      console.error("Query error:", error.message);
+      process.exit(1);
+    }
 
-        if (directUrl) {
-          const fetchUrl = directUrl.startsWith("http")
-            ? directUrl
-            : `${supabaseUrl}${directUrl}`;
-          try {
-            buf = await fetchImage(fetchUrl);
-            directFetched++;
-          } catch (e) {
-            // Fall through to Google Places
+    if (shelters.length === 0) break;
+    totalFound += shelters.length;
+    console.log(`Fetched ${shelters.length} shelters (total found: ${totalFound})`);
+
+    if (dryRun) {
+      const withGoogle = shelters.filter(s => s.google_place_id).length;
+      const withDirect = shelters.filter(s => {
+        const urls = [s.image_url, ...(s.image_urls || []), ...(s.user_image_urls || [])].filter(u => u && u.trim().length > 10);
+        return urls.some(u => !isGoogleImageUrl(u));
+      }).length;
+      console.log(`  ${withGoogle} with google_place_id, ${withDirect} with direct image URLs`);
+      if (limit && totalFound >= limit) break;
+      continue;
+    }
+
+    // Process in batches of CONCURRENCY
+    for (let i = 0; i < shelters.length; i += CONCURRENCY) {
+      const batch = shelters.slice(i, i + CONCURRENCY);
+      await Promise.all(batch.map(async (shelter) => {
+        try {
+          const urls = [
+            shelter.image_url,
+            ...(shelter.image_urls || []),
+            ...(shelter.user_image_urls || []),
+          ].filter((u) => u && typeof u === "string" && u.trim().length > 10);
+
+          // Try direct (non-Google) URLs first
+          const directUrl = urls.find(u => !isGoogleImageUrl(u));
+          let buf = null;
+
+          if (directUrl) {
+            const fetchUrl = directUrl.startsWith("http")
+              ? directUrl
+              : `${supabaseUrl}${directUrl}`;
+            try {
+              buf = await fetchImage(fetchUrl);
+              directFetched++;
+            } catch (e) {
+              // Fall through to Google Places
+            }
           }
-        }
 
-        // If no direct URL worked, try Google Places API
-        if (!buf && shelter.google_place_id && googleApiKey) {
-          try {
-            buf = await fetchGooglePlacePhoto(shelter.google_place_id, googleApiKey);
-            googleFetched++;
-          } catch (e) {
-            // No image available
+          // If no direct URL worked, try Google Places API
+          if (!buf && shelter.google_place_id && googleApiKey) {
+            try {
+              buf = await fetchGooglePlacePhoto(shelter.google_place_id, googleApiKey);
+              googleFetched++;
+            } catch (e) {
+              // No image available
+            }
           }
-        }
 
-        if (!buf) {
+          if (!buf) {
+            skipped++;
+            return;
+          }
+
+          const blurBuf = await sharp(buf, { failOnError: false })
+            .rotate()
+            .resize(BLUR_WIDTH)
+            .blur(BLUR_SIGMA)
+            .jpeg({ quality: 60 })
+            .toBuffer();
+
+          const dataUrl = `data:image/jpeg;base64,${blurBuf.toString("base64")}`;
+
+          const { error: updateErr } = await supabase
+            .from("shelters")
+            .update({ blur_data_url: dataUrl })
+            .eq("id", shelter.id);
+
+          if (updateErr) {
+            console.warn(`  [ERR] ${shelter.slug}: ${updateErr.message}`);
+            skipped++;
+          } else {
+            success++;
+            if (success % 25 === 0) console.log(`  Progress: ${success} done (${googleFetched} via Google, ${directFetched} direct)`);
+          }
+        } catch (err) {
+          console.warn(`  [SKIP] ${shelter.slug}: ${err.message}`);
           skipped++;
-          return;
         }
+      }));
+    }
 
-        const blurBuf = await sharp(buf, { failOnError: false })
-          .rotate()
-          .resize(BLUR_WIDTH)
-          .blur(BLUR_SIGMA)
-          .jpeg({ quality: 60 })
-          .toBuffer();
+    // If we got fewer than PAGE_SIZE, we're done
+    if (shelters.length < PAGE_SIZE) break;
+    if (limit && totalFound >= limit) break;
+  }
 
-        const dataUrl = `data:image/jpeg;base64,${blurBuf.toString("base64")}`;
-
-        const { error: updateErr } = await supabase
-          .from("shelters")
-          .update({ blur_data_url: dataUrl })
-          .eq("id", shelter.id);
-
-        if (updateErr) {
-          console.warn(`  [ERR] ${shelter.slug}: ${updateErr.message}`);
-          skipped++;
-        } else {
-          success++;
-          if (success % 25 === 0) console.log(`  Progress: ${success} done (${googleFetched} via Google, ${directFetched} direct)`);
-        }
-      } catch (err) {
-        console.warn(`  [SKIP] ${shelter.slug}: ${err.message}`);
-        skipped++;
-      }
-    }));
+  if (dryRun) {
+    console.log("Dry run — not updating anything");
+    return;
   }
 
   console.log(`\nDone: ${success} updated, ${skipped} skipped (${googleFetched} via Google API, ${directFetched} direct)`);
