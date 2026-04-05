@@ -27,8 +27,16 @@ export function ImageCarousel({
 }: ImageCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [failedUrls, setFailedUrls] = useState<Set<string>>(new Set());
   const touchStartX = useRef<number | null>(null);
   const didSwipe = useRef(false);
+
+  // Filter out failed images
+  const visibleUrls = urls.filter((u) => !failedUrls.has(u));
+
+  const handleImageError = useCallback((url: string) => {
+    setFailedUrls((prev) => new Set(prev).add(url));
+  }, []);
 
   // Track active slide via scroll position
   const handleScroll = useCallback(() => {
@@ -37,8 +45,8 @@ export function ImageCarousel({
     const slideWidth = el.clientWidth;
     if (slideWidth === 0) return;
     const index = Math.round(el.scrollLeft / slideWidth);
-    setActiveIndex(Math.max(0, Math.min(index, urls.length - 1)));
-  }, [urls.length]);
+    setActiveIndex(Math.max(0, Math.min(index, visibleUrls.length - 1)));
+  }, [visibleUrls.length]);
 
   // Swipe vs tap detection
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -95,7 +103,7 @@ export function ImageCarousel({
     if (el) (el as any)._scrollToIndex = scrollToIndex;
   }, [scrollToIndex]);
 
-  if (urls.length === 0) return null;
+  if (visibleUrls.length === 0) return null;
 
   return (
     <div className={`relative ${aspectRatio} ${className}`}>
@@ -109,7 +117,7 @@ export function ImageCarousel({
         onTouchEnd={handleTouchEnd}
         onClick={handleClick}
       >
-        {urls.map((url, i) => (
+        {visibleUrls.map((url, i) => (
           <div key={`${i}-${url}`} className="relative w-full flex-none snap-start">
             <Image
               src={url}
@@ -120,6 +128,7 @@ export function ImageCarousel({
               loading={getLoading(i)}
               priority={priority && i === 0}
               unoptimized={isUnoptimizedImageUrl(url)}
+              onError={() => handleImageError(url)}
               {...(i === 0 && blurDataUrl
                 ? { placeholder: "blur" as const, blurDataURL: blurDataUrl }
                 : {})}
@@ -129,10 +138,10 @@ export function ImageCarousel({
       </div>
 
       {/* Dots indicator */}
-      {urls.length > 1 && (
+      {visibleUrls.length > 1 && (
         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 pointer-events-none">
-          {urls.length <= 5 ? (
-            urls.map((_, i) => (
+          {visibleUrls.length <= 5 ? (
+            visibleUrls.map((_, i) => (
               <div
                 key={i}
                 className={`w-[7px] h-[7px] rounded-full transition-colors ${
@@ -145,7 +154,7 @@ export function ImageCarousel({
               const dots: { index: number; size: "sm" | "md" | "lg" }[] = [];
               for (let offset = -2; offset <= 2; offset++) {
                 const idx = activeIndex + offset;
-                if (idx < 0 || idx >= urls.length) continue;
+                if (idx < 0 || idx >= visibleUrls.length) continue;
                 const absOff = Math.abs(offset);
                 dots.push({
                   index: idx,
