@@ -45,9 +45,9 @@ interface PageProps {
 export const revalidate = 86400;
 
 const SHELTER_SELECT_DETAIL =
-  "id, title, slug, seo_title, description, seo_description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, toilet, water, geofa_raw, area_slug, google_places!shelters_google_place_id_fkey(photo_references)";
+  "id, title, slug, seo_title, description, seo_description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, toilet, water, geofa_raw, area_slug, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
 const SHELTER_SELECT_DETAIL_FALLBACK =
-  "id, title, slug, description, seo_description, location, image_url, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, water, geofa_raw, area_slug, google_places!shelters_google_place_id_fkey(photo_references)";
+  "id, title, slug, description, seo_description, location, image_url, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, water, geofa_raw, area_slug, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
 
 async function getShelterBySlugUncached(slug: string): Promise<Shelter | null> {
   const supabase = createPublicClient();

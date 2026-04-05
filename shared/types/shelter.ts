@@ -44,4 +44,6 @@ export interface Shelter {
   seo_description?: string | null;
   /** Genereret SEO-titel med bynavn. Original title bevares i title. */
   seo_title?: string | null;
+  /** Base64-encoded tiny blur preview of first image (LQIP). */
+  blur_data_url?: string | null;
 }
