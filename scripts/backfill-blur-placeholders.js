@@ -26,8 +26,9 @@ const GOOGLE_DETAILS_API = "https://maps.googleapis.com/maps/api/place/details/j
 function fetchImage(url, timeoutMs = 12000) {
   return new Promise((resolve, reject) => {
     const mod = url.startsWith("https") ? https : http;
-    const timer = setTimeout(() => { req.destroy(); reject(new Error("Timeout")); }, timeoutMs);
-    const req = mod.get(url, {
+    let req;
+    const timer = setTimeout(() => { if (req) req.destroy(); reject(new Error("Timeout")); }, timeoutMs);
+    req = mod.get(url, {
       headers: {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
         "Accept": "image/*,*/*;q=0.8",
