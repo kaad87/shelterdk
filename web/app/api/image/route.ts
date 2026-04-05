@@ -33,10 +33,8 @@ export async function GET(req: Request) {
   if (!raw) return errorResponse(400, "Missing url");
   const w = searchParams.get("w");
   const h = searchParams.get("h");
-  const qRaw = searchParams.get("q");
   const width = w ? Math.min(MAX_WIDTH, Math.max(MIN_DIM, parseInt(w, 10) || 0)) : null;
   const height = h ? Math.min(MAX_HEIGHT, Math.max(MIN_DIM, parseInt(h, 10) || 0)) : null;
-  const quality = qRaw ? Math.max(1, Math.min(100, parseInt(qRaw, 10) || 82)) : 82;
 
   let target: URL;
   try {
@@ -113,9 +111,9 @@ export async function GET(req: Request) {
     if (format === "png") {
       out = await resized.png().toBuffer();
     } else if (format === "webp") {
-      out = await resized.webp({ quality }).toBuffer();
+      out = await resized.webp({ quality: 82 }).toBuffer();
     } else {
-      out = await resized.jpeg({ quality, mozjpeg: true }).toBuffer();
+      out = await resized.jpeg({ quality: 82, mozjpeg: true }).toBuffer();
     }
 
     const outType =

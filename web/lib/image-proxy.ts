@@ -49,30 +49,17 @@ export function isUnoptimizedImageUrl(url: string): boolean {
   }
 }
 
-export function getProxiedImageSrc(
-  url: string,
-  opts?: { q?: number; w?: number },
-): string {
+export function getProxiedImageSrc(url: string): string {
   const u = (url || "").trim();
   if (!u) return u;
-
-  // Build suffix from opts
-  const suffix = [
-    opts?.q != null ? `&q=${opts.q}` : "",
-    opts?.w != null ? `&w=${opts.w}` : "",
-  ].join("");
-
-  // Already proxied — just append opts
-  if (u.includes("/api/image?url=")) return u + suffix;
-  if (u.startsWith("/api/google-photo")) return u;
-
   if (!isHttpUrl(u)) return u;
+  if (u.includes("/api/image?url=") || u.startsWith("/api/google-photo")) return u;
   try {
     const host = new URL(u).hostname;
     if (SKIP_PROXY_HOSTS.has(host)) return u;
   } catch {
     // invalid URL, proxy anyway
   }
-  return `/api/image?url=${encodeURIComponent(u)}${suffix}`;
+  return `/api/image?url=${encodeURIComponent(u)}`;
 }
 

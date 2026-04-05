@@ -224,7 +224,6 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
               region={city}
               slug={slug}
               shelterId={shelter.id}
-              blurDataUrl={shelter.blur_data_url ?? undefined}
             />
 
             <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mb-8 text-primary/90">
