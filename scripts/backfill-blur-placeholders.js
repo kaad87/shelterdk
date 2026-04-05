@@ -99,38 +99,44 @@ async function main() {
   let skipped = 0;
   let googleFetched = 0;
   let directFetched = 0;
-  let totalFound = 0;
 
-  // Loop in pages (Supabase default limit is 1000)
-  while (true) {
-    let query = supabase
+  // First, get total count
+  const { count: totalRemaining } = await supabase
+    .from("shelters")
+    .select("id", { count: "exact", head: true })
+    .is("blur_data_url", null)
+    .is("duplicate_of_shelter_id", null);
+
+  const toProcess = limit ? Math.min(limit, totalRemaining) : totalRemaining;
+  console.log(`Found ${totalRemaining} shelters without blur_data_url (processing ${toProcess})`);
+
+  if (dryRun) {
+    console.log("Dry run — not updating anything");
+    return;
+  }
+
+  // Paginate with range() to handle >1000 shelters and avoid infinite loops
+  // on shelters that can't be processed (skipped shelters stay blur_data_url=null)
+  for (let offset = 0; offset < toProcess; offset += PAGE_SIZE) {
+    const end = Math.min(offset + PAGE_SIZE - 1, toProcess - 1);
+    const { data: shelters, error } = await supabase
       .from("shelters")
       .select("id, slug, image_url, image_urls, user_image_urls, google_place_id")
       .is("blur_data_url", null)
       .is("duplicate_of_shelter_id", null)
       .order("display_score", { ascending: false, nullsFirst: false })
-      .limit(limit ? Math.min(limit - totalFound, PAGE_SIZE) : PAGE_SIZE);
+      .range(0, PAGE_SIZE - 1);
+      // Always fetch from 0: successfully processed rows disappear from the result
+      // because their blur_data_url is no longer null.
 
-    const { data: shelters, error } = await query;
     if (error) {
       console.error("Query error:", error.message);
       process.exit(1);
     }
-
     if (shelters.length === 0) break;
-    totalFound += shelters.length;
-    console.log(`Fetched ${shelters.length} shelters (total found: ${totalFound})`);
 
-    if (dryRun) {
-      const withGoogle = shelters.filter(s => s.google_place_id).length;
-      const withDirect = shelters.filter(s => {
-        const urls = [s.image_url, ...(s.image_urls || []), ...(s.user_image_urls || [])].filter(u => u && u.trim().length > 10);
-        return urls.some(u => !isGoogleImageUrl(u));
-      }).length;
-      console.log(`  ${withGoogle} with google_place_id, ${withDirect} with direct image URLs`);
-      if (limit && totalFound >= limit) break;
-      continue;
-    }
+    console.log(`Page ${Math.floor(offset / PAGE_SIZE) + 1}: ${shelters.length} shelters`);
+    let pageSuccess = 0;
 
     // Process in batches of CONCURRENCY
     for (let i = 0; i < shelters.length; i += CONCURRENCY) {
@@ -193,6 +199,7 @@ async function main() {
             skipped++;
           } else {
             success++;
+            pageSuccess++;
             if (success % 25 === 0) console.log(`  Progress: ${success} done (${googleFetched} via Google, ${directFetched} direct)`);
           }
         } catch (err) {
@@ -202,14 +209,11 @@ async function main() {
       }));
     }
 
-    // If we got fewer than PAGE_SIZE, we're done
-    if (shelters.length < PAGE_SIZE) break;
-    if (limit && totalFound >= limit) break;
-  }
-
-  if (dryRun) {
-    console.log("Dry run — not updating anything");
-    return;
+    // If no shelter was successfully updated this page, all remaining are unskippable — stop
+    if (pageSuccess === 0) {
+      console.log("No progress this page — remaining shelters have no usable images. Stopping.");
+      break;
+    }
   }
 
   console.log(`\nDone: ${success} updated, ${skipped} skipped (${googleFetched} via Google API, ${directFetched} direct)`);
