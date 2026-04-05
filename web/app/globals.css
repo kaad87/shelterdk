@@ -26,7 +26,29 @@ body {
   display: none;
 }
 
-/* Compact map: force leaflet container to respect parent height */
+/* Compact map on mobile: force leaflet + wrapper to respect parent height */
+@media (max-width: 767px) {
+  .leaflet-container {
+    min-height: 0 !important;
+    height: 100% !important;
+  }
+  /* Override ShelterMap wrapper min-height so it doesn't exceed the visible area */
+  [class*="min-h-[280px]"] {
+    min-height: 0 !important;
+  }
+  /* Compact map: Leaflet renders at zoom 6 (whole Denmark visible).
+     CSS scale zooms in and translateY shifts to crop Germany.
+     Tunable via CSS custom properties --map-scale, --map-shift-y. */
+  [class*="h-[160px]"][class*="order-1"] {
+    height: var(--map-height, 275px) !important;
+  }
+  [class*="h-[160px]"][class*="order-1"] .leaflet-container {
+    transform: scale(var(--map-scale, 1)) translateY(var(--map-shift-y, 20px));
+    transform-origin: center center;
+  }
+}
+
+/* Keep full-size map on desktop */
 .compact-map .leaflet-container {
   min-height: 0 !important;
   height: 100% !important;

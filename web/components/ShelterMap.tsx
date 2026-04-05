@@ -116,7 +116,7 @@ const MapInner = dynamic(
             [fixedBounds.south, fixedBounds.west],
             [fixedBounds.north, fixedBounds.east]
           );
-          map.fitBounds(bounds, { padding: [24, 24], maxZoom: 10 });
+          map.fitBounds(bounds, { padding: [0, 0], maxZoom: 7 });
           return;
         }
         if (items.length === 0) return;
@@ -283,6 +283,10 @@ interface ShelterMapProps {
   fitWholeDenmarkOnLoad?: boolean;
   /** Embed-tilstand: simpelt popup med "Se detaljer & book" (target _blank til /shelter/slug). */
   embedMode?: boolean;
+  /** Override center (bruges til at tvinge specifikt view fra parent). */
+  overrideCenter?: [number, number];
+  /** Override zoom (bruges til at tvinge specifikt zoom fra parent). */
+  overrideZoom?: number;
 }
 
 export function ShelterMap({
@@ -292,10 +296,10 @@ export function ShelterMap({
   initialRegion,
   fitWholeDenmarkOnLoad,
   embedMode,
+  overrideCenter,
+  overrideZoom,
 }: ShelterMapProps) {
   const regionView = initialRegion ? REGION_CENTER_ZOOM[initialRegion] : undefined;
-  const initialCenter = regionView?.center;
-  const initialZoom = regionView?.zoom;
   const toDisplay = initialRegion?.trim()
     ? shelters.filter((s) => (s.region || "").trim() === initialRegion.trim())
     : shelters;
@@ -306,6 +310,12 @@ export function ShelterMap({
   }
 
   const getHref = embedMode ? getEmbedShelterHref : getShelterHref;
+
+  // Override props take precedence, then fitWholeDenmarkOnLoad, then region.
+  const initialCenter = overrideCenter
+    ?? (fitWholeDenmarkOnLoad ? DEFAULT_CENTER : regionView?.center);
+  const initialZoom = overrideZoom
+    ?? (fitWholeDenmarkOnLoad ? 6 : regionView?.zoom);
 
   if (withCoords.length === 0 && !onBoundsChange) {
     return (
@@ -331,7 +341,7 @@ export function ShelterMap({
         onBoundsChange={onBoundsChange}
         initialCenter={initialCenter}
         initialZoom={initialZoom}
-        initialFitBounds={fitWholeDenmarkOnLoad ? DENMARK_BOUNDS : undefined}
+        initialFitBounds={(!overrideCenter && fitWholeDenmarkOnLoad) ? DENMARK_BOUNDS : undefined}
         getHref={getHref}
         embedMode={embedMode}
       />

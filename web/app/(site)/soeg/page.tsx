@@ -141,7 +141,7 @@ export default async function SoegPage({ searchParams }: SoegPageProps) {
     <>
     <BreadcrumbSchema items={breadcrumbItems} />
     <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4 md:py-8">
         <nav className="hidden md:flex mb-8 flex-wrap items-center gap-3">
           <Link
             href="/"
@@ -182,7 +182,7 @@ export default async function SoegPage({ searchParams }: SoegPageProps) {
             </p>
           </section>
         ) : (
-          <p className="text-primary/80 mb-4 md:mb-8 text-sm md:text-base">
+          <p className="text-primary/80 mb-2 md:mb-8 text-sm md:text-base">
             Shelters i Danmark
             {(region || q || area) ? " (filtreret)" : ""}
             {" – "}

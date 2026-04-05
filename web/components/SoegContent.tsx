@@ -348,7 +348,7 @@ export function SoegContent({
   const sortedAllShelters = shelters;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 md:space-y-8">
       <SearchBar
         mode="search"
         initialRegion={initialRegion}
@@ -378,13 +378,11 @@ export function SoegContent({
           <div className="overflow-y-auto lg:max-h-[calc(100vh-12rem)] lg:pr-4 order-2 lg:order-1">
             <div className="flex items-center justify-between mb-4 sticky top-0 bg-background/95 py-2 z-10">
             <p className="text-primary/70 text-sm">
-              {visibleShelters.length} shelter{visibleShelters.length !== 1 ? "s" : ""}{" "}
               {hasPannedMap.current && mapBounds
-                ? "i dette område"
-                : initialRegion?.trim()
-                  ? `${prepositionForRegionName(initialRegion)} ${initialRegion.trim()}`
-                  : "i Danmark"}
-              {!hasPannedMap.current && (hasMore || listDisplayCount < shelters.length) && " · scroll for flere"}
+                ? `${visibleShelters.length} shelter${visibleShelters.length !== 1 ? "s" : ""} i dette område`
+                : hasMore
+                  ? `Shelters ${initialRegion?.trim() ? `${prepositionForRegionName(initialRegion)} ${initialRegion.trim()}` : "i Danmark"} · scroll for flere`
+                  : `${visibleShelters.length} shelter${visibleShelters.length !== 1 ? "s" : ""} ${initialRegion?.trim() ? `${prepositionForRegionName(initialRegion)} ${initialRegion.trim()}` : "i Danmark"}`}
             </p>
             <select
               value={sortMode}
@@ -411,12 +409,15 @@ export function SoegContent({
               )}
             </div>
           </div>
-          <div className="compact-map lg:sticky lg:top-24 lg:self-start rounded-xl overflow-hidden border border-primary/10 bg-primary/5 h-[160px] sm:h-[200px] lg:min-h-[420px] lg:h-[calc(100vh-8rem)] lg:max-h-[720px] order-1 lg:order-2 mb-4 lg:mb-0 relative">
+          <div className="compact-map lg:sticky lg:top-24 lg:self-start rounded-xl overflow-hidden border border-primary/10 bg-primary/5 h-[160px] sm:h-[200px] lg:min-h-[420px] lg:h-[calc(100vh-8rem)] lg:max-h-[720px] order-1 lg:order-2 mb-2 lg:mb-0 relative">
               <ShelterMap
                 shelters={shelters}
                 className="absolute inset-0 w-full h-full"
                 onBoundsChange={fetchByBounds}
                 initialRegion={initialRegion}
+                fitWholeDenmarkOnLoad={!initialRegion?.trim()}
+                overrideCenter={!initialRegion?.trim() ? [56.0, 10.5] : undefined}
+                overrideZoom={!initialRegion?.trim() ? 7 : undefined}
               />
             <FloatingViewToggle view={view} onList={handleViewList} onSplit={handleViewSplit} onMap={handleViewMap} position="absolute" />
           </div>

@@ -231,7 +231,7 @@ export function SearchBar({
             name="region"
             value={region}
             onChange={(e) => setRegion(e.target.value)}
-            className="w-[110px] md:w-auto md:min-w-[160px] appearance-none bg-accent/15 text-primary font-medium py-3 md:py-3.5 pl-3 md:pl-4 pr-8 md:pr-10 text-sm rounded-l-xl rounded-r-none focus:outline-none focus:ring-2 focus:ring-accent/50 cursor-pointer touch-manipulation"
+            className="w-[140px] md:w-auto md:min-w-[160px] appearance-none bg-accent/15 text-primary font-medium py-3 md:py-3.5 pl-3 md:pl-4 pr-8 md:pr-10 text-sm rounded-l-xl rounded-r-none focus:outline-none focus:ring-2 focus:ring-accent/50 cursor-pointer touch-manipulation"
             aria-label="Vælg region"
           >
             {REGIONS.map((r) => (
@@ -278,7 +278,7 @@ export function SearchBar({
                 setSuggestIndex(-1);
               }
             }}
-            placeholder="Indtast område eller by"
+            placeholder="Søg område eller by"
             className="w-full py-3 md:py-3.5 pl-3 md:pl-4 pr-9 text-primary placeholder:text-primary/50 bg-transparent border-0 focus:outline-none focus:ring-0 text-sm touch-manipulation"
             aria-label="Søg efter område eller by"
             aria-autocomplete="list"
@@ -445,9 +445,7 @@ export function SearchBar({
               </button>
             )}
           </div>
-          <p className="text-xs text-primary/40 leading-snug">
-            Facilitetsoversigten er baseret på officielle data og udtræk fra beskrivelser — den kan være ufuldstændig.
-          </p>
+          {/* Disclaimer hidden on mobile to save vertical space */}
         </div>
       )}
     </div>
