@@ -110,7 +110,7 @@ export function ImageCarousel({
       <div
         ref={scrollRef}
         className="absolute inset-0 flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
-        style={{ scrollbarWidth: "none", touchAction: "pan-y pinch-zoom" }}
+        style={{ scrollbarWidth: "none" }}
         onScroll={handleScroll}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
