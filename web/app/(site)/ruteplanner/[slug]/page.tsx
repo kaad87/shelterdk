@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { ChevronRight, MapPin, Ruler, Mountain } from "lucide-react";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
+import { RouteDetailMap } from "@/components/RouteDetailMap";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import { formatDistance } from "@/lib/haversine";
 import type { CuratedRouteIndex, CuratedRouteDataMap, RouteShelter } from "@/types/curated-route";
@@ -153,6 +154,11 @@ export default async function RouteDetailPage({ params }: PageProps) {
               <p className="text-primary/80 text-lg leading-relaxed">{route.description}</p>
             </section>
           )}
+
+          {/* Route map */}
+          <section className="mb-10">
+            <RouteDetailMap slug={slug} />
+          </section>
 
           {/* Key stats */}
           <section className="mb-10 grid grid-cols-2 sm:grid-cols-4 gap-4">
