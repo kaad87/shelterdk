@@ -139,13 +139,13 @@ export function ImageCarousel({
 
       {/* Dots indicator */}
       {visibleUrls.length > 1 && (
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 pointer-events-none">
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 pointer-events-none rounded-full bg-black/30 px-2.5 py-1.5">
           {visibleUrls.length <= 5 ? (
             visibleUrls.map((_, i) => (
               <div
                 key={i}
                 className={`w-[7px] h-[7px] rounded-full transition-colors ${
-                  i === activeIndex ? "bg-white" : "bg-white/40"
+                  i === activeIndex ? "bg-white" : "bg-white/50"
                 }`}
               />
             ))
