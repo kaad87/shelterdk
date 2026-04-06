@@ -139,13 +139,13 @@ export function ImageCarousel({
 
       {/* Dots indicator */}
       {visibleUrls.length > 1 && (
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 pointer-events-none rounded-full bg-black/30 px-2.5 py-1.5">
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-20 pointer-events-none rounded-full bg-white/80 backdrop-blur-sm px-3 py-2 shadow-sm">
           {visibleUrls.length <= 5 ? (
             visibleUrls.map((_, i) => (
               <div
                 key={i}
-                className={`w-[7px] h-[7px] rounded-full transition-colors ${
-                  i === activeIndex ? "bg-white" : "bg-white/50"
+                className={`w-2 h-2 rounded-full transition-colors ${
+                  i === activeIndex ? "bg-primary" : "bg-primary/30"
                 }`}
               />
             ))
@@ -161,12 +161,12 @@ export function ImageCarousel({
                   size: absOff === 0 ? "lg" : absOff === 1 ? "md" : "sm",
                 });
               }
-              const sizeClass = { sm: "w-[5px] h-[5px]", md: "w-[6px] h-[6px]", lg: "w-[7px] h-[7px]" };
+              const sizeClass = { sm: "w-1.5 h-1.5", md: "w-[7px] h-[7px]", lg: "w-2 h-2" };
               return dots.map((d) => (
                 <div
                   key={d.index}
                   className={`rounded-full transition-all ${sizeClass[d.size]} ${
-                    d.index === activeIndex ? "bg-white" : "bg-white/40"
+                    d.index === activeIndex ? "bg-primary" : "bg-primary/30"
                   }`}
                 />
               ));
