@@ -126,6 +126,12 @@ create table affiliate_sync_runs (
 
 Stored in `localStorage` under key `affiliate-favorites` as a JSON array of product IDs. No database table — the admin is the only user.
 
+### Row-Level Security
+
+- `affiliate_products`: public read where `is_blocked = false`; writes restricted to service role (used by the sync script and admin server actions).
+- `affiliate_category_mapping`: public read; writes restricted to service role.
+- `affiliate_sync_runs`: no public access; service role only. The admin UI reads it via a server component that uses the service role key.
+
 ## Sync pipeline
 
 **Script:** `web/scripts/sync-affiliate-products.ts`
