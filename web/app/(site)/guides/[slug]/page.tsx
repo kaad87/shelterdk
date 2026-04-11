@@ -59,7 +59,7 @@ export default async function GuidePage({ params }: PageProps) {
   ];
 
   // Render content and split for inline CTA
-  const contentBlocks = renderContent(guide.content);
+  const contentBlocks = await renderContent(guide.content);
   const midpoint = Math.floor(contentBlocks.length / 2);
   const firstHalf = contentBlocks.slice(0, midpoint);
   const secondHalf = contentBlocks.slice(midpoint);

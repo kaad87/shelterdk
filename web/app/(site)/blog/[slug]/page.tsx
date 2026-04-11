@@ -83,7 +83,7 @@ export default async function BlogPostPage({ params }: PageProps) {
   };
 
   // Render content and split for inline CTA insertion
-  const contentBlocks = renderContent(post.content);
+  const contentBlocks = await renderContent(post.content);
   const midpoint = Math.floor(contentBlocks.length / 2);
   const firstHalf = contentBlocks.slice(0, midpoint);
   const secondHalf = contentBlocks.slice(midpoint);
