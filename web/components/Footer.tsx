@@ -12,6 +12,7 @@ const footerLinks = [
   { label: "FAQ", href: "/faq" },
   { label: "Privatliv og cookies", href: "/privacy" },
   { label: "Vilkår og betingelser", href: "/vilkaar" },
+  { label: "Annoncer og partnere", href: "/annoncer-og-partnere" },
   { label: "Om os", href: "/om-os" },
   { label: "Blog", href: "/blog" },
   { label: "Kontakt", href: "/kontakt" },
