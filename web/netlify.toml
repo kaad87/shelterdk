@@ -8,6 +8,10 @@
 [build.environment]
   NODE_VERSION = "20"
 
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
 # www → apex så én kanonisk URL (Chrome har nogle gange socket-problem på www)
 [[redirects]]
   from = "https://www.shelterdk.dk/*"
