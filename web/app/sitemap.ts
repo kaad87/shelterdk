@@ -50,6 +50,8 @@ const STATIC_PAGES: Array<{
   { path: "/kontakt", changeFrequency: "monthly", priority: 0.7 },
   { path: "/vilkaar", changeFrequency: "monthly", priority: 0.5 },
   { path: "/turvenner", changeFrequency: "weekly", priority: 0.6 },
+  { path: "/tilbud", changeFrequency: "daily", priority: 0.7 },
+  { path: "/annoncer-og-partnere", changeFrequency: "monthly", priority: 0.3 },
 ];
 
 function entry(

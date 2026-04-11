@@ -7,6 +7,7 @@ import { WebSiteSchema } from "@/components/seo/WebSiteSchema";
 import { FrontPageShelterGrid } from "@/components/FrontPageShelterGrid";
 import { SearchBar } from "@/components/SearchBar";
 import { MobileHomePills } from "@/components/MobileHomePills";
+import { HomepageDealsWidget } from "@/components/HomepageDealsWidget";
 import { createPublicClient } from "@/utils/supabase/server-public";
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 
@@ -441,6 +442,8 @@ export default async function HomePage() {
           </p>
         </div>
       </section>
+
+      <HomepageDealsWidget />
 
       <section
         className="py-8 bg-background"
