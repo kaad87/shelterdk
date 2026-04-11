@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<produkter>
+  <produkt>
+    <forhandler>Backpackerlife.dk</forhandler>
+    <produktid>bpl-001</produktid>
+    <produktnavn>MSR PocketRocket Trangia brænder</produktnavn>
+    <beskrivelse>Kompakt gasbrænder til outdoor-eventyr. Let og nem at bruge på tur i det fri.</beskrivelse>
+    <brand>MSR</brand>
+    <kategorinavn>Gaveideer > Køkken > Brændere</kategorinavn>
+    <nypris>449.00</nypris>
+    <glpris>549.00</glpris>
+    <fragtomk>49.00</fragtomk>
+    <lagerantal>in stock</lagerantal>
+    <billedurl>https://example.com/msr-rocket.jpg</billedurl>
+    <vareurl>https://www.partner-ads.com/dk/klikbanner.php?partnerid=19557&amp;bannerid=65841&amp;htmlurl=p-msr</vareurl>
+  </produkt>
+  <produkt>
+    <forhandler>Backpackerlife.dk</forhandler>
+    <produktid>bpl-002</produktid>
+    <produktnavn>Sovepose med dundun fyldning til vinteren</produktnavn>
+    <beskrivelse>Varm dunsovepose, komfort ned til minus 10 grader. Perfekt til ture i bjergene og på lange vandreture.</beskrivelse>
+    <brand>Mountain Hardwear</brand>
+    <kategorinavn>Søvn > Soveposer > Vinter</kategorinavn>
+    <nypris>1299.00</nypris>
+    <glpris>1899.00</glpris>
+    <fragtomk>0</fragtomk>
+    <lagerantal>in stock</lagerantal>
+    <billedurl>https://example.com/sovepose.jpg</billedurl>
+    <vareurl>https://www.partner-ads.com/dk/klikbanner.php?partnerid=19557&amp;bannerid=65841&amp;htmlurl=p-sovepose</vareurl>
+  </produkt>
+</produkter>

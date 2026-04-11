@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<produkter>
+  <produkt>
+    <forhandler>Outdoortid.dk</forhandler>
+    <produktid>ot-44032400916791</produktid>
+    <produktnavn>Nordic Peak Thera 2.0 Telt</produktnavn>
+    <beskrivelse>2-personers 3-sesons telt, 3500mm vandsøjle, letvægt.</beskrivelse>
+    <brand>Nordic Peak</brand>
+    <kategorinavn>Telte</kategorinavn>
+    <nypris>299.00</nypris>
+    <glpris>549.00</glpris>
+    <fragtomk>59.00</fragtomk>
+    <lagerantal>in_stock</lagerantal>
+    <billedurl>https://example.com/thera.jpg</billedurl>
+    <vareurl>https://www.partner-ads.com/dk/klikbanner.php?partnerid=19557&amp;bannerid=103030&amp;htmlurl=p-thera</vareurl>
+  </produkt>
+  <produkt>
+    <forhandler>Outdoortid.dk</forhandler>
+    <produktid>ot-nmpri-002</produktid>
+    <produktnavn>Primus Lite+ Kogesæt</produktnavn>
+    <beskrivelse>Alt-i-en kogesæt med indbygget varmeveksler.</beskrivelse>
+    <brand>Primus</brand>
+    <kategorinavn>Køkken</kategorinavn>
+    <nypris>699.00</nypris>
+    <glpris>899.00</glpris>
+    <fragtomk>49.00</fragtomk>
+    <lagerantal>in_stock</lagerantal>
+    <billedurl>https://example.com/primus.jpg</billedurl>
+    <vareurl>https://example.com/buy</vareurl>
+  </produkt>
+</produkter>

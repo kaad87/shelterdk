@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<produkter>
+  <produkt>
+    <forhandler>Outmore.dk</forhandler>
+    <produktid>3342540815643</produktid>
+    <produktnavn>Petzl Tikka Pandelampe</produktnavn>
+    <beskrivelse>Robust pandelampe med 350 lumen til nattevandring.</beskrivelse>
+    <brand>PETZL</brand>
+    <ean>3342540815643</ean>
+    <kategorinavn>Pandelamper</kategorinavn>
+    <nypris>221.95</nypris>
+    <glpris>241.03</glpris>
+    <fragtomk>39.00</fragtomk>
+    <lagerantal>12</lagerantal>
+    <billedurl>https://example.com/petzl-tikka.jpg</billedurl>
+    <vareurl>https://www.partner-ads.com/dk/klikbanner.php?partnerid=19557&amp;bannerid=44269&amp;htmlurl=p-petzl-tikka</vareurl>
+  </produkt>
+  <produkt>
+    <forhandler>Outmore.dk</forhandler>
+    <produktid>1234567890</produktid>
+    <produktnavn>Fjallraven Rygsaek 30L</produktnavn>
+    <beskrivelse>Holdbar rygsaek til dagture.</beskrivelse>
+    <brand>Fjallraven</brand>
+    <ean>1234567890123</ean>
+    <kategorinavn>Rygsaekke</kategorinavn>
+    <nypris>799.00</nypris>
+    <glpris>999.00</glpris>
+    <fragtomk>0</fragtomk>
+    <lagerantal>3</lagerantal>
+    <billedurl>https://example.com/fjallraven.jpg</billedurl>
+    <vareurl>https://www.partner-ads.com/dk/klikbanner.php?partnerid=19557&amp;bannerid=44269&amp;htmlurl=p-fjallraven</vareurl>
+  </produkt>
+  <produkt>
+    <forhandler>Outmore.dk</forhandler>
+    <produktid>0</produktid>
+    <produktnavn>Udsolgt Test Vare</produktnavn>
+    <brand>TestBrand</brand>
+    <kategorinavn>Test</kategorinavn>
+    <nypris>100.00</nypris>
+    <glpris>100.00</glpris>
+    <lagerantal>0</lagerantal>
+    <billedurl>https://example.com/oos.jpg</billedurl>
+    <vareurl>https://example.com/buy</vareurl>
+  </produkt>
+</produkter>
