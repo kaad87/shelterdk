@@ -263,6 +263,8 @@ Pak mindst:
 - **Liggeunderlag** – gerne oppusteligt + evt. skumunderlag under til kulde
 - Evt. **pude** eller et sammenrullet trøje
 
+::gear-group[backpackerlife-499694,outdoortid-49290462232908]
+
 Overvej også:
 
 - Lagenpose eller indersovepose (nemmere at vaske)
@@ -296,6 +298,8 @@ Grundlæggende køkken:
 - Krus, tallerken og bestik pr. person
 - Skarp kniv og lille skærebræt
 
+::gear[backpackerlife-361941]
+
 Madidéer til shelter:
 
 - One-pot pasta eller gryderet
@@ -328,6 +332,8 @@ Husk:
 - Pandelygte til alle + ekstra batterier
 - Powerbank til telefon
 - Kort eller offline kort på mobilen
+
+::gear[outmore-9328389030533]
 
 Tænk også over sikkerhed:
 
