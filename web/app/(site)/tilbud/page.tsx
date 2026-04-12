@@ -243,6 +243,21 @@ export default async function TilbudPage({ searchParams }: PageProps) {
               <GearCard key={p.id} id={p.id} variant="product" preloaded={p} />
             ))}
           </div>
+
+          <div className="mt-10 rounded-xl border border-accent/20 bg-gradient-to-r from-amber-50 to-yellow-50 p-6 md:p-8 text-center">
+            <h3 className="font-serif text-xl font-bold text-primary mb-2">
+              Ved du hvad du skal pakke?
+            </h3>
+            <p className="text-primary/70 text-sm mb-4 max-w-lg mx-auto">
+              Se vores komplette pakkeliste til sheltertur — så du ikke glemmer noget vigtigt.
+            </p>
+            <Link
+              href="/guides/pakkeliste-til-sheltertur"
+              className="inline-block rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-accent transition-colors"
+            >
+              Se pakkelisten
+            </Link>
+          </div>
         </>
       )}
     </div>

@@ -454,7 +454,7 @@ export default async function HomePage() {
           <h2 id="heading-planlaeg" className="font-serif text-3xl font-bold text-primary mb-8 text-center">
             Planlæg din sheltertur
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Link
               href="/ruteplanner"
               className="group rounded-xl border border-primary/10 bg-white p-6 hover:border-accent/30 hover:shadow-md transition-all"
@@ -464,6 +464,17 @@ export default async function HomePage() {
               </h3>
               <p className="text-primary/70 text-sm leading-relaxed">
                 Udforsk over 200 vandreruter fra Naturstyrelsen med shelters langs vejen
+              </p>
+            </Link>
+            <Link
+              href="/guides/pakkeliste-til-sheltertur"
+              className="group rounded-xl border border-primary/10 bg-white p-6 hover:border-accent/30 hover:shadow-md transition-all"
+            >
+              <h3 className="font-serif text-xl font-bold text-primary mb-2 group-hover:text-accent transition-colors">
+                Pakkeliste til sheltertur
+              </h3>
+              <p className="text-primary/70 text-sm leading-relaxed">
+                Den komplette tjekliste så du ikke glemmer noget til turen
               </p>
             </Link>
             <Link

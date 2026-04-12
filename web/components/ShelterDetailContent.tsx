@@ -422,6 +422,12 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                   </Link>
                   {" "}– del oplevelsen med andre
                 </li>
+                <li>
+                  <Link href="/tilbud" className="text-accent hover:underline">
+                    Outdoor-tilbud
+                  </Link>
+                  {" "}– spar på grej til turen
+                </li>
               </ul>
             </section>
 

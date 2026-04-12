@@ -144,45 +144,45 @@ function ProductVariant({
   const outOfStock = !product.in_stock;
   return (
     <div
-      className={`relative flex flex-col overflow-hidden rounded-xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] ${className ?? ""}`}
+      className={`relative overflow-hidden rounded-xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] flex flex-row md:flex-col ${className ?? ""}`}
     >
       {product.discount_pct != null && (
-        <div className="absolute right-3 top-3 z-10 rounded-full bg-accent px-3 py-1.5 text-xs font-bold text-white">
+        <div className="absolute right-3 top-3 z-10 rounded-full bg-accent px-2.5 py-1 md:px-3 md:py-1.5 text-xs font-bold text-white">
           –{product.discount_pct}%
         </div>
       )}
-      <div className="relative aspect-square w-full bg-background">
+      <div className="relative w-28 shrink-0 md:w-full md:aspect-square bg-background">
         <Image
           src={product.image_url}
           alt={product.product_name}
           fill
-          className="object-contain p-4"
-          sizes="(max-width: 768px) 100vw, 33vw"
+          className="object-contain p-3 md:p-4"
+          sizes="(max-width: 768px) 112px, 33vw"
           unoptimized
         />
       </div>
-      <div className="flex flex-1 flex-col p-4">
+      <div className="flex flex-1 flex-col p-3 md:p-4">
         {product.brand && (
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-accent">
+          <div className="text-[10px] md:text-[11px] font-semibold uppercase tracking-wider text-accent">
             {product.brand}
           </div>
         )}
-        <h4 className="mt-1 font-serif text-lg font-bold text-primary leading-tight line-clamp-2">
+        <h4 className="mt-0.5 md:mt-1 font-serif text-sm md:text-lg font-bold text-primary leading-tight line-clamp-2">
           {product.product_name}
         </h4>
-        <div className="mt-3 flex items-baseline gap-2">
-          <span className="text-xl font-bold text-primary">
+        <div className="mt-1.5 md:mt-3 flex items-baseline gap-2">
+          <span className="text-base md:text-xl font-bold text-primary">
             {formatPrice(product.price)}
           </span>
           {product.price_original != null && (
-            <span className="text-sm text-primary/40 line-through">
+            <span className="text-xs md:text-sm text-primary/40 line-through">
               {formatPrice(product.price_original)}
             </span>
           )}
         </div>
-        <div className="mt-auto pt-4">
+        <div className="mt-auto pt-2 md:pt-4">
           {outOfStock ? (
-            <div className="rounded-lg bg-primary/5 px-4 py-2.5 text-center text-sm font-medium text-primary/50">
+            <div className="rounded-lg bg-primary/5 px-3 md:px-4 py-2 md:py-2.5 text-center text-xs md:text-sm font-medium text-primary/50">
               Udsolgt lige nu
             </div>
           ) : (
@@ -190,12 +190,12 @@ function ProductVariant({
               href={product.affiliate_url}
               target="_blank"
               rel="sponsored nofollow noopener"
-              className="block rounded-lg bg-primary px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-accent"
+              className="block rounded-lg bg-primary px-3 md:px-4 py-2 md:py-2.5 text-center text-xs md:text-sm font-semibold text-white hover:bg-accent"
             >
               Se tilbud
             </a>
           )}
-          <div className="mt-2 text-center text-[11px] text-primary/40">
+          <div className="mt-1.5 md:mt-2 text-center text-[10px] md:text-[11px] text-primary/40">
             <a href="/annoncer-og-partnere" className="hover:underline">
               Hos <RetailerLabel retailer={product.retailer} /> · Annonce
             </a>

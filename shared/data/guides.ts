@@ -351,7 +351,7 @@ Det er ofte de små ting, man bliver gladest for:
 - En god bog eller notesbog
 - Skumfiduser, chokolade eller anden lille luksus
 
-Med denne pakkeliste er du dækket ind til de fleste shelterture – både med venner, kæreste og familie. Har du brug for mere inspiration til udstyr, så tjek vores [udstyrguide for begyndere](/blog/udstyr-guide-begyndere).
+Med denne pakkeliste er du dækket ind til de fleste shelterture – både med venner, kæreste og familie. Har du brug for mere inspiration til udstyr, så tjek vores [udstyrguide for begyndere](/blog/udstyr-guide-begyndere). Se også de [bedste outdoor-tilbud lige nu](/tilbud) og spar på udstyret.
 
 Hvis du vil dykke endnu mere ned i forberedelserne, kan du læse guiden [Shelter for begyndere – sådan får du en god første tur](/guides/shelter-for-begyndere-forste-tur) og vores tips til [Mad over bål – nem shelter-mad til hele turen](/guides/mad-over-bal-nem-shelter-mad). Begynder du at planlægge ture i de koldere måneder, er [Overnatning i shelter om vinteren – sådan gør du](/guides/overnatning-i-shelter-om-vinteren) et godt supplement til denne pakkeliste. Find din næste shelterplads via [Søg shelters](/soeg).
     `.trim(),

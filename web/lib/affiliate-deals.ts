@@ -85,6 +85,7 @@ export async function getTopDeals(
     .eq("in_stock", true)
     .eq("is_blocked", false)
     .gte("discount_pct", filter.minDiscount ?? 25)
+    .gte("price", 100)
     .in("category_mapped", filter.category ? [filter.category] : allowedCats);
 
   // Sorting

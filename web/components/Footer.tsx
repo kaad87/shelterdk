@@ -14,8 +14,16 @@ const footerLinks = [
   { label: "Vilkår og betingelser", href: "/vilkaar" },
   { label: "Annoncer og partnere", href: "/annoncer-og-partnere" },
   { label: "Om os", href: "/om-os" },
+  { label: "Tilbud på outdoor-grej", href: "/tilbud" },
   { label: "Blog", href: "/blog" },
   { label: "Kontakt", href: "/kontakt" },
+];
+
+const guideLinks = [
+  { label: "Pakkeliste til sheltertur", href: "/guides/pakkeliste-til-sheltertur" },
+  { label: "Regler for shelter og teltning", href: "/guides/regler-for-shelter-og-teltning-i-danmark" },
+  { label: "Shelter for begyndere", href: "/guides/shelter-for-begyndere-forste-tur" },
+  { label: "Alle guides", href: "/guides" },
 ];
 
 const externalLinks = [
@@ -30,7 +38,7 @@ export function Footer() {
   return (
     <footer className="bg-primary text-white mt-auto">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-12">
           {/* Brand */}
           <div className="lg:col-span-2">
             <Link
@@ -65,6 +73,25 @@ export function Footer() {
               <li>
                 <CookieResetButton />
               </li>
+            </ul>
+          </div>
+
+          {/* Guides */}
+          <div>
+            <h3 className="font-semibold text-white text-sm uppercase tracking-wider mb-4">
+              Guides
+            </h3>
+            <ul className="space-y-2">
+              {guideLinks.map(({ label, href }) => (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    className="inline-block py-2 -my-2 text-white/75 hover:text-accent hover:underline text-sm transition-colors touch-manipulation"
+                  >
+                    {label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
