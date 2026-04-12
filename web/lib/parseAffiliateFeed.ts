@@ -141,9 +141,11 @@ export function parseFeedXml(
     parseTagValue: false, // keep everything as strings; we coerce manually
     trimValues: true,
     isArray: (name) => name === "produkt", // always treat <produkt> as array
-    processEntities: true,
+    processEntities: {
+      enabled: true,
+      maxTotalExpansions: 100000, // Backpackerlife feed has many HTML entities in descriptions
+    },
     htmlEntities: true,
-    entityExpansionLimit: 50000, // Backpackerlife feed has many entities in descriptions
   });
 
   let parsed: Record<string, unknown>;
