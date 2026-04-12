@@ -298,7 +298,7 @@ Grundlæggende køkken:
 - Krus, tallerken og bestik pr. person
 - Skarp kniv og lille skærebræt
 
-::gear[backpackerlife-361941]
+::gear[backpackerlife-361944]
 
 Madidéer til shelter:
 
