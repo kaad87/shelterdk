@@ -109,8 +109,16 @@ async function syncRetailer(
 
   const mappingLookup = await upsertCategoryMappings(supabase, products);
 
+  // Deduplicate by id — some feeds contain the same product multiple times
+  const seen = new Map<string, NormalizedProduct>();
+  for (const p of products) seen.set(p.id, p);
+  const unique = [...seen.values()];
+  if (unique.length < products.length) {
+    console.log(`[${retailer}] deduplicated ${products.length} → ${unique.length}`);
+  }
+
   const now = new Date().toISOString();
-  const rows = products.map((p) => {
+  const rows = unique.map((p) => {
     const key = p.category_raw ? `${p.retailer}::${p.category_raw}` : null;
     const mapping = key ? mappingLookup.get(key) : null;
     return {
