@@ -5,6 +5,7 @@ export interface DealsFilter {
   minDiscount?: number; // default 25
   retailer?: string;
   category?: string;
+  sort?: "discount" | "price-asc" | "price-desc";
 }
 
 export function diversify(
@@ -84,15 +85,46 @@ export async function getTopDeals(
     .eq("in_stock", true)
     .eq("is_blocked", false)
     .gte("discount_pct", filter.minDiscount ?? 25)
-    .in("category_mapped", filter.category ? [filter.category] : allowedCats)
-    .order("discount_pct", { ascending: false })
-    .order("last_seen_at", { ascending: false })
-    .limit(200);
+    .in("category_mapped", filter.category ? [filter.category] : allowedCats);
+
+  // Sorting
+  if (filter.sort === "price-asc") {
+    q = q.order("price", { ascending: true });
+  } else if (filter.sort === "price-desc") {
+    q = q.order("price", { ascending: false });
+  } else {
+    q = q
+      .order("discount_pct", { ascending: false })
+      .order("last_seen_at", { ascending: false });
+  }
+
+  q = q.limit(200);
   if (filter.retailer) q = q.eq("retailer", filter.retailer);
 
   const { data } = await q;
   const prioritized = prioritizeBackpackerlife(
     (data as AffiliateProduct[]) ?? []
   );
-  return diversify(prioritized, { maxPerCategory: 4, targetSize: 40 });
+  // When filtering by single category, allow more per category
+  const maxPerCat = filter.category ? 40 : 4;
+  return diversify(prioritized, { maxPerCategory: maxPerCat, targetSize: 40 });
+}
+
+/**
+ * Returns the list of whitelisted category slugs (for filter UI).
+ */
+export async function getWhitelistedCategories(): Promise<string[]> {
+  const supabase = getSupabase();
+  const { data } = await supabase
+    .from("affiliate_category_mapping")
+    .select("category_mapped")
+    .eq("whitelisted", true)
+    .not("category_mapped", "is", null);
+  return [
+    ...new Set(
+      (data ?? [])
+        .map((r: { category_mapped: string | null }) => r.category_mapped)
+        .filter(Boolean) as string[]
+    ),
+  ].sort();
 }

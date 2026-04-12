@@ -22,7 +22,7 @@ export default async function AdminKategorierPage() {
   const { data } = await supabase
     .from("affiliate_category_mapping")
     .select("retailer, category_raw, category_mapped, whitelisted")
-    .order("category_mapped", { ascending: true, nullsFirst: true })
+    .order("category_mapped", { ascending: true, nullsFirst: false })
     .order("retailer")
     .order("category_raw");
 
