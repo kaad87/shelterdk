@@ -102,12 +102,15 @@ export async function getTopDeals(
   if (filter.retailer) q = q.eq("retailer", filter.retailer);
 
   const { data } = await q;
-  const prioritized = prioritizeBackpackerlife(
-    (data as AffiliateProduct[]) ?? []
-  );
+  const products = (data as AffiliateProduct[]) ?? [];
+  // Only re-sort by retailer priority when sorting by discount (default)
+  const sorted =
+    filter.sort === "price-asc" || filter.sort === "price-desc"
+      ? products
+      : prioritizeBackpackerlife(products);
   // When filtering by single category, allow more per category
   const maxPerCat = filter.category ? 40 : 4;
-  return diversify(prioritized, { maxPerCategory: maxPerCat, targetSize: 40 });
+  return diversify(sorted, { maxPerCategory: maxPerCat, targetSize: 40 });
 }
 
 /**
