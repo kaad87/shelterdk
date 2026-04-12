@@ -77,7 +77,7 @@ function EditorialVariant({
     <div
       className={`my-6 flex gap-4 rounded-lg border border-primary/10 border-l-[3px] border-l-accent bg-white p-4 ${className ?? ""}`}
     >
-      <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-md bg-primary/5">
+      <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-md">
         <Image
           src={product.image_url}
           alt={product.product_name}
