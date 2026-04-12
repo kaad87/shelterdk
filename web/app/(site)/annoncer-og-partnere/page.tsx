@@ -71,9 +71,9 @@ export default function AnnoncerOgPartnerePage() {
 
         <h2>Det juridiske</h2>
         <p>
-          Alle affiliate-links er markeret med "Annonce · Sponsoreret link" på
-          produktkortene og benytter <code>rel="sponsored"</code>-attributten i
-          linket, i overensstemmelse med markedsføringsloven §6 og Google's
+          Alle affiliate-links er markeret med &ldquo;Annonce · Sponsoreret link&rdquo; på
+          produktkortene og benytter <code>rel=&ldquo;sponsored&rdquo;</code>-attributten i
+          linket, i overensstemmelse med markedsføringsloven §6 og Google&apos;s
           retningslinjer.
         </p>
         <p>
