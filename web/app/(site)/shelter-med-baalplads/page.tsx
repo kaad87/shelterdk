@@ -48,7 +48,7 @@ function shelterHref(
 }
 
 export default async function ShelterMedBaalpladsPage() {
-  const shelters = await getSheltersWithFirewood(200);
+  const shelters = await getSheltersWithFirewood(50);
 
   // Fetch summary data for DataSummaryBlock
   const regionCounts = await Promise.all(

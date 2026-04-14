@@ -61,7 +61,7 @@ function shelterHref(region: string | null, kommune: string | null, slug: string
 }
 
 export default async function ShelterNaerVandPage() {
-  const shelters = await getStrandShelters(200);
+  const shelters = await getStrandShelters(50);
 
   const regionCounts = await Promise.all(
     REGION_SLUGS.map(async (slug) => ({

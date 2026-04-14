@@ -19,7 +19,7 @@ function sortByImageAndScore(a: Shelter, b: Shelter): number {
 }
 
 /** Hent shelters hvor hunde er tilladt. Max limit stk. */
-export async function getSheltersWithPets(limit: number = 200): Promise<Shelter[]> {
+export async function getSheltersWithPets(limit: number = 50): Promise<Shelter[]> {
   const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("shelters")

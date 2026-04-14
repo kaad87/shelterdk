@@ -54,7 +54,7 @@ const TOILET_LABELS: Record<string, string> = {
 };
 
 export default async function ShelterMedToiletPage() {
-  const shelters = await getSheltersWithToilet(200);
+  const shelters = await getSheltersWithToilet(50);
 
   // Fetch summary data for DataSummaryBlock
   const regionCounts = await Promise.all(

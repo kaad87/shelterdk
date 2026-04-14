@@ -66,7 +66,7 @@ function shelterHref(
 }
 
 export default async function HandicapvenligeSheltersPage() {
-  const shelters = await getHandicapShelters(200);
+  const shelters = await getHandicapShelters(50);
 
   const regionCounts = await Promise.all(
     REGION_SLUGS.map(async (slug) => ({

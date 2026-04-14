@@ -48,7 +48,7 @@ function shelterHref(
 }
 
 export default async function ShelterMedHundPage() {
-  const shelters = await getSheltersWithPets(200);
+  const shelters = await getSheltersWithPets(50);
 
   // Fetch summary data for DataSummaryBlock
   const regionCounts = await Promise.all(

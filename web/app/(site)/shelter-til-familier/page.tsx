@@ -59,7 +59,7 @@ function shelterHref(region: string | null, kommune: string | null, slug: string
 }
 
 export default async function ShelterTilFamilierPage() {
-  const shelters = await getFamilyShelters(200);
+  const shelters = await getFamilyShelters(50);
 
   const regionCounts: Record<string, number> = {};
   for (const s of shelters) {

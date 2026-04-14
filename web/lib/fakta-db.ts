@@ -278,7 +278,7 @@ export async function getFilterRegionCount(
 export async function getSheltersForFilterRegion(
   filterKey: string,
   region: string,
-  limit: number = 200
+  limit: number = 50
 ): Promise<Shelter[]> {
   const supabase = createPublicClient();
   let query = supabase
@@ -330,7 +330,7 @@ export async function getSheltersForFilterRegion(
 }
 
 /** Shelters near beach / water nationally. */
-export async function getStrandShelters(limit: number = 200): Promise<Shelter[]> {
+export async function getStrandShelters(limit: number = 50): Promise<Shelter[]> {
   const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("shelters")
@@ -348,7 +348,7 @@ export async function getStrandShelters(limit: number = 200): Promise<Shelter[]>
 }
 
 /** Family-friendly shelters: capacity >= 4, toilet, water. */
-export async function getFamilyShelters(limit: number = 200): Promise<Shelter[]> {
+export async function getFamilyShelters(limit: number = 50): Promise<Shelter[]> {
   const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("shelters")
@@ -368,7 +368,7 @@ export async function getFamilyShelters(limit: number = 200): Promise<Shelter[]>
 }
 
 /** Handicap-accessible shelters nationally. */
-export async function getHandicapShelters(limit: number = 200): Promise<Shelter[]> {
+export async function getHandicapShelters(limit: number = 50): Promise<Shelter[]> {
   const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("shelters")

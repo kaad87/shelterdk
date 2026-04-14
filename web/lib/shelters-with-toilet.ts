@@ -19,7 +19,7 @@ function sortByImageAndScore(a: Shelter, b: Shelter): number {
 }
 
 /** Hent shelters med toilet (vandskyllende eller muldtoilet). Max limit stk. */
-export async function getSheltersWithToilet(limit: number = 200): Promise<Shelter[]> {
+export async function getSheltersWithToilet(limit: number = 50): Promise<Shelter[]> {
   const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("shelters")

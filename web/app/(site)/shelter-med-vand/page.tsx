@@ -48,7 +48,7 @@ function shelterHref(
 }
 
 export default async function ShelterMedVandPage() {
-  const shelters = await getSheltersWithWater(200);
+  const shelters = await getSheltersWithWater(50);
 
   // Fetch summary data for DataSummaryBlock
   const regionCounts = await Promise.all(

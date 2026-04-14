@@ -41,7 +41,7 @@ function shelterHref(region: string | null, kommune: string | null, slug: string
 }
 
 export default async function ShelterMedBruserPage() {
-  const shelters = await getSheltersWithShower(200);
+  const shelters = await getSheltersWithShower(50);
 
   // Fetch summary data for DataSummaryBlock
   const regionCounts = await Promise.all(
