@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { getDistinctRegions, slugifySegment, NO_KOMMUNE_SLUG } from "@/lib/danmark-silo";
+import { getDistinctRegions, slugifySegment, NO_KOMMUNE_SLUG, getMunicipalitiesWithCounts } from "@/lib/danmark-silo";
 import { segmentSlugToName } from "@/lib/slug";
 import { getSheltersPage } from "@/lib/soeg-db";
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
@@ -73,11 +73,12 @@ export default async function DanmarkRegionPage({ params }: PageProps) {
 
   const prep = prepositionForRegionName(regionName);
 
-  const [{ shelters: rawShelters, hasMore: initialHasMore }, facilityCounts, topRated] =
+  const [{ shelters: rawShelters, hasMore: initialHasMore }, facilityCounts, topRated, municipalities] =
     await Promise.all([
       getSheltersPage(regionName, null, 1, MAP_VIEW_PAGE_SIZE),
       getFacilityCountsForRegion(regionName),
       getTopRatedShelters(1, 3),
+      getMunicipalitiesWithCounts(regionName),
     ]);
   const initialShelters = await enrichSheltersWithGooglePhotoRef(rawShelters);
 
@@ -146,6 +147,30 @@ export default async function DanmarkRegionPage({ params }: PageProps) {
             headline={`${regionName} har ${totalCount} shelters. ${freeCount} er gratis, ${facilityCounts.toilet} har toilet.`}
             crossPageLinks={crossPageLinks}
           />
+
+          {municipalities.length > 0 && (
+            <section className="mb-10">
+              <h2 className="font-serif text-xl font-bold text-primary mb-4">
+                Kommuner med shelters {prep} {regionName}
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                {municipalities.map((m) => (
+                  <Link
+                    key={m.name}
+                    href={`/danmark/${regionSlug}/${slugifySegment(m.name)}`}
+                    className="flex items-center justify-between rounded-lg border border-primary/10 bg-white px-3 py-2.5 text-sm hover:border-accent/30 hover:shadow-sm transition-all group"
+                  >
+                    <span className="text-primary group-hover:text-accent transition-colors font-medium truncate">
+                      {m.name}
+                    </span>
+                    <span className="text-primary/40 text-xs ml-2 shrink-0">
+                      {m.count}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
 
           <Suspense fallback={<div className="h-14 bg-primary/5 rounded-xl animate-pulse mb-8" />}>
             <SoegContent

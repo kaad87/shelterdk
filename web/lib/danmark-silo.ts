@@ -144,6 +144,36 @@ export async function getSheltersForStaticParams(): Promise<
   return out;
 }
 
+/** Municipalities with shelter counts for a given region. Sorted by count desc, then name. */
+export async function getMunicipalitiesWithCounts(
+  region: string
+): Promise<{ name: string; count: number }[]> {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("shelters")
+    .select("kommune")
+    .is("duplicate_of_shelter_id", null)
+    .eq("region", region)
+    .not("kommune", "is", null)
+    .neq("kommune", "");
+
+  if (error) {
+    console.error("Supabase error (municipalities with counts):", error);
+    return [];
+  }
+
+  const counts = new Map<string, number>();
+  for (const row of (data as { kommune: string }[]) ?? []) {
+    const k = (row.kommune || "").trim();
+    if (!k) continue;
+    counts.set(k, (counts.get(k) ?? 0) + 1);
+  }
+
+  return [...counts.entries()]
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, "da"));
+}
+
 /** Municipalities (kommune) in a given region. When minShelters is set, only returns
  *  municipalities with at least that many shelters. */
 export async function getMunicipalitiesInRegion(
