@@ -5,8 +5,6 @@ import { getFilterRegionCount, getSheltersForFilterRegion, getKommuneBreakdownFo
 import { generateCrossPageFaq } from "@/lib/fakta-faq";
 import { FILTER_CONFIGS, REGION_NAMES, REGION_SLUGS, getOtherRegionLinks, getOtherFilterLinks } from "@/lib/cross-page-config";
 import { prepositionForRegionName } from "@/lib/area-db";
-import { getDistinctRegions } from "@/lib/danmark-silo";
-import { slugifySegment } from "@/lib/slug";
 
 const FILTER = FILTER_CONFIGS["strand"];
 const MIN_SHELTERS = FILTER.minSheltersForRegion;
@@ -17,12 +15,9 @@ export const dynamicParams = false;
 interface PageProps { params: Promise<{ region: string }> }
 
 export async function generateStaticParams() {
-  const regions = await getDistinctRegions();
   const params: { region: string }[] = [];
-  for (const region of regions) {
-    const slug = slugifySegment(region);
-    if (!REGION_SLUGS.includes(slug as typeof REGION_SLUGS[number])) continue;
-    const count = await getFilterRegionCount(FILTER.filterKey, region);
+  for (const slug of REGION_SLUGS) {
+    const count = await getFilterRegionCount(FILTER.filterKey, REGION_NAMES[slug]);
     if (count >= MIN_SHELTERS) params.push({ region: slug });
   }
   return params;
@@ -63,12 +58,9 @@ export default async function Page({ params }: PageProps) {
   const rated = shelters.filter((s) => s.google_rating != null);
   const topShelter = rated.sort((a, b) => (b.google_rating ?? 0) - (a.google_rating ?? 0))[0];
 
-  const regions = await getDistinctRegions();
-  const validSlugs: string[] = [];
-  for (const region of regions) {
-    const slug = slugifySegment(region);
-    if (!REGION_SLUGS.includes(slug as typeof REGION_SLUGS[number])) continue;
-    const count = await getFilterRegionCount(FILTER.filterKey, region);
+    const validSlugs: string[] = [];
+  for (const slug of REGION_SLUGS) {
+    const count = await getFilterRegionCount(FILTER.filterKey, REGION_NAMES[slug]);
     if (count >= MIN_SHELTERS) validSlugs.push(slug);
   }
 
