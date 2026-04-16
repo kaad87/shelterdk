@@ -86,13 +86,20 @@ function kommuneToBy(value: string): string {
   return t;
 }
 
-/** Generer SEO-titel med bynavn. Original title bevares i shelter.title. Undgår generisk fallback for at reducere duplicate content. */
+/** Generer SEO-titel med bynavn og bookbar-signal for højere CTR.
+ *  Hybrid-logik:
+ *  - Bookbar + gratis: "Book {navn} – Gratis overnatning"
+ *  - Bookbar (ikke gratis / ukendt pris): "Book {navn} i {by}"
+ *  - Ikke bookbar: "{navn} – Shelter i {by}" eller "{navn} i {by}"
+ *  - Generisk navn: beskrivende fallback med stedsnavn
+ *  Holder titlen under ~60 tegn (inkl. " | Shelterdk.dk"). */
 export function buildSeoTitle(shelter: Shelter): string {
   const name = (shelter.title || "").trim();
   const city = getCity(shelter);
   const region = (shelter.region ?? "").trim() || "Danmark";
   const by = city || (region !== "Danmark" ? region : null);
   const suffix = " | Shelterdk.dk";
+  const MAX_LEN = 60;
 
   const isGenericOnly =
     !name ||
@@ -117,16 +124,42 @@ export function buildSeoTitle(shelter: Shelter): string {
     return `Shelter - Overnatning i naturen${suffix}`;
   }
 
-  if (!by) {
-    return name + suffix;
-  }
-
   const nameLower = name.toLowerCase();
-  const byLower = by.toLowerCase();
-  if (nameLower.includes(byLower)) {
-    return name + suffix;
+  const byLower = by ? by.toLowerCase() : null;
+  const nameHasCity = byLower ? nameLower.includes(byLower) : false;
+
+  const bookable = isBookable(shelter);
+  const payment = getPayment(shelter);
+  const isFree =
+    !payment || (typeof payment === "string" && payment.toLowerCase().includes("nej"));
+
+  // Hjælper: vælg første variant der holder sig under MAX_LEN (ellers sidste).
+  const firstFitting = (candidates: string[]): string => {
+    for (const c of candidates) {
+      if ((c + suffix).length <= MAX_LEN) return c + suffix;
+    }
+    return candidates[candidates.length - 1] + suffix;
+  };
+
+  if (bookable && isFree) {
+    return firstFitting([
+      `Book ${name} – Gratis overnatning`,
+      `Book ${name} – Gratis`,
+      `Book ${name}`,
+    ]);
   }
 
+  if (bookable) {
+    if (by && !nameHasCity) {
+      return firstFitting([`Book ${name} i ${by}`, `Book ${name}`]);
+    }
+    return `Book ${name}${suffix}`;
+  }
+
+  // Ikke bookbar – behold navn + by, med let variation ift. tidligere
+  if (!by || nameHasCity) {
+    return name + suffix;
+  }
   return `${name} i ${by}${suffix}`;
 }
 
@@ -308,6 +341,94 @@ export function getFeatures(shelter: Shelter): ShelterFeature[] {
   if (address) out.push({ label: "Adresse", value: address });
 
   return out;
+}
+
+/** Dansk liste-join: ["a", "b", "c"] → "a, b og c". */
+function joinDa(items: string[]): string {
+  if (items.length === 0) return "";
+  if (items.length === 1) return items[0];
+  if (items.length === 2) return `${items[0]} og ${items[1]}`;
+  return `${items.slice(0, -1).join(", ")} og ${items[items.length - 1]}`;
+}
+
+/** Generer SEO-meta-description optimeret for CTR.
+ *  Format A (med rating, ≥5 anmeldelser):
+ *    "⭐ 4,3 (23 anmeldelser) · Gratis shelter i X med vand og bålplads. Plads til 6. Book nu gennem Naturstyrelsen →"
+ *  Format B (ingen/få anmeldelser – fact-stack):
+ *    "Book gratis shelter i X · vand · bålplads · plads til 6. Se faciliteter og book direkte."
+ *  Holder sig under ~160 tegn for optimal Google-rendering. */
+export function buildShelterDescription(shelter: Shelter): string {
+  const MAX_LEN = 160;
+  const city = getCity(shelter);
+  const region = (shelter.region ?? "").trim() || "Danmark";
+  const location = city || (region !== "Danmark" ? region : "Danmark");
+
+  const rating = (shelter as { google_rating?: number | null }).google_rating;
+  const ratingCount = (shelter as { google_user_ratings_total?: number | null })
+    .google_user_ratings_total;
+  const hasRating =
+    typeof rating === "number" &&
+    typeof ratingCount === "number" &&
+    ratingCount >= 5;
+
+  const bookable = isBookable(shelter);
+  const payment = getPayment(shelter);
+  const isFree =
+    !payment || (typeof payment === "string" && payment.toLowerCase().includes("nej"));
+
+  const water = getWater(shelter);
+  const toilet = getToilet(shelter);
+  const firewood = getFirewood(shelter);
+  const capacity = getCapacity(shelter);
+  const owner = (getOwner(shelter) || "").toLowerCase();
+  const isNST = owner.includes("naturstyrelsen");
+
+  const facilities: string[] = [];
+  if (water === true) facilities.push("vand");
+  if (toilet === "flush" || toilet === "mulch") facilities.push("toilet");
+  if (firewood === true) facilities.push("bålplads");
+
+  const ratingStr = hasRating ? String(rating).replace(".", ",") : null;
+  const fitsIn = (s: string) => s.length <= MAX_LEN;
+
+  // --- Format A: rating-drevet ---
+  if (hasRating && ratingStr) {
+    const hero = isFree && bookable ? "Gratis shelter" : "Shelter";
+    const facilStr = facilities.length > 0 ? ` med ${joinDa(facilities)}` : "";
+    const capStr = capacity ? ` Plads til ${capacity}.` : "";
+    const cta = bookable
+      ? isNST
+        ? " Book nu gennem Naturstyrelsen →"
+        : " Book direkte →"
+      : "";
+    const candidates = [
+      `⭐ ${ratingStr} (${ratingCount} anmeldelser) · ${hero}${facilStr} i ${location}.${capStr}${cta}`,
+      `⭐ ${ratingStr} (${ratingCount} anmeldelser) · ${hero}${facilStr} i ${location}.${cta}`,
+      `⭐ ${ratingStr} (${ratingCount} anmeldelser) · ${hero} i ${location}.${cta}`,
+      `⭐ ${ratingStr} · ${hero} i ${location}.${cta}`,
+    ];
+    for (const c of candidates) if (fitsIn(c)) return c;
+    return candidates[candidates.length - 1].slice(0, MAX_LEN).trim();
+  }
+
+  // --- Format B: fact-stack fallback ---
+  const hero = isFree && bookable ? "Book gratis shelter" : bookable ? "Book shelter" : "Shelter";
+  const parts: string[] = [`${hero} i ${location}`, ...facilities];
+  if (capacity) parts.push(`plads til ${capacity}`);
+  const stack = parts.join(" · ");
+  const tail = bookable
+    ? isNST
+      ? ". Gratis booking via Naturstyrelsen."
+      : ". Se faciliteter og book direkte."
+    : ". Se billeder, faciliteter og info.";
+  const candidates = [
+    stack + tail,
+    stack + ".",
+    `${hero} i ${location} · ${facilities.join(" · ")}.`,
+    `${hero} i ${location}.`,
+  ];
+  for (const c of candidates) if (fitsIn(c)) return c;
+  return candidates[candidates.length - 1].slice(0, MAX_LEN).trim();
 }
 
 /** True hvis shelteret anses for bookbart (booking_url, titel "bookbar", eller geofa book=ja). */

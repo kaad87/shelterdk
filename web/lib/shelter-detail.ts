@@ -4,6 +4,7 @@ export {
   getCapacity,
   getAddress,
   buildSeoTitle,
+  buildShelterDescription,
   getCity,
   getOwner,
   getContact,

@@ -19,6 +19,14 @@ interface LocationFeatureSpecification {
 
 const BASE_URL = "https://shelterdk.dk";
 
+export interface ShelterSchemaReview {
+  author_name: string | null;
+  rating: number | null;
+  text: string | null;
+  relative_time_description: string | null;
+  time: string | null;
+}
+
 interface ShelterSchemaProps {
   shelter: Shelter;
   /** Canonical URL for this shelter (fx /danmark/region/kommune/slug). */
@@ -27,6 +35,25 @@ interface ShelterSchemaProps {
   useLodgingBusiness?: boolean;
   /** When available (e.g. from geofa_raw), include firewood in amenityFeature. */
   firewood?: boolean | null;
+  /** Individual reviews from Google Places — embedded as Review objects so Google can render stars. */
+  reviews?: ShelterSchemaReview[];
+}
+
+/** Normaliserer et `time`-felt (unix seconds som string, ms, eller ISO) til ISO-dato. */
+function toIsoDate(time: string | null): string | null {
+  if (!time) return null;
+  const raw = String(time).trim();
+  if (!raw) return null;
+  // Rent tal: antag unix seconds hvis <= 10 cifre, ellers ms
+  if (/^\d+$/.test(raw)) {
+    const num = Number(raw);
+    const ms = raw.length <= 10 ? num * 1000 : num;
+    const d = new Date(ms);
+    return Number.isFinite(d.getTime()) ? d.toISOString().slice(0, 10) : null;
+  }
+  // Ellers forsøg at parse som ISO/dato-streng
+  const d = new Date(raw);
+  return Number.isFinite(d.getTime()) ? d.toISOString().slice(0, 10) : null;
 }
 
 /**
@@ -38,6 +65,7 @@ export function ShelterSchema({
   canonicalPath = null,
   useLodgingBusiness = false,
   firewood = null,
+  reviews = [],
 }: ShelterSchemaProps) {
   const coords = getLocationCoords(shelter);
   const toilet = getToilet(shelter);
@@ -157,6 +185,35 @@ export function ShelterSchema({
 
   const numberOfRooms = useLodgingBusiness && shelter.capacity ? shelter.capacity : undefined;
 
+  // Embed individuelle Review-objekter så Google har konkret review-indhold at knytte stjernerne til.
+  // Kun reviews med rating og enten forfatternavn eller tekst tæller som gyldige.
+  const reviewObjects = (reviews ?? [])
+    .filter(
+      (r) =>
+        r &&
+        typeof r.rating === "number" &&
+        (r.author_name?.trim() || r.text?.trim())
+    )
+    .slice(0, 5)
+    .map((r) => {
+      const datePublished = toIsoDate(r.time);
+      const authorName = r.author_name?.trim() || "Anonym";
+      const obj: Record<string, unknown> = {
+        "@type": "Review",
+        author: { "@type": "Person", name: authorName },
+        reviewRating: {
+          "@type": "Rating",
+          ratingValue: r.rating,
+          bestRating: 5,
+          worstRating: 1,
+        },
+      };
+      const body = r.text?.trim();
+      if (body) obj.reviewBody = body;
+      if (datePublished) obj.datePublished = datePublished;
+      return obj;
+    });
+
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": useLodgingBusiness ? "LodgingBusiness" : "Campground",
@@ -182,8 +239,11 @@ export function ShelterSchema({
           "@type": "AggregateRating",
           ratingValue: rating,
           ratingCount,
+          bestRating: 5,
+          worstRating: 1,
         },
       }),
+    ...(reviewObjects.length > 0 && { review: reviewObjects }),
     ...(containedInPlace.length > 0 && { containedInPlace }),
     ...(hasMap && { hasMap }),
     ...(additionalProperties.length > 0 && { additionalProperty: additionalProperties }),

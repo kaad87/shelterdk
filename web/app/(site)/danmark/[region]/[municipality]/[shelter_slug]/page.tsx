@@ -18,6 +18,7 @@ import type { Shelter } from "@/types/shelter";
 import {
   getLongDescription,
   buildSeoTitle,
+  buildShelterDescription,
   getResolvedPhotoUrls,
   getCapacity,
   getFeatures,
@@ -65,23 +66,6 @@ export async function generateStaticParams() {
   }));
 }
 
-/** Kort SEO-beskrivelse ud fra shelterets faciliteter (samme logik som /shelter/[slug]). */
-function buildDescriptionFromFacilities(shelter: Shelter): string {
-  const region = (shelter.region ?? "").trim() || "Danmark";
-  const parts: string[] = [];
-  const toilet = getToilet(shelter);
-  const water = getWater(shelter);
-  if (toilet === "flush") parts.push("toilet");
-  else if (toilet === "mulch") parts.push("komposttoilet");
-  if (water === true) parts.push("vand");
-  if (isBookable(shelter)) parts.push("bookbar");
-  const facilityStr = parts.length > 0 ? ` Med ${parts.join(", ")}.` : "";
-  const longDesc = getLongDescription(shelter);
-  const fallbackDesc = stripHtml(shelter.description)?.slice(0, 120) || null;
-  const extra = longDesc?.slice(0, 120) || fallbackDesc || "Overnatning i naturen.";
-  return `${shelter.title} – book shelter i ${region}.${facilityStr} ${extra}`.slice(0, 160);
-}
-
 const getCachedShelterInSilo = cache(getShelterBySlugInSilo);
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -91,7 +75,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const title =
     (shelter.seo_title?.trim() || null) ?? buildSeoTitle(shelter);
-  const description = buildDescriptionFromFacilities(shelter);
+  const description =
+    (shelter.seo_description?.trim() ? stripHtml(shelter.seo_description) : null) ||
+    buildShelterDescription(shelter);
   const canonicalPath = `/danmark/${regionSlug}/${municipalitySlug}/${shelter_slug}`;
 
   const embeddedPlaces = shelter.google_places;
@@ -255,7 +241,7 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
 
   return (
     <>
-      <ShelterSchema shelter={shelter} canonicalPath={canonicalPath} />
+      <ShelterSchema shelter={shelter} canonicalPath={canonicalPath} reviews={reviews} />
       <BreadcrumbSchema items={breadcrumbSchemaItems} />
       <ShelterDetailContent
         shelter={shelter}
