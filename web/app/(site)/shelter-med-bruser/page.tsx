@@ -9,7 +9,7 @@ import { ShelterMap } from "@/components/ShelterMap";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import { DataSummaryBlock } from "@/components/DataSummaryBlock";
 import { getFilterRegionCount, getCountPerRegion } from "@/lib/fakta-db";
-import { REGION_SLUGS, REGION_NAMES } from "@/lib/cross-page-config";
+import { REGION_SLUGS, REGION_NAMES, REGION_SHORT_NAMES } from "@/lib/cross-page-config";
 
 const SHOWER_FAQ: FaqItem[] = [
   { question: "Har shelters i Danmark bruser?", answer: "Nogle shelterpladser i Danmark har adgang til bruser eller badefaciliteter. Det er dog langt fra alle — de fleste primitive shelterpladser har ikke bruser. På ShelterDK kan du filtrere efter shelters med bruser/bad for at finde pladser med denne facilitet." },
@@ -46,7 +46,7 @@ export default async function ShelterMedBruserPage() {
   // Fetch summary data for DataSummaryBlock
   const regionCounts = await Promise.all(
     REGION_SLUGS.map(async (slug) => ({
-      region: REGION_NAMES[slug],
+      region: REGION_SHORT_NAMES[slug] ?? REGION_NAMES[slug],
       count: await getFilterRegionCount("bruser", REGION_NAMES[slug]),
     }))
   );
@@ -79,7 +79,7 @@ export default async function ShelterMedBruserPage() {
           headline={`${totalForFilter} shelters med bruser i Danmark`}
           regionBreakdown={regionCounts}
           crossPageLinks={REGION_SLUGS.map((slug) => ({
-            label: `Shelters med bruser i ${REGION_NAMES[slug]}`,
+            label: `Shelters med bruser i ${REGION_SHORT_NAMES[slug] ?? REGION_NAMES[slug]}`,
             href: `/shelter-med-bruser/${slug}`,
           }))}
         />

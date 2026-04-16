@@ -21,6 +21,6 @@ export function prepositionForArea(area: { slug: string }): string {
 /** Korrekt forholdsord for regionsnavn (Fyn, Sjælland, Bornholm → "på", resten → "i"). */
 export function prepositionForRegionName(region: string): "i" | "på" {
   const r = (region || "").trim().toLowerCase();
-  if (r === "fyn" || r === "sjælland" || r === "bornholm") return "på";
+  if (r === "fyn" || r === "sjælland" || r === "sjælland og øerne" || r === "bornholm") return "på";
   return "i";
 }

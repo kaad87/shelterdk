@@ -8,7 +8,7 @@ import { ShelterCard } from "@/components/ShelterCard";
 import { ShelterMap } from "@/components/ShelterMap";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import { DataSummaryBlock } from "@/components/DataSummaryBlock";
-import { REGION_SLUGS, REGION_NAMES } from "@/lib/cross-page-config";
+import { REGION_SLUGS, REGION_NAMES, REGION_SHORT_NAMES } from "@/lib/cross-page-config";
 
 export const revalidate = 86400;
 
@@ -65,7 +65,7 @@ export default async function ShelterNaerVandPage() {
 
   const regionCounts = await Promise.all(
     REGION_SLUGS.map(async (slug) => ({
-      region: REGION_NAMES[slug],
+      region: REGION_SHORT_NAMES[slug] ?? REGION_NAMES[slug],
       count: await getFilterRegionCount("strand", REGION_NAMES[slug]),
     }))
   );
@@ -104,7 +104,7 @@ export default async function ShelterNaerVandPage() {
             headline={`${total} shelters nær vand i Danmark`}
             regionBreakdown={regionCounts}
             crossPageLinks={REGION_SLUGS.map((slug) => ({
-              label: `Shelters nær vand i ${REGION_NAMES[slug]}`,
+              label: `Shelters nær vand i ${REGION_SHORT_NAMES[slug] ?? REGION_NAMES[slug]}`,
               href: `/shelter-med-strand/${slug}`,
             }))}
           />

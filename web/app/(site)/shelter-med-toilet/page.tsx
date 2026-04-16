@@ -10,7 +10,7 @@ import { getToilet } from "@/lib/shelter-detail";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import { DataSummaryBlock } from "@/components/DataSummaryBlock";
 import { getFilterRegionCount, getCountPerRegion } from "@/lib/fakta-db";
-import { REGION_SLUGS, REGION_NAMES } from "@/lib/cross-page-config";
+import { REGION_SLUGS, REGION_NAMES, REGION_SHORT_NAMES } from "@/lib/cross-page-config";
 
 const TOILET_FAQ: FaqItem[] = [
   { question: "Hvad er et muldtoilet på en shelterplads?", answer: "Et muldtoilet (også kaldet tørkloset) er et toilet uden vandskyl, der bruger naturlig nedbrydning. Det er det mest almindelige toilettype på shelterpladser i Danmark. Man tilfører typisk savsmuld eller lignende efter brug for at reducere lugt og fremme kompostering." },
@@ -59,7 +59,7 @@ export default async function ShelterMedToiletPage() {
   // Fetch summary data for DataSummaryBlock
   const regionCounts = await Promise.all(
     REGION_SLUGS.map(async (slug) => ({
-      region: REGION_NAMES[slug],
+      region: REGION_SHORT_NAMES[slug] ?? REGION_NAMES[slug],
       count: await getFilterRegionCount("toilet", REGION_NAMES[slug]),
     }))
   );
@@ -102,7 +102,7 @@ export default async function ShelterMedToiletPage() {
           headline={`${totalForFilter} shelters med toilet i Danmark`}
           regionBreakdown={regionCounts}
           crossPageLinks={REGION_SLUGS.map((slug) => ({
-            label: `Shelters med toilet i ${REGION_NAMES[slug]}`,
+            label: `Shelters med toilet i ${REGION_SHORT_NAMES[slug] ?? REGION_NAMES[slug]}`,
             href: `/shelter-med-toilet/${slug}`,
           }))}
         />

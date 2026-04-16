@@ -9,7 +9,7 @@ import { ShelterMap } from "@/components/ShelterMap";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import { DataSummaryBlock } from "@/components/DataSummaryBlock";
 import { getFilterRegionCount, getCountPerRegion } from "@/lib/fakta-db";
-import { REGION_SLUGS, REGION_NAMES } from "@/lib/cross-page-config";
+import { REGION_SLUGS, REGION_NAMES, REGION_SHORT_NAMES } from "@/lib/cross-page-config";
 
 const VAND_FAQ: FaqItem[] = [
   { question: "Er vandet på shelterpladser drikkevand?", answer: "Det varierer fra plads til plads. Nogle shelterpladser har vandhaner med godkendt drikkevand, mens andre kun har vand til opvask. Tjek altid lokal skiltning ved vandhanen, og medtag drikkevand som backup hvis du er i tvivl." },
@@ -53,7 +53,7 @@ export default async function ShelterMedVandPage() {
   // Fetch summary data for DataSummaryBlock
   const regionCounts = await Promise.all(
     REGION_SLUGS.map(async (slug) => ({
-      region: REGION_NAMES[slug],
+      region: REGION_SHORT_NAMES[slug] ?? REGION_NAMES[slug],
       count: await getFilterRegionCount("vand", REGION_NAMES[slug]),
     }))
   );
@@ -96,7 +96,7 @@ export default async function ShelterMedVandPage() {
           headline={`${totalForFilter} shelters med vand i Danmark`}
           regionBreakdown={regionCounts}
           crossPageLinks={REGION_SLUGS.map((slug) => ({
-            label: `Shelters med vand i ${REGION_NAMES[slug]}`,
+            label: `Shelters med vand i ${REGION_SHORT_NAMES[slug] ?? REGION_NAMES[slug]}`,
             href: `/shelter-med-vand/${slug}`,
           }))}
         />

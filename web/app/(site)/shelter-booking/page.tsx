@@ -5,7 +5,7 @@ import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import { DataSummaryBlock } from "@/components/DataSummaryBlock";
 import { getFilterRegionCount, getCountPerRegion } from "@/lib/fakta-db";
-import { REGION_SLUGS, REGION_NAMES } from "@/lib/cross-page-config";
+import { REGION_SLUGS, REGION_NAMES, REGION_SHORT_NAMES } from "@/lib/cross-page-config";
 
 const BOOKING_FAQ: FaqItem[] = [
   { question: "Hvor kan man booke shelter i Danmark?", answer: "Du kan booke shelters via udinaturen.dk (Friluftsrådet), book.naturstyrelsen.dk (Naturstyrelsen) og kommunernes egne bookingsystemer. På ShelterDK kan du filtrere efter bookbare shelters og finde direkte links til booking." },
@@ -34,7 +34,7 @@ export default async function ShelterBookingPage() {
   // Fetch summary data for DataSummaryBlock
   const regionCounts = await Promise.all(
     REGION_SLUGS.map(async (slug) => ({
-      region: REGION_NAMES[slug],
+      region: REGION_SHORT_NAMES[slug] ?? REGION_NAMES[slug],
       count: await getFilterRegionCount("booking", REGION_NAMES[slug]),
     }))
   );
@@ -66,7 +66,7 @@ export default async function ShelterBookingPage() {
           headline={`${totalForFilter} bookbare shelters i Danmark`}
           regionBreakdown={regionCounts}
           crossPageLinks={REGION_SLUGS.map((slug) => ({
-            label: `Bookbare shelters i ${REGION_NAMES[slug]}`,
+            label: `Bookbare shelters i ${REGION_SHORT_NAMES[slug] ?? REGION_NAMES[slug]}`,
             href: `/shelter-booking/${slug}`,
           }))}
         />

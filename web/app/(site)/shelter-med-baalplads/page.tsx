@@ -9,7 +9,7 @@ import { ShelterMap } from "@/components/ShelterMap";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import { DataSummaryBlock } from "@/components/DataSummaryBlock";
 import { getFilterRegionCount, getCountPerRegion } from "@/lib/fakta-db";
-import { REGION_SLUGS, REGION_NAMES } from "@/lib/cross-page-config";
+import { REGION_SLUGS, REGION_NAMES, REGION_SHORT_NAMES } from "@/lib/cross-page-config";
 
 const BAAL_FAQ: FaqItem[] = [
   { question: "Hvornår er der bålforbud i Danmark?", answer: "Bålforbud udstedes af lokale beredskaber i perioder med tørke og forhøjet brandfare, typisk om sommeren. Tjek altid Beredskabsstyrelsens hjemmeside eller lokal skiltning inden du tænder bål. Ved bålforbud må du heller ikke bruge gasblus eller engangsgrill i naturen." },
@@ -53,7 +53,7 @@ export default async function ShelterMedBaalpladsPage() {
   // Fetch summary data for DataSummaryBlock
   const regionCounts = await Promise.all(
     REGION_SLUGS.map(async (slug) => ({
-      region: REGION_NAMES[slug],
+      region: REGION_SHORT_NAMES[slug] ?? REGION_NAMES[slug],
       count: await getFilterRegionCount("baalplads", REGION_NAMES[slug]),
     }))
   );
@@ -96,7 +96,7 @@ export default async function ShelterMedBaalpladsPage() {
           headline={`${totalForFilter} shelters med bålplads i Danmark`}
           regionBreakdown={regionCounts}
           crossPageLinks={REGION_SLUGS.map((slug) => ({
-            label: `Shelters med bålplads i ${REGION_NAMES[slug]}`,
+            label: `Shelters med bålplads i ${REGION_SHORT_NAMES[slug] ?? REGION_NAMES[slug]}`,
             href: `/shelter-med-baalplads/${slug}`,
           }))}
         />

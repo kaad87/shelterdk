@@ -94,7 +94,16 @@ export const FILTER_CONFIGS: Record<string, FilterConfig> = {
 
 export const REGION_SLUGS = ["jylland", "sjaelland", "fyn", "bornholm"] as const;
 
+/** DB-værdier for region-kolonnen. Skal matche hvad der faktisk ligger i Supabase. */
 export const REGION_NAMES: Record<string, string> = {
+  jylland: "Jylland",
+  sjaelland: "Sjælland og Øerne",
+  fyn: "Fyn",
+  bornholm: "Bornholm",
+};
+
+/** Kortere visningsnavne til brug i UI-tekst (pills, inline breakdowns). */
+export const REGION_SHORT_NAMES: Record<string, string> = {
   jylland: "Jylland",
   sjaelland: "Sjælland",
   fyn: "Fyn",

@@ -9,7 +9,7 @@ import { ShelterMap } from "@/components/ShelterMap";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import { DataSummaryBlock } from "@/components/DataSummaryBlock";
 import { getFilterRegionCount, getCountPerRegion } from "@/lib/fakta-db";
-import { REGION_SLUGS, REGION_NAMES } from "@/lib/cross-page-config";
+import { REGION_SLUGS, REGION_NAMES, REGION_SHORT_NAMES } from "@/lib/cross-page-config";
 
 const BEACH_FAQ: FaqItem[] = [
   { question: "Kan man overnatte i shelter ved stranden i Danmark?", answer: "Ja, der findes en række shelterpladser tæt på stranden i Danmark. Mange ligger langs kysten ved Vestjylland, i Det Sydfynske Øhav, på Bornholm og langs Sjællands kyst. På ShelterDK kan du filtrere efter shelters nær strand." },
@@ -47,7 +47,7 @@ export default async function ShelterMedStrandPage() {
   // Fetch summary data for DataSummaryBlock
   const regionCounts = await Promise.all(
     REGION_SLUGS.map(async (slug) => ({
-      region: REGION_NAMES[slug],
+      region: REGION_SHORT_NAMES[slug] ?? REGION_NAMES[slug],
       count: await getFilterRegionCount("strand", REGION_NAMES[slug]),
     }))
   );
@@ -80,7 +80,7 @@ export default async function ShelterMedStrandPage() {
           headline={`${totalForFilter} shelters med strand i Danmark`}
           regionBreakdown={regionCounts}
           crossPageLinks={REGION_SLUGS.map((slug) => ({
-            label: `Shelters nær strand i ${REGION_NAMES[slug]}`,
+            label: `Shelters nær strand i ${REGION_SHORT_NAMES[slug] ?? REGION_NAMES[slug]}`,
             href: `/shelter-med-strand/${slug}`,
           }))}
         />
