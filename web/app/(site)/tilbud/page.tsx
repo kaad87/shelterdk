@@ -124,10 +124,11 @@ export default async function TilbudPage({ searchParams }: PageProps) {
         </p>
       </header>
 
-      {/* Category pills */}
+      {/* Category pills — rel=nofollow: filter-URLs er kanonisk-dubletter af /tilbud. Spar crawl-budget. */}
       <div className="mb-4 flex flex-wrap gap-2">
         <Link
           href={filterUrl(params, { category: null })}
+          rel="nofollow"
           className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${
             !params.category
               ? "border-accent bg-accent text-white"
@@ -142,6 +143,7 @@ export default async function TilbudPage({ searchParams }: PageProps) {
             href={filterUrl(params, {
               category: cat === params.category ? null : cat,
             })}
+            rel="nofollow"
             className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${
               params.category === cat
                 ? "border-accent bg-accent text-white"
@@ -153,7 +155,7 @@ export default async function TilbudPage({ searchParams }: PageProps) {
         ))}
       </div>
 
-      {/* Sorting + retailer filter row */}
+      {/* Sorting + retailer filter row — også nofollow for samme grund */}
       <div className="mb-6 flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-2 text-sm">
           <span className="text-primary/60">Sortér:</span>
@@ -163,6 +165,7 @@ export default async function TilbudPage({ searchParams }: PageProps) {
               href={filterUrl(params, {
                 sort: opt.value === "discount" ? null : opt.value,
               })}
+              rel="nofollow"
               className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
                 sort === opt.value
                   ? "border-primary bg-primary text-white"
@@ -178,6 +181,7 @@ export default async function TilbudPage({ searchParams }: PageProps) {
           <span className="text-primary/60">Forhandler:</span>
           <Link
             href={filterUrl(params, { retailer: null })}
+            rel="nofollow"
             className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
               !params.retailer
                 ? "border-primary bg-primary text-white"
@@ -192,6 +196,7 @@ export default async function TilbudPage({ searchParams }: PageProps) {
               href={filterUrl(params, {
                 retailer: val === params.retailer ? null : val,
               })}
+              rel="nofollow"
               className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
                 params.retailer === val
                   ? "border-primary bg-primary text-white"
