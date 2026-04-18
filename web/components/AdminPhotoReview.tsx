@@ -33,7 +33,7 @@ declare global {
 
 const STORAGE_KEY = "shelterdk-admin-secret";
 
-type TabKey = "photos" | "community" | "instagram" | "newsletter" | "contact";
+type TabKey = "photos" | "community" | "instagram" | "newsletter" | "contact" | "oplevelser";
 
 type Submission = {
   id: string;
@@ -85,6 +85,18 @@ type ContactMessage = {
   created_at: string;
 };
 
+type Experience = {
+  id: string;
+  shelter_id: string;
+  author_name: string;
+  body: string;
+  photo_urls: string[];
+  cover_photo_index: number;
+  status: string;
+  created_at: string;
+  shelter: { title: string; slug: string } | null;
+};
+
 const HASHTAGS = [
   { tag: "sheltertur", label: "Shelterture" },
   { tag: "natinaturen", label: "Nat i Naturen" },
@@ -102,6 +114,7 @@ const TAB_CONFIG: { key: TabKey; label: string; icon: typeof Camera }[] = [
   { key: "instagram", label: "Instagram", icon: Instagram },
   { key: "newsletter", label: "Nyhedsbrev", icon: Mail },
   { key: "contact", label: "Beskeder", icon: Inbox },
+  { key: "oplevelser", label: "Oplevelser", icon: Camera },
 ];
 
 export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKey }) {
@@ -113,6 +126,7 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
   const [igSetupRequired, setIgSetupRequired] = useState(false);
   const [nlSubs, setNlSubs] = useState<NewsletterSub[]>([]);
   const [contactMsgs, setContactMsgs] = useState<ContactMessage[]>([]);
+  const [experiences, setExperiences] = useState<Experience[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [actingId, setActingId] = useState<string | null>(null);
@@ -152,7 +166,7 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
     setError("");
     try {
       const ts = Date.now();
-      const [photoRes, communityRes, igRes, nlRes, contactRes] = await Promise.all([
+      const [photoRes, communityRes, igRes, nlRes, contactRes, experiencesRes] = await Promise.all([
         fetch(`/api/admin/pending-photos?t=${ts}`, {
           headers: { "x-admin-secret": s },
           cache: "no-store",
@@ -173,6 +187,10 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
           headers: { "x-admin-secret": s },
           cache: "no-store",
         }),
+        fetch(`/api/admin/pending-experiences?t=${ts}`, {
+          headers: { "x-admin-secret": s },
+          cache: "no-store",
+        }),
       ]);
       if (photoRes.status === 401 || communityRes.status === 401 || igRes.status === 401 || nlRes.status === 401) {
         setError("Ugyldig kode");
@@ -183,6 +201,7 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
         setIgPosts([]);
         setNlSubs([]);
         setContactMsgs([]);
+        setExperiences([]);
         return;
       }
       if (!photoRes.ok || !communityRes.ok) {
@@ -215,6 +234,11 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
       if (contactRes.ok) {
         const contactData = await contactRes.json();
         setContactMsgs(contactData.messages ?? []);
+      }
+
+      if (experiencesRes.ok) {
+        const expData = await experiencesRes.json();
+        setExperiences(expData.experiences ?? []);
       }
     } finally {
       setLoading(false);
@@ -1079,6 +1103,72 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Oplevelser tab */}
+      {tab === "oplevelser" && (
+        <div className="space-y-4">
+          {loading && <div className="text-primary/60 text-sm">Henter…</div>}
+          {!loading && experiences.length === 0 && (
+            <div className="text-primary/50 text-sm py-8 text-center">Ingen ventende oplevelser</div>
+          )}
+          {experiences.map((exp) => {
+            const coverUrl = exp.photo_urls?.[exp.cover_photo_index];
+            return (
+              <div key={exp.id} className="border border-primary/10 rounded-xl overflow-hidden">
+                <div className="flex gap-4 p-4">
+                  {coverUrl && (
+                    <div className="w-24 h-20 flex-shrink-0 rounded-lg overflow-hidden">
+                      <img src={coverUrl} alt="" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-sm text-primary">{exp.author_name}</div>
+                    <div className="text-xs text-primary/50 mb-1">{exp.shelter?.title ?? exp.shelter_id}</div>
+                    <div className="text-sm text-primary/70 italic line-clamp-3">"{exp.body}"</div>
+                    <div className="text-xs text-primary/30 mt-1">{new Date(exp.created_at).toLocaleString("da-DK")}</div>
+                  </div>
+                </div>
+                <div className="flex border-t border-primary/10">
+                  <button
+                    disabled={actingId === exp.id}
+                    onClick={async () => {
+                      setActingId(exp.id);
+                      await fetch("/api/admin/approve-experience", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", "x-admin-secret": secret },
+                        body: JSON.stringify({ experienceId: exp.id }),
+                      });
+                      setActingId(null);
+                      fetchAll(secret);
+                    }}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium text-emerald-700 hover:bg-emerald-50 transition-colors disabled:opacity-50"
+                  >
+                    <Check size={15} /> Godkend
+                  </button>
+                  <div className="w-px bg-primary/10" />
+                  <button
+                    disabled={actingId === exp.id}
+                    onClick={async () => {
+                      const reason = prompt("Årsag til afvisning (valgfrit):");
+                      setActingId(exp.id);
+                      await fetch("/api/admin/reject-experience", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", "x-admin-secret": secret },
+                        body: JSON.stringify({ experienceId: exp.id, reason }),
+                      });
+                      setActingId(null);
+                      fetchAll(secret);
+                    }}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+                  >
+                    <X size={15} /> Afvis
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
