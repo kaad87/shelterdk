@@ -1,6 +1,7 @@
 import { createPublicClient } from "@/utils/supabase/server-public";
 import type { Shelter } from "@/types/shelter";
 import { getLocationCoords, getDisplayScore, hasAnyImage } from "@/lib/shelter-detail";
+import { lookupPostnummer, findPostnummerSuggestions } from "@/lib/postnummer";
 
 /**
  * Geografiske synonymer: søgeord → kommuner/byer i databasen.
@@ -125,30 +126,38 @@ export async function getSheltersPage(
   }
   if (q && q.trim()) {
     const term = q.trim().replace(/"/g, '""');
-    const pattern = `"%${term}%"`;
 
-    // Find area_slugs der matcher søgetermen (fx "Nationalpark Thy" → "nationalpark-thy")
-    const { data: matchingAreas } = await supabase
-      .from("areas")
-      .select("slug")
-      .ilike("name", `%${term}%`)
-      .limit(5);
+    // Postnummersøgning: enten "7190" eller "Billund (7190)" fra autocomplete
+    const postalFromSuggestion = term.match(/\((\d{4})\)$/)?.[1] ?? null;
+    const postalCode = /^\d{4}$/.test(term) ? term : postalFromSuggestion;
+    if (postalCode) {
+      query = query.filter("geofa_raw->>postnr_by", "ilike", `${postalCode}%`);
+    } else {
+      const pattern = `"%${term}%"`;
 
-    let orParts = `title.ilike.${pattern},region.ilike.${pattern},kommune.ilike.${pattern},place.ilike.${pattern}`;
-    if (matchingAreas && matchingAreas.length > 0) {
-      const areaSlugs = matchingAreas.map((a: { slug: string }) => `area_slug.eq.${a.slug}`).join(",");
-      orParts += `,${areaSlugs}`;
+      // Find area_slugs der matcher søgetermen (fx "Nationalpark Thy" → "nationalpark-thy")
+      const { data: matchingAreas } = await supabase
+        .from("areas")
+        .select("slug")
+        .ilike("name", `%${term}%`)
+        .limit(5);
+
+      let orParts = `title.ilike.${pattern},region.ilike.${pattern},kommune.ilike.${pattern},place.ilike.${pattern}`;
+      if (matchingAreas && matchingAreas.length > 0) {
+        const areaSlugs = matchingAreas.map((a: { slug: string }) => `area_slug.eq.${a.slug}`).join(",");
+        orParts += `,${areaSlugs}`;
+      }
+
+      // Geografiske synonymer: fx "Sønderjylland" → kommuner i det område
+      const synonymKey = term.toLowerCase();
+      const synonymKommuner = SEARCH_SYNONYMS[synonymKey];
+      if (synonymKommuner) {
+        const kommuneParts = synonymKommuner.map((k) => `kommune.eq.${k}`).join(",");
+        orParts += `,${kommuneParts}`;
+      }
+
+      query = query.or(orParts);
     }
-
-    // Geografiske synonymer: fx "Sønderjylland" → kommuner i det område
-    const synonymKey = term.toLowerCase();
-    const synonymKommuner = SEARCH_SYNONYMS[synonymKey];
-    if (synonymKommuner) {
-      const kommuneParts = synonymKommuner.map((k) => `kommune.eq.${k}`).join(",");
-      orParts += `,${kommuneParts}`;
-    }
-
-    query = query.or(orParts);
   }
   if (filters?.billede) {
     query = query.not("image_url", "is", null).neq("image_url", "");
@@ -381,6 +390,20 @@ export async function getSuggestions(prefix: string): Promise<SearchSuggestion[]
 
   const seen = new Set<string>();
   const results: SearchSuggestion[] = [];
+
+  // Postnummer-forslag: når bruger taster 1-4 cifre → vis "Billund (7190)"
+  if (/^\d{1,4}$/.test(term)) {
+    const postalMatches = findPostnummerSuggestions(term);
+    for (const { code, city } of postalMatches) {
+      const key = `postnr:${code}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        results.push({ name: `${city} (${code})`, type: "by" });
+      }
+    }
+    // Kun postnummer-forslag når input er rent numerisk
+    return results.slice(0, SUGGEST_LIMIT);
+  }
 
   // Geografiske synonymer som forslag (fx "Sønderjylland", "Nordjylland")
   const lowerTermForSynonym = term.toLowerCase();
