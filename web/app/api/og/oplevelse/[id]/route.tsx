@@ -130,7 +130,7 @@ export async function GET(
 
           {/* Quote */}
           <div style={{ color: "white", fontSize: "28px", fontStyle: "italic", lineHeight: 1.4, display: "flex" }}>
-            "{bodyText}"
+            &ldquo;{bodyText}&rdquo;
           </div>
 
           {/* Footer row */}

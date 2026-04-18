@@ -59,7 +59,7 @@ export function RecentExperiencesFeed() {
                       </div>
                     )}
                     <div className="p-2.5">
-                      <div className="text-xs italic text-primary/60 line-clamp-2">"{exp.body}"</div>
+                      <div className="text-xs italic text-primary/60 line-clamp-2">&ldquo;{exp.body}&rdquo;</div>
                       <div className="text-[10px] text-primary/30 mt-1.5">
                         {exp.author_name} · {new Date(exp.created_at).toLocaleDateString("da-DK", { day: "numeric", month: "short" })}
                       </div>

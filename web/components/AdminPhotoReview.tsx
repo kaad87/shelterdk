@@ -1126,7 +1126,7 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-sm text-primary">{exp.author_name}</div>
                     <div className="text-xs text-primary/50 mb-1">{exp.shelter?.title ?? exp.shelter_id}</div>
-                    <div className="text-sm text-primary/70 italic line-clamp-3">"{exp.body}"</div>
+                    <div className="text-sm text-primary/70 italic line-clamp-3">&ldquo;{exp.body}&rdquo;</div>
                     <div className="text-xs text-primary/30 mt-1">{new Date(exp.created_at).toLocaleString("da-DK")}</div>
                   </div>
                 </div>

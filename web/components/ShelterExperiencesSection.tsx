@@ -82,7 +82,7 @@ export function ShelterExperiencesSection({
                 )}
                 <div className="p-2.5">
                   <div className="text-xs font-semibold text-primary mb-0.5">{exp.author_name}</div>
-                  <div className="text-xs text-primary/60 italic line-clamp-2">"{exp.body}"</div>
+                  <div className="text-xs text-primary/60 italic line-clamp-2">&ldquo;{exp.body}&rdquo;</div>
                   <div className="text-[10px] text-primary/30 mt-1.5">
                     {new Date(exp.created_at).toLocaleDateString("da-DK", { day: "numeric", month: "short" })}
                   </div>

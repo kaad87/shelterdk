@@ -268,7 +268,7 @@ export function ExperienceUploadModal({
                 >
                   Del i Facebook-gruppen
                 </a>
-                <div className="text-xs text-primary/40">Åbner Facebook — vælg gruppen "Shelters i Danmark" og indsæt linket</div>
+                <div className="text-xs text-primary/40">Åbner Facebook — vælg gruppen &ldquo;Shelters i Danmark&rdquo; og indsæt linket</div>
               </div>
             </div>
           )}
