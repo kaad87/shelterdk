@@ -38,8 +38,9 @@ export async function GET(
     return new Response("Not found", { status: 404 });
   }
 
-  const shelterTitle = (exp.shelter as { title: string; region: string } | null)?.title ?? "Shelter";
-  const region = (exp.shelter as { title: string; region: string } | null)?.region ?? "";
+  const shelterData = (exp.shelter as unknown as { title: string; region: string } | null);
+  const shelterTitle = shelterData?.title ?? "Shelter";
+  const region = shelterData?.region ?? "";
   const coverUrl = exp.photo_urls?.[exp.cover_photo_index] ?? null;
   const extraPhotos = exp.photo_urls.length - 1;
   const bodyText = truncate(exp.body, 100);
