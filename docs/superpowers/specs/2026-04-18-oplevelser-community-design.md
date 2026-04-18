@@ -54,9 +54,9 @@ Det centrale element der skaber den virale loop. Genereres automatisk når en op
 - `+N billeder`-badge hvis der er flere fotos (skaber nysgerrighed → klik)
 - ShelterDK-logo/URL i grøn pille (branding)
 
-**Teknisk:** Genereres server-side via `@vercel/og` (satori) som en PNG. Endpoint: `/api/og/oplevelse/[id]`. Bruges som OG-billede på oplevelsens URL + tilbydes som download-knap.
+**Teknisk:** Dynamisk on-demand endpoint via `@vercel/og` (satori): `/api/og/oplevelse/[id]`. Returnerer PNG ved hvert kald — ingen forudgenereret fil. Bruges som OG `<meta>` tag på oplevelsens URL og tilbydes som download-knap. Satori kræver en bundlet latin-font (Inter) i `/app/api/og/` — dette skal medfølge i implementeringen.
 
-**Deling:** Knap der åbner Facebook-gruppen "Shelters i Danmark" med pre-udfyldt link. Brugeren skriver selv sin caption i gruppen.
+**Deling:** En "Del i Facebook"-knap bruger `https://www.facebook.com/sharer/sharer.php?u=<url>` og pre-fylder kun URL'en — ikke caption eller gruppe-valg. Brugeren skal selv skrive tekst og vælge gruppen "Shelters i Danmark". UI-copy skal afspejle dette: "Kopiér link og post i Facebook-gruppen" er mere præcist end "Del direkte".
 
 ---
 
@@ -76,9 +76,9 @@ Ny sektion: "Seneste oplevelser" — horisontalt scroll af de 6-8 nyeste oplevel
 ### Upload-flow (modal eller inline)
 3 trin, vises når brugeren klikker "+ Del din oplevelse":
 
-1. **Upload foto(s)** — drag/drop eller fil-vælger, op til 4 billeder, vælg forsidefoto
+1. **Upload foto(s)** — drag/drop eller fil-vælger, op til 4 billeder, vælg forsidefoto. Accepterede formater: JPEG, PNG, WebP. Maks filstørrelse: 10 MB per billede (håndhæves client-side og server-side). HEIC accepteres ikke.
 2. **Skriv oplevelse** — tekstfelt + fornavn-felt
-3. **Del-skærm** — preview af share-kortet + Facebook-delingsknap + download-knap
+3. **Bekræftelsesskærm** — "Din oplevelse er modtaget og vises snart" + preview af share-kortet + Facebook-delingsknap + download-knap. Brugeren kan dele kortet nu uden at vente på godkendelse (kortet genereres fra de indsendte data).
 
 ---
 
@@ -102,13 +102,20 @@ Ny Supabase-tabel: `shelter_experiences`
 | `shelter_id` | uuid | FK → shelters |
 | `author_name` | text | Fornavn (ikke verificeret) |
 | `body` | text | Oplevelsestekst |
-| `photo_urls` | text[] | Array af uploadede foto-URLs |
-| `cover_photo_index` | int | Index i photo_urls der bruges som forsidebillede |
+| `photo_urls` | text[] | Array af Storage-URLs — se navnekonvention nedenfor |
+| `cover_photo_index` | int | Index i `photo_urls` (valideres: 0 ≤ index < length) |
 | `status` | enum | `pending` / `approved` / `rejected` |
+| `rejected_reason` | text | Nullable — admin-note ved afvisning |
 | `created_at` | timestamptz | |
 | `approved_at` | timestamptz | Nullable |
 
-Storage: Fotos uploades til Supabase Storage bucket `experience-photos`.
+### Foto-upload (Storage)
+
+Bucket: `experience-photos` (public read, ingen direkte write-adgang).
+
+**Navnekonvention:** `{experience_uuid}/{index}.webp` — server-tildelt, ikke brugerstyret.
+
+**Upload-flow (anonym):** Klienten kalder `POST /api/experiences/upload-url` som returnerer en Supabase presigned upload-URL gyldig i 10 minutter. Klienten uploader direkte til Storage via presigned URL. Server gemmer de endelige URLs i `photo_urls` når oplevelsen oprettes. Denne tilgang undgår at bucket skal være public-write.
 
 ---
 
