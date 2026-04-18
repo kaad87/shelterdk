@@ -54,7 +54,7 @@ Det centrale element der skaber den virale loop. Genereres automatisk når en op
 - `+N billeder`-badge hvis der er flere fotos (skaber nysgerrighed → klik)
 - ShelterDK-logo/URL i grøn pille (branding)
 
-**Teknisk:** Dynamisk on-demand endpoint via `@vercel/og` (satori): `/api/og/oplevelse/[id]`. Returnerer PNG ved hvert kald — ingen forudgenereret fil. Bruges som OG `<meta>` tag på oplevelsens URL og tilbydes som download-knap. Satori kræver en bundlet latin-font (Inter) i `/app/api/og/` — dette skal medfølge i implementeringen.
+**Teknisk:** Dynamisk on-demand endpoint via `@vercel/og` (satori): `/api/og/oplevelse/[id]`. Returnerer PNG ved hvert kald — ingen forudgenereret fil. Endpointet skal rendere kort for oplevelser i alle statusser (`pending`, `approved`) — ikke kun godkendte — da brugeren kan dele kortet umiddelbart efter indsendelse. Bruges som OG `<meta>` tag på oplevelsens URL og tilbydes som download-knap. Satori kræver en bundlet latin-font (Inter) i `/app/api/og/` — dette skal medfølge i implementeringen.
 
 **Deling:** En "Del i Facebook"-knap bruger `https://www.facebook.com/sharer/sharer.php?u=<url>` og pre-fylder kun URL'en — ikke caption eller gruppe-valg. Brugeren skal selv skrive tekst og vælge gruppen "Shelters i Danmark". UI-copy skal afspejle dette: "Kopiér link og post i Facebook-gruppen" er mere præcist end "Del direkte".
 
