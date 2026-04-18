@@ -21,6 +21,11 @@ const NewsletterSignup = dynamic(
   { ssr: false }
 );
 
+const RecentExperiencesFeed = dynamic(
+  () => import("@/components/RecentExperiencesFeed").then((m) => ({ default: m.RecentExperiencesFeed })),
+  { ssr: false }
+);
+
 const MapComponent = dynamic(
   () => import("@/components/MapComponent").then((m) => ({ default: m.MapComponent })),
   { ssr: false }
@@ -497,6 +502,8 @@ export default async function HomePage() {
           <NewsletterSignup variant="inline" source="homepage" />
         </div>
       </section>
+
+      <RecentExperiencesFeed />
 
       <section className="py-8 bg-background" id="instagram" aria-labelledby="heading-instagram">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
