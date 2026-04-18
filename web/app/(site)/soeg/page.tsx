@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
-import { getSheltersPage, SOEG_PAGE_SIZE, type SoegFilters } from "@/lib/soeg-db";
+import { getSheltersPage, SOEG_PAGE_SIZE, type SoegFilters, type MapBbox } from "@/lib/soeg-db";
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 import { getAreaBySlug, prepositionForArea, prepositionForRegionName } from "@/lib/area-db";
+import { fetchPostnummerBbox, lookupPostnummer } from "@/lib/postnummer";
 import { AreaFaq } from "@/components/AreaFaq";
 import { getAreaFaqItems, faqToJsonLd, type FaqItem } from "@/lib/faq";
 
@@ -116,9 +117,31 @@ export default async function SoegPage({ searchParams }: SoegPageProps) {
 
   const initialPageSize =
     view === "map" || view === "split" ? MAP_VIEW_PAGE_SIZE : SOEG_PAGE_SIZE;
+
+  // Postnummersøgning: konverter "7190" / "Billund (7190)" til bbox inden server-render.
+  // API-ruten gør det samme, men server-komponenten kalder getSheltersPage direkte.
+  let resolvedQ = q;
+  let postalBbox: MapBbox | undefined;
+  if (q && !area) {
+    const postalCode = /^\d{4}$/.test(q)
+      ? q
+      : (q.match(/\((\d{4})\)$/) ?? [])[1] ?? null;
+    if (postalCode) {
+      const bbox = await fetchPostnummerBbox(postalCode);
+      if (bbox) {
+        postalBbox = bbox;
+        resolvedQ = null;
+      } else {
+        // DAWA fejlede — brug by-navn som fallback
+        const cityName = lookupPostnummer(postalCode);
+        if (cityName) resolvedQ = cityName;
+      }
+    }
+  }
+
   const [areaInfo, sheltersResult] = await Promise.all([
     area?.trim() ? getAreaBySlug(area.trim()) : Promise.resolve(null),
-    getSheltersPage(region, q, 1, initialPageSize, Object.keys(filters).length ? filters : undefined, undefined, area),
+    getSheltersPage(region, resolvedQ, 1, initialPageSize, Object.keys(filters).length ? filters : undefined, postalBbox, area),
   ]);
   const { shelters: rawShelters, hasMore: initialHasMore } = sheltersResult;
   const initialShelters = await enrichSheltersWithGooglePhotoRef(rawShelters);
