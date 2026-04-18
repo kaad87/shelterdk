@@ -33,10 +33,8 @@ export function ShelterExperiencesSection({
       <div className="flex items-center justify-between mb-3">
         <div>
           <h2 className="text-lg font-bold text-primary">Oplevelser</h2>
-          {!loading && (
-            <p className="text-sm text-primary/50">
-              {experiences.length > 0 ? `${experiences.length} besøg delt` : "Vær den første til at dele"}
-            </p>
+          {!loading && experiences.length > 0 && (
+            <p className="text-sm text-primary/50">{experiences.length} besøg delt</p>
           )}
         </div>
         <button
@@ -93,9 +91,6 @@ export function ShelterExperiencesSection({
         </div>
       )}
 
-      {!loading && experiences.length === 0 && (
-        <p className="text-sm text-primary/40 italic">Ingen oplevelser endnu — vær den første til at dele.</p>
-      )}
 
       {modalOpen && (
         <ExperienceUploadModal
