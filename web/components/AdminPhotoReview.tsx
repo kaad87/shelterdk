@@ -418,6 +418,7 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
     instagram: igPending.length,
     newsletter: nlSubs.length,
     contact: unreadMsgs.length,
+    oplevelser: experiences.length,
   };
 
   // ── Login screen ──
