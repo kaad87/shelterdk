@@ -29,8 +29,8 @@ export function ShelterExperiencesSection({
   }, [shelterId]);
 
   return (
-    <section className="mt-8 pt-8 border-t border-primary/10">
-      <div className="flex items-center justify-between mb-4">
+    <section className="mt-6 pt-6 border-t border-primary/10">
+      <div className="flex items-center justify-between mb-3">
         <div>
           <h2 className="text-lg font-bold text-primary">Oplevelser</h2>
           {!loading && (
@@ -94,11 +94,7 @@ export function ShelterExperiencesSection({
       )}
 
       {!loading && experiences.length === 0 && (
-        <div className="text-center py-8 px-4 bg-primary/[0.02] rounded-xl border border-dashed border-primary/10">
-          <Camera className="w-8 h-8 text-primary/20 mx-auto mb-2" />
-          <p className="text-sm text-primary/50">Ingen oplevelser endnu</p>
-          <p className="text-xs text-primary/40 mt-1">Del et billede og hjælp andre med at planlægge deres tur</p>
-        </div>
+        <p className="text-sm text-primary/40 italic">Ingen oplevelser endnu — vær den første til at dele.</p>
       )}
 
       {modalOpen && (
