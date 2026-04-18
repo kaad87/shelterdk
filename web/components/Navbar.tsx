@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ChevronDown, Menu, Search, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { MobileSearchOverlay } from "@/components/MobileSearchOverlay";
 
 interface NavItem {
   label: string;
@@ -136,6 +137,7 @@ export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<{ name: string; type: "by" | "område" }[]>([]);
   const [suggestOpen, setSuggestOpen] = useState(false);
@@ -300,14 +302,26 @@ export function Navbar() {
               )}
             </div>
           </div>
-          <button
-            className="md:hidden flex items-center justify-center w-12 h-12 -mr-2 text-primary touch-manipulation"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label={mobileMenuOpen ? "Luk menu" : "Åbn menu"}
-            aria-expanded={mobileMenuOpen}
-          >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          <div className="md:hidden flex items-center gap-1 -mr-2">
+            <button
+              className="flex items-center justify-center w-11 h-11 text-primary touch-manipulation"
+              onClick={() => setMobileSearchOpen(true)}
+              aria-label="Søg"
+            >
+              <Search size={22} />
+            </button>
+            <button
+              className="flex items-center justify-center w-11 h-11 text-primary touch-manipulation"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={mobileMenuOpen ? "Luk menu" : "Åbn menu"}
+              aria-expanded={mobileMenuOpen}
+            >
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
+          {mobileSearchOpen && (
+            <MobileSearchOverlay onClose={() => setMobileSearchOpen(false)} />
+          )}
         </div>
 
         {mobileMenuOpen && (

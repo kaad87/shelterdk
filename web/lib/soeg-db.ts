@@ -341,8 +341,15 @@ const SUGGEST_LIMIT = 10;
 
 export interface SearchSuggestion {
   name: string;
-  type: "by" | "område";
+  type: "by" | "område" | "region" | "shelter" | "recent" | "popular" | "naer-mig";
 }
+
+const REGION_SUGGESTIONS = [
+  { name: "Jylland", type: "region" as const },
+  { name: "Sjælland", type: "region" as const },
+  { name: "Fyn", type: "region" as const },
+  { name: "Bornholm", type: "region" as const },
+];
 
 /**
  * Hent byer (kommune) og områder (place) der matcher prefix – til autocomplete.
@@ -356,8 +363,8 @@ export async function getSuggestions(prefix: string): Promise<SearchSuggestion[]
   const pattern = `${term.replace(/%/g, "\\%").replace(/_/g, "\\_")}%`;
   const containsPattern = `%${term.replace(/%/g, "\\%").replace(/_/g, "\\_")}%`;
 
-  // Hent kommuner, områder og navngivne areas parallelt
-  const [kommuneRes, placeRes, areaRes] = await Promise.all([
+  // Hent kommuner, steder, navngivne areas og shelter-titler parallelt
+  const [kommuneRes, placeRes, areaRes, shelterTitleRes] = await Promise.all([
     supabase
       .from("shelters")
       .select("kommune")
@@ -377,11 +384,19 @@ export async function getSuggestions(prefix: string): Promise<SearchSuggestion[]
       .select("name")
       .ilike("name", containsPattern)
       .limit(20),
+    supabase
+      .from("shelters")
+      .select("title")
+      .is("duplicate_of_shelter_id", null)
+      .not("title", "is", null)
+      .ilike("title", pattern)
+      .limit(5),
   ]);
 
   if (kommuneRes.error) console.error("Supabase error (kommune suggestions):", kommuneRes.error);
   if (placeRes.error) console.error("Supabase error (place suggestions):", placeRes.error);
   if (areaRes.error) console.error("Supabase error (area suggestions):", areaRes.error);
+  if (shelterTitleRes.error) console.error("Supabase error (shelter title suggestions):", shelterTitleRes.error);
 
   const seen = new Set<string>();
   const results: SearchSuggestion[] = [];
@@ -400,10 +415,21 @@ export async function getSuggestions(prefix: string): Promise<SearchSuggestion[]
     return results.slice(0, SUGGEST_LIMIT);
   }
 
-  // Geografiske synonymer som forslag (fx "Sønderjylland", "Nordjylland")
-  const lowerTermForSynonym = term.toLowerCase();
+  const lowerTerm2 = term.toLowerCase();
+
+  // Regioner (Jylland, Sjælland, Fyn, Bornholm) – prefix-match
+  for (const r of REGION_SUGGESTIONS) {
+    if (r.name.toLowerCase().startsWith(lowerTerm2)) {
+      if (!seen.has(r.name.toLowerCase())) {
+        seen.add(r.name.toLowerCase());
+        results.push(r);
+      }
+    }
+  }
+
+  // Geografiske synonymer som forslag (fx "Sønderjylland", "Nordjylland") – prefix-match
   for (const key of Object.keys(SEARCH_SYNONYMS)) {
-    if (key.startsWith(lowerTermForSynonym) || key.includes(lowerTermForSynonym)) {
+    if (key.startsWith(lowerTerm2)) {
       const displayName = key.charAt(0).toUpperCase() + key.slice(1);
       if (!seen.has(key)) {
         seen.add(key);
@@ -437,6 +463,15 @@ export async function getSuggestions(prefix: string): Promise<SearchSuggestion[]
     if (!p || seen.has(key)) continue;
     seen.add(key);
     results.push({ name: p, type: "område" });
+  }
+
+  // Shelter-titler (prefix-match, vises sidst)
+  for (const row of (shelterTitleRes.data as { title: string }[]) ?? []) {
+    const t = (row.title || "").trim();
+    const key = t.toLowerCase();
+    if (!t || seen.has(key)) continue;
+    seen.add(key);
+    results.push({ name: t, type: "shelter" });
   }
 
   // Sortér: eksakte prefix-matches først, derefter alfabetisk

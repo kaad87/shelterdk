@@ -6,23 +6,32 @@ import {
   Accessibility,
   Armchair,
   ChevronDown,
+  Clock,
   Dog,
   Droplets,
   Flame,
   Gift,
   Image as ImageIcon,
+  LayoutGrid,
+  List,
+  Map,
+  MapPin,
+  Navigation2,
+  Search,
   ShowerHead,
   Star,
   CheckCircle,
-  LayoutGrid,
-  List,
-  MapPin,
+  Tent,
+  TreePine,
+  TrendingUp,
   Umbrella,
   Users,
   X,
 } from "lucide-react";
 import type { SoegFilters, SearchSuggestion } from "@/lib/soeg-db";
 import { trackSearch, trackFilter } from "@/lib/tracking";
+import { addRecentSearch } from "@/lib/search-helpers";
+import { useSearchSuggestions } from "@/hooks/useSearchSuggestions";
 
 const REGIONS = [
   { value: "", label: "Hele Danmark" },
@@ -51,6 +60,33 @@ const FILTER_OPTIONS: {
   { key: "billede", label: "Med billede", icon: <ImageIcon size={15} /> },
   { key: "anmeldelser", label: "Anmeldelser", icon: <Star size={15} /> },
 ];
+
+function SuggestionIcon({ type }: { type: SearchSuggestion["type"] }) {
+  const cls = "w-4 h-4 shrink-0";
+  switch (type) {
+    case "naer-mig":   return <Navigation2 className={`${cls} text-accent`} />;
+    case "recent":     return <Clock className={`${cls} text-primary/40`} />;
+    case "popular":    return <TrendingUp className={`${cls} text-amber-500`} />;
+    case "region":     return <Map className={`${cls} text-emerald-600`} />;
+    case "område":     return <TreePine className={`${cls} text-emerald-600`} />;
+    case "shelter":    return <Tent className={`${cls} text-amber-600`} />;
+    case "by":
+    default:           return <MapPin className={`${cls} text-primary/50`} />;
+  }
+}
+
+function typeLabel(type: SearchSuggestion["type"]): string {
+  switch (type) {
+    case "naer-mig":  return "";
+    case "recent":    return "Seneste";
+    case "popular":   return "Populær";
+    case "region":    return "Region";
+    case "område":    return "Område";
+    case "shelter":   return "Shelter";
+    case "by":
+    default:          return "By";
+  }
+}
 
 interface SearchBarProps {
   mode: "home" | "search";
@@ -82,66 +118,18 @@ export function SearchBar({
     () => initialQuery ?? searchParams.get("q") ?? ""
   );
   const [filters, setFilters] = useState<SoegFilters>(() => initialFilters);
-  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
-  const [suggestOpen, setSuggestOpen] = useState(false);
   const [suggestIndex, setSuggestIndex] = useState(-1);
-  const [suggestLoading, setSuggestLoading] = useState(false);
   const suggestRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const fetchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const { suggestions, loading, open: suggestOpen, setOpen: setSuggestOpen, openWithDefaults } =
+    useSearchSuggestions(query, initialQuery);
 
   // Synk filter-state med URL (initialFilters kommer fra server)
   useEffect(() => {
     setFilters(initialFilters);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialFilters.billede, initialFilters.anmeldelser, initialFilters.bookbar, initialFilters.vand, initialFilters.toilet, initialFilters.hund, initialFilters.baalplads, initialFilters.bord_baenk, initialFilters.strand, initialFilters.bruser, initialFilters.gratis, initialFilters.handicap, initialFilters.min_pladser]);
-
-  // By-forslag: debounced fetch når brugeren skriver (min. 2 tegn).
-  useEffect(() => {
-    const q = query.trim();
-    if (q.length < 2) {
-      setSuggestions([]);
-      setSuggestOpen(false);
-      if (fetchRef.current) {
-        clearTimeout(fetchRef.current);
-        fetchRef.current = null;
-      }
-      return;
-    }
-    if (fetchRef.current) clearTimeout(fetchRef.current);
-    fetchRef.current = setTimeout(() => {
-      fetchRef.current = null;
-      setSuggestLoading(true);
-      fetch(`/api/soeg/byer?q=${encodeURIComponent(q)}`)
-        .then((r) => r.json())
-        .then((arr: unknown) => {
-          // Backwards-compat: ældre endpoint kan returnere `string[]` (bynavne)
-          // mens ny endpoint returnerer `SearchSuggestion[]` ({ name, type }).
-          const items: SearchSuggestion[] = Array.isArray(arr)
-            ? arr.length > 0 && typeof arr[0] === "string"
-              ? (arr as string[]).map((name) => ({ name, type: "by" as const }))
-              : (arr as any[])
-                  .map((s) => ({
-                    name: String(s?.name ?? ""),
-                    type: s?.type === "område" ? ("område" as const) : ("by" as const),
-                  }))
-                  .filter((s) => s.name.trim().length > 0)
-            : [];
-          setSuggestions(items);
-          const alreadySearched = mode === "search" && (initialQuery ?? searchParams.get("q") ?? "").trim() === q;
-          setSuggestOpen(!alreadySearched && items.length > 0);
-          setSuggestIndex(-1);
-        })
-        .catch(() => {
-          setSuggestions([]);
-          setSuggestOpen(false);
-        })
-        .finally(() => setSuggestLoading(false));
-    }, 200);
-    return () => {
-      if (fetchRef.current) clearTimeout(fetchRef.current);
-    };
-  }, [query, mode, initialQuery, searchParams]);
 
   const buildSoegUrl = useCallback(
     (r: string, q: string, v?: ViewMode, f?: SoegFilters) => {
@@ -169,10 +157,42 @@ export function SearchBar({
     [filters]
   );
 
+  const navigate = useCallback(
+    (suggestion: SearchSuggestion) => {
+      setSuggestOpen(false);
+      setSuggestIndex(-1);
+
+      if (suggestion.type === "naer-mig") {
+        router.push("/shelter-naer-mig");
+        return;
+      }
+
+      if (suggestion.type === "region") {
+        // Set region dropdown and navigate without q
+        const regionValue = suggestion.name;
+        setRegion(regionValue);
+        setQuery("");
+        const params = new URLSearchParams();
+        params.set("region", regionValue);
+        if (view && mode === "search") params.set("view", view);
+        router.push("/soeg?" + params.toString());
+        return;
+      }
+
+      addRecentSearch(suggestion.name);
+      setQuery(suggestion.name);
+      inputRef.current?.blur();
+      const url = buildSoegUrl(region, suggestion.name, mode === "search" ? view : "split", mode === "search" ? filters : undefined);
+      router.push(url, { scroll: false });
+    },
+    [region, view, mode, filters, buildSoegUrl, router, setSuggestOpen]
+  );
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const hasSearch = region || query.trim();
     const initialView: ViewMode = hasSearch ? "split" : (mode === "search" ? view : "split");
+    if (query.trim()) addRecentSearch(query.trim());
     const url = buildSoegUrl(region, query, initialView);
     const activeCount = FILTER_OPTIONS.filter(({ key }) => filters[key]).length;
     trackSearch(query.trim() || "(tom)", region, activeCount);
@@ -248,13 +268,14 @@ export function SearchBar({
 
         {/* Søgefelt med by-forslag */}
         <div className="flex-1 flex items-center min-w-0 relative" ref={suggestRef}>
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/30 pointer-events-none" aria-hidden />
           <input
             ref={inputRef}
             type="search"
             name="q"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onFocus={() => { if (query.trim().length >= 2 && suggestions.length > 0) setSuggestOpen(true); }}
+            onFocus={openWithDefaults}
             onBlur={() => setTimeout(() => setSuggestOpen(false), 180)}
             onKeyDown={(e) => {
               if (!suggestOpen || suggestions.length === 0) return;
@@ -266,20 +287,14 @@ export function SearchBar({
                 setSuggestIndex((i) => (i <= 0 ? suggestions.length - 1 : i - 1));
               } else if (e.key === "Enter" && suggestIndex >= 0 && suggestions[suggestIndex]) {
                 e.preventDefault();
-                const name = suggestions[suggestIndex].name;
-                setQuery(name);
-                setSuggestOpen(false);
-                setSuggestIndex(-1);
-                inputRef.current?.blur();
-                const url = buildSoegUrl(region, name, mode === "search" ? view : "split", mode === "search" ? filters : undefined);
-                router.push(url, { scroll: false });
+                navigate(suggestions[suggestIndex]);
               } else if (e.key === "Escape") {
                 setSuggestOpen(false);
                 setSuggestIndex(-1);
               }
             }}
             placeholder="Søg område eller by"
-            className="w-full py-3 md:py-3.5 pl-3 md:pl-4 pr-9 text-primary placeholder:text-primary/50 bg-transparent border-0 focus:outline-none focus:ring-0 text-sm touch-manipulation"
+            className="w-full py-3 md:py-3.5 pl-9 pr-9 text-primary placeholder:text-primary/50 bg-transparent border-0 focus:outline-none focus:ring-0 text-sm touch-manipulation"
             aria-label="Søg efter område eller by"
             aria-autocomplete="list"
             aria-expanded={suggestOpen}
@@ -290,7 +305,7 @@ export function SearchBar({
           {query.length > 0 && (
             <button
               type="button"
-              onClick={() => { setQuery(""); setSuggestOpen(false); setSuggestions([]); }}
+              onClick={() => { setQuery(""); setSuggestOpen(false); }}
               className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded text-primary/50 hover:text-primary hover:bg-primary/10"
               aria-label="Ryd søgefelt"
             >
@@ -302,34 +317,41 @@ export function SearchBar({
               id="byer-forslag"
               role="listbox"
               aria-live="polite"
+              aria-label="Søgeforslag"
               className="absolute left-0 right-0 top-full z-[100] mt-1 py-1 bg-white border border-primary/10 rounded-xl shadow-lg max-h-[60vh] overflow-y-auto"
             >
-              {suggestLoading ? (
+              {loading ? (
                 <li className="px-4 py-2 text-primary/60 text-sm">Henter forslag…</li>
               ) : (
-                suggestions.map((suggestion, i) => (
-                  <li
-                    key={`${suggestion.type}-${suggestion.name}`}
-                    id={`byer-${i}`}
-                    role="option"
-                    aria-selected={i === suggestIndex}
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      setQuery(suggestion.name);
-                      setSuggestOpen(false);
-                      setSuggestions([]);
-                      inputRef.current?.blur();
-                      const url = buildSoegUrl(region, suggestion.name, mode === "search" ? view : "split", mode === "search" ? filters : undefined);
-                      router.push(url, { scroll: false });
-                    }}
-                    className={`flex items-center justify-between px-4 py-3 sm:py-2.5 text-base sm:text-sm cursor-pointer touch-manipulation ${i === suggestIndex ? "bg-accent/15 text-primary" : "text-primary hover:bg-primary/5 active:bg-primary/10"}`}
-                  >
-                    <span>{suggestion.name}</span>
-                    <span className="text-xs text-primary/40 ml-3 flex-shrink-0">
-                      {suggestion.type === "område" ? "Område" : "By"}
-                    </span>
-                  </li>
-                ))
+                <>
+                  {query.trim().length < 2 && (
+                    <li className="px-4 pt-2 pb-1 text-xs font-semibold uppercase tracking-wider text-primary/30">
+                      Forslag
+                    </li>
+                  )}
+                  {suggestions.map((suggestion, i) => {
+                    const label = typeLabel(suggestion.type);
+                    return (
+                      <li
+                        key={`${suggestion.type}-${suggestion.name}`}
+                        id={`byer-${i}`}
+                        role="option"
+                        aria-selected={i === suggestIndex}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          navigate(suggestion);
+                        }}
+                        className={`flex items-center gap-3 px-4 py-3 sm:py-2.5 text-base sm:text-sm cursor-pointer touch-manipulation ${i === suggestIndex ? "bg-accent/15 text-primary" : "text-primary hover:bg-primary/5 active:bg-primary/10"}`}
+                      >
+                        <SuggestionIcon type={suggestion.type} />
+                        <span className="flex-1 min-w-0 truncate">{suggestion.name}</span>
+                        {label && (
+                          <span className="text-xs text-primary/35 ml-2 flex-shrink-0">{label}</span>
+                        )}
+                      </li>
+                    );
+                  })}
+                </>
               )}
             </ul>
           )}
@@ -445,7 +467,6 @@ export function SearchBar({
               </button>
             )}
           </div>
-          {/* Disclaimer hidden on mobile to save vertical space */}
         </div>
       )}
     </div>
