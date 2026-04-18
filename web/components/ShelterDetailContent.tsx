@@ -21,6 +21,7 @@ import { ShareButtons } from "@/components/ShareButtons";
 import { WeatherWidget } from "@/components/WeatherWidget";
 import { CommunityContributionPanel } from "@/components/CommunityContributionPanel";
 import { CommunityApprovedSection } from "@/components/CommunityApprovedSection";
+import { ShelterExperiencesSection } from "@/components/ShelterExperiencesSection";
 import NewsletterSignup from "@/components/NewsletterSignup";
 import { trackShelterView, trackOutboundClick } from "@/lib/tracking";
 import type { DailyForecast } from "@/lib/weather";
@@ -287,6 +288,12 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
               <CommunityContributionPanel slug={slug} />
               <CommunityApprovedSection slug={slug} shelter={shelter} />
             </div>
+
+            <ShelterExperiencesSection
+              shelterId={shelter.id}
+              shelterSlug={slug}
+              shelterTitle={shelter.title}
+            />
 
             {facilityLinks.length > 0 && (
               <div className="mb-8 flex flex-wrap gap-2">
