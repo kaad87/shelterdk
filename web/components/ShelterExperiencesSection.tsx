@@ -29,12 +29,12 @@ export function ShelterExperiencesSection({
   }, [shelterId]);
 
   return (
-    <section className="mt-6 pt-6 border-t border-primary/10">
-      <div className="flex items-center justify-between mb-3">
+    <section className="mb-10">
+      <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-lg font-bold text-primary">Oplevelser</h2>
+          <h2 className="font-serif text-xl font-bold text-primary">Oplevelser</h2>
           {!loading && experiences.length > 0 && (
-            <p className="text-sm text-primary/50">{experiences.length} besøg delt</p>
+            <p className="text-sm text-primary/50 mt-0.5">{experiences.length} besøg delt</p>
           )}
         </div>
         <button

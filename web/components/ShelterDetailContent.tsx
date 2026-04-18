@@ -289,12 +289,6 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
               <CommunityApprovedSection slug={slug} shelter={shelter} />
             </div>
 
-            <ShelterExperiencesSection
-              shelterId={shelter.id}
-              shelterSlug={slug}
-              shelterTitle={shelter.title}
-            />
-
             {facilityLinks.length > 0 && (
               <div className="mb-8 flex flex-wrap gap-2">
                 {facilityLinks.map((fl) => (
@@ -493,6 +487,12 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                 )}
               </section>
             )}
+
+            <ShelterExperiencesSection
+              shelterId={shelter.id}
+              shelterSlug={slug}
+              shelterTitle={shelter.title}
+            />
 
             {coords && mapUrl && googleMapsUrl && (
               <section className="mb-10">
