@@ -1,7 +1,7 @@
 import { createPublicClient } from "@/utils/supabase/server-public";
 import type { Shelter } from "@/types/shelter";
 import { getLocationCoords, getDisplayScore, hasAnyImage } from "@/lib/shelter-detail";
-import { lookupPostnummer, findPostnummerSuggestions } from "@/lib/postnummer";
+import { findPostnummerSuggestions } from "@/lib/postnummer";
 
 /**
  * Geografiske synonymer: søgeord → kommuner/byer i databasen.
@@ -127,12 +127,7 @@ export async function getSheltersPage(
   if (q && q.trim()) {
     const term = q.trim().replace(/"/g, '""');
 
-    // Postnummersøgning: enten "7190" eller "Billund (7190)" fra autocomplete
-    const postalFromSuggestion = term.match(/\((\d{4})\)$/)?.[1] ?? null;
-    const postalCode = /^\d{4}$/.test(term) ? term : postalFromSuggestion;
-    if (postalCode) {
-      query = query.filter("geofa_raw->>postnr_by", "ilike", `${postalCode}%`);
-    } else {
+    {
       const pattern = `"%${term}%"`;
 
       // Find area_slugs der matcher søgetermen (fx "Nationalpark Thy" → "nationalpark-thy")

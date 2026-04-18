@@ -216,11 +216,45 @@ export const POSTNUMMER_BY: Record<string, string> = {
   "9970": "Strandby", "9982": "Ålbæk", "9990": "Skagen",
 };
 
+export interface PostnummerBbox {
+  minLat: number;
+  maxLat: number;
+  minLon: number;
+  maxLon: number;
+}
+
 /**
  * Slår postnummer op og returnerer bynavn, eller null hvis ikke fundet.
  */
 export function lookupPostnummer(code: string): string | null {
   return POSTNUMMER_BY[code.trim()] ?? null;
+}
+
+/**
+ * Henter bounding box for et postnummer fra DAWA (Danmarks Adressers Web API).
+ * Returnerer null hvis postnummeret ikke findes eller API'et fejler.
+ * Postal code bbox ændres aldrig — caches i 30 dage via Next.js fetch-cache.
+ */
+export async function fetchPostnummerBbox(
+  code: string
+): Promise<PostnummerBbox | null> {
+  try {
+    const res = await fetch(
+      `https://api.dataforsyningen.dk/postnumre/${encodeURIComponent(code)}`,
+      { next: { revalidate: 60 * 60 * 24 * 30 } } // 30 dage cache
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    // DAWA bbox format: [minLon, minLat, maxLon, maxLat]
+    const bbox = data?.bbox;
+    if (!Array.isArray(bbox) || bbox.length !== 4) return null;
+    const [minLon, minLat, maxLon, maxLat] = bbox.map(Number);
+    if ([minLon, minLat, maxLon, maxLat].some((n) => !Number.isFinite(n)))
+      return null;
+    return { minLat, maxLat, minLon, maxLon };
+  } catch {
+    return null;
+  }
 }
 
 /**

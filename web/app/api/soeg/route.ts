@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { getSheltersPage, SOEG_PAGE_SIZE, type SoegFilters, type SoegSort, type MapBbox } from "@/lib/soeg-db";
 import { filterSheltersByRegion } from "@/lib/soeg-filters";
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
+import { fetchPostnummerBbox } from "@/lib/postnummer";
 
 export const dynamic = "force-dynamic";
 
@@ -46,10 +47,27 @@ export async function GET(request: NextRequest) {
       ? { minLat, maxLat, minLon, maxLon }
       : undefined;
 
+  // Postnummersøgning: “7190” eller “Billund (7190)” → hent bbox fra DAWA og brug
+  // den eksisterende bbox-sti i stedet for tekstsøgning (langt bedre dækning end postnr_by).
+  let effectiveQ = q;
+  let effectiveBbox = bbox;
+  if (q && !bbox) {
+    const postalCode = /^\d{4}$/.test(q)
+      ? q
+      : (q.match(/\((\d{4})\)$/) ?? [])[1] ?? null;
+    if (postalCode) {
+      const postalBbox = await fetchPostnummerBbox(postalCode);
+      if (postalBbox) {
+        effectiveBbox = postalBbox;
+        effectiveQ = null; // bbox overtager — ingen tekstsøgning
+      }
+    }
+  }
+
   // UX: Når brugeren panorerer/zoomer på kortet, skal resultater følge det synlige område,
   // også hvis der tidligere var valgt region-filter (fx “Aarhus”). Derfor ignorerer vi region
   // for bbox-forespørgsler.
-  const regionForQuery = bbox ? null : region;
+  const regionForQuery = effectiveBbox ? null : region;
   const sortParam = searchParams.get("sort") as SoegSort | null;
   const sort: SoegSort | undefined = (sortParam === "rating" || sortParam === "reviews") ? sortParam : undefined;
   const limitParam = parseInt(searchParams.get("limit") ?? "0", 10);
@@ -57,16 +75,16 @@ export async function GET(request: NextRequest) {
 
   let { shelters, hasMore } = await getSheltersPage(
     regionForQuery,
-    q,
+    effectiveQ,
     page,
     pageSize,
     Object.keys(filters).length ? filters : undefined,
-    bbox,
+    effectiveBbox,
     area,
     sort
   );
 
-  if (region && !bbox) shelters = filterSheltersByRegion(shelters, region);
+  if (region && !effectiveBbox) shelters = filterSheltersByRegion(shelters, region);
   shelters = await enrichSheltersWithGooglePhotoRef(shelters);
 
   return Response.json({ shelters, hasMore }, {
