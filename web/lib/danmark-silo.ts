@@ -371,4 +371,54 @@ export async function getCanonicalShelterForRedirect(
   return { region, kommune, slug };
 }
 
+/** Distinct `place` values with shelter counts. Only returns places with >= minCount shelters. */
+export async function getDistinctPlacesWithCounts(
+  minCount = 2
+): Promise<{ place: string; count: number }[]> {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("shelters")
+    .select("place")
+    .is("duplicate_of_shelter_id", null)
+    .not("place", "is", null)
+    .neq("place", "");
+
+  if (error) {
+    console.error("Supabase error (distinct places):", error);
+    return [];
+  }
+
+  const counts = new Map<string, number>();
+  for (const row of (data as { place: string | null }[]) ?? []) {
+    const p = (row.place || "").trim();
+    if (!p) continue;
+    counts.set(p, (counts.get(p) ?? 0) + 1);
+  }
+
+  return [...counts.entries()]
+    .filter(([, c]) => c >= minCount)
+    .map(([place, count]) => ({ place, count }))
+    .sort((a, b) => a.place.localeCompare(b.place, "da"));
+}
+
+/** All shelters whose `place` matches the given value. */
+export async function getSheltersByPlace(place: string): Promise<Shelter[]> {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("shelters")
+    .select(SHELTER_SELECT)
+    .is("duplicate_of_shelter_id", null)
+    .eq("place", place)
+    .order("display_score", { ascending: false, nullsFirst: false })
+    .order("title", { ascending: true });
+
+  if (error) {
+    console.error("Supabase error (shelters by place):", error);
+    return [];
+  }
+  const list = (data as Shelter[]) ?? [];
+  list.sort(sortByImageAndScore);
+  return list;
+}
+
 export { slugifySegment };

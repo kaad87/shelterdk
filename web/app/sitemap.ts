@@ -5,6 +5,7 @@ import { createPublicClient } from "@/utils/supabase/server-public";
 import {
   getDistinctRegions,
   getRegionKommunePairs,
+  getDistinctPlacesWithCounts,
   NO_KOMMUNE_SLUG,
 } from "@/lib/danmark-silo";
 import { slugifySegment } from "@/lib/slug";
@@ -233,6 +234,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const slugsWithoutRegion = await getSheltersWithoutRegion();
   for (const slug of slugsWithoutRegion) {
     entries.push(entry(`${BASE_URL}/shelter/${slug}`, "weekly", 0.6));
+  }
+
+  // By-sider: /by/[by_slug] – kun byer med 2+ shelters
+  const places = await getDistinctPlacesWithCounts(2);
+  for (const { place } of places) {
+    const bySlug = slugifySegment(place);
+    if (!bySlug) continue;
+    entries.push(entry(`${BASE_URL}/by/${bySlug}`, "weekly", 0.7));
   }
 
   return entries;

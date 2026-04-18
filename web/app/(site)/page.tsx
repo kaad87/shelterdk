@@ -339,10 +339,10 @@ export default async function HomePage() {
             aria-label="Hurtige links"
           >
             <Link
-              href="/soeg?bookbar=1"
+              href="/shelter-booking"
               className="rounded-full border border-accent/30 bg-accent/5 px-3.5 py-1.5 text-xs sm:text-sm font-medium text-accent hover:bg-accent/10 transition-colors"
             >
-              Bookbare shelters
+              Book shelter
             </Link>
             <Link
               href="/shelter-med-toilet"

@@ -1,0 +1,279 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
+import { ShelterListSchema } from "@/components/seo/ShelterListSchema";
+import { ChevronRight } from "lucide-react";
+import {
+  getDistinctPlacesWithCounts,
+  getSheltersByPlace,
+  slugifySegment,
+  NO_KOMMUNE_SLUG,
+} from "@/lib/danmark-silo";
+import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
+import { segmentSlugToName } from "@/lib/slug";
+import { ShelterCard } from "@/components/ShelterCard";
+import { getWater, getToilet } from "@/lib/shelter-detail";
+import { generateMunicipalityPageFaq } from "@/lib/fakta-faq";
+import { faqToJsonLd } from "@/lib/faq";
+
+interface PageProps {
+  params: Promise<{ by_slug: string }>;
+}
+
+export const dynamicParams = false;
+
+export const revalidate = 86400;
+
+export async function generateStaticParams() {
+  const places = await getDistinctPlacesWithCounts(2);
+  return places.map(({ place }) => ({ by_slug: slugifySegment(place) }));
+}
+
+async function resolvePlaceName(slug: string): Promise<string | null> {
+  const places = await getDistinctPlacesWithCounts(2);
+  return segmentSlugToName(slug, places.map((p) => p.place));
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { by_slug } = await params;
+  const placeName = await resolvePlaceName(by_slug);
+  if (!placeName) return { title: { absolute: "By ikke fundet" } };
+
+  const shelters = await getSheltersByPlace(placeName);
+  const count = shelters.length;
+  const bookable = shelters.filter((s) => !!s.booking_url && String(s.booking_url).trim() !== "").length;
+  const withWater = shelters.filter((s) => getWater(s) === true).length;
+
+  const title = `${count} Shelter${count !== 1 ? "s" : ""} i ${placeName} | ShelterDK`;
+  const statParts: string[] = [];
+  if (bookable > 0) statParts.push(`${bookable} kan bookes`);
+  if (withWater > 0) statParts.push(`${withWater} med vand`);
+  const statsText = statParts.length > 0 ? ` – ${statParts.join(", ")}` : "";
+  const description = `${count} shelters i ${placeName}${statsText}. Find overnatning i naturen og planlæg din næste sheltertur.`;
+
+  const canonicalPath = `/by/${by_slug}`;
+  return {
+    title: { absolute: title },
+    description,
+    alternates: { canonical: `https://shelterdk.dk${canonicalPath}` },
+    openGraph: {
+      title,
+      description,
+      url: canonicalPath,
+      images: [
+        {
+          url: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&q=80&auto=format&fit=crop",
+          width: 1200,
+          height: 630,
+          alt: `Shelters i ${placeName}`,
+        },
+      ],
+    },
+    ...(count === 0 && { robots: { index: false, follow: true } }),
+  };
+}
+
+function shelterHref(region: string | null | undefined, kommune: string | null | undefined, slug: string): string {
+  if (!region) return `/soeg`;
+  const r = slugifySegment(region);
+  const m = kommune ? slugifySegment(kommune) : NO_KOMMUNE_SLUG;
+  return `/danmark/${r}/${m}/${slug}`;
+}
+
+function ByProse({
+  placeName,
+  shelterCount,
+  withToilet,
+  withWater,
+  bookable,
+  freeCount,
+  kommuneLinks,
+}: {
+  placeName: string;
+  shelterCount: number;
+  withToilet: number;
+  withWater: number;
+  bookable: number;
+  freeCount: number;
+  kommuneLinks: { name: string; slug: string; regionSlug: string }[];
+}) {
+  const parts: string[] = [];
+  if (withToilet > 0) parts.push(`${withToilet} har toilet`);
+  if (withWater > 0) parts.push(`${withWater} har adgang til vand`);
+  if (bookable > 0) parts.push(`${bookable} kan bookes online`);
+  const facilityText = parts.length > 0 ? `, hvoraf ${parts.join(", ")}` : "";
+
+  return (
+    <section className="prose prose-primary max-w-none text-primary/90">
+      <h2 className="font-serif text-xl font-bold text-primary mb-4">
+        Overnatning i {placeName}
+      </h2>
+      <p>
+        I {placeName} finder du {shelterCount} shelter{shelterCount !== 1 ? "s" : ""}{facilityText}.{" "}
+        {freeCount > 0 && `${freeCount} af pladserne er gratis og fungerer efter først-til-mølle-princippet. `}
+        Uanset om du søger en primitiv overnatning eller en shelter med faciliteter,
+        giver {placeName} muligheder for naturoplevelser.
+      </p>
+      <p>
+        {bookable > 0 ? (
+          <>Flere af pladserne i {placeName} kan bookes i forvejen via udinaturen.dk eller
+          Naturstyrelsen, hvilket er praktisk i højsæsonen. </>
+        ) : (
+          <>De fleste shelters i {placeName} fungerer efter først-til-mølle-princippet,
+          så det kan betale sig at komme tidligt, særligt i højsæsonen. </>
+        )}
+        Husk at følge lokal skiltning og regler for overnatning, og efterlad altid pladsen
+        pænere end du fandt den.
+      </p>
+      {kommuneLinks.length > 0 && (
+        <p>
+          Se alle shelters i{" "}
+          {kommuneLinks.map((k, i) => (
+            <span key={k.slug}>
+              <Link href={`/danmark/${k.regionSlug}/${k.slug}`} className="text-accent hover:underline">
+                {k.name} Kommune
+              </Link>
+              {i < kommuneLinks.length - 1 ? ", " : ""}
+            </span>
+          ))}
+          , eller udforsk shelters med specifikke faciliteter:{" "}
+          <Link href="/shelter-med-toilet" className="text-accent hover:underline">toilet</Link>,{" "}
+          <Link href="/shelter-med-vand" className="text-accent hover:underline">vand</Link>,{" "}
+          <Link href="/shelter-med-hund" className="text-accent hover:underline">hund</Link>{" "}
+          eller{" "}
+          <Link href="/shelter-med-baalplads" className="text-accent hover:underline">bålplads</Link>.
+        </p>
+      )}
+    </section>
+  );
+}
+
+export default async function ByPage({ params }: PageProps) {
+  const { by_slug } = await params;
+  const placeName = await resolvePlaceName(by_slug);
+  if (!placeName) notFound();
+
+  const rawShelters = await getSheltersByPlace(placeName);
+  const shelters = await enrichSheltersWithGooglePhotoRef(rawShelters);
+
+  if (shelters.length === 0) notFound();
+
+  const withToilet = shelters.filter((s) => {
+    const t = getToilet(s);
+    return t && t !== "none" && t !== "unknown";
+  }).length;
+  const withWater = shelters.filter((s) => getWater(s) === true).length;
+  const bookable = shelters.filter((s) => !!s.booking_url && String(s.booking_url).trim() !== "").length;
+  const freeCount = shelters.filter((s) => !s.booking_url || String(s.booking_url).trim() === "").length;
+
+  // Build unique kommune links for contextual linking
+  const kommuneMap = new Map<string, { name: string; slug: string; regionSlug: string }>();
+  for (const s of shelters) {
+    if (s.kommune && s.region) {
+      const key = s.kommune;
+      if (!kommuneMap.has(key)) {
+        kommuneMap.set(key, {
+          name: s.kommune,
+          slug: slugifySegment(s.kommune),
+          regionSlug: slugifySegment(s.region),
+        });
+      }
+    }
+  }
+  const kommuneLinks = [...kommuneMap.values()].slice(0, 3);
+
+  const byFaq = generateMunicipalityPageFaq(placeName, {
+    totalCount: shelters.length,
+    freeCount,
+    toiletCount: withToilet,
+    waterCount: withWater,
+  });
+
+  return (
+    <>
+      <BreadcrumbSchema items={[
+        { label: "Hjem", href: "/" },
+        { label: "Søg shelters", href: "/soeg" },
+        { label: `Shelters i ${placeName}` },
+      ]} />
+      <ShelterListSchema
+        name={`Shelters i ${placeName}`}
+        shelters={shelters}
+        hrefFn={(s) => {
+          const full = shelters.find((x) => x.id === s.id);
+          return shelterHref(full?.region, full?.kommune, s.slug);
+        }}
+      />
+      <div className="min-h-screen bg-background">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+          <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-primary/70 py-2">
+            <Link href="/" className="py-1 -my-1 hover:text-accent transition-colors touch-manipulation">
+              Hjem
+            </Link>
+            <ChevronRight size={14} className="text-primary/50 shrink-0" />
+            <Link href="/soeg" className="py-1 -my-1 hover:text-accent transition-colors touch-manipulation">
+              Søg shelters
+            </Link>
+            <ChevronRight size={14} className="text-primary/50 shrink-0" />
+            <span className="text-primary font-medium">Shelters i {placeName}</span>
+          </nav>
+
+          <header className="mb-10">
+            <h1 className="font-serif text-3xl md:text-4xl font-bold text-primary mb-2">
+              Shelters i {placeName}
+            </h1>
+            <p className="text-primary/80 text-lg">
+              {shelters.length} shelter{shelters.length !== 1 ? "s" : ""} i {placeName}.{" "}
+              <Link href="/soeg" className="text-accent font-medium hover:underline">
+                Søg alle shelters
+              </Link>
+            </p>
+          </header>
+
+          <section className="mb-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {shelters.map((shelter) => (
+                <ShelterCard
+                  key={shelter.id}
+                  shelter={shelter}
+                  href={shelterHref(shelter.region, shelter.kommune, shelter.slug)}
+                />
+              ))}
+            </div>
+          </section>
+
+          <ByProse
+            placeName={placeName}
+            shelterCount={shelters.length}
+            withToilet={withToilet}
+            withWater={withWater}
+            bookable={bookable}
+            freeCount={freeCount}
+            kommuneLinks={kommuneLinks}
+          />
+
+          {shelters.length > 0 && (
+            <section className="mt-12 pt-8 border-t border-primary/10">
+              <h2 className="font-serif text-xl font-bold text-primary mb-6">
+                Ofte stillede spørgsmål om shelters i {placeName}
+              </h2>
+              <dl className="space-y-6">
+                {byFaq.map((item) => (
+                  <div key={item.question}>
+                    <dt className="font-semibold text-primary mb-1">{item.question}</dt>
+                    <dd className="text-primary/80 leading-relaxed">{item.answer}</dd>
+                  </div>
+                ))}
+              </dl>
+              <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(faqToJsonLd(byFaq)) }}
+              />
+            </section>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}

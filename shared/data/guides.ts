@@ -718,6 +718,107 @@ Det er en god idé at kombinere denne guide med [Pakkeliste til sheltertur – d
       },
     ],
   },
+  {
+    slug: "saadan-booker-du-shelter",
+    title: "Sådan booker du shelter i Danmark – komplet guide",
+    excerpt:
+      "Lær hvornår og hvordan du booker shelter i Danmark. Se hvilke platforme der bruges, hvad det koster, og hvornår det er nødvendigt at booke på forhånd.",
+    coverImage:
+      "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1200&q=80&auto=format&fit=crop",
+    category: "Begynder",
+    content: `
+## Hvornår skal du booke shelter?
+
+Ikke alle shelters i Danmark kræver booking – mange fungerer efter først-til-mølle-princippet, hvor du bare møder op og slår lejr. Men i højsæsonen fra maj til september og i weekenderne er de populære pladser hurtigt optaget. Hvis du har sat dig et bestemt mål, er det klogt at sikre din plads i god tid.
+
+Som tommelfingerregel: book shelter hvis du rejser i weekender, på helligdage eller i sommerferien. Rejser du på en tilfældig hverdagaften tidligt i sæsonen, er du sjældent i fare for at stå uden plads.
+
+## Hvor booker man shelter i Danmark?
+
+De fleste bookbare shelters i Danmark kan bookes via én af to platforme:
+
+### Ud i Naturen (udinaturen.dk)
+
+Ud i Naturen er Naturstyrelsens officielle platform og det primære sted at booke statsejede shelters og lejrpladser. Her finder du pladser i statsskove, langs vandreruter som Hærvejen og Camønoen, og i en lang række naturparker. Booking er gratis på de fleste pladser, men du skal oprette en bruger. Tilgængelighed og regler fremgår direkte på pladsen.
+
+### Naturstyrelsen (naturstyrelsen.dk)
+
+Naturstyrelsen administrerer mange af de samme pladser som Ud i Naturen og bruger i dag typisk Ud i Naturen som bookingplatform. Gå direkte til udinaturen.dk for at søge og booke.
+
+### Kommunale bookingsystemer
+
+Nogle kommunale shelters bruger egne systemer eller lokale hjemmesider. Tjek altid den konkrete shelterside på ShelterDK – der vil fremgå en direkte bookinglink, hvis pladsen kan bookes.
+
+## Hvad koster det at booke shelter?
+
+Mange shelters er gratis at bruge og booke. Det gælder særligt shelters langs statsejede vandreruter og i naturstyrelsesskove. Andre pladser – typisk dem med faciliteter som toilet, bruser og tømmerbarhygge – koster et beløb per nat. Prisen ligger typisk mellem 0 og 150 kr. per person eller per gruppe.
+
+Tjek altid prisen på bookingplatformen, inden du bekræfter. Betalingen sker online ved booking.
+
+## Trin-for-trin: Sådan booker du shelter på Ud i Naturen
+
+1. Gå til [udinaturen.dk](https://udinaturen.dk) og opret en gratis bruger
+2. Søg på shelternavn, region eller vandrerute
+3. Vælg plads og tjek ledighed på den ønskede dato
+4. Klik "Book" og udfyld antal personer og eventuel betaling
+5. Du modtager en bekræftelse på e-mail – gem den, da du kan blive bedt om at vise den
+
+Husk at annullere i god tid, hvis du ikke kan komme – så frigøres pladsen til andre.
+
+## Først-til-mølle vs. booking
+
+Mange shelters har ingen booking og er åbne for alle der ankommer. Det giver frihed til spontane ture, men ingen garanti for en plads. Fordele og ulemper:
+
+| | Booking | Først-til-mølle |
+|---|---|---|
+| Garanti for plads | Ja | Nej |
+| Kræver planlægning | Ja | Nej |
+| Fleksibilitet | Begrænset | Stor |
+| Typisk pris | 0–150 kr. | Gratis |
+
+Til korte weekendture i højsæsonen anbefaler vi altid at booke. Til lange vandreture med flere overnatninger kan det være en fordel at have lidt fleksibilitet – kombiner eventuelt bookede pladser med fri overnatning undervejs.
+
+## Populære ruter med bookbare shelters
+
+- **Hærvejen** – vandrerute gennem midtjylland med mange bookbare pladser via Ud i Naturen
+- **Camønoen** – rute på Møn og Sydsjælland med gode overnatningsfaciliteter
+- **Øhavsstien** – rute på Sydfyn og øerne med shelters langs kysten
+- **Palatstien** – rute i Nordsjælland med shelters i Gribskov
+
+Find alle bookbare shelters via [ShelterDKs booking-oversigt](/shelter-booking) eller søg direkte med booking-filtret på [søgesiden](/soeg?bookbar=1).
+
+## Tips til booking i højsæsonen
+
+- Book 2–4 uger i forvejen til populære weekender
+- Tjek annulleringer dagen inden – pladser dukker op igen
+- Overvej hverdagsture – onsdag og torsdag er sjældent fuldt besat
+- Kig efter pladser lidt uden for turistcentre – de er ofte ledige
+
+Læs også vores [pakkeliste til sheltertur](/guides/pakkeliste-til-sheltertur) og [guide til regler for shelter og teltning](/guides/regler-for-shelter-og-teltning-i-danmark), så du er godt forberedt når du ankommer.
+    `.trim(),
+    faq: [
+      {
+        question: "Skal man booke shelter i Danmark?",
+        answer:
+          "Det afhænger af sheltertypen og tidspunktet. Mange shelters fungerer efter først-til-mølle, men i weekender og sommersæsonen anbefales det at booke de populære pladser på forhånd via udinaturen.dk.",
+      },
+      {
+        question: "Hvor booker man shelter i Danmark?",
+        answer:
+          "De fleste bookbare shelters bookes via udinaturen.dk, som er Naturstyrelsens officielle platform. Nogle kommunale shelters bruger egne bookingsystemer – tjek den konkrete shelterside for direkte bookinglink.",
+      },
+      {
+        question: "Hvad koster det at booke shelter?",
+        answer:
+          "Mange shelters er gratis. Pladser med faciliteter som toilet og bruser koster typisk 0–150 kr. per nat per person eller gruppe. Tjek altid prisen på bookingplatformen inden du bekræfter.",
+      },
+      {
+        question: "Hvor lang tid i forvejen bør man booke shelter?",
+        answer:
+          "I højsæsonen (maj–september) og i weekenderne anbefales det at booke 2–4 uger i forvejen til populære pladser. Hverdagsture tidligt eller sent på sæsonen kan ofte bookes med kortere varsel.",
+      },
+    ],
+  },
 ];
 
 export function getGuides(): Guide[] {

@@ -76,6 +76,7 @@ export const FILTER_CONFIGS: Record<string, FilterConfig> = {
     parentHref: "/shelter-booking",
     minSheltersForRegion: 5,
     relatedBlogLinks: [
+      { label: "Sådan booker du shelter", href: "/guides/saadan-booker-du-shelter" },
       { label: "Gratis shelters guide", href: "/blog/gratis-shelters-i-danmark" },
     ],
   },

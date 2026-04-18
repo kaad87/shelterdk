@@ -50,8 +50,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       : segmentSlugToName(municipalitySlug, municipalities);
   if (!municipalityName) return { title: { absolute: "Kommune ikke fundet" } };
   const shelters = await getSheltersInMunicipality(regionName, municipalityName === "Ukendt kommune" ? null : (municipalityName ?? null));
-  const title = `Shelters i ${municipalityName}, ${regionName} | ShelterDK`;
-  const description = `Find shelters og overnatningspladser i ${municipalityName}, ${regionName}. Se pladser, booking og praktisk info.`;
+  const count = shelters.length;
+  const bookable = shelters.filter((s) => !!s.booking_url && String(s.booking_url).trim() !== "").length;
+  const withWater = shelters.filter((s) => getWater(s) === true).length;
+  const title = count > 0
+    ? `${count} Shelter${count !== 1 ? "s" : ""} i ${municipalityName} – ${regionName} | ShelterDK`
+    : `Shelters i ${municipalityName}, ${regionName} | ShelterDK`;
+  const statParts: string[] = [];
+  if (bookable > 0) statParts.push(`${bookable} kan bookes`);
+  if (withWater > 0) statParts.push(`${withWater} med vand`);
+  const statsText = statParts.length > 0 ? ` – ${statParts.join(", ")}` : "";
+  const description = count > 0
+    ? `${count} shelters i ${municipalityName}${statsText}. Find overnatning i naturen og planlæg din næste sheltertur.`
+    : `Find shelters og overnatningspladser i ${municipalityName}, ${regionName}. Se pladser og praktisk info.`;
   const canonicalPath = `/danmark/${regionSlug}/${municipalitySlug}`;
   return {
     title: { absolute: title },
