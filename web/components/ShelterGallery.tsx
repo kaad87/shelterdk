@@ -42,24 +42,27 @@ export function ShelterGallery({
       return p;
     })
     .filter((p) => p.trim().length > 0);
+  const [brokenUrls, setBrokenUrls] = useState<Set<string>>(new Set());
+  const visibleUrls = proxiedUrls.filter((u) => !brokenUrls.has(u));
+  const markBroken = (url: string) => setBrokenUrls((prev) => new Set([...prev, url]));
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [heroGaveUp, setHeroGaveUp] = useState(false);
   const [showKeyboardHint, setShowKeyboardHint] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
   const lightboxScrollRef = useRef<HTMLDivElement>(null);
-  const hasImages = proxiedUrls.length > 0;
+  const hasImages = visibleUrls.length > 0;
   const showUploadForm = !hasImages && slug && shelterId;
 
   // Show keyboard hint for 3 seconds when lightbox opens
   useEffect(() => {
-    if (lightboxIndex !== null && proxiedUrls.length > 1) {
+    if (lightboxIndex !== null && visibleUrls.length > 1) {
       setShowKeyboardHint(true);
       const timer = setTimeout(() => setShowKeyboardHint(false), 3000);
       return () => clearTimeout(timer);
     } else {
       setShowKeyboardHint(false);
     }
-  }, [lightboxIndex, proxiedUrls.length]);
+  }, [lightboxIndex, visibleUrls.length]);
 
   // Lock body scroll when lightbox is open
   useEffect(() => {
@@ -80,7 +83,7 @@ export function ShelterGallery({
 
   // Keyboard navigation when lightbox is open
   useEffect(() => {
-    if (proxiedUrls.length === 0) return;
+    if (visibleUrls.length === 0) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (lightboxIndex === null) return;
@@ -100,14 +103,14 @@ export function ShelterGallery({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [lightboxIndex, proxiedUrls.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [lightboxIndex, visibleUrls.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const navigateLightbox = (direction: 1 | -1) => {
     const el = lightboxScrollRef.current;
     if (!el) return;
     setLightboxIndex((prev) => {
       if (prev === null) return 0;
-      const next = (prev + direction + proxiedUrls.length) % proxiedUrls.length;
+      const next = (prev + direction + visibleUrls.length) % visibleUrls.length;
       el.scrollTo({ left: el.clientWidth * next, behavior: "smooth" });
       return next;
     });
@@ -135,7 +138,7 @@ export function ShelterGallery({
         idx = Math.round(el.scrollLeft / slideWidth);
       }
     }
-    setLightboxIndex(Math.max(0, Math.min(idx, proxiedUrls.length - 1)));
+    setLightboxIndex(Math.max(0, Math.min(idx, visibleUrls.length - 1)));
   };
 
   return (
@@ -146,7 +149,7 @@ export function ShelterGallery({
           <>
             <div ref={carouselRef} className="absolute inset-0">
               <ImageCarousel
-                urls={proxiedUrls}
+                urls={visibleUrls}
                 alt={`Billede af shelter ${title}`}
                 sizes="(max-width: 1024px) 100vw, 896px"
                 blurDataUrl={blurDataUrl}
@@ -201,8 +204,8 @@ export function ShelterGallery({
 
       {/* Thumbnail strip — hidden on mobile, visible on desktop */}
       {(() => {
-        if (proxiedUrls.length <= 1) return null;
-        const toShow = proxiedUrls.slice(0, MAX_THUMBS);
+        if (visibleUrls.length <= 1) return null;
+        const toShow = visibleUrls.slice(0, MAX_THUMBS);
         return (
           <div className="hidden md:flex gap-2 mb-6 overflow-x-auto pb-1">
             {toShow.map((url, i) => {
@@ -218,7 +221,6 @@ export function ShelterGallery({
                   onClick={() => setLightboxIndex(i)}
                   aria-label={`Vis billede ${i + 1}`}
                   className="relative flex-none w-20 h-16 rounded-lg overflow-hidden border-2 transition-all border-transparent opacity-70 hover:opacity-100 hover:border-accent/50"
-                  onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }}
                 >
                   <Image
                     src={thumbUrl}
@@ -227,7 +229,7 @@ export function ShelterGallery({
                     className="object-cover"
                     sizes="80px"
                     unoptimized={isUnoptimizedImageUrl(thumbUrl)}
-                    onError={(e) => { (e.currentTarget as HTMLImageElement).closest("button")!.style.display = "none"; }}
+                    onError={() => markBroken(url)}
                   />
                 </button>
               );
@@ -252,11 +254,11 @@ export function ShelterGallery({
 
           {/* Counter */}
           <span className="absolute top-4 left-4 text-white/70 text-sm z-20">
-            {lightboxIndex + 1} / {proxiedUrls.length}
+            {lightboxIndex + 1} / {visibleUrls.length}
           </span>
 
           {/* Previous button */}
-          {proxiedUrls.length > 1 && (
+          {visibleUrls.length > 1 && (
             <button
               type="button"
               onClick={(e) => {
@@ -271,7 +273,7 @@ export function ShelterGallery({
           )}
 
           {/* Next button */}
-          {proxiedUrls.length > 1 && (
+          {visibleUrls.length > 1 && (
             <button
               type="button"
               onClick={(e) => {
@@ -292,7 +294,7 @@ export function ShelterGallery({
             style={{ scrollbarWidth: "none", touchAction: "pan-y pinch-zoom" }}
             onClick={(e) => e.stopPropagation()}
           >
-            {proxiedUrls.map((url, i) => (
+            {visibleUrls.map((url, i) => (
               <div
                 key={`lb-${i}-${url}`}
                 className="relative w-full h-full flex-none snap-start flex items-center justify-center p-4"
@@ -311,7 +313,7 @@ export function ShelterGallery({
           </div>
 
           {/* Keyboard navigation hint */}
-          {proxiedUrls.length > 1 && (
+          {visibleUrls.length > 1 && (
             <span
               className={`absolute bottom-6 left-1/2 -translate-x-1/2 text-white/70 text-xs bg-black/50 px-3 py-1.5 rounded-full transition-opacity duration-500 z-20 ${
                 showKeyboardHint ? "opacity-100" : "opacity-0 pointer-events-none"
@@ -323,7 +325,7 @@ export function ShelterGallery({
 
           {/* Aria-live announcement */}
           <div aria-live="polite" className="sr-only">
-            Billede {lightboxIndex + 1} af {proxiedUrls.length}
+            Billede {lightboxIndex + 1} af {visibleUrls.length}
           </div>
         </div>
       )}
