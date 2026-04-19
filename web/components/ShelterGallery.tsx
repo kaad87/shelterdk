@@ -35,11 +35,13 @@ export function ShelterGallery({
   const THUMB_W = 320;
   const MAX_THUMBS = 10;
 
-  const proxiedUrls = urls.map((u) => {
-    const p = getProxiedImageSrc(u);
-    if (p.includes("/api/image?url=")) return `${p}&w=${HERO_W}`;
-    return p;
-  });
+  const proxiedUrls = urls
+    .map((u) => {
+      const p = getProxiedImageSrc(u);
+      if (p.includes("/api/image?url=")) return `${p}&w=${HERO_W}`;
+      return p;
+    })
+    .filter((p) => p.trim().length > 0);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [heroGaveUp, setHeroGaveUp] = useState(false);
   const [showKeyboardHint, setShowKeyboardHint] = useState(false);
@@ -216,6 +218,7 @@ export function ShelterGallery({
                   onClick={() => setLightboxIndex(i)}
                   aria-label={`Vis billede ${i + 1}`}
                   className="relative flex-none w-20 h-16 rounded-lg overflow-hidden border-2 transition-all border-transparent opacity-70 hover:opacity-100 hover:border-accent/50"
+                  onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }}
                 >
                   <Image
                     src={thumbUrl}
@@ -224,6 +227,7 @@ export function ShelterGallery({
                     className="object-cover"
                     sizes="80px"
                     unoptimized={isUnoptimizedImageUrl(thumbUrl)}
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).closest("button")!.style.display = "none"; }}
                   />
                 </button>
               );
