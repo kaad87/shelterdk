@@ -24,6 +24,8 @@ import {
 } from "lucide-react";
 import { getProxiedImageSrc } from "@/lib/image-proxy";
 import { FACILITY_FIELDS } from "@/lib/community";
+import type { ShelterSubmission } from "@/lib/shelter-submissions";
+import { FACILITY_LABELS } from "@/lib/shelter-submissions";
 
 declare global {
   interface Window {
@@ -33,7 +35,7 @@ declare global {
 
 const STORAGE_KEY = "shelterdk-admin-secret";
 
-type TabKey = "photos" | "community" | "instagram" | "newsletter" | "contact" | "oplevelser";
+type TabKey = "photos" | "community" | "instagram" | "newsletter" | "contact" | "oplevelser" | "submissions";
 
 type Submission = {
   id: string;
@@ -115,6 +117,7 @@ const TAB_CONFIG: { key: TabKey; label: string; icon: typeof Camera }[] = [
   { key: "newsletter", label: "Nyhedsbrev", icon: Mail },
   { key: "contact", label: "Beskeder", icon: Inbox },
   { key: "oplevelser", label: "Oplevelser", icon: Camera },
+  { key: "submissions", label: "Indsendte", icon: Plus },
 ];
 
 export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKey }) {
@@ -127,6 +130,7 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
   const [nlSubs, setNlSubs] = useState<NewsletterSub[]>([]);
   const [contactMsgs, setContactMsgs] = useState<ContactMessage[]>([]);
   const [experiences, setExperiences] = useState<Experience[]>([]);
+  const [shelterSubmissions, setShelterSubmissions] = useState<ShelterSubmission[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [actingId, setActingId] = useState<string | null>(null);
@@ -166,7 +170,7 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
     setError("");
     try {
       const ts = Date.now();
-      const [photoRes, communityRes, igRes, nlRes, contactRes, experiencesRes] = await Promise.all([
+      const [photoRes, communityRes, igRes, nlRes, contactRes, experiencesRes, submissionsRes] = await Promise.all([
         fetch(`/api/admin/pending-photos?t=${ts}`, {
           headers: { "x-admin-secret": s },
           cache: "no-store",
@@ -191,6 +195,10 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
           headers: { "x-admin-secret": s },
           cache: "no-store",
         }),
+        fetch(`/api/admin/pending-shelter-submissions?t=${ts}`, {
+          headers: { "x-admin-secret": s },
+          cache: "no-store",
+        }),
       ]);
       if (photoRes.status === 401 || communityRes.status === 401 || igRes.status === 401 || nlRes.status === 401) {
         setError("Ugyldig kode");
@@ -202,6 +210,7 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
         setNlSubs([]);
         setContactMsgs([]);
         setExperiences([]);
+        setShelterSubmissions([]);
         return;
       }
       if (!photoRes.ok || !communityRes.ok) {
@@ -239,6 +248,11 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
       if (experiencesRes.ok) {
         const expData = await experiencesRes.json();
         setExperiences(expData.experiences ?? []);
+      }
+
+      if (submissionsRes.ok) {
+        const subsData = await submissionsRes.json();
+        setShelterSubmissions(subsData.submissions ?? []);
       }
     } finally {
       setLoading(false);
@@ -419,6 +433,7 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
     newsletter: nlSubs.length,
     contact: unreadMsgs.length,
     oplevelser: experiences.length,
+    submissions: shelterSubmissions.length,
   };
 
   // ── Login screen ──
@@ -1104,6 +1119,144 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Indsendte shelters tab */}
+      {tab === "submissions" && (
+        <div className="flex flex-col gap-4">
+          {loading && <div className="text-primary/60 text-sm">Henter…</div>}
+          {!loading && shelterSubmissions.length === 0 && (
+            <p className="text-sm text-primary/50 text-center py-10">
+              Ingen indsendte shelters til behandling
+            </p>
+          )}
+          {shelterSubmissions.map((sub) => (
+            <div key={sub.id} className="border border-primary/10 rounded-xl p-4 bg-white">
+              {/* Type badge */}
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                      sub.type === "owner_registration"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-blue-100 text-blue-700"
+                    }`}
+                  >
+                    {sub.type === "owner_registration" ? "🏠 Ejer" : "💡 Bruger-tip"}
+                  </span>
+                  <span className="text-xs text-primary/40">
+                    {new Date(sub.created_at).toLocaleDateString("da-DK")}
+                  </span>
+                </div>
+              </div>
+
+              {/* Core info */}
+              <div className="space-y-1 mb-3">
+                <p className="font-semibold text-primary">{sub.shelter_name}</p>
+                <p className="text-sm text-primary/70">📍 {sub.location_text}</p>
+                {sub.capacity && (
+                  <p className="text-sm text-primary/60">👥 {sub.capacity} pladser</p>
+                )}
+              </div>
+
+              {/* Facilities */}
+              {sub.facilities && Object.keys(sub.facilities).length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mb-3">
+                  {(Object.entries(sub.facilities) as [string, boolean][])
+                    .filter(([, v]) => v)
+                    .map(([k]) => (
+                      <span
+                        key={k}
+                        className="text-xs bg-primary/5 text-primary/70 px-2 py-0.5 rounded-full"
+                      >
+                        {FACILITY_LABELS[k as keyof typeof FACILITY_LABELS] ?? k}
+                      </span>
+                    ))}
+                </div>
+              )}
+
+              {/* Description */}
+              {sub.description && (
+                <p className="text-sm text-primary/60 italic mb-3 line-clamp-2">{sub.description}</p>
+              )}
+
+              {/* Source info (user tip) */}
+              {sub.source_info && (
+                <p className="text-sm text-primary/60 mb-3">
+                  <span className="font-medium">Tip:</span> {sub.source_info}
+                </p>
+              )}
+
+              {/* Contact info (owner) */}
+              {sub.type === "owner_registration" && (
+                <div className="bg-green-50 rounded-lg px-3 py-2 mb-3 text-sm">
+                  {sub.contact_name && <p className="font-medium text-primary">{sub.contact_name}</p>}
+                  {sub.contact_email && (
+                    <a
+                      href={`mailto:${sub.contact_email}`}
+                      className="text-[#2d7a4e] hover:underline"
+                    >
+                      {sub.contact_email}
+                    </a>
+                  )}
+                  {sub.booking_url && (
+                    <a
+                      href={sub.booking_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block text-[#2d7a4e] hover:underline truncate mt-1"
+                    >
+                      {sub.booking_url}
+                    </a>
+                  )}
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex gap-2">
+                <button
+                  disabled={actingId === sub.id}
+                  onClick={async () => {
+                    setActingId(sub.id);
+                    await fetch("/api/admin/approve-shelter-submission", {
+                      method: "POST",
+                      headers: {
+                        "content-type": "application/json",
+                        "x-admin-secret": secret,
+                      },
+                      body: JSON.stringify({ submissionId: sub.id }),
+                    });
+                    await fetchAll(secret);
+                    setActingId(null);
+                  }}
+                  className="flex items-center gap-1.5 bg-[#2d7a4e] text-white text-sm font-semibold px-3 py-1.5 rounded-lg hover:bg-[#236040] disabled:opacity-50 transition-colors"
+                >
+                  <Check size={14} /> Godkend
+                </button>
+                <button
+                  disabled={actingId === sub.id}
+                  onClick={async () => {
+                    const reason = prompt("Årsag til afvisning (valgfrit):") ?? "";
+                    setActingId(sub.id);
+                    await fetch("/api/admin/reject-shelter-submission", {
+                      method: "POST",
+                      headers: {
+                        "content-type": "application/json",
+                        "x-admin-secret": secret,
+                      },
+                      body: JSON.stringify({ submissionId: sub.id, reason }),
+                    });
+                    await fetchAll(secret);
+                    setActingId(null);
+                  }}
+                  className="flex items-center gap-1.5 border border-red-200 text-red-600 text-sm font-semibold px-3 py-1.5 rounded-lg hover:bg-red-50 disabled:opacity-50 transition-colors"
+                >
+                  <X size={14} /> Afvis
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
