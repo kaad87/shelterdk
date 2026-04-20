@@ -50,3 +50,4 @@ web/public/data/trails.json
 
 # Local Netlify folder
 .netlify
+.worktrees/
