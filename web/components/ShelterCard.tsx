@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { MapPin, Star, CheckCircle, Droplets, Dog, Flame } from "lucide-react";
 import type { Shelter } from "@/types/shelter";
-import { getCity, getResolvedPhotoUrls, isShelterPlace, isValidImageUrl, getWater, getToilet, getPetsAllowed } from "@/lib/shelter-detail";
+import { getCity, getResolvedPhotoUrls, isShelterPlace, isValidImageUrl, getWater, getToilet, getPetsAllowed, isBookable } from "@/lib/shelter-detail";
 import { ShelterPlaceholder } from "@/components/ShelterPlaceholder";
 import { getProxiedImageSrc, isUnoptimizedImageUrl } from "@/lib/image-proxy";
 import { ImageCarousel } from "@/components/ImageCarousel";
@@ -189,7 +189,7 @@ export function ShelterCard({ shelter, onImageError, href, priority }: ShelterCa
       </div>
       {/* Bookbar badge */}
       <div className="mt-1.5 min-h-[1.5rem]">
-        {shelter.booking_url && (
+        {isBookable(shelter) && (
           <span className="inline-flex items-center gap-1 bg-green-50 text-green-700 text-xs font-medium px-2 py-0.5 rounded-full border border-green-200">
             <CheckCircle size={12} />
             Bookbar
