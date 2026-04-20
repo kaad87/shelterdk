@@ -258,7 +258,7 @@ export function Navbar() {
             })}
             <button
               onClick={openModal}
-              className="hidden lg:flex items-center gap-1.5 bg-[#4a90d9] text-white text-sm font-semibold px-3.5 py-1.5 rounded-lg hover:bg-[#3a7bc8] transition-colors whitespace-nowrap"
+              className="hidden lg:flex items-center gap-1.5 bg-accent text-white text-sm font-semibold px-3.5 py-1.5 rounded-lg hover:bg-accent/85 transition-colors whitespace-nowrap"
             >
               <span>💡</span>
               Mangler dit shelter?
@@ -385,7 +385,7 @@ export function Navbar() {
               })}
               <button
                 onClick={() => { openModal(); setMobileMenuOpen(false); }}
-                className="block w-full text-left py-3 px-4 text-base font-medium rounded-lg transition-colors touch-manipulation -mx-2 text-[#4a90d9] hover:bg-blue-50 active:bg-blue-100"
+                className="block w-full text-left py-3 px-4 text-base font-medium rounded-lg transition-colors touch-manipulation -mx-2 text-accent hover:bg-accent/5 active:bg-accent/10"
               >
                 💡 Mangler dit shelter?
               </button>
