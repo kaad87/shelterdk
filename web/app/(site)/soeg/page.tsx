@@ -8,6 +8,12 @@ import { getAreaBySlug, prepositionForArea, prepositionForRegionName } from "@/l
 import { fetchPostnummerBbox, lookupPostnummer } from "@/lib/postnummer";
 import { AreaFaq } from "@/components/AreaFaq";
 import { getAreaFaqItems, faqToJsonLd, type FaqItem } from "@/lib/faq";
+import dynamic from "next/dynamic";
+
+const MissingShelterBanner = dynamic(
+  () => import("@/components/MissingShelterBanner").then((m) => m.MissingShelterBanner),
+  { ssr: false }
+);
 
 /** Ved kortvisning: send færre initialt for hurtigere load; resten hentes på client. */
 const MAP_VIEW_PAGE_SIZE = 200;
@@ -214,6 +220,8 @@ export default async function SoegPage({ searchParams }: SoegPageProps) {
             </Link>
           </p>
         )}
+
+        <MissingShelterBanner />
 
         <Suspense
           fallback={

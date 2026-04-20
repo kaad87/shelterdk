@@ -4,6 +4,7 @@ import { CookieResetButton } from "@/components/CookieResetButton";
 
 const footerLinks = [
   { label: "Søg shelters", href: "/soeg" },
+  { label: "Tilføj manglende shelter", href: "/registrer-shelter" },
   { label: "Book shelter", href: "/shelter-booking" },
   { label: "Shelter efter område", href: "/omraade" },
   { label: "Shelter med toilet", href: "/shelter-med-toilet" },

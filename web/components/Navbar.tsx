@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { ChevronDown, Menu, Search, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { MobileSearchOverlay } from "@/components/MobileSearchOverlay";
+import { useShelterTipModal } from "@/components/ShelterTipModalProvider";
 
 interface NavItem {
   label: string;
@@ -136,6 +137,7 @@ function DropdownMenu({
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { openModal } = useShelterTipModal();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -254,6 +256,13 @@ export function Navbar() {
                 </Link>
               );
             })}
+            <button
+              onClick={openModal}
+              className="hidden lg:flex items-center gap-1.5 bg-[#4a90d9] text-white text-sm font-semibold px-3.5 py-1.5 rounded-lg hover:bg-[#3a7bc8] transition-colors whitespace-nowrap"
+            >
+              <span>💡</span>
+              Mangler dit shelter?
+            </button>
             <div className="relative w-56 lg:w-64" ref={suggestRef}>
               <form onSubmit={handleSearchSubmit} className="flex items-center gap-1 rounded-lg border border-primary/15 bg-primary/[0.03] focus-within:border-accent/50 focus-within:ring-1 focus-within:ring-accent/30">
                 <input
@@ -374,6 +383,12 @@ export function Navbar() {
                   </Link>
                 );
               })}
+              <button
+                onClick={() => { openModal(); setMobileMenuOpen(false); }}
+                className="block w-full text-left py-3 px-4 text-base font-medium rounded-lg transition-colors touch-manipulation -mx-2 text-[#4a90d9] hover:bg-blue-50 active:bg-blue-100"
+              >
+                💡 Mangler dit shelter?
+              </button>
               <form onSubmit={(e) => { e.preventDefault(); router.push(goToSoeg(query)); setMobileMenuOpen(false); }} className="flex gap-2 px-2 mt-2">
                 <input
                   type="search"
