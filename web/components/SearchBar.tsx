@@ -97,6 +97,9 @@ interface SearchBarProps {
   view?: ViewMode;
   onViewChange?: (view: ViewMode) => void;
   className?: string;
+  /** Hvis sat, navigerer filter-toggles til denne URL-base i stedet for /soeg.
+   *  Bruges på regions-sider (/danmark/bornholm) så filteret ikke nulstiller regionen. */
+  filterBasePath?: string;
 }
 
 export function SearchBar({
@@ -108,6 +111,7 @@ export function SearchBar({
   view = "split",
   onViewChange,
   className = "",
+  filterBasePath,
 }: SearchBarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -132,11 +136,15 @@ export function SearchBar({
   }, [initialFilters.billede, initialFilters.anmeldelser, initialFilters.bookbar, initialFilters.vand, initialFilters.toilet, initialFilters.hund, initialFilters.baalplads, initialFilters.bord_baenk, initialFilters.strand, initialFilters.bruser, initialFilters.gratis, initialFilters.handicap, initialFilters.min_pladser]);
 
   const buildSoegUrl = useCallback(
-    (r: string, q: string, v?: ViewMode, f?: SoegFilters) => {
+    (r: string, q: string, v?: ViewMode, f?: SoegFilters, base?: string) => {
       const params = new URLSearchParams();
-      if (r) params.set("region", r);
+      const basePage = base ?? "/soeg";
+      const useCustomBase = !!base;
+      // Når vi bruger en custom base (region-side), udelades region og view fra params
+      // da de er implicitte i URL-stien
+      if (!useCustomBase && r) params.set("region", r);
       if (q.trim()) params.set("q", q.trim());
-      if (v) params.set("view", v);
+      if (!useCustomBase && v) params.set("view", v);
       const active = f ?? filters;
       if (active.billede) params.set("billede", "1");
       if (active.anmeldelser) params.set("anmeldelser", "1");
@@ -152,7 +160,7 @@ export function SearchBar({
       if (active.handicap) params.set("handicap", "1");
       if (active.min_pladser && active.min_pladser > 0) params.set("min_pladser", String(active.min_pladser));
       const s = params.toString();
-      return "/soeg" + (s ? `?${s}` : "");
+      return basePage + (s ? `?${s}` : "");
     },
     [filters]
   );
@@ -220,10 +228,12 @@ export function SearchBar({
       const next = { ...filters, [key]: willBeActive ? true : undefined };
       setFilters(next);
       trackFilter(key, willBeActive);
-      const url = buildSoegUrl(region, query, mode === "search" ? view : "split", next);
+      const url = filterBasePath
+        ? buildSoegUrl("", "", undefined, next, filterBasePath)
+        : buildSoegUrl(region, query, mode === "search" ? view : "split", next);
       router.push(url, { scroll: false });
     },
-    [filters, region, query, view, mode, buildSoegUrl, router]
+    [filters, region, query, view, mode, buildSoegUrl, router, filterBasePath]
   );
 
   const activeFilterCount = FILTER_OPTIONS.filter(({ key }) => filters[key]).length;
@@ -231,9 +241,11 @@ export function SearchBar({
   const clearAllFilters = useCallback(() => {
     const next: SoegFilters = {};
     setFilters(next);
-    const url = buildSoegUrl(region, query, mode === "search" ? view : "split", next);
+    const url = filterBasePath
+      ? filterBasePath
+      : buildSoegUrl(region, query, mode === "search" ? view : "split", next);
     router.push(url, { scroll: false });
-  }, [region, query, view, mode, buildSoegUrl, router]);
+  }, [region, query, view, mode, buildSoegUrl, router, filterBasePath]);
 
   return (
     <div className="space-y-3">

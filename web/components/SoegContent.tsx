@@ -90,6 +90,9 @@ interface SoegContentProps {
   initialArea?: string | null;
   initialFilters?: SoegFilters;
   view: ViewMode;
+  /** Hvis sat, navigerer filter-toggles til denne URL-base i stedet for /soeg.
+   *  Bruges på regions-sider (/danmark/bornholm) så filteret ikke nulstiller regionen. */
+  basePath?: string;
 }
 
 export function SoegContent({
@@ -100,6 +103,7 @@ export function SoegContent({
   initialArea = null,
   initialFilters = {},
   view: initialView,
+  basePath,
 }: SoegContentProps) {
   const searchParams = useSearchParams();
   const urlFilters = useMemo(() => parseFiltersFromParams(searchParams), [searchParams]);
@@ -357,6 +361,7 @@ export function SoegContent({
         initialFilters={effectiveFilters}
         view={view}
         onViewChange={handleViewChange}
+        filterBasePath={basePath}
       />
 
       {shelters.length === 0 && !loading ? (
@@ -366,7 +371,7 @@ export function SoegContent({
           </p>
           {hasActiveFilters && (
             <a
-              href={initialRegion ? `/soeg?region=${encodeURIComponent(initialRegion)}` : "/soeg"}
+              href={basePath ?? (initialRegion ? `/soeg?region=${encodeURIComponent(initialRegion)}` : "/soeg")}
               className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent/90 transition-colors"
             >
               Nulstil filtre

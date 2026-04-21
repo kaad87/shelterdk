@@ -182,6 +182,7 @@ export default async function DanmarkRegionPage({ params }: PageProps) {
               initialArea={null}
               initialFilters={{}}
               view="split"
+              basePath={`/danmark/${regionSlug}`}
             />
           </Suspense>
 
