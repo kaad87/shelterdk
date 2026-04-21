@@ -175,6 +175,15 @@ export function SoegContent({
     fetchPage1(buildApiParams());
   }, [hasActiveFilters, fetchPage1, buildApiParams]);
 
+  // Re-fetch when URL filters change via client-side navigation (filter chip clicks on region pages).
+  // The didInitialFetch guard above is a one-shot; this effect handles subsequent filter changes.
+  const prevUrlFiltersRef = useRef(urlFilters);
+  useEffect(() => {
+    if (prevUrlFiltersRef.current === urlFilters) return;
+    prevUrlFiltersRef.current = urlFilters;
+    fetchPage1(buildApiParams());
+  }, [urlFilters, fetchPage1, buildApiParams]);
+
   // Re-fetch from page 1 when sort mode changes
   useEffect(() => {
     if (sortMode === prevSortMode.current) return;
