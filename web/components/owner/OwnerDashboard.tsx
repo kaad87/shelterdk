@@ -30,7 +30,8 @@ interface Props {
 export function OwnerDashboard({ shelter, initialBookings, ownerToken }: Props) {
   const [bookings, setBookings] = useState(initialBookings);
   const [actionError, setActionError] = useState<string | null>(null);
-  const [blockDateValue, setBlockDateValue] = useState("");
+  const [blockFrom, setBlockFrom] = useState("");
+  const [blockTo, setBlockTo] = useState("");
   const [blockMsg, setBlockMsg] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -60,10 +61,17 @@ export function OwnerDashboard({ shelter, initialBookings, ownerToken }: Props) 
     const res = await fetch(`/api/owner/${ownerToken}/block`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ date: blockDateValue }),
+      body: JSON.stringify({ from: blockFrom, to: blockTo || blockFrom }),
     });
-    if (res.ok) { setBlockMsg("Dato blokeret: " + blockDateValue); setBlockDateValue(""); }
-    else setBlockMsg("Fejl — prøv igen");
+    const data = await res.json();
+    if (res.ok) {
+      const days = data.blocked as number;
+      setBlockMsg(days === 1 ? `Blokeret: ${blockFrom}` : `Blokeret ${days} dage (${blockFrom} → ${blockTo})`);
+      setBlockFrom("");
+      setBlockTo("");
+    } else {
+      setBlockMsg("Fejl — prøv igen");
+    }
   };
 
   const pending = bookings.filter((b) => b.status === "pending");
@@ -142,15 +150,27 @@ export function OwnerDashboard({ shelter, initialBookings, ownerToken }: Props) 
         )}
       </section>
 
-      {/* Block a date */}
+      {/* Block a date range */}
       <section>
-        <h2 className="font-serif text-xl font-bold text-primary mb-4">Bloker dato</h2>
-        <form onSubmit={handleBlock} className="flex gap-3 items-end">
+        <h2 className="font-serif text-xl font-bold text-primary mb-4">Bloker datoer</h2>
+        <form onSubmit={handleBlock} className="flex flex-wrap gap-3 items-end">
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">Dato</label>
+            <label className="block text-sm font-medium text-primary mb-1">Fra</label>
             <input
-              type="date" required value={blockDateValue}
-              onChange={(e) => setBlockDateValue(e.target.value)}
+              type="date" required value={blockFrom}
+              onChange={(e) => {
+                setBlockFrom(e.target.value);
+                if (blockTo && blockTo < e.target.value) setBlockTo(e.target.value);
+              }}
+              className="rounded-lg border border-primary/20 px-3 py-2 text-sm"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-primary mb-1">Til</label>
+            <input
+              type="date" required value={blockTo || blockFrom}
+              min={blockFrom || undefined}
+              onChange={(e) => setBlockTo(e.target.value)}
               className="rounded-lg border border-primary/20 px-3 py-2 text-sm"
             />
           </div>
