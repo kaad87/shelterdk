@@ -35,7 +35,8 @@ web/app/api/__tests__/booking.test.ts             — Vitest tests
 
 **Ændrede filer:**
 ```
-web/next.config.js                                — Tilføj iframe-header-override for /embed/book/
+web/next.config.js                                — Tilføj iframe-header-override for /embed/
+web/lib/email.ts                                  — Eksportér getResend + FROM_EMAIL som delte hjælpere
 web/app/(site)/shelter/[slug]/page.tsx            — Tilføj "Book dette shelter"-knap
 ```
 
@@ -60,7 +61,7 @@ Find blokken der starter med `source: "/(.*)"` og tilføj en ny header-blok **f�
 ```javascript
 // I nextConfig.headers() array, TILFØJ som FØRSTE element:
 {
-  source: "/embed/book/(.*)",
+  source: "/embed/(.*)",
   headers: [
     { key: "X-Frame-Options", value: "ALLOWALL" },
     {
@@ -168,6 +169,10 @@ CREATE POLICY "public read shelter_blocked_dates"
 
 -- booking_action_tokens: ingen public read (tokens er hemmelige)
 -- Alle writes sker via service_role i API routes (bypasser RLS)
+
+-- Index til availability-forespørgslen (hot path: hentes ved hvert kald til booking-siden)
+CREATE INDEX IF NOT EXISTS idx_shelter_bookings_availability
+  ON shelter_bookings (bookable_shelter_id, status, check_out);
 ```
 
 - [ ] **Step 2: Kør SQL i Supabase Dashboard**
@@ -343,7 +348,8 @@ export async function getUnavailableDates(
       .select("check_in, check_out, status")
       .eq("bookable_shelter_id", bookableShelterDbId)
       .in("status", ["pending", "confirmed"])
-      .gte("check_out", today),
+      .gte("check_out", today)
+      .lte("check_in", until), // cap at 90-day window
     createAdminClient()
       .from("shelter_blocked_dates")
       .select("blocked_date")
@@ -508,6 +514,20 @@ export async function getBookingsForShelter(
   return (data ?? []) as ShelterBooking[];
 }
 
+/** Lookup a single booking that belongs to a specific shelter (used in owner/action to avoid full scan). */
+export async function getBookingByIdForShelter(
+  bookingId: string,
+  bookableShelterDbId: string
+): Promise<ShelterBooking | null> {
+  const { data } = await createAdminClient()
+    .from("shelter_bookings")
+    .select("*")
+    .eq("id", bookingId)
+    .eq("bookable_shelter_id", bookableShelterDbId)
+    .single();
+  return data as ShelterBooking | null;
+}
+
 export async function blockDate(
   bookableShelterDbId: string,
   date: string,
@@ -542,26 +562,41 @@ git commit -m "feat(booking): add booking-db helpers (shelter lookup, availabili
 ## Task 5: `web/lib/booking-email.ts` — Email-funktioner
 
 **Files:**
+- Modify: `web/lib/email.ts` (eksportér delte hjælpere)
 - Create: `web/lib/booking-email.ts`
 
-Følger samme mønster som `web/lib/email.ts`.
+Booking-email-modulet genbruger `getResend()` og `FROM_EMAIL` fra det eksisterende `lib/email.ts` for at undgå duplikering. Spec siger eksplicit: "Brug `sendEmail()`-funktionen fra `lib/email.ts`."
 
-- [ ] **Step 1: Opret `web/lib/booking-email.ts`**
+- [ ] **Step 1: Eksportér delte hjælpere fra `web/lib/email.ts`**
+
+Tilføj `export` foran `FROM_EMAIL` og `getResend` i `web/lib/email.ts`:
 
 ```typescript
-import { Resend } from "resend";
-
+// Skift (linje 4):
 const FROM_EMAIL = "ShelterDK <onboarding@resend.dev>";
+// Til:
+export const FROM_EMAIL = "ShelterDK <onboarding@resend.dev>";
+
+// Skift (linje 15):
+function getResend() {
+// Til:
+export function getResend() {
+
+// Skift (linje 6):
+function escapeHtml(str: string): string {
+// Til:
+export function escapeHtml(str: string): string {
+```
+
+- [ ] **Step 2: Opret `web/lib/booking-email.ts`**
+
+```typescript
+import { getResend, FROM_EMAIL, escapeHtml } from "./email";
+
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://shelterdk.dk";
 
-function getResend() {
-  return new Resend(process.env.RESEND_API_KEY);
-}
-
 function esc(s: string): string {
-  return s
-    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  return escapeHtml(s);
 }
 
 function formatDate(iso: string): string {
@@ -686,11 +721,11 @@ export async function sendBookingRejectedToGuest(opts: {
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [ ] **Step 3: Commit**
 
 ```bash
-git add web/lib/booking-email.ts
-git commit -m "feat(booking): add booking email functions (request, received, confirmed, rejected)"
+git add web/lib/email.ts web/lib/booking-email.ts
+git commit -m "feat(booking): export email helpers from lib/email.ts, add booking email functions"
 ```
 
 ---
@@ -742,6 +777,12 @@ const mockHasConfirmedOverlap = vi.fn();
 const mockSendBookingConfirmedToGuest = vi.fn();
 const mockSendBookingRejectedToGuest = vi.fn();
 
+const mockGetBookableShelterByOwnerToken = vi.fn();
+const mockGetBookingByIdForShelter = vi.fn();
+const mockGetBookingsForShelter = vi.fn();
+const mockBlockDate = vi.fn();
+const mockUnblockDate = vi.fn();
+
 vi.mock("@/lib/booking-db", () => ({
   getBookableShelterBySlug: mockGetBookableShelterBySlug,
   getUnavailableDates: mockGetUnavailableDates,
@@ -751,6 +792,11 @@ vi.mock("@/lib/booking-db", () => ({
   markTokenUsed: mockMarkTokenUsed,
   updateBookingStatus: mockUpdateBookingStatus,
   hasConfirmedOverlap: mockHasConfirmedOverlap,
+  getBookableShelterByOwnerToken: mockGetBookableShelterByOwnerToken,
+  getBookingByIdForShelter: mockGetBookingByIdForShelter,
+  getBookingsForShelter: mockGetBookingsForShelter,
+  blockDate: mockBlockDate,
+  unblockDate: mockUnblockDate,
 }));
 
 vi.mock("@/lib/booking-email", () => ({
@@ -1288,7 +1334,7 @@ export async function POST(
 import { NextRequest, NextResponse } from "next/server";
 import {
   getBookableShelterByOwnerToken,
-  getBookingsForShelter,
+  getBookingByIdForShelter,
   updateBookingStatus,
   hasConfirmedOverlap,
 } from "@/lib/booking-db";
@@ -1311,9 +1357,8 @@ export async function POST(
   if (!bookingId || (action !== "confirm" && action !== "reject"))
     return NextResponse.json({ error: "Ugyldige parametre" }, { status: 400 });
 
-  // Verify booking belongs to this shelter
-  const bookings = await getBookingsForShelter(shelter.id);
-  const booking = bookings.find((b) => b.id === bookingId);
+  // Verify booking belongs to this shelter (direct lookup — no full scan)
+  const booking = await getBookingByIdForShelter(bookingId, shelter.id);
   if (!booking) return NextResponse.json({ error: "Booking ikke fundet" }, { status: 404 });
   if (booking.status !== "pending")
     return NextResponse.json({ error: "Booking er allerede behandlet" }, { status: 409 });
@@ -1351,17 +1396,121 @@ export async function POST(
 }
 ```
 
-- [ ] **Step 4: Kør alle booking tests**
+- [ ] **Step 4: Tilføj tests for owner-routes i `booking.test.ts`**
+
+Tilføj disse describe-blokke i slutningen af filen (mocks er allerede defineret øverst i filen fra Task 6):
+
+```typescript
+// ── GET /api/owner/[token]/bookings ───────────────────────────────────────────
+describe("GET /api/owner/[token]/bookings", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("returnerer 401 for ukendt token", async () => {
+    mockGetBookableShelterByOwnerToken.mockResolvedValue(null);
+    const { GET } = await import("../owner/[token]/bookings/route");
+    const res = await GET(
+      new Request("http://localhost") as never,
+      { params: Promise.resolve({ token: "ukendt" }) }
+    );
+    expect(res.status).toBe(401);
+  });
+
+  it("returnerer bookings for gyldigt token", async () => {
+    mockGetBookableShelterByOwnerToken.mockResolvedValue(mockShelter());
+    mockGetBookingsForShelter.mockResolvedValue([mockBooking()]);
+    const { GET } = await import("../owner/[token]/bookings/route");
+    const res = await GET(
+      new Request("http://localhost") as never,
+      { params: Promise.resolve({ token: "owner-token-1" }) }
+    );
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.bookings).toHaveLength(1);
+  });
+});
+
+// ── POST /api/owner/[token]/block ─────────────────────────────────────────────
+describe("POST /api/owner/[token]/block", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("returnerer 401 for ukendt token", async () => {
+    mockGetBookableShelterByOwnerToken.mockResolvedValue(null);
+    const { POST } = await import("../owner/[token]/block/route");
+    const res = await POST(
+      new Request("http://localhost", { method: "POST", body: JSON.stringify({ date: "2026-06-01" }), headers: { "Content-Type": "application/json" } }) as never,
+      { params: Promise.resolve({ token: "ukendt" }) }
+    );
+    expect(res.status).toBe(401);
+  });
+
+  it("blokerer en dato og returnerer ok", async () => {
+    mockGetBookableShelterByOwnerToken.mockResolvedValue(mockShelter());
+    mockBlockDate.mockResolvedValue(undefined);
+    const { POST } = await import("../owner/[token]/block/route");
+    const res = await POST(
+      new Request("http://localhost", { method: "POST", body: JSON.stringify({ date: "2026-06-01" }), headers: { "Content-Type": "application/json" } }) as never,
+      { params: Promise.resolve({ token: "owner-token-1" }) }
+    );
+    expect(res.status).toBe(200);
+    expect(mockBlockDate).toHaveBeenCalledWith("shelter-uuid-1", "2026-06-01", null);
+  });
+});
+
+// ── POST /api/owner/[token]/action ────────────────────────────────────────────
+describe("POST /api/owner/[token]/action", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("returnerer 401 for ukendt token", async () => {
+    mockGetBookableShelterByOwnerToken.mockResolvedValue(null);
+    const { POST } = await import("../owner/[token]/action/route");
+    const res = await POST(
+      new Request("http://localhost", { method: "POST", body: JSON.stringify({ booking_id: "b1", action: "confirm" }), headers: { "Content-Type": "application/json" } }) as never,
+      { params: Promise.resolve({ token: "ukendt" }) }
+    );
+    expect(res.status).toBe(401);
+  });
+
+  it("returnerer 404 for booking der ikke tilhører shelteret", async () => {
+    mockGetBookableShelterByOwnerToken.mockResolvedValue(mockShelter());
+    mockGetBookingByIdForShelter.mockResolvedValue(null);
+    const { POST } = await import("../owner/[token]/action/route");
+    const res = await POST(
+      new Request("http://localhost", { method: "POST", body: JSON.stringify({ booking_id: "fremmed-booking", action: "confirm" }), headers: { "Content-Type": "application/json" } }) as never,
+      { params: Promise.resolve({ token: "owner-token-1" }) }
+    );
+    expect(res.status).toBe(404);
+  });
+
+  it("bekræfter booking og returnerer ok", async () => {
+    mockGetBookableShelterByOwnerToken.mockResolvedValue(mockShelter());
+    mockGetBookingByIdForShelter.mockResolvedValue(mockBooking({ status: "pending" }));
+    mockHasConfirmedOverlap.mockResolvedValue(false);
+    mockUpdateBookingStatus.mockResolvedValue(undefined);
+    mockSendBookingConfirmedToGuest.mockResolvedValue(undefined);
+    const { POST } = await import("../owner/[token]/action/route");
+    const res = await POST(
+      new Request("http://localhost", { method: "POST", body: JSON.stringify({ booking_id: "booking-uuid-1", action: "confirm" }), headers: { "Content-Type": "application/json" } }) as never,
+      { params: Promise.resolve({ token: "owner-token-1" }) }
+    );
+    expect(res.status).toBe(200);
+    expect(mockUpdateBookingStatus).toHaveBeenCalledWith("booking-uuid-1", "confirmed");
+  });
+});
+```
+
+- [ ] **Step 5: Kør alle booking tests**
 
 ```bash
 cd /Users/CKA/shelterdk/web && npx vitest run app/api/__tests__/booking.test.ts
 ```
 
-- [ ] **Step 5: Commit**
+Expected: alle tests PASS (inkl. de fra Task 6, 7, 8)
+
+- [ ] **Step 6: Commit**
 
 ```bash
-git add web/app/api/owner
-git commit -m "feat(booking): add owner API routes (bookings, block, action)"
+git add web/app/api/owner web/app/api/__tests__/booking.test.ts
+git commit -m "feat(booking): add owner API routes (bookings, block, action) + tests"
 ```
 
 ---
@@ -1461,6 +1610,7 @@ export function BookingCalendar({
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { BookingCalendar } from "./BookingCalendar";
 import type { AvailabilityResponse } from "@/types/booking";
 
@@ -1471,12 +1621,12 @@ interface BookingFormProps {
 }
 
 export function BookingForm({ shelterSlug, shelterTitle, maxPersons }: BookingFormProps) {
+  const router = useRouter();
   const [availability, setAvailability] = useState<Record<string, "pending" | "confirmed" | "blocked">>({});
   const [dateRange, setDateRange] = useState<{ checkIn: string; checkOut: string } | null>(null);
   const [form, setForm] = useState({ guest_name: "", guest_email: "", guest_count: 1, message: "" });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     fetch(`/api/book/${shelterSlug}/availability`)
@@ -1498,26 +1648,14 @@ export function BookingForm({ shelterSlug, shelterTitle, maxPersons }: BookingFo
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Noget gik galt"); return; }
-      setSubmitted(true);
+      // Navigate to tak-page (spec: "Bruger lander på /embed/book/[slug]/tak")
+      router.push(`/embed/book/${shelterSlug}/tak`);
     } catch {
       setError("Noget gik galt. Tjek din forbindelse og prøv igen.");
     } finally {
       setSubmitting(false);
     }
   };
-
-  if (submitted) {
-    return (
-      <div className="text-center py-8">
-        <div className="text-4xl mb-3">✓</div>
-        <h2 className="font-serif text-xl font-bold text-primary mb-2">Forespørgsel sendt!</h2>
-        <p className="text-primary/70">Ejeren vender tilbage hurtigst muligt.</p>
-        <p className="text-sm text-primary/50 mt-4">
-          Du modtager en bekræftelse på {form.guest_email}
-        </p>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -1993,53 +2131,67 @@ git commit -m "feat(booking): add owner dashboard component and page"
 **Files:**
 - Modify: `web/app/(site)/shelter/[slug]/page.tsx`
 
-- [ ] **Step 1: Find og læs shelter detail page**
+Filen er læst og kortlagt. Shelter-data er i `shelter`-variablen fra linje 137. `<ShelterDetailContent>` renderes fra linje 232. Tilføj import, async lookup og JSX som vist nedenfor — ingen guess-work nødvendigt.
 
-```bash
-head -60 /Users/CKA/shelterdk/web/app/\(site\)/shelter/\[slug\]/page.tsx
+- [ ] **Step 1: Tilføj import til `booking-db` i toppen af filen**
+
+Find linjen (linje 36):
+```typescript
+import { ShelterDetailContent } from "@/components/ShelterDetailContent";
 ```
 
-Identificér:
-1. Hvor shelter-data hentes fra Supabase (ca. linje 45-60)
-2. Hvor `<ShelterDetailContent>` renderes (ca. linje 200-260)
-3. Hvilke props der sendes til `ShelterDetailContent`
-
-- [ ] **Step 2: Tilføj import og lookup for bookable shelter**
-
-Øverst i filen (sammen med andre imports):
+Tilføj **efter** den linje:
 ```typescript
 import { getBookableShelterByShelterDbId } from "@/lib/booking-db";
 ```
 
-I den async page-funktion, find stedet hvor `shelter` er hentet og tilføj:
+- [ ] **Step 2: Tilføj async lookup efter shelter+reviews er hentet**
+
+Find linjen (linje 150-153):
 ```typescript
-// Tjek om dette shelter har en bookbar side på ShelterDK
-const bookableShelter = await getBookableShelterByShelterDbId(shelter.id).catch(() => null);
+  const [reviews, area] = await Promise.all([
+    getReviews(shelter.google_place_id ?? null),
+    areaSlug ? getAreaBySlug(areaSlug) : Promise.resolve(null),
+  ]);
 ```
 
-- [ ] **Step 3: Tilføj booking-knap i returneringen**
+Tilføj **efter** den blok:
+```typescript
+  // Tjek om dette shelter har en bookbar side på ShelterDK
+  const bookableShelter = await getBookableShelterByShelterDbId(shelter.id).catch(() => null);
+```
 
-Find stedet i JSX hvor `<ShelterDetailContent>` kaldes. Tilføj en booking-sektion **over eller under** det eksisterende booking-link (nær linje 250-256). Sæt `bookableShelterSlug` som prop eller tilføj direkte en knap i siden:
+- [ ] **Step 3: Tilføj booking-knap i JSX**
 
+Find linjen (linje 228):
+```typescript
+  return (
+    <>
+      <ShelterSchema shelter={shelter} canonicalPath={`/shelter/${slug}`} reviews={reviews} />
+      <BreadcrumbSchema items={breadcrumbSchemaItems} />
+      <ShelterDetailContent
+```
+
+Tilføj **mellem** `<BreadcrumbSchema .../>` og `<ShelterDetailContent`:
 ```tsx
-{bookableShelter && (
-  <div className="mb-6 rounded-xl border border-accent/20 bg-accent/5 p-4">
-    <p className="text-sm font-semibold text-primary mb-2">
-      Book dette shelter direkte
-    </p>
-    <a
-      href={`/embed/book/${bookableShelter.slug}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex items-center gap-2 rounded-lg bg-accent text-white px-4 py-2 text-sm font-semibold hover:bg-accent/90 transition-colors"
-    >
-      Book nu →
-    </a>
-  </div>
-)}
+      {bookableShelter && (
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-4">
+          <div className="rounded-xl border border-accent/20 bg-accent/5 p-4 flex items-center justify-between gap-4">
+            <p className="text-sm font-semibold text-primary">
+              Book dette shelter direkte på ShelterDK
+            </p>
+            <a
+              href={`/embed/book/${bookableShelter.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-accent text-white px-4 py-2 text-sm font-semibold hover:bg-accent/90 transition-colors"
+            >
+              Book nu →
+            </a>
+          </div>
+        </div>
+      )}
 ```
-
-Placer dette i `ShelterDetailContent`-komponentens `bookingSection`-prop eller direkte i page.tsx — se den eksisterende kode for den rette placering.
 
 - [ ] **Step 4: Kør alle tests**
 
