@@ -4,7 +4,7 @@ export default function EmbedLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="m-0 p-0 w-full h-screen overflow-hidden">
+    <div className="m-0 p-0 w-full overflow-y-auto">
       {children}
     </div>
   );
