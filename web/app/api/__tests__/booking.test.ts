@@ -181,3 +181,52 @@ describe("POST /api/book/[slug]", () => {
     expect(mockSendBookingReceivedToGuest).toHaveBeenCalledOnce();
   });
 });
+
+// ── GET /api/booking/action/[token] ──────────────────────────────────────────
+describe("GET /api/booking/action/[token]", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("redirecter til not_found for ukendt token", async () => {
+    mockResolveActionToken.mockResolvedValue(null);
+    const { GET } = await import("../booking/action/[token]/route");
+    const res = await GET(
+      new Request("http://localhost") as never,
+      { params: Promise.resolve({ token: "ukendt" }) }
+    );
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toContain("not_found");
+  });
+
+  it("redirecter til already_used for brugt token", async () => {
+    mockResolveActionToken.mockResolvedValue({
+      token: { id: "t1", action: "confirm", used_at: "2026-04-24T00:00:00Z", expires_at: "2026-05-01T00:00:00Z" },
+      booking: mockBooking({ status: "pending" }),
+      shelter: mockShelter(),
+    });
+    const { GET } = await import("../booking/action/[token]/route");
+    const res = await GET(
+      new Request("http://localhost") as never,
+      { params: Promise.resolve({ token: "brugt" }) }
+    );
+    expect(res.headers.get("location")).toContain("already_used");
+  });
+
+  it("bekræfter booking og redirecter til confirmed", async () => {
+    mockResolveActionToken.mockResolvedValue({
+      token: { id: "t1", action: "confirm", used_at: null, expires_at: "2099-01-01T00:00:00Z" },
+      booking: mockBooking({ status: "pending" }),
+      shelter: mockShelter(),
+    });
+    mockHasConfirmedOverlap.mockResolvedValue(false);
+    mockMarkTokenUsed.mockResolvedValue(undefined);
+    mockUpdateBookingStatus.mockResolvedValue(undefined);
+    mockSendBookingConfirmedToGuest.mockResolvedValue(undefined);
+    const { GET } = await import("../booking/action/[token]/route");
+    const res = await GET(
+      new Request("http://localhost") as never,
+      { params: Promise.resolve({ token: "confirm-token" }) }
+    );
+    expect(res.headers.get("location")).toContain("confirmed");
+    expect(mockUpdateBookingStatus).toHaveBeenCalledWith("booking-uuid-1", "confirmed");
+  });
+});
