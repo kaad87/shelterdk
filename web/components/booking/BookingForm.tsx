@@ -35,7 +35,11 @@ export function BookingForm({ shelterSlug, shelterTitle, maxPersons }: BookingFo
       const res = await fetch(`/api/book/${shelterSlug}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, ...dateRange }),
+        body: JSON.stringify({
+          ...form,
+          check_in: dateRange.checkIn,
+          check_out: dateRange.checkOut,
+        }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Noget gik galt"); return; }
@@ -52,11 +56,14 @@ export function BookingForm({ shelterSlug, shelterTitle, maxPersons }: BookingFo
     <div className="space-y-6">
       <h1 className="font-serif text-2xl font-bold text-primary">Book {shelterTitle}</h1>
 
-      <BookingCalendar
-        unavailableDates={availability}
-        onRangeSelect={setDateRange}
-        maxPersons={maxPersons}
-      />
+      <div>
+        <BookingCalendar
+          unavailableDates={availability}
+          onRangeSelect={setDateRange}
+          maxPersons={maxPersons}
+        />
+        <p className="text-xs text-primary/50 mt-1">Klik ankomstdato, derefter afrejsedato</p>
+      </div>
 
       {dateRange && (
         <p className="text-sm text-primary/70 bg-primary/5 rounded-lg px-3 py-2">
