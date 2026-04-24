@@ -103,3 +103,81 @@ describe("GET /api/book/[slug]/availability", () => {
     expect(body.dates["2026-06-10"]).toBe("pending");
   });
 });
+
+// ── POST /api/book/[slug] ─────────────────────────────────────────────────────
+describe("POST /api/book/[slug]", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  const validBody = {
+    guest_name: "Lars",
+    guest_email: "lars@test.dk",
+    guest_count: 2,
+    check_in: "2027-06-01",
+    check_out: "2027-06-03",
+  };
+
+  it("returnerer 404 for ukendt shelter", async () => {
+    mockGetBookableShelterBySlug.mockResolvedValue(null);
+    const { POST } = await import("../book/[slug]/route");
+    const res = await POST(
+      new Request("http://localhost/api/book/ukendt", {
+        method: "POST", body: JSON.stringify(validBody),
+        headers: { "Content-Type": "application/json" },
+      }) as never,
+      { params: Promise.resolve({ slug: "ukendt" }) }
+    );
+    expect(res.status).toBe(404);
+  });
+
+  it("returnerer 400 ved ugyldig email", async () => {
+    mockGetBookableShelterBySlug.mockResolvedValue(mockShelter());
+    const { POST } = await import("../book/[slug]/route");
+    const res = await POST(
+      new Request("http://localhost/api/book/test-shelter", {
+        method: "POST",
+        body: JSON.stringify({ ...validBody, guest_email: "ikke-en-email" }),
+        headers: { "Content-Type": "application/json" },
+      }) as never,
+      { params: Promise.resolve({ slug: "test-shelter" }) }
+    );
+    expect(res.status).toBe(400);
+    expect(await res.json()).toMatchObject({ error: expect.stringContaining("email") });
+  });
+
+  it("returnerer 400 når check_out er før check_in", async () => {
+    mockGetBookableShelterBySlug.mockResolvedValue(mockShelter());
+    const { POST } = await import("../book/[slug]/route");
+    const res = await POST(
+      new Request("http://localhost/api/book/test-shelter", {
+        method: "POST",
+        body: JSON.stringify({ ...validBody, check_in: "2027-06-05", check_out: "2027-06-03" }),
+        headers: { "Content-Type": "application/json" },
+      }) as never,
+      { params: Promise.resolve({ slug: "test-shelter" }) }
+    );
+    expect(res.status).toBe(400);
+  });
+
+  it("opretter booking og returnerer 201 ved gyldigt input", async () => {
+    mockGetBookableShelterBySlug.mockResolvedValue(mockShelter());
+    mockCreateBooking.mockResolvedValue(mockBooking({ check_in: "2027-06-01", check_out: "2027-06-03" }));
+    mockCreateActionTokens.mockResolvedValue({ confirmToken: "ct", rejectToken: "rt" });
+    mockSendBookingRequestToOwner.mockResolvedValue(undefined);
+    mockSendBookingReceivedToGuest.mockResolvedValue(undefined);
+    const { POST } = await import("../book/[slug]/route");
+    const res = await POST(
+      new Request("http://localhost/api/book/test-shelter", {
+        method: "POST",
+        body: JSON.stringify(validBody),
+        headers: { "Content-Type": "application/json" },
+      }) as never,
+      { params: Promise.resolve({ slug: "test-shelter" }) }
+    );
+    expect(res.status).toBe(201);
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+    expect(mockCreateBooking).toHaveBeenCalledOnce();
+    expect(mockSendBookingRequestToOwner).toHaveBeenCalledOnce();
+    expect(mockSendBookingReceivedToGuest).toHaveBeenCalledOnce();
+  });
+});
