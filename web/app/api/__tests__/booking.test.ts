@@ -230,3 +230,99 @@ describe("GET /api/booking/action/[token]", () => {
     expect(mockUpdateBookingStatus).toHaveBeenCalledWith("booking-uuid-1", "confirmed");
   });
 });
+
+// ── GET /api/owner/[token]/bookings ───────────────────────────────────────────
+describe("GET /api/owner/[token]/bookings", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("returnerer 401 for ukendt token", async () => {
+    mockGetBookableShelterByOwnerToken.mockResolvedValue(null);
+    const { GET } = await import("../owner/[token]/bookings/route");
+    const res = await GET(
+      new Request("http://localhost") as never,
+      { params: Promise.resolve({ token: "ukendt" }) }
+    );
+    expect(res.status).toBe(401);
+  });
+
+  it("returnerer bookings for gyldigt token", async () => {
+    mockGetBookableShelterByOwnerToken.mockResolvedValue(mockShelter());
+    mockGetBookingsForShelter.mockResolvedValue([mockBooking()]);
+    const { GET } = await import("../owner/[token]/bookings/route");
+    const res = await GET(
+      new Request("http://localhost") as never,
+      { params: Promise.resolve({ token: "owner-token-1" }) }
+    );
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.bookings).toHaveLength(1);
+  });
+});
+
+// ── POST /api/owner/[token]/block ─────────────────────────────────────────────
+describe("POST /api/owner/[token]/block", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("returnerer 401 for ukendt token", async () => {
+    mockGetBookableShelterByOwnerToken.mockResolvedValue(null);
+    const { POST } = await import("../owner/[token]/block/route");
+    const res = await POST(
+      new Request("http://localhost", { method: "POST", body: JSON.stringify({ date: "2026-06-01" }), headers: { "Content-Type": "application/json" } }) as never,
+      { params: Promise.resolve({ token: "ukendt" }) }
+    );
+    expect(res.status).toBe(401);
+  });
+
+  it("blokerer en dato og returnerer ok", async () => {
+    mockGetBookableShelterByOwnerToken.mockResolvedValue(mockShelter());
+    mockBlockDate.mockResolvedValue(undefined);
+    const { POST } = await import("../owner/[token]/block/route");
+    const res = await POST(
+      new Request("http://localhost", { method: "POST", body: JSON.stringify({ date: "2026-06-01" }), headers: { "Content-Type": "application/json" } }) as never,
+      { params: Promise.resolve({ token: "owner-token-1" }) }
+    );
+    expect(res.status).toBe(200);
+    expect(mockBlockDate).toHaveBeenCalledWith("shelter-uuid-1", "2026-06-01", null);
+  });
+});
+
+// ── POST /api/owner/[token]/action ────────────────────────────────────────────
+describe("POST /api/owner/[token]/action", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("returnerer 401 for ukendt token", async () => {
+    mockGetBookableShelterByOwnerToken.mockResolvedValue(null);
+    const { POST } = await import("../owner/[token]/action/route");
+    const res = await POST(
+      new Request("http://localhost", { method: "POST", body: JSON.stringify({ booking_id: "b1", action: "confirm" }), headers: { "Content-Type": "application/json" } }) as never,
+      { params: Promise.resolve({ token: "ukendt" }) }
+    );
+    expect(res.status).toBe(401);
+  });
+
+  it("returnerer 404 for booking der ikke tilhører shelteret", async () => {
+    mockGetBookableShelterByOwnerToken.mockResolvedValue(mockShelter());
+    mockGetBookingByIdForShelter.mockResolvedValue(null);
+    const { POST } = await import("../owner/[token]/action/route");
+    const res = await POST(
+      new Request("http://localhost", { method: "POST", body: JSON.stringify({ booking_id: "fremmed-booking", action: "confirm" }), headers: { "Content-Type": "application/json" } }) as never,
+      { params: Promise.resolve({ token: "owner-token-1" }) }
+    );
+    expect(res.status).toBe(404);
+  });
+
+  it("bekræfter booking og returnerer ok", async () => {
+    mockGetBookableShelterByOwnerToken.mockResolvedValue(mockShelter());
+    mockGetBookingByIdForShelter.mockResolvedValue(mockBooking({ status: "pending" }));
+    mockHasConfirmedOverlap.mockResolvedValue(false);
+    mockUpdateBookingStatus.mockResolvedValue(undefined);
+    mockSendBookingConfirmedToGuest.mockResolvedValue(undefined);
+    const { POST } = await import("../owner/[token]/action/route");
+    const res = await POST(
+      new Request("http://localhost", { method: "POST", body: JSON.stringify({ booking_id: "booking-uuid-1", action: "confirm" }), headers: { "Content-Type": "application/json" } }) as never,
+      { params: Promise.resolve({ token: "owner-token-1" }) }
+    );
+    expect(res.status).toBe(200);
+    expect(mockUpdateBookingStatus).toHaveBeenCalledWith("booking-uuid-1", "confirmed");
+  });
+});
