@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 interface BookableShelter {
@@ -30,7 +30,7 @@ function CopyButton({ value }: { value: string }) {
   );
 }
 
-export default function AdminSheltersPage() {
+function AdminSheltersContent() {
   const searchParams = useSearchParams();
   const secret = searchParams.get("secret") ?? "";
 
@@ -92,7 +92,7 @@ export default function AdminSheltersPage() {
           <div className="text-4xl mb-3">🔒</div>
           <h1 className="font-serif text-xl font-bold text-primary mb-2">Adgang nægtet</h1>
           <p className="text-primary/60 text-sm">
-            Tilføj <code className="bg-primary/5 px-1 rounded">?secret=XXX</code> til URL'en
+            Tilføj <code className="bg-primary/5 px-1 rounded">?secret=XXX</code> til URL&apos;en
           </p>
         </div>
       </div>
@@ -236,5 +236,13 @@ export default function AdminSheltersPage() {
         </section>
       </div>
     </div>
+  );
+}
+
+export default function AdminSheltersPage() {
+  return (
+    <Suspense fallback={null}>
+      <AdminSheltersContent />
+    </Suspense>
   );
 }
