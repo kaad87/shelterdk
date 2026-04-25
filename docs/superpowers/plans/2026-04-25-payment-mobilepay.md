@@ -29,6 +29,7 @@
 | `web/app/(site)/booking/[id]/betal/page.tsx` | Create | Guest payment page (shows breakdown + Stripe link) |
 | `web/app/(site)/booking/[id]/tak/page.tsx` | Create | Guest success page (Stripe success_url) |
 | `web/components/owner/OwnerDashboard.tsx` | Modify | Payment status badge, resend button, price-per-night field |
+| `web/lib/admin-auth.ts` | Create (if missing) | Shared isAdmin helper for admin routes |
 | `web/app/api/admin/payments/route.ts` | Create | List payments (admin, x-admin-secret) |
 | `web/app/api/admin/payouts/route.ts` | Create | GET + POST payouts (admin) |
 | `web/app/api/admin/payouts/[id]/route.ts` | Create | PATCH mark payout paid (admin) |
@@ -289,7 +290,8 @@ export function calculateFee(
 
 /**
  * Create a Stripe Checkout Session for a booking.
- * Returns the session URL (redirect guest here) and session ID (store in DB).
+ * Returns { url, sessionId } — intentionally richer than the spec's Promise<string>
+ * because the caller also needs the session ID to insert into booking_payments.
  * Note: expires_at max is 24h from now (Stripe limit).
  */
 export async function createCheckoutSession(
@@ -726,6 +728,8 @@ git commit -m "feat: add payment email templates (request, confirmed, expired)"
 
 The current route handles `"confirm"` and `"reject"`. We extend `"confirm"` to create a Stripe Checkout Session after updating booking status, and add `"resend-payment"`.
 
+**Intentional change:** The existing `confirm` branch sends `sendBookingConfirmedToGuest`. This is **replaced** by `sendPaymentRequestToGuest` — the guest now gets the payment link instead of a direct confirmation. The actual "confirmed" email is sent later by the Stripe webhook after payment completes. If Stripe setup fails (the `try/catch` path), the booking is still confirmed in the DB — the admin can resend the payment link from the dashboard.
+
 - [ ] **Step 1: Replace the file content**
 
 Full replacement of `web/app/api/owner/[token]/action/route.ts`:
@@ -1161,9 +1165,24 @@ export default async function BetalPage({ params }: Props) {
   let checkoutUrl: string | null = null;
   if (booking.status === "confirmed") {
     try {
-      const { url, sessionId } = await createCheckoutSession(booking, shelter);
-      // Only create a new DB row if there's no pending payment already
-      if (!payment || payment.status === "expired") {
+      // Reuse existing active session to avoid creating orphaned Stripe sessions
+      // on every page load. Only create a new session if none is pending/active.
+      const hasActivePendingPayment =
+        payment &&
+        payment.status === "pending" &&
+        new Date(payment.expires_at) > new Date();
+
+      if (hasActivePendingPayment) {
+        // Retrieve URL from existing Stripe session
+        const Stripe = (await import("stripe")).default;
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+        const session = await stripe.checkout.sessions.retrieve(
+          payment.stripe_checkout_session_id
+        );
+        checkoutUrl = session.url ?? null;
+      } else {
+        // No active session — create a new one (first visit or session expired)
+        const { url, sessionId } = await createCheckoutSession(booking, shelter);
         await createBookingPayment({
           bookingId: id,
           stripeCheckoutSessionId: sessionId,
@@ -1171,8 +1190,8 @@ export default async function BetalPage({ params }: Props) {
           amountShelterDkk: shelterDkk,
           amountPlatformDkk: platformDkk,
         });
+        checkoutUrl = url;
       }
-      checkoutUrl = url;
     } catch (err) {
       console.error("betal page: checkout error:", err);
     }
@@ -1524,7 +1543,30 @@ git commit -m "feat: owner dashboard — payment status badges, resend button, p
 - Create: `web/app/api/admin/payouts/[id]/route.ts`
 - Create: `web/app/(site)/admin/payments/page.tsx`
 
-The existing `isAdmin` helper pattern (from `approve-community/route.ts`): checks `x-admin-secret` header or `?secret=` query param against `process.env.ADMIN_SECRET`.
+- [ ] **Step 0: Check for existing shared isAdmin helper**
+
+```bash
+grep -r "isAdmin\|is_admin\|adminSecret" /Users/CKA/shelterdk/web/lib/ 2>/dev/null | head -5
+grep -r "function isAdmin" /Users/CKA/shelterdk/web/app/api/admin/ | head -5
+```
+
+**If a shared helper already exists** (e.g. in `web/lib/admin-auth.ts`): import from it in all three routes below instead of inlining.
+
+**If no shared helper exists**: create `web/lib/admin-auth.ts` with the following, then import it in all three admin routes:
+
+```typescript
+import { NextRequest } from "next/server";
+
+export function isAdmin(req: NextRequest): boolean {
+  const secret = process.env.ADMIN_SECRET;
+  if (!secret || secret.length === 0) return false;
+  const header = req.headers.get("x-admin-secret");
+  const query = new URL(req.url).searchParams.get("secret");
+  return header === secret || query === secret;
+}
+```
+
+The three routes below use `isAdmin` from this shared file (replace any inline copy with `import { isAdmin } from "@/lib/admin-auth"`).
 
 - [ ] **Step 1: Create payments API**
 
@@ -1615,6 +1657,8 @@ export async function PATCH(
 ```
 
 - [ ] **Step 4: Create admin UI page**
+
+**Note on tabs:** The spec says "two tabs". For MVP, this page uses two stacked sections on a single server-rendered page — simpler, no client JS needed, same content. Tab UI can be added later if desired (would require converting to a client component with `useState`).
 
 Create `web/app/(site)/admin/payments/page.tsx`:
 
