@@ -44,7 +44,6 @@ export async function POST(req: NextRequest) {
         .single();
 
       if (booking) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const shelter = (booking as any).bookable_shelters;
         await sendPaymentConfirmed({
           guestEmail: booking.guest_email,
