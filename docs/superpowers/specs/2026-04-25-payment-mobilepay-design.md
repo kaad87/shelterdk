@@ -57,7 +57,7 @@ ALTER TABLE bookable_shelters
 CREATE TABLE booking_payments (
   id                          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   booking_id                  uuid NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
-  stripe_checkout_session_id  text NOT NULL,
+  stripe_checkout_session_id  text NOT NULL UNIQUE,  -- UNIQUE: sikrer idempotent webhook-håndtering
   amount_total_dkk            integer NOT NULL,   -- hvad gæsten betaler
   amount_shelter_dkk          integer NOT NULL,   -- til ejer
   amount_platform_dkk         integer NOT NULL,   -- ShelterDKs andel
@@ -104,7 +104,7 @@ CREATE TABLE owner_payouts (
        - metadata: { booking_id }
        - success_url: /booking/[id]/tak
        - cancel_url: /booking/[id]/betal
-       - expires_at: now + 48h
+       - expires_at: Math.floor(Date.now()/1000) + 48*3600  -- Unix timestamp; tilsidesætter Stripes default på 24h
    → Gem booking_payments-række (status: pending)
    → Send payment-request e-mail til gæst
 
@@ -119,6 +119,9 @@ CREATE TABLE owner_payouts (
    → Send payment-confirmed e-mail til gæst og ejer
 
 4. Nightly cron: udløb af ubetalte betalinger
+   → Implementeres som Netlify Scheduled Function (`netlify/functions/expire-payments-cron.ts`)
+     med schedule `"0 2 * * *"` (kl. 02:00 UTC hver nat)
+   → Kalder `/api/cron/expire-payments` med `x-cron-secret` header (samme mønster som ical-sync)
    → Find booking_payments WHERE status='pending' AND expires_at < now()
    → booking_payments.status = 'expired'
    → bookings.status = 'cancelled'
@@ -141,12 +144,17 @@ CREATE TABLE owner_payouts (
 
 | Method | Path | Formål |
 |--------|------|--------|
-| POST | `/api/owner/[token]/bookings/[id]/confirm` | Bekræft booking + opret Checkout Session |
-| POST | `/api/stripe/webhook` | Stripe event handler |
-| GET | `/api/owner/[token]/bookings/[id]/resend-payment` | Gensend betalingslink |
-| GET | `/api/admin/payments` | Liste betalinger |
-| POST | `/api/admin/payouts` | Opret payout |
-| PATCH | `/api/admin/payouts/[id]` | Markér payout betalt |
+| POST | `/api/owner/[token]/action` | Eksisterende route — udvides med `action: "confirm"` der tillige opretter Checkout Session |
+| POST | `/api/stripe/webhook` | Stripe event handler (ingen auth — verificeres via `stripe-signature` header) |
+| POST | `/api/owner/[token]/action` | `action: "resend-payment"` — gensend betalingslink til gæst |
+| GET | `/api/admin/payments` | Liste betalinger — godkendt via `x-admin-secret` header (samme mønster som øvrige admin-routes) |
+| POST | `/api/admin/payouts` | Opret payout — `x-admin-secret` |
+| PATCH | `/api/admin/payouts/[id]` | Markér payout betalt — `x-admin-secret` |
+| GET | `/api/cron/expire-payments` | Nightly cron: udløb af betalinger — `x-cron-secret` |
+
+**Admin-auth:** Alle `/api/admin/*`-routes verificeres med `x-admin-secret: process.env.ADMIN_SECRET` header (eksisterende mønster i projektet).
+
+**Ny miljøvariabel:** `ADMIN_SECRET` (hvis ikke allerede defineret i projektet).
 
 ---
 
@@ -214,10 +222,13 @@ Tre nye skabeloner (følger eksisterende mønster i projektet):
 ## Miljøvariabler
 
 ```
-STRIPE_SECRET_KEY
-STRIPE_WEBHOOK_SECRET
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+STRIPE_SECRET_KEY              -- Stripe server-side nøgle
+STRIPE_WEBHOOK_SECRET          -- Stripe webhook signing secret
+CRON_SECRET                    -- Allerede i brug (ical-sync); genbruges til expire-payments
+ADMIN_SECRET                   -- Admin API-guard (hvis ikke allerede defineret)
 ```
+
+Bemærk: `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` er ikke nødvendig — Stripe hosted Checkout kræver ingen client-side JS.
 
 ---
 
