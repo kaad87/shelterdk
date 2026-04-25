@@ -8,6 +8,8 @@ import {
   sendBookingRequestToOwner,
   sendBookingReceivedToGuest,
 } from "@/lib/booking-email";
+import { createCheckoutSession, calculateFee } from "@/lib/stripe";
+import { createBookingPayment } from "@/lib/payment-db";
 
 export const dynamic = "force-dynamic";
 
@@ -92,7 +94,34 @@ export async function POST(
       }),
     ]);
 
-    return NextResponse.json({ ok: true, bookingId: booking.id }, { status: 201 });
+    // For upfront shelters: create Stripe checkout session immediately
+    let checkoutUrl: string | undefined;
+    if (shelter.payment_mode === "upfront") {
+      try {
+        const { url, sessionId } = await createCheckoutSession(booking, shelter);
+        const { shelterDkk, platformDkk, totalDkk } = calculateFee(
+          shelter.shelter_price_dkk ?? 0,
+          shelter.platform_fee_pct,
+          shelter.platform_fee_min_dkk
+        );
+        await createBookingPayment({
+          bookingId: booking.id,
+          stripeCheckoutSessionId: sessionId,
+          amountTotalDkk: totalDkk,
+          amountShelterDkk: shelterDkk,
+          amountPlatformDkk: platformDkk,
+        });
+        checkoutUrl = url;
+      } catch (err) {
+        console.error("book route: upfront checkout error:", err);
+        // Non-fatal: booking is created; guest will need to contact support
+      }
+    }
+
+    return NextResponse.json(
+      { ok: true, bookingId: booking.id, checkoutUrl },
+      { status: 201 }
+    );
   } catch (err) {
     console.error("booking create error:", err);
     return NextResponse.json(
