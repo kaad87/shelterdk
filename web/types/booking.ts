@@ -13,6 +13,7 @@ export interface BookableShelter {
   shelter_price_dkk: number | null;
   platform_fee_pct: number;
   platform_fee_min_dkk: number;
+  payment_mode: "after_confirmation" | "upfront";
   created_at: string;
 }
 
