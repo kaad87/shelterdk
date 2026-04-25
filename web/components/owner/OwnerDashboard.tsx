@@ -72,6 +72,7 @@ function DayCell({
   iso,
   events,
   blocked,
+  blockedSync,
   isToday,
   isPast,
   onSelect,
@@ -80,6 +81,7 @@ function DayCell({
   iso: string;
   events: CalEvent[];
   blocked: boolean;
+  blockedSync: boolean;
   isToday: boolean;
   isPast: boolean;
   onSelect: (iso: string) => void;
@@ -89,7 +91,8 @@ function DayCell({
   const pending = events.some((e) => e.status === "pending");
 
   let dot: string | null = null;
-  if (blocked) dot = "bg-primary/25";
+  if (blockedSync) dot = "bg-primary/40";
+  else if (blocked) dot = "bg-primary/20";
   else if (confirmed) dot = "bg-emerald-500";
   else if (pending) dot = "bg-amber-400";
 
@@ -114,14 +117,16 @@ function MiniCalendar({
   year,
   month,
   events,
-  blockedSet,
+  manualBlockedSet,
+  syncedBlockedSet,
   onSelect,
   selectedDate,
 }: {
   year: number;
   month: number;
   events: CalEvent[];
-  blockedSet: Set<string>;
+  manualBlockedSet: Set<string>;
+  syncedBlockedSet: Set<string>;
   onSelect: (iso: string) => void;
   selectedDate: string | null;
 }) {
@@ -159,7 +164,8 @@ function MiniCalendar({
               key={iso}
               iso={iso}
               events={events.filter((e) => iso >= e.checkIn && iso < e.checkOut)}
-              blocked={blockedSet.has(iso)}
+              blocked={manualBlockedSet.has(iso)}
+              blockedSync={syncedBlockedSet.has(iso)}
               isToday={iso === todayIso}
               isPast={iso < todayIso}
               onSelect={onSelect}
@@ -185,6 +191,15 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
   const [blockLoading, setBlockLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // iCal integration state
+  const [icalImportUrl, setIcalImportUrl] = useState(shelter.ical_import_url ?? "");
+  const [icalSavedUrl, setIcalSavedUrl] = useState(shelter.ical_import_url ?? "");
+  const [icalLastSynced, setIcalLastSynced] = useState<string | null>(shelter.ical_last_synced_at ?? null);
+  const [icalSaving, setIcalSaving] = useState(false);
+  const [icalSyncing, setIcalSyncing] = useState(false);
+  const [icalMsg, setIcalMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [icalCopied, setIcalCopied] = useState(false);
+
   // Calendar state
   const now = new Date();
   const [calYear, setCalYear] = useState(now.getFullYear());
@@ -205,13 +220,15 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
     label: b.guest_name,
   }));
 
-  const blockedSet = new Set(blockedDates);
+  const manualBlockedSet = new Set(blockedDates.filter((d) => d.source === "manual").map((d) => d.date));
+  const syncedBlockedSet = new Set(blockedDates.filter((d) => d.source === "ical_sync").map((d) => d.date));
 
   // Events on selected date
   const selectedEvents = selectedDate
     ? calEvents.filter((e) => selectedDate >= e.checkIn && selectedDate < e.checkOut)
     : [];
-  const selectedBlocked = selectedDate ? blockedSet.has(selectedDate) : false;
+  const selectedBlocked = selectedDate ? (manualBlockedSet.has(selectedDate) || syncedBlockedSet.has(selectedDate)) : false;
+  const selectedBlockedSync = selectedDate ? syncedBlockedSet.has(selectedDate) : false;
 
   const embedCode = shelter.booking_mode === "iframe"
     ? `<iframe\n  src="https://shelterdk.dk/embed/book/${shelter.slug}"\n  width="100%"\n  height="700"\n  frameborder="0"\n  style="border-radius:8px;border:1px solid #e5e7eb;"\n  title="Book ${shelter.title}"\n></iframe>\n<p style="text-align:center;font-size:12px;color:#6b7280;margin-top:6px;">\n  <a href="https://shelterdk.dk" target="_blank" rel="noopener" title="Find og book shelters i hele Danmark">Shelter booking leveret af ShelterDK</a>\n</p>`
@@ -220,6 +237,63 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
   const bookingPageUrl = shelter.booking_mode === "shelterdk"
     ? `https://shelterdk.dk/book/${shelter.slug}`
     : `https://shelterdk.dk/embed/book/${shelter.slug}`;
+
+  const icalExportUrl = typeof window !== "undefined"
+    ? `${window.location.origin}/api/owner/${ownerToken}/calendar.ics`
+    : `https://shelterdk.dk/api/owner/${ownerToken}/calendar.ics`;
+
+  function timeAgo(iso: string): string {
+    const diff = Date.now() - new Date(iso).getTime();
+    const mins = Math.floor(diff / 60_000);
+    if (mins < 1) return "lige nu";
+    if (mins < 60) return `${mins} minut${mins !== 1 ? "ter" : ""} siden`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours} time${hours !== 1 ? "r" : ""} siden`;
+    return `${Math.floor(hours / 24)} dag${Math.floor(hours / 24) !== 1 ? "e" : ""} siden`;
+  }
+
+  const handleIcalSave = async () => {
+    setIcalSaving(true);
+    setIcalMsg(null);
+    try {
+      const res = await fetch(`/api/owner/${ownerToken}/settings`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ical_import_url: icalImportUrl || null }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.syncError) {
+        setIcalMsg({ ok: false, text: data.syncError ?? data.error ?? "Fejl" });
+      } else {
+        setIcalSavedUrl(icalImportUrl);
+        setIcalLastSynced(data.lastSynced);
+        setIcalMsg({ ok: true, text: `Gemt og synket — ${data.blockedCount} datoer blokeret` });
+      }
+    } catch {
+      setIcalMsg({ ok: false, text: "Noget gik galt" });
+    } finally {
+      setIcalSaving(false);
+    }
+  };
+
+  const handleIcalSync = async () => {
+    setIcalSyncing(true);
+    setIcalMsg(null);
+    try {
+      const res = await fetch(`/api/owner/${ownerToken}/sync`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        setIcalMsg({ ok: false, text: data.error ?? "Synk fejlede" });
+      } else {
+        setIcalLastSynced(data.lastSynced);
+        setIcalMsg({ ok: true, text: `Synkroniseret — ${data.blockedCount} datoer blokeret` });
+      }
+    } catch {
+      setIcalMsg({ ok: false, text: "Noget gik galt" });
+    } finally {
+      setIcalSyncing(false);
+    }
+  };
 
   const handleAction = async (bookingId: string, action: "confirm" | "reject") => {
     setActionError(null);
@@ -262,7 +336,11 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
       for (const d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
         newDates.push(isoFromDate(new Date(d)));
       }
-      setBlockedDates((prev) => Array.from(new Set([...prev, ...newDates])));
+      setBlockedDates((prev) => {
+        const existing = new Set(prev.map((d) => d.date));
+        const toAdd = newDates.filter((d) => !existing.has(d)).map((d) => ({ date: d, source: "manual" as const }));
+        return [...prev, ...toAdd];
+      });
       setBlockFrom("");
       setBlockTo("");
     } else {
@@ -424,6 +502,7 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
                 { color: "bg-emerald-500", label: "Bekræftet" },
                 { color: "bg-amber-400", label: "Afventer" },
                 { color: "bg-primary/20", label: "Blokeret" },
+                { color: "bg-primary/40", label: "Synket" },
               ].map(({ color, label }) => (
                 <div key={label} className="flex items-center gap-1.5">
                   <span className={`w-2 h-2 rounded-full ${color}`} />
@@ -458,7 +537,8 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
               year={calYear}
               month={calMonth}
               events={calEvents}
-              blockedSet={blockedSet}
+              manualBlockedSet={manualBlockedSet}
+              syncedBlockedSet={syncedBlockedSet}
               onSelect={setSelectedDate}
               selectedDate={selectedDate}
             />
@@ -466,7 +546,8 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
               year={year2}
               month={month2}
               events={calEvents}
-              blockedSet={blockedSet}
+              manualBlockedSet={manualBlockedSet}
+              syncedBlockedSet={syncedBlockedSet}
               onSelect={setSelectedDate}
               selectedDate={selectedDate}
             />
@@ -478,7 +559,7 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
               <p className="text-xs font-semibold text-primary/40 uppercase tracking-wide mb-2">{fmtLong(selectedDate)}</p>
               {selectedBlocked && (
                 <div className="rounded-lg bg-primary/5 border border-primary/10 px-3 py-2 text-sm text-primary/60 mb-2">
-                  🔒 Blokeret dato
+                  🔒 {selectedBlockedSync ? "Blokeret via kalendersynk" : "Manuelt blokeret dato"}
                 </div>
               )}
               {selectedEvents.map((ev, i) => (
@@ -578,6 +659,74 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
             {blockMsg.text}
           </div>
         )}
+      </section>
+
+      {/* ── Kalender-integration ── */}
+      <section className="rounded-2xl border border-primary/8 bg-white shadow-sm px-5 py-5 space-y-6">
+        <h2 className="font-serif text-lg font-bold text-primary">Kalender-integration</h2>
+
+        {/* Export */}
+        <div>
+          <p className="text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1">Din booking-kalender (.ics)</p>
+          <p className="text-xs text-primary/40 mb-3">Abonnér én gang i Google Kalender, Apple Kalender eller ONE.com — nye bookinger synkroniserer automatisk.</p>
+          <div className="flex items-center gap-2">
+            <code className="text-xs text-primary/60 bg-primary/[0.03] border border-primary/10 rounded-lg px-3 py-2 flex-1 truncate">
+              {icalExportUrl}
+            </code>
+            <button
+              onClick={() => { navigator.clipboard.writeText(icalExportUrl); setIcalCopied(true); setTimeout(() => setIcalCopied(false), 1500); }}
+              className="shrink-0 rounded-lg bg-white border border-primary/15 shadow-sm px-3 py-2 text-xs font-medium text-primary hover:bg-primary/5 transition-colors"
+            >
+              {icalCopied ? "✓ Kopieret!" : "Kopiér URL"}
+            </button>
+          </div>
+        </div>
+
+        {/* Import */}
+        <div>
+          <p className="text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1">Synk fra ekstern kalender</p>
+          <p className="text-xs text-primary/40 mb-3">
+            Indsæt en iCal-URL fra ONE.com, Airbnb, Google Kalender el. lign. — ShelterDK blokerer automatisk de datoer der er optaget i din kalender.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              type="url"
+              value={icalImportUrl}
+              onChange={(e) => setIcalImportUrl(e.target.value)}
+              placeholder="https://calendar.one.com/..."
+              title="Datoer du fjerner fra din eksterne kalender genoppættes automatisk ved næste synk — fjern dem i din kalender, ikke her"
+              className="flex-1 rounded-xl border border-primary/15 px-3 py-2 text-sm text-primary placeholder:text-primary/25 focus:outline-none focus:ring-2 focus:ring-accent/35 focus:border-accent/40 transition-all"
+            />
+            <button
+              onClick={handleIcalSave}
+              disabled={icalSaving}
+              className="shrink-0 rounded-xl bg-accent text-white px-4 py-2 text-sm font-semibold hover:bg-accent/90 disabled:opacity-40 transition-colors"
+            >
+              {icalSaving ? "Gemmer…" : "Gem & synk"}
+            </button>
+          </div>
+
+          {icalSavedUrl && (
+            <div className="mt-3 flex items-center gap-3 flex-wrap">
+              <p className="text-xs text-primary/40">
+                Sidst synkroniseret: {icalLastSynced ? timeAgo(icalLastSynced) : "aldrig"}
+              </p>
+              <button
+                onClick={handleIcalSync}
+                disabled={icalSyncing}
+                className="text-xs text-accent hover:text-accent/70 font-medium disabled:opacity-40 transition-colors"
+              >
+                {icalSyncing ? "Synker…" : "Synk nu"}
+              </button>
+            </div>
+          )}
+
+          {icalMsg && (
+            <div className={`mt-3 rounded-xl px-4 py-2.5 text-sm ${icalMsg.ok ? "bg-emerald-50 border border-emerald-100 text-emerald-700" : "bg-red-50 border border-red-100 text-red-600"}`}>
+              {icalMsg.text}
+            </div>
+          )}
+        </div>
       </section>
 
       {/* ── Embed code — only for iframe mode ── */}
