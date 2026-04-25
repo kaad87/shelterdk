@@ -29,7 +29,7 @@ describe("SearchBar", () => {
 
   it("viser søgefelt", () => {
     render(<SearchBar mode="home" />);
-    expect(screen.getByPlaceholderText(/indtast område eller by/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/søg område eller by/i)).toBeInTheDocument();
   });
 
   it("viser alle region-optioner", () => {
