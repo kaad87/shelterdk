@@ -11,6 +11,10 @@ interface BookingFormProps {
   maxPersons: number;
   description?: string | null;
   successPath?: string;
+  paymentMode?: "after_confirmation" | "upfront";
+  shelterPriceDkk?: number;
+  platformFeePct?: number;
+  platformFeeMinDkk?: number;
 }
 
 function fmt(iso: string) {
@@ -52,7 +56,11 @@ function CheckIcon() {
   );
 }
 
-export function BookingForm({ shelterSlug, shelterTitle, maxPersons, description, successPath }: BookingFormProps) {
+export function BookingForm({
+  shelterSlug, shelterTitle, maxPersons, description, successPath,
+  paymentMode = "after_confirmation", shelterPriceDkk = 0,
+  platformFeePct = 5, platformFeeMinDkk = 25,
+}: BookingFormProps) {
   const router = useRouter();
   const [availability, setAvailability] = useState<Record<string, "pending" | "confirmed" | "blocked">>({});
   const [loadingAvailability, setLoadingAvailability] = useState(true);
@@ -88,7 +96,11 @@ export function BookingForm({ shelterSlug, shelterTitle, maxPersons, description
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Noget gik galt"); return; }
-      router.push(successPath ?? `/embed/book/${shelterSlug}/tak`);
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      } else {
+        router.push(successPath ?? `/embed/book/${shelterSlug}/tak`);
+      }
     } catch {
       setError("Noget gik galt. Tjek din forbindelse og prøv igen.");
     } finally {
@@ -99,6 +111,14 @@ export function BookingForm({ shelterSlug, shelterTitle, maxPersons, description
   const nights = dateRange
     ? Math.round((new Date(dateRange.checkOut).getTime() - new Date(dateRange.checkIn).getTime()) / 86_400_000)
     : 0;
+
+  const isUpfront = paymentMode === "upfront";
+  const platformFee = Math.max(Math.round(shelterPriceDkk * platformFeePct / 100), platformFeeMinDkk);
+  const totalDkk = shelterPriceDkk + platformFee;
+
+  const trustSignals = isUpfront
+    ? ["Sikker betaling via MobilePay eller kort", "Du betaler nu og ejeren bekræfter herefter", "Fuld refundering ved afvisning"]
+    : ["Gratis at sende en forespørgsel", "Du betaler ingenting nu", "Ejer svarer typisk inden 24 timer"];
 
   return (
     <div className="w-full">
@@ -139,11 +159,7 @@ export function BookingForm({ shelterSlug, shelterTitle, maxPersons, description
 
           {/* Trust signals – desktop only */}
           <div className="hidden md:flex flex-col gap-2 mt-5">
-            {[
-              "Gratis at sende en forespørgsel",
-              "Du betaler ingenting nu",
-              "Ejer svarer typisk inden 24 timer",
-            ].map((t) => (
+            {trustSignals.map((t) => (
               <div key={t} className="flex items-center gap-2.5">
                 <div className="w-4 h-4 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
                   <CheckIcon />
@@ -174,6 +190,22 @@ export function BookingForm({ shelterSlug, shelterTitle, maxPersons, description
                 <span className="text-xs text-primary/45">Varighed</span>
                 <span className="text-xs font-semibold text-primary">{nights} {nights === 1 ? "nat" : "nætter"}</span>
               </div>
+              {isUpfront && shelterPriceDkk > 0 && (
+                <div className="border-t border-accent/10 px-4 py-3 space-y-1.5">
+                  <div className="flex justify-between text-xs text-primary/60">
+                    <span>Overnatning</span>
+                    <span>{shelterPriceDkk} kr</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-primary/60">
+                    <span>Administrationsgebyr</span>
+                    <span>{platformFee} kr</span>
+                  </div>
+                  <div className="flex justify-between text-xs font-bold text-primary border-t border-primary/10 pt-1.5">
+                    <span>I alt</span>
+                    <span>{totalDkk} kr</span>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="rounded-2xl border border-dashed border-primary/15 bg-primary/[0.02] px-4 py-5 flex items-center gap-3">
@@ -279,25 +311,21 @@ export function BookingForm({ shelterSlug, shelterTitle, maxPersons, description
                     Sender…
                   </span>
                 ) : dateRange ? (
-                  "Send bookingforespørgsel"
+                  isUpfront ? `Gå til betaling — ${totalDkk} kr` : "Send bookingforespørgsel"
                 ) : (
                   "Vælg datoer for at fortsætte"
                 )}
               </button>
 
               <p className="text-[11px] text-primary/30 text-center leading-relaxed">
-                Gratis · uforpligtende · ingen betaling nu
+                {isUpfront ? "Sikker betaling · fuld refundering ved afvisning" : "Gratis · uforpligtende · ingen betaling nu"}
               </p>
             </form>
           </div>
 
           {/* Trust – mobile only */}
           <div className="flex md:hidden flex-col gap-2 pt-1">
-            {[
-              "Gratis at sende en forespørgsel",
-              "Du betaler ingenting nu",
-              "Ejer svarer typisk inden 24 timer",
-            ].map((t) => (
+            {trustSignals.map((t) => (
               <div key={t} className="flex items-center gap-2.5">
                 <div className="w-4 h-4 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
                   <CheckIcon />
