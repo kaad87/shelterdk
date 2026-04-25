@@ -225,6 +225,63 @@ export async function sendPaymentConfirmed(opts: {
   if (r2.error) throw new Error("Email-fejl (betaling ejer): " + JSON.stringify(r2.error));
 }
 
+/** Til ejeren: ny forudbetalt booking afventer din bekræftelse */
+export async function sendUpfrontPaymentReceived(opts: {
+  ownerEmail: string;
+  shelterTitle: string;
+  ownerToken: string;
+  guestName: string;
+  guestEmail: string;
+  checkIn: string;
+  checkOut: string;
+  amountTotalDkk: number;
+}) {
+  const dashboardUrl = `${SITE_URL}/owner/${opts.ownerToken}`;
+  const { error } = await getResend().emails.send({
+    from: FROM_EMAIL,
+    to: opts.ownerEmail,
+    subject: `Forudbetalt booking til ${esc(opts.shelterTitle)} — afventer din bekræftelse`,
+    html: `
+      <div style="font-family:sans-serif;max-width:600px;">
+        <h2 style="color:#2C3E50;">Ny forudbetalt booking</h2>
+        <p><strong>${esc(opts.guestName)}</strong> (${esc(opts.guestEmail)}) har forudbetalt <strong>${opts.amountTotalDkk} kr</strong> for <strong>${esc(opts.shelterTitle)}</strong> fra <strong>${esc(formatDate(opts.checkIn))}</strong> til <strong>${esc(formatDate(opts.checkOut))}</strong>.</p>
+        <p>Gæsten afventer din bekræftelse. Afviser du bookingen, refunderes betalingen automatisk.</p>
+        <div style="margin:24px 0;">
+          <a href="${dashboardUrl}" style="background:#c5a059;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;">Gå til dit dashboard</a>
+        </div>
+        <p style="color:#999;font-size:12px;">Sendt via <a href="https://shelterdk.dk">ShelterDK</a></p>
+      </div>
+    `,
+  });
+  if (error) throw new Error("Email-fejl (forudbetaling ejer): " + JSON.stringify(error));
+}
+
+/** Til gæsten: booking afvist, betaling refunderes */
+export async function sendRefundedToGuest(opts: {
+  guestEmail: string;
+  guestName: string;
+  shelterTitle: string;
+  checkIn: string;
+  checkOut: string;
+  amountTotalDkk: number;
+}) {
+  const { error } = await getResend().emails.send({
+    from: FROM_EMAIL,
+    to: opts.guestEmail,
+    subject: `Din booking af ${esc(opts.shelterTitle)} er afvist — refundering på vej`,
+    html: `
+      <div style="font-family:sans-serif;max-width:600px;">
+        <h2 style="color:#2C3E50;">Hej ${esc(opts.guestName)}</h2>
+        <p>Desværre kunne ejeren ikke imødekomme din forudbetaling til <strong>${esc(opts.shelterTitle)}</strong> (${esc(formatDate(opts.checkIn))}–${esc(formatDate(opts.checkOut))}).</p>
+        <p>Din betaling på <strong>${opts.amountTotalDkk} kr</strong> refunderes inden for 5-10 hverdage.</p>
+        <p>Find andre shelters på <a href="https://shelterdk.dk">shelterdk.dk</a></p>
+        <p style="color:#999;font-size:12px;">Sendt via <a href="https://shelterdk.dk">ShelterDK</a></p>
+      </div>
+    `,
+  });
+  if (error) throw new Error("Email-fejl (refundering gæst): " + JSON.stringify(error));
+}
+
 /** Til gæst + ejer: booking annulleret pga. manglende betaling */
 export async function sendBookingExpired(opts: {
   guestEmail: string;
