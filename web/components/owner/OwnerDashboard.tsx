@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import type { ShelterBooking, BookableShelter } from "@/types/booking";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -36,6 +36,14 @@ function nights(checkIn: string, checkOut: string) {
 // ─── types ───────────────────────────────────────────────────────────────────
 
 type BlockedDateEntry = { date: string; source: "manual" | "ical_sync" };
+
+interface PaymentInfo {
+  booking_id: string;
+  status: "pending" | "paid" | "failed" | "expired";
+  amount_total_dkk: number;
+  amount_shelter_dkk: number;
+  amount_platform_dkk: number;
+}
 
 interface Props {
   shelter: BookableShelter;
@@ -200,6 +208,17 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
   const [icalMsg, setIcalMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [icalCopied, setIcalCopied] = useState(false);
 
+  // Payments state
+  const [payments, setPayments] = useState<PaymentInfo[]>([]);
+  const [resendingId, setResendingId] = useState<string | null>(null);
+
+  // Price settings state
+  const [pricePerNight, setPricePerNight] = useState<string>(
+    shelter.shelter_price_dkk != null ? String(shelter.shelter_price_dkk) : ""
+  );
+  const [priceSaving, setPriceSaving] = useState(false);
+  const [priceMsg, setPriceMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
   // Calendar state
   const now = new Date();
   const [calYear, setCalYear] = useState(now.getFullYear());
@@ -251,6 +270,40 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
     if (hours < 24) return `${hours} time${hours !== 1 ? "r" : ""} siden`;
     return `${Math.floor(hours / 24)} dag${Math.floor(hours / 24) !== 1 ? "e" : ""} siden`;
   }
+
+  const fetchPayments = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/owner/${ownerToken}/payments`);
+      if (res.ok) setPayments(await res.json());
+    } catch {
+      // silently fail
+    }
+  }, [ownerToken]);
+
+  useEffect(() => { fetchPayments(); }, [fetchPayments]);
+
+  const handlePriceSave = async () => {
+    setPriceSaving(true);
+    setPriceMsg(null);
+    try {
+      const price = pricePerNight === "" ? null : Number(pricePerNight);
+      const res = await fetch(`/api/owner/${ownerToken}/settings`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shelter_price_dkk: price }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setPriceMsg({ ok: false, text: data.error ?? "Fejl" });
+      } else {
+        setPriceMsg({ ok: true, text: "Pris gemt" });
+      }
+    } catch {
+      setPriceMsg({ ok: false, text: "Noget gik galt" });
+    } finally {
+      setPriceSaving(false);
+    }
+  };
 
   const handleIcalSave = async () => {
     setIcalSaving(true);
@@ -313,6 +366,22 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
           : b
       )
     );
+    if (action === "confirm") fetchPayments();
+  };
+
+  const handleResendPayment = async (bookingId: string) => {
+    setResendingId(bookingId);
+    setActionError(null);
+    const res = await fetch(`/api/owner/${ownerToken}/action`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ booking_id: bookingId, action: "resend-payment" }),
+    });
+    setResendingId(null);
+    if (!res.ok) {
+      const data = await res.json();
+      setActionError(data.error ?? "Fejl ved gensendelse");
+    }
   };
 
   const handleBlock = async (e: React.FormEvent) => {
@@ -597,25 +666,56 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
           </div>
         ) : (
           <div className="space-y-2">
-            {upcoming.map((b) => (
-              <div key={b.id} className="rounded-xl border border-primary/8 bg-white shadow-sm px-4 py-3 flex items-center gap-4">
-                <div className="hidden sm:flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 shrink-0">
-                  <span className="text-xs font-bold text-emerald-700 leading-none">
-                    {new Date(b.check_in + "T12:00:00").toLocaleDateString("da-DK", { day: "numeric" })}
-                  </span>
-                  <span className="text-[9px] text-emerald-600 uppercase leading-none mt-0.5">
-                    {new Date(b.check_in + "T12:00:00").toLocaleDateString("da-DK", { month: "short" })}
-                  </span>
+            {upcoming.map((b) => {
+              const payment = payments.find((p) => p.booking_id === b.id);
+              return (
+                <div key={b.id} className="rounded-xl border border-primary/8 bg-white shadow-sm px-4 py-3 flex items-center gap-4">
+                  <div className="hidden sm:flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 shrink-0">
+                    <span className="text-xs font-bold text-emerald-700 leading-none">
+                      {new Date(b.check_in + "T12:00:00").toLocaleDateString("da-DK", { day: "numeric" })}
+                    </span>
+                    <span className="text-[9px] text-emerald-600 uppercase leading-none mt-0.5">
+                      {new Date(b.check_in + "T12:00:00").toLocaleDateString("da-DK", { month: "short" })}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-primary text-sm">{b.guest_name}</p>
+                    <p className="text-xs text-primary/50">{fmt(b.check_in)} → {fmt(b.check_out)} · {b.guest_count} pers. · {nights(b.check_in, b.check_out)} nætter</p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+                    {payment?.status === "paid" && (
+                      <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full">
+                        Betalt ✓
+                      </span>
+                    )}
+                    {payment?.status === "pending" && (
+                      <>
+                        <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-100 px-2.5 py-1 rounded-full">
+                          Afventer betaling
+                        </span>
+                        <button
+                          onClick={() => handleResendPayment(b.id)}
+                          disabled={resendingId === b.id}
+                          className="text-xs text-accent hover:text-accent/70 font-medium disabled:opacity-40 transition-colors"
+                        >
+                          {resendingId === b.id ? "Sender…" : "Gensend link"}
+                        </button>
+                      </>
+                    )}
+                    {payment?.status === "expired" && (
+                      <span className="text-xs font-semibold text-red-600 bg-red-50 border border-red-100 px-2.5 py-1 rounded-full">
+                        Udløbet
+                      </span>
+                    )}
+                    {!payment && (
+                      <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full">
+                        Bekræftet
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-primary text-sm">{b.guest_name}</p>
-                  <p className="text-xs text-primary/50">{fmt(b.check_in)} → {fmt(b.check_out)} · {b.guest_count} pers. · {nights(b.check_in, b.check_out)} nætter</p>
-                </div>
-                <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full shrink-0">
-                  Bekræftet
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>
@@ -657,6 +757,47 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
         {blockMsg && (
           <div className={`mt-3 rounded-xl px-4 py-2.5 text-sm ${blockMsg.ok ? "bg-emerald-50 border border-emerald-100 text-emerald-700" : "bg-red-50 border border-red-100 text-red-600"}`}>
             {blockMsg.text}
+          </div>
+        )}
+      </section>
+
+      {/* ── Priser ── */}
+      <section className="rounded-2xl border border-primary/8 bg-white shadow-sm px-5 py-5">
+        <h2 className="font-serif text-lg font-bold text-primary mb-1">Priser</h2>
+        <p className="text-xs text-primary/40 mb-4">
+          Angiv overnatningsprisen pr. nat. Gæsten betaler desuden et administrationsgebyr. Lad feltet være tomt for gratis ophold.
+        </p>
+        <div className="flex flex-wrap gap-3 items-end">
+          <div>
+            <label className="block text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1.5">
+              Pris pr. nat (kr)
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={pricePerNight}
+                onChange={(e) => setPricePerNight(e.target.value)}
+                placeholder="0 = gratis"
+                className="rounded-xl border border-primary/15 px-3 py-2 text-sm text-primary placeholder:text-primary/25 focus:outline-none focus:ring-2 focus:ring-accent/35 focus:border-accent/40 transition-all w-36"
+              />
+              {pricePerNight !== "" && (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-primary/40 pointer-events-none">kr</span>
+              )}
+            </div>
+          </div>
+          <button
+            onClick={handlePriceSave}
+            disabled={priceSaving}
+            className="rounded-xl bg-accent text-white px-4 py-2 text-sm font-semibold hover:bg-accent/90 disabled:opacity-40 transition-colors"
+          >
+            {priceSaving ? "Gemmer…" : "Gem pris"}
+          </button>
+        </div>
+        {priceMsg && (
+          <div className={`mt-3 rounded-xl px-4 py-2.5 text-sm ${priceMsg.ok ? "bg-emerald-50 border border-emerald-100 text-emerald-700" : "bg-red-50 border border-red-100 text-red-600"}`}>
+            {priceMsg.text}
           </div>
         )}
       </section>
