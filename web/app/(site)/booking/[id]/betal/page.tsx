@@ -21,7 +21,6 @@ export default async function BetalPage({ params }: Props) {
     notFound();
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const shelter = (booking as any).bookable_shelters;
   const payment = await getPaymentByBookingId(id);
 

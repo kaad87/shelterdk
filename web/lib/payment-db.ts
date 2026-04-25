@@ -101,7 +101,6 @@ export async function getPaymentsForAdmin(): Promise<
     .order("created_at", { ascending: false })
     .limit(500);
   if (error) throw new Error("getPaymentsForAdmin: " + error.message);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (data ?? []).map((row: any) => ({
     ...row,
     guest_name: row.shelter_bookings.guest_name,
@@ -151,7 +150,6 @@ export async function getPayoutsForAdmin(): Promise<
     .select("*, bookable_shelters!inner(title)")
     .order("created_at", { ascending: false });
   if (error) throw new Error("getPayoutsForAdmin: " + error.message);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (data ?? []).map((row: any) => ({
     ...row,
     shelter_title: row.bookable_shelters.title,

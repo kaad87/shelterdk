@@ -44,7 +44,6 @@ export async function createCheckoutSession(
     shelter.platform_fee_min_dkk
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const lineItems: any[] = [];
 
   if (shelterDkk > 0) {
