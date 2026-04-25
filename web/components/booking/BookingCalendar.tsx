@@ -56,7 +56,7 @@ export function BookingCalendar({ unavailableDates, onRangeSelect }: BookingCale
           month: "w-full relative",
           month_caption: "flex items-center justify-center h-10 mb-2",
           caption_label: "font-serif text-[15px] font-bold text-primary capitalize tracking-wide",
-          nav: "absolute top-0 inset-x-0 h-10 flex items-center justify-between",
+          nav: "absolute top-0 inset-x-0 h-10 flex items-center justify-between z-10",
           button_previous:
             "w-8 h-8 flex items-center justify-center rounded-full text-primary/40 hover:text-primary hover:bg-primary/6 transition-all duration-150 active:scale-95",
           button_next:
