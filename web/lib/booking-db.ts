@@ -274,3 +274,66 @@ export async function unblockDate(
     .eq("bookable_shelter_id", bookableShelterDbId)
     .eq("blocked_date", date);
 }
+
+// ─── iCal integration ────────────────────────────────────────────────────────
+
+/** Returns blocked dates WITH source field — for owner dashboard legend. */
+export async function getBlockedDatesWithSource(
+  bookableShelterDbId: string
+): Promise<{ date: string; source: "manual" | "ical_sync" }[]> {
+  const { data } = await createAdminClient()
+    .from("shelter_blocked_dates")
+    .select("blocked_date, source")
+    .eq("bookable_shelter_id", bookableShelterDbId)
+    .gte("blocked_date", new Date().toISOString().slice(0, 10))
+    .order("blocked_date", { ascending: true });
+  return (data ?? []).map((d) => ({
+    date: d.blocked_date as string,
+    source: (d.source ?? "manual") as "manual" | "ical_sync",
+  }));
+}
+
+export async function saveIcalImportUrl(
+  bookableShelterDbId: string,
+  url: string | null
+): Promise<void> {
+  await createAdminClient()
+    .from("bookable_shelters")
+    .update({ ical_import_url: url })
+    .eq("id", bookableShelterDbId);
+}
+
+export async function updateIcalLastSynced(
+  bookableShelterDbId: string
+): Promise<void> {
+  await createAdminClient()
+    .from("bookable_shelters")
+    .update({ ical_last_synced_at: new Date().toISOString() })
+    .eq("id", bookableShelterDbId);
+}
+
+export async function deleteIcalSyncedDates(
+  bookableShelterDbId: string
+): Promise<void> {
+  await createAdminClient()
+    .from("shelter_blocked_dates")
+    .delete()
+    .eq("bookable_shelter_id", bookableShelterDbId)
+    .eq("source", "ical_sync");
+}
+
+export async function blockDatesFromSync(
+  bookableShelterDbId: string,
+  dates: string[]
+): Promise<void> {
+  if (dates.length === 0) return;
+  await createAdminClient()
+    .from("shelter_blocked_dates")
+    .upsert(
+      dates.map((d) => ({
+        bookable_shelter_id: bookableShelterDbId,
+        blocked_date: d,
+        source: "ical_sync",
+      }))
+    );
+}
