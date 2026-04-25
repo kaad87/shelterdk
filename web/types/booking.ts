@@ -8,6 +8,8 @@ export interface BookableShelter {
   owner_token: string;
   max_persons: number;
   booking_mode: "shelterdk" | "iframe";
+  ical_import_url: string | null;
+  ical_last_synced_at: string | null;
   created_at: string;
 }
 
@@ -43,6 +45,7 @@ export interface ShelterBlockedDate {
   bookable_shelter_id: string;
   blocked_date: string; // "YYYY-MM-DD"
   reason: string | null;
+  source: "manual" | "ical_sync";
   created_at: string;
 }
 
