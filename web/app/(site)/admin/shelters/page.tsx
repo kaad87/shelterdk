@@ -38,7 +38,7 @@ function AdminSheltersContent() {
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(false);
   const [form, setForm] = useState({
-    slug: "", title: "", owner_email: "", max_persons: "6", description: "",
+    slug: "", title: "", owner_email: "", max_persons: "6", description: "", payment_mode: "after_confirmation",
   });
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
@@ -70,7 +70,7 @@ function AdminSheltersContent() {
     });
     const data = await res.json();
     if (!res.ok) { setCreateError(data.error); setCreating(false); return; }
-    setForm({ slug: "", title: "", owner_email: "", max_persons: "6", description: "" });
+    setForm({ slug: "", title: "", owner_email: "", max_persons: "6", description: "", payment_mode: "after_confirmation" });
     setCreating(false);
     load();
   };
@@ -153,6 +153,19 @@ function AdminSheltersContent() {
                 onChange={(e) => setForm((f) => ({ ...f, max_persons: e.target.value }))}
                 className="w-full rounded-lg border border-primary/20 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-primary mb-1">
+                Betalingsmodel
+              </label>
+              <select
+                value={form.payment_mode}
+                onChange={(e) => setForm((f) => ({ ...f, payment_mode: e.target.value }))}
+                className="w-full rounded-lg border border-primary/20 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              >
+                <option value="after_confirmation">Betal efter accept (standard)</option>
+                <option value="upfront">Betal ved booking (forudbetaling)</option>
+              </select>
             </div>
             <div className="sm:col-span-2">
               <label className="block text-sm font-medium text-primary mb-1">
