@@ -979,7 +979,10 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // checkout.session.expired is intentionally unhandled — nightly cron is authoritative
+  // checkout.session.expired is intentionally unhandled — nightly cron is authoritative.
+  // Known gap: between Stripe session expiry and the 02:00 UTC cron run, a booking
+  // may stay 'confirmed' with a 'pending' payment for up to ~24h. The /betal page
+  // detects this via expires_at and shows a "contact us" message. Acceptable for MVP.
 
   return NextResponse.json({ ok: true });
 }
@@ -1173,15 +1176,25 @@ export default async function BetalPage({ params }: Props) {
         new Date(payment.expires_at) > new Date();
 
       if (hasActivePendingPayment) {
-        // Retrieve URL from existing Stripe session
+        // Retrieve URL from existing Stripe session — avoids creating orphaned sessions
         const Stripe = (await import("stripe")).default;
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
         const session = await stripe.checkout.sessions.retrieve(
           payment.stripe_checkout_session_id
         );
         checkoutUrl = session.url ?? null;
+      } else if (payment && payment.status === "pending" && new Date(payment.expires_at) <= new Date()) {
+        // Payment is pending but our expires_at has passed — show expired message
+        // (the nightly cron will cancel the booking within 24h; show this to the guest now)
+        checkoutUrl = null; // Will render the "contact us" fallback below
       } else {
-        // No active session — create a new one (first visit or session expired)
+        // No active session — create a new one (first visit or previous session expired)
+        // Concurrent-render note: if two renders fire simultaneously before the DB insert,
+        // they may create two different Stripe sessions. The UNIQUE constraint on
+        // stripe_checkout_session_id prevents duplicate rows for the same session, but
+        // two different session IDs could result in two rows. The second row's session
+        // will expire in 24h naturally; correctness is not affected. Acceptable for MVP
+        // given low traffic on this page.
         const { url, sessionId } = await createCheckoutSession(booking, shelter);
         await createBookingPayment({
           bookingId: id,
@@ -1570,19 +1583,12 @@ The three routes below use `isAdmin` from this shared file (replace any inline c
 
 - [ ] **Step 1: Create payments API**
 
-Create `web/app/api/admin/payments/route.ts`:
+Create `web/app/api/admin/payments/route.ts` — imports `isAdmin` from the shared lib created in Step 0:
 
 ```typescript
 import { NextRequest, NextResponse } from "next/server";
 import { getPaymentsForAdmin } from "@/lib/payment-db";
-
-function isAdmin(req: NextRequest): boolean {
-  const secret = process.env.ADMIN_SECRET;
-  if (!secret) return false;
-  const header = req.headers.get("x-admin-secret");
-  const query = new URL(req.url).searchParams.get("secret");
-  return (header === secret || query === secret) && secret.length > 0;
-}
+import { isAdmin } from "@/lib/admin-auth";
 
 export async function GET(req: NextRequest) {
   if (!isAdmin(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -1598,14 +1604,7 @@ Create `web/app/api/admin/payouts/route.ts`:
 ```typescript
 import { NextRequest, NextResponse } from "next/server";
 import { createOwnerPayout, getPayoutsForAdmin } from "@/lib/payment-db";
-
-function isAdmin(req: NextRequest): boolean {
-  const secret = process.env.ADMIN_SECRET;
-  if (!secret) return false;
-  const header = req.headers.get("x-admin-secret");
-  const query = new URL(req.url).searchParams.get("secret");
-  return (header === secret || query === secret) && secret.length > 0;
-}
+import { isAdmin } from "@/lib/admin-auth";
 
 export async function GET(req: NextRequest) {
   if (!isAdmin(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -1635,14 +1634,7 @@ Create `web/app/api/admin/payouts/[id]/route.ts`:
 ```typescript
 import { NextRequest, NextResponse } from "next/server";
 import { markPayoutPaid } from "@/lib/payment-db";
-
-function isAdmin(req: NextRequest): boolean {
-  const secret = process.env.ADMIN_SECRET;
-  if (!secret) return false;
-  const header = req.headers.get("x-admin-secret");
-  const query = new URL(req.url).searchParams.get("secret");
-  return (header === secret || query === secret) && secret.length > 0;
-}
+import { isAdmin } from "@/lib/admin-auth";
 
 export async function PATCH(
   req: NextRequest,
