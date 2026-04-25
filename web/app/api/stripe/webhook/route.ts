@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
     // Send confirmation emails (non-critical — don't fail the webhook)
     try {
       const { data: booking } = await createAdminClient()
-        .from("bookings")
+        .from("shelter_bookings")
         .select("guest_email, guest_name, check_in, check_out, bookable_shelters!inner(owner_email, title)")
         .eq("id", payment.booking_id)
         .single();

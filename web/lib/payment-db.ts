@@ -93,7 +93,7 @@ export async function getPaymentsForAdmin(): Promise<
     .from("booking_payments")
     .select(`
       *,
-      bookings!inner (
+      shelter_bookings!inner (
         guest_name, check_in, check_out,
         bookable_shelters!inner ( title )
       )
@@ -104,11 +104,11 @@ export async function getPaymentsForAdmin(): Promise<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (data ?? []).map((row: any) => ({
     ...row,
-    guest_name: row.bookings.guest_name,
-    check_in: row.bookings.check_in,
-    check_out: row.bookings.check_out,
-    shelter_title: row.bookings.bookable_shelters.title,
-    bookings: undefined,
+    guest_name: row.shelter_bookings.guest_name,
+    check_in: row.shelter_bookings.check_in,
+    check_out: row.shelter_bookings.check_out,
+    shelter_title: row.shelter_bookings.bookable_shelters.title,
+    shelter_bookings: undefined,
   }));
 }
 

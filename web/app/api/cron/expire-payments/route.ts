@@ -19,12 +19,12 @@ export async function GET(req: NextRequest) {
   for (const bookingId of expiredBookingIds) {
     try {
       await createAdminClient()
-        .from("bookings")
+        .from("shelter_bookings")
         .update({ status: "cancelled" })
         .eq("id", bookingId);
 
       const { data: booking } = await createAdminClient()
-        .from("bookings")
+        .from("shelter_bookings")
         .select("guest_email, guest_name, check_in, check_out, bookable_shelters!inner(owner_email, title)")
         .eq("id", bookingId)
         .single();

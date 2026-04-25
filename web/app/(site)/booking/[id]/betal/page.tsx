@@ -12,7 +12,7 @@ export default async function BetalPage({ params }: Props) {
   const { id } = await params;
 
   const { data: booking } = await createAdminClient()
-    .from("bookings")
+    .from("shelter_bookings")
     .select("*, bookable_shelters!inner(*)")
     .eq("id", id)
     .single();
