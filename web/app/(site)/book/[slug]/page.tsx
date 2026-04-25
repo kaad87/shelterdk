@@ -32,6 +32,10 @@ export default async function BookShelterPage({ params }: Props) {
           maxPersons={shelter.max_persons}
           description={shelter.description}
           successPath={`/book/${shelter.slug}/tak`}
+          paymentMode={shelter.payment_mode}
+          shelterPriceDkk={shelter.shelter_price_dkk ?? 0}
+          platformFeePct={shelter.platform_fee_pct}
+          platformFeeMinDkk={shelter.platform_fee_min_dkk}
         />
       </div>
     </div>
