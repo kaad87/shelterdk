@@ -7,8 +7,11 @@ import {
 } from "@/lib/booking-db";
 import {
   sendBookingRejectedToGuest,
+  sendBookingConfirmedToGuest,
   sendPaymentRequestToGuest,
+  sendRefundedToGuest,
 } from "@/lib/booking-email";
+import Stripe from "stripe";
 import { createCheckoutSession, calculateFee } from "@/lib/stripe";
 import { createBookingPayment, getPaymentByBookingId } from "@/lib/payment-db";
 
@@ -33,9 +36,6 @@ export async function POST(
   if (!booking) return NextResponse.json({ error: "Booking ikke fundet" }, { status: 404 });
 
   // ── confirm ─────────────────────────────────────────────────────────────
-  // Note: sendBookingConfirmedToGuest is intentionally replaced by
-  // sendPaymentRequestToGuest. The confirmation email is sent later
-  // by the Stripe webhook after payment completes.
   if (action === "confirm") {
     if (booking.status !== "pending")
       return NextResponse.json({ error: "Booking er allerede behandlet" }, { status: 409 });
@@ -51,34 +51,50 @@ export async function POST(
 
     await updateBookingStatus(bookingId, "confirmed");
 
-    try {
-      const { url, sessionId } = await createCheckoutSession(booking, shelter);
-      const { shelterDkk, platformDkk, totalDkk } = calculateFee(
-        shelter.shelter_price_dkk ?? 0,
-        shelter.platform_fee_pct,
-        shelter.platform_fee_min_dkk
-      );
-      await createBookingPayment({
-        bookingId,
-        stripeCheckoutSessionId: sessionId,
-        amountTotalDkk: totalDkk,
-        amountShelterDkk: shelterDkk,
-        amountPlatformDkk: platformDkk,
-      });
-      await sendPaymentRequestToGuest({
-        guestEmail: booking.guest_email,
-        guestName: booking.guest_name,
-        shelterTitle: shelter.title,
-        checkIn: booking.check_in,
-        checkOut: booking.check_out,
-        amountTotalDkk: totalDkk,
-        amountShelterDkk: shelterDkk,
-        amountPlatformDkk: platformDkk,
-        paymentUrl: url,
-      });
-    } catch (err) {
-      console.error("owner confirm: payment setup error:", err);
-      // Booking is confirmed but no payment row — admin can resend via dashboard
+    if (shelter.payment_mode === "upfront") {
+      // Payment already captured — just send confirmation email, no new Stripe session
+      try {
+        await sendBookingConfirmedToGuest({
+          guestEmail: booking.guest_email,
+          guestName: booking.guest_name,
+          shelterTitle: shelter.title,
+          checkIn: booking.check_in,
+          checkOut: booking.check_out,
+        });
+      } catch (err) {
+        console.error("owner confirm (upfront): confirmation email error:", err);
+      }
+    } else {
+      // after_confirmation: create Stripe session + send payment request to guest
+      try {
+        const { url, sessionId } = await createCheckoutSession(booking, shelter);
+        const { shelterDkk, platformDkk, totalDkk } = calculateFee(
+          shelter.shelter_price_dkk ?? 0,
+          shelter.platform_fee_pct,
+          shelter.platform_fee_min_dkk
+        );
+        await createBookingPayment({
+          bookingId,
+          stripeCheckoutSessionId: sessionId,
+          amountTotalDkk: totalDkk,
+          amountShelterDkk: shelterDkk,
+          amountPlatformDkk: platformDkk,
+        });
+        await sendPaymentRequestToGuest({
+          guestEmail: booking.guest_email,
+          guestName: booking.guest_name,
+          shelterTitle: shelter.title,
+          checkIn: booking.check_in,
+          checkOut: booking.check_out,
+          amountTotalDkk: totalDkk,
+          amountShelterDkk: shelterDkk,
+          amountPlatformDkk: platformDkk,
+          paymentUrl: url,
+        });
+      } catch (err) {
+        console.error("owner confirm: payment setup error:", err);
+        // Booking is confirmed but no payment row — admin can resend via dashboard
+      }
     }
 
     return NextResponse.json({ ok: true });
@@ -91,13 +107,45 @@ export async function POST(
 
     await updateBookingStatus(bookingId, "rejected");
 
-    try {
-      await sendBookingRejectedToGuest({
-        guestEmail: booking.guest_email, guestName: booking.guest_name,
-        shelterTitle: shelter.title, checkIn: booking.check_in, checkOut: booking.check_out,
-      });
-    } catch (err) {
-      console.error("owner reject email error:", err);
+    // For upfront shelters with a paid payment: issue Stripe refund
+    const payment = await getPaymentByBookingId(bookingId);
+    if (shelter.payment_mode === "upfront" && payment?.status === "paid") {
+      try {
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+        const session = await stripe.checkout.sessions.retrieve(
+          payment.stripe_checkout_session_id,
+          { expand: ["payment_intent"] }
+        );
+        const pi = session.payment_intent as Stripe.PaymentIntent;
+        if (pi?.id) {
+          await stripe.refunds.create({ payment_intent: pi.id });
+        }
+      } catch (err) {
+        console.error("owner reject: Stripe refund error:", err);
+        // Non-fatal — admin can issue refund manually in Stripe dashboard
+      }
+      try {
+        await sendRefundedToGuest({
+          guestEmail: booking.guest_email,
+          guestName: booking.guest_name,
+          shelterTitle: shelter.title,
+          checkIn: booking.check_in,
+          checkOut: booking.check_out,
+          amountTotalDkk: payment.amount_total_dkk,
+        });
+      } catch (err) {
+        console.error("owner reject: refund email error:", err);
+      }
+    } else {
+      // Standard rejection email (no refund)
+      try {
+        await sendBookingRejectedToGuest({
+          guestEmail: booking.guest_email, guestName: booking.guest_name,
+          shelterTitle: shelter.title, checkIn: booking.check_in, checkOut: booking.check_out,
+        });
+      } catch (err) {
+        console.error("owner reject email error:", err);
+      }
     }
 
     return NextResponse.json({ ok: true });
