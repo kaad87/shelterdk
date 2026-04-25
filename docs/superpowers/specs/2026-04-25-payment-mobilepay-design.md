@@ -65,7 +65,7 @@ CREATE TABLE booking_payments (
                               CHECK (status IN ('pending','paid','failed','expired')),
   payment_link_sent_at        timestamptz,
   paid_at                     timestamptz,
-  expires_at                  timestamptz NOT NULL,  -- +48h fra oprettelse
+  expires_at                  timestamptz NOT NULL,  -- +24h fra oprettelse (matcher Stripes maksimum)
   created_at                  timestamptz NOT NULL DEFAULT now()
 );
 
@@ -104,7 +104,7 @@ CREATE TABLE owner_payouts (
        - metadata: { booking_id }
        - success_url: /booking/[id]/tak
        - cancel_url: /booking/[id]/betal
-       - expires_at: Math.floor(Date.now()/1000) + 48*3600  -- Unix timestamp; tilsidesætter Stripes default på 24h
+       - expires_at: Math.floor(Date.now()/1000) + 24*3600  -- Unix timestamp; Stripes maksimum er 24h
    → Gem booking_payments-række (status: pending)
    → Send payment-request e-mail til gæst
 
@@ -135,8 +135,12 @@ CREATE TABLE owner_payouts (
 
 **Edge cases:**
 - Stripe session-oprettelse fejler → booking forbliver confirmed, ingen payment-række → admin kan manuelt gensende link
-- Dobbelt webhook-levering → idempotent check: `IF paid_at IS NOT NULL THEN return 200`
-- Gæst åbner link men betaler ikke → Stripe Session udløber automatisk; vores cron håndterer booking-annullering
+- Dobbelt webhook-levering (`checkout.session.completed`) → idempotent check: `IF paid_at IS NOT NULL THEN return 200`
+- `checkout.session.expired` webhook → ignoreres bevidst; vores nightly cron håndterer booking-annullering og er autoritativ kilde for expired-status
+- Gæst åbner link men betaler ikke → Stripe Session udløber automatisk efter 24h; vores cron annullerer booking senest kl. 02:00 UTC næste nat
+
+**Gæsteadgang til `/booking/[id]/betal` og `/booking/[id]/tak`:**
+Disse sider er offentligt tilgængelige men kræver et gyldigt booking-UUID (ikke-gætteligt, ikke eksponeret offentligt). Booking-UUID'et fungerer som et implicit access token — tilstrækkeligt for MVP. Siderne viser kun bookingdetaljer (datoer, shelter-navn, beløb) — ingen persondata der kræver stærkere autentificering.
 
 ---
 
@@ -144,10 +148,9 @@ CREATE TABLE owner_payouts (
 
 | Method | Path | Formål |
 |--------|------|--------|
-| POST | `/api/owner/[token]/action` | Eksisterende route — udvides med `action: "confirm"` der tillige opretter Checkout Session |
-| POST | `/api/stripe/webhook` | Stripe event handler (ingen auth — verificeres via `stripe-signature` header) |
-| POST | `/api/owner/[token]/action` | `action: "resend-payment"` — gensend betalingslink til gæst |
-| GET | `/api/admin/payments` | Liste betalinger — godkendt via `x-admin-secret` header (samme mønster som øvrige admin-routes) |
+| POST | `/api/owner/[token]/action` | Eksisterende route — udvides med `action: "confirm"` (opretter Checkout Session) og `action: "resend-payment"` (gensender link) |
+| POST | `/api/stripe/webhook` | Stripe event handler — verificeres via `stripe-signature` header |
+| GET | `/api/admin/payments` | Liste betalinger — `x-admin-secret` header |
 | POST | `/api/admin/payouts` | Opret payout — `x-admin-secret` |
 | PATCH | `/api/admin/payouts/[id]` | Markér payout betalt — `x-admin-secret` |
 | GET | `/api/cron/expire-payments` | Nightly cron: udløb af betalinger — `x-cron-secret` |
@@ -213,7 +216,7 @@ Tre nye skabeloner (følger eksisterende mønster i projektet):
 
 | Navn | Modtager | Indhold |
 |------|----------|---------|
-| `payment-request` | Gæst | Bookingdetaljer, betalingslink, 48h deadline |
+| `payment-request` | Gæst | Bookingdetaljer, betalingslink, 24h deadline |
 | `payment-confirmed` | Gæst + Ejer | Betaling modtaget, bookingbekræftelse |
 | `booking-expired` | Gæst + Ejer | Booking annulleret pga. manglende betaling |
 
