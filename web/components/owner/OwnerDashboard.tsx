@@ -35,7 +35,7 @@ export function OwnerDashboard({ shelter, initialBookings, ownerToken }: Props) 
   const [blockMsg, setBlockMsg] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const embedCode = `<iframe\n  src="https://shelterdk.dk/embed/book/${shelter.slug}"\n  width="100%"\n  height="620"\n  frameborder="0"\n  style="border-radius:8px;border:1px solid #e5e7eb;"\n  title="Book ${shelter.title}"\n></iframe>\n<p style="text-align:center;font-size:12px;color:#6b7280;margin-top:6px;">\n  <a href="https://shelterdk.dk" target="_blank" rel="noopener">Leveret af ShelterDK</a>\n</p>`;
+  const embedCode = `<iframe\n  src="https://shelterdk.dk/embed/book/${shelter.slug}"\n  width="100%"\n  height="700"\n  frameborder="0"\n  style="border-radius:8px;border:1px solid #e5e7eb;"\n  title="Book ${shelter.title}"\n></iframe>\n<p style="text-align:center;font-size:12px;color:#6b7280;margin-top:6px;">\n  <a href="https://shelterdk.dk" target="_blank" rel="noopener" title="Find og book shelters i hele Danmark">Shelter booking leveret af ShelterDK</a>\n</p>`;
 
   const handleAction = async (bookingId: string, action: "confirm" | "reject") => {
     setActionError(null);

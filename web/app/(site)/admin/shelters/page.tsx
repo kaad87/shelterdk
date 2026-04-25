@@ -226,7 +226,7 @@ function AdminSheltersContent() {
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-primary/40 w-28 shrink-0">Embed-kode</span>
-                      <CopyButton value={`<iframe src="${origin}/embed/book/${s.slug}" width="100%" height="620" frameborder="0" style="border-radius:8px;border:1px solid #e5e7eb;" title="Book ${s.title}"></iframe>\n<p style="text-align:center;font-size:12px;color:#6b7280;margin-top:6px;"><a href="https://shelterdk.dk" target="_blank" rel="noopener">Leveret af ShelterDK</a></p>`} />
+                      <CopyButton value={`<iframe src="${origin}/embed/book/${s.slug}" width="100%" height="700" frameborder="0" style="border-radius:8px;border:1px solid #e5e7eb;" title="Book ${s.title}"></iframe>\n<p style="text-align:center;font-size:12px;color:#6b7280;margin-top:6px;"><a href="https://shelterdk.dk" target="_blank" rel="noopener" title="Find og book shelters i hele Danmark">Shelter booking leveret af ShelterDK</a></p>`} />
                     </div>
                   </div>
                 </div>

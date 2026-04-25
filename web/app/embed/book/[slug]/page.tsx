@@ -10,12 +10,13 @@ export default async function EmbedBookPage({ params }: Props) {
   if (!shelter) notFound();
 
   return (
-    <div className="min-h-screen bg-white p-4 sm:p-6">
-      <div className="max-w-md mx-auto">
+    <div className="min-h-screen bg-[#F9FAFB] px-5 py-8 sm:px-8">
+      <div className="mx-auto w-full max-w-5xl">
         <BookingForm
           shelterSlug={shelter.slug}
           shelterTitle={shelter.title}
           maxPersons={shelter.max_persons}
+          description={shelter.description}
         />
       </div>
     </div>
