@@ -10,6 +10,7 @@ interface BookingFormProps {
   shelterTitle: string;
   maxPersons: number;
   description?: string | null;
+  successPath?: string;
 }
 
 function fmt(iso: string) {
@@ -51,7 +52,7 @@ function CheckIcon() {
   );
 }
 
-export function BookingForm({ shelterSlug, shelterTitle, maxPersons, description }: BookingFormProps) {
+export function BookingForm({ shelterSlug, shelterTitle, maxPersons, description, successPath }: BookingFormProps) {
   const router = useRouter();
   const [availability, setAvailability] = useState<Record<string, "pending" | "confirmed" | "blocked">>({});
   const [loadingAvailability, setLoadingAvailability] = useState(true);
@@ -87,7 +88,7 @@ export function BookingForm({ shelterSlug, shelterTitle, maxPersons, description
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Noget gik galt"); return; }
-      router.push(`/embed/book/${shelterSlug}/tak`);
+      router.push(successPath ?? `/embed/book/${shelterSlug}/tak`);
     } catch {
       setError("Noget gik galt. Tjek din forbindelse og prøv igen.");
     } finally {

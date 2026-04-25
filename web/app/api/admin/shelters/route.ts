@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json().catch(() => ({}));
-  const { slug, title, owner_email, max_persons, description } = body;
+  const { slug, title, owner_email, max_persons, description, shelter_id, booking_mode } = body;
 
   if (!slug || !title || !owner_email)
     return NextResponse.json(
@@ -46,6 +46,8 @@ export async function POST(req: NextRequest) {
       owner_email: owner_email.trim().toLowerCase(),
       max_persons: Number(max_persons) || 6,
       description: description?.trim() || null,
+      shelter_id: shelter_id || null,
+      booking_mode: booking_mode === "shelterdk" ? "shelterdk" : "iframe",
     })
     .select()
     .single();
