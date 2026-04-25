@@ -249,6 +249,8 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
   const selectedBlocked = selectedDate ? (manualBlockedSet.has(selectedDate) || syncedBlockedSet.has(selectedDate)) : false;
   const selectedBlockedSync = selectedDate ? syncedBlockedSet.has(selectedDate) : false;
 
+  const isUpfront = shelter.payment_mode === "upfront";
+
   const embedCode = shelter.booking_mode === "iframe"
     ? `<iframe\n  src="https://shelterdk.dk/embed/book/${shelter.slug}"\n  width="100%"\n  height="700"\n  frameborder="0"\n  style="border-radius:8px;border:1px solid #e5e7eb;"\n  title="Book ${shelter.title}"\n></iframe>\n<p style="text-align:center;font-size:12px;color:#6b7280;margin-top:6px;">\n  <a href="https://shelterdk.dk" target="_blank" rel="noopener" title="Find og book shelters i hele Danmark">Shelter booking leveret af ShelterDK</a>\n</p>`
     : null;
@@ -494,18 +496,21 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
             </div>
           )}
           <div className="space-y-3">
-            {pending.map((b) => (
-              <div key={b.id} className="rounded-2xl border-2 border-amber-200 bg-white shadow-sm overflow-hidden">
+            {pending.map((b) => {
+              const pendingPayment = payments.find((p) => p.booking_id === b.id);
+              const hasPaidUpfront = isUpfront && pendingPayment?.status === "paid";
+              return (
+              <div key={b.id} className={`rounded-2xl border-2 bg-white shadow-sm overflow-hidden ${hasPaidUpfront ? "border-emerald-300" : "border-amber-200"}`}>
                 <div className="px-5 py-4">
                   <div className="flex items-start gap-4">
                     {/* Date range */}
-                    <div className="hidden sm:grid grid-cols-2 divide-x divide-amber-100 rounded-xl border border-amber-200 bg-amber-50 overflow-hidden shrink-0">
+                    <div className={`hidden sm:grid grid-cols-2 divide-x rounded-xl border overflow-hidden shrink-0 ${hasPaidUpfront ? "divide-emerald-100 border-emerald-200 bg-emerald-50" : "divide-amber-100 border-amber-200 bg-amber-50"}`}>
                       <div className="px-3 py-2 text-center">
-                        <p className="text-[9px] font-bold text-amber-600 uppercase tracking-widest">Ankomst</p>
+                        <p className={`text-[9px] font-bold uppercase tracking-widest ${hasPaidUpfront ? "text-emerald-600" : "text-amber-600"}`}>Ankomst</p>
                         <p className="text-sm font-bold text-primary mt-0.5">{fmt(b.check_in)}</p>
                       </div>
                       <div className="px-3 py-2 text-center">
-                        <p className="text-[9px] font-bold text-amber-600 uppercase tracking-widest">Afrejse</p>
+                        <p className={`text-[9px] font-bold uppercase tracking-widest ${hasPaidUpfront ? "text-emerald-600" : "text-amber-600"}`}>Afrejse</p>
                         <p className="text-sm font-bold text-primary mt-0.5">{fmt(b.check_out)}</p>
                       </div>
                     </div>
@@ -517,6 +522,11 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
                         <span className="text-xs text-primary/50">{b.guest_count} person{b.guest_count !== 1 ? "er" : ""}</span>
                         <span className="text-xs text-primary/40">·</span>
                         <span className="text-xs text-primary/50">{nights(b.check_in, b.check_out)} nætter</span>
+                        {hasPaidUpfront && (
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-0.5">
+                            ⚡ Forudbetalt {pendingPayment!.amount_total_dkk} kr
+                          </span>
+                        )}
                       </div>
                       <p className="text-xs text-primary/50 mt-0.5">{b.guest_email}</p>
                       {/* Mobile dates */}
@@ -528,10 +538,15 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
                           &ldquo;{b.message}&rdquo;
                         </p>
                       )}
+                      {hasPaidUpfront && (
+                        <p className="mt-1.5 text-xs text-emerald-700 font-medium">
+                          Gæsten har betalt forud — bekræft eller afvis (afvisning refunderer automatisk).
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
-                <div className="flex border-t border-amber-100">
+                <div className={`flex border-t ${hasPaidUpfront ? "border-emerald-100" : "border-amber-100"}`}
                   <button
                     onClick={() => handleAction(b.id, "confirm")}
                     disabled={actingId === b.id}
@@ -551,11 +566,12 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
                     className="flex-1 py-3 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40 flex items-center justify-center gap-1.5"
                   >
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
-                    Afvis
+                    {hasPaidUpfront ? "Afvis & refundér" : "Afvis"}
                   </button>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       )}
@@ -685,7 +701,7 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
                   <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
                     {payment?.status === "paid" && (
                       <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full">
-                        Betalt ✓
+                        {isUpfront ? "Forudbetalt ✓" : "Betalt ✓"}
                       </span>
                     )}
                     {payment?.status === "pending" && (
