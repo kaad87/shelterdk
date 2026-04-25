@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getBookableShelterByOwnerToken, getBookingsForShelter, getBlockedDatesForShelter } from "@/lib/booking-db";
+import { getBookableShelterByOwnerToken, getBookingsForShelter, getBlockedDatesWithSource } from "@/lib/booking-db";
 import { OwnerDashboard } from "@/components/owner/OwnerDashboard";
 
 interface Props { params: Promise<{ token: string }> }
@@ -19,7 +19,7 @@ export default async function OwnerPage({ params }: Props) {
 
   const [bookings, blockedDates] = await Promise.all([
     getBookingsForShelter(shelter.id),
-    getBlockedDatesForShelter(shelter.id),
+    getBlockedDatesWithSource(shelter.id),
   ]);
 
   return (

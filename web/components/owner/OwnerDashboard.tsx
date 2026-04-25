@@ -35,10 +35,12 @@ function nights(checkIn: string, checkOut: string) {
 
 // ─── types ───────────────────────────────────────────────────────────────────
 
+type BlockedDateEntry = { date: string; source: "manual" | "ical_sync" };
+
 interface Props {
   shelter: BookableShelter;
   initialBookings: ShelterBooking[];
-  initialBlockedDates: string[];
+  initialBlockedDates: BlockedDateEntry[];
   ownerToken: string;
 }
 
@@ -174,7 +176,7 @@ function MiniCalendar({
 
 export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, ownerToken }: Props) {
   const [bookings, setBookings] = useState(initialBookings);
-  const [blockedDates, setBlockedDates] = useState<string[]>(initialBlockedDates);
+  const [blockedDates, setBlockedDates] = useState<BlockedDateEntry[]>(initialBlockedDates);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actingId, setActingId] = useState<string | null>(null);
   const [blockFrom, setBlockFrom] = useState("");
