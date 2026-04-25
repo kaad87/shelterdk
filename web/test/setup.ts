@@ -16,6 +16,21 @@ class MockIntersectionObserver implements IntersectionObserver {
 
 global.IntersectionObserver = MockIntersectionObserver as unknown as typeof IntersectionObserver;
 
+// Mock matchMedia – jsdom does not implement it
+Object.defineProperty(window, "matchMedia", {
+  writable: true,
+  value: (query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  }),
+});
+
 // Mock fetch – undgår netværkskald i tests
 if (typeof globalThis.fetch === "undefined") {
   globalThis.fetch = async () =>
