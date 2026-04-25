@@ -7,6 +7,7 @@ export interface BookableShelter {
   owner_email: string;
   owner_token: string;
   max_persons: number;
+  booking_mode: "shelterdk" | "iframe";
   created_at: string;
 }
 

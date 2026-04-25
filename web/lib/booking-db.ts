@@ -242,6 +242,18 @@ export async function getBookingByIdForShelter(
   return data as ShelterBooking | null;
 }
 
+export async function getBlockedDatesForShelter(
+  bookableShelterDbId: string
+): Promise<string[]> {
+  const { data } = await createAdminClient()
+    .from("shelter_blocked_dates")
+    .select("blocked_date")
+    .eq("bookable_shelter_id", bookableShelterDbId)
+    .gte("blocked_date", new Date().toISOString().slice(0, 10))
+    .order("blocked_date", { ascending: true });
+  return (data ?? []).map((d) => d.blocked_date as string);
+}
+
 export async function blockDate(
   bookableShelterDbId: string,
   date: string,
