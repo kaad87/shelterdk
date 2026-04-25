@@ -10,7 +10,7 @@ ALTER TABLE bookable_shelters
 -- Payment tracking per booking
 CREATE TABLE IF NOT EXISTS booking_payments (
   id                          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  booking_id                  uuid NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
+  booking_id                  uuid NOT NULL REFERENCES shelter_bookings(id) ON DELETE CASCADE,
   stripe_checkout_session_id  text NOT NULL UNIQUE,
   amount_total_dkk            integer NOT NULL,
   amount_shelter_dkk          integer NOT NULL,
