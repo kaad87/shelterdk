@@ -51,7 +51,7 @@ export function BookingCalendar({ unavailableDates, onRangeSelect }: BookingCale
           blocked: "cal-blocked",
         }}
         classNames={{
-          root: "w-full select-none",
+          root: "w-full select-none relative",
           months: "w-full",
           month: "w-full relative",
           month_caption: "flex items-center justify-center h-10 mb-2",
