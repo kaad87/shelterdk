@@ -21,5 +21,8 @@ export default defineConfig({
       "@": path.resolve(__dirname, "."),
       "@shared": path.resolve(__dirname, "../shared"),
     },
+    // Ensure parent worktree node_modules are resolved (for packages like stripe
+    // that npm hoists to the worktree root instead of web/node_modules)
+    modules: ["node_modules", path.resolve(__dirname, "../node_modules")],
   },
 });

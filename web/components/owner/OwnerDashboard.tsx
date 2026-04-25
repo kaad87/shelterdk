@@ -546,7 +546,7 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
                     </div>
                   </div>
                 </div>
-                <div className={`flex border-t ${hasPaidUpfront ? "border-emerald-100" : "border-amber-100"}`}
+                <div className={`flex border-t ${hasPaidUpfront ? "border-emerald-100" : "border-amber-100"}`}>
                   <button
                     onClick={() => handleAction(b.id, "confirm")}
                     disabled={actingId === b.id}

@@ -1,5 +1,33 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+// ── Stripe mocks (stripe package not installed in test env) ──────────────────
+vi.mock("stripe", () => ({
+  default: class MockStripe {
+    checkout = {
+      sessions: {
+        retrieve: vi.fn().mockResolvedValue({ url: "https://stripe.com/pay", payment_intent: { id: "pi_test" } }),
+        create: vi.fn().mockResolvedValue({ id: "cs_test", url: "https://stripe.com/pay" }),
+      },
+    };
+    refunds = { create: vi.fn().mockResolvedValue({ id: "re_test" }) };
+    webhooks = { constructEvent: vi.fn() };
+  },
+}));
+
+vi.mock("@/lib/stripe", () => ({
+  createCheckoutSession: vi.fn().mockResolvedValue({ url: "https://stripe.com/pay", sessionId: "cs_test" }),
+  calculateFee: vi.fn().mockReturnValue({ shelterDkk: 100, platformDkk: 25, totalDkk: 125 }),
+  constructWebhookEvent: vi.fn(),
+}));
+
+vi.mock("@/lib/payment-db", () => ({
+  createBookingPayment: vi.fn().mockResolvedValue(undefined),
+  getPaymentByBookingId: vi.fn().mockResolvedValue(null),
+  getPaymentBySessionId: vi.fn().mockResolvedValue(null),
+  markPaymentPaid: vi.fn().mockResolvedValue(undefined),
+  expireOldPayments: vi.fn().mockResolvedValue([]),
+}));
+
 // ── Mocks ────────────────────────────────────────────────────────────────────
 const mockGetBookableShelterBySlug = vi.fn();
 const mockGetUnavailableDates = vi.fn();
@@ -40,6 +68,11 @@ vi.mock("@/lib/booking-email", () => ({
   sendBookingReceivedToGuest: mockSendBookingReceivedToGuest,
   sendBookingConfirmedToGuest: mockSendBookingConfirmedToGuest,
   sendBookingRejectedToGuest: mockSendBookingRejectedToGuest,
+  sendPaymentRequestToGuest: vi.fn().mockResolvedValue(undefined),
+  sendRefundedToGuest: vi.fn().mockResolvedValue(undefined),
+  sendUpfrontPaymentReceived: vi.fn().mockResolvedValue(undefined),
+  sendPaymentConfirmed: vi.fn().mockResolvedValue(undefined),
+  sendBookingExpired: vi.fn().mockResolvedValue(undefined),
 }));
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

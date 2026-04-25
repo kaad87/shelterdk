@@ -11,7 +11,6 @@ import {
   sendPaymentRequestToGuest,
   sendRefundedToGuest,
 } from "@/lib/booking-email";
-import Stripe from "stripe";
 import { createCheckoutSession, calculateFee } from "@/lib/stripe";
 import { createBookingPayment, getPaymentByBookingId } from "@/lib/payment-db";
 
@@ -111,12 +110,13 @@ export async function POST(
     const payment = await getPaymentByBookingId(bookingId);
     if (shelter.payment_mode === "upfront" && payment?.status === "paid") {
       try {
+        const { default: Stripe } = await import("stripe");
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
         const session = await stripe.checkout.sessions.retrieve(
           payment.stripe_checkout_session_id,
           { expand: ["payment_intent"] }
         );
-        const pi = session.payment_intent as Stripe.PaymentIntent;
+        const pi = session.payment_intent as { id?: string };
         if (pi?.id) {
           await stripe.refunds.create({ payment_intent: pi.id });
         }
