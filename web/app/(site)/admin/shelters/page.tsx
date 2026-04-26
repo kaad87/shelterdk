@@ -30,9 +30,26 @@ function CopyButton({ value }: { value: string }) {
   );
 }
 
+const STORAGE_KEY = "shelterdk-admin-secret";
+
 function AdminSheltersContent() {
   const searchParams = useSearchParams();
-  const secret = searchParams.get("secret") ?? "";
+  // Prefer sessionStorage (set by AdminPhotoReview login); fall back to URL param for direct access
+  const urlSecret = searchParams.get("secret") ?? "";
+  const [secret, setSecret] = useState(() => {
+    if (typeof window !== "undefined") {
+      const stored = sessionStorage.getItem(STORAGE_KEY);
+      if (stored) return stored;
+    }
+    return urlSecret;
+  });
+
+  useEffect(() => {
+    if (urlSecret && typeof window !== "undefined") {
+      sessionStorage.setItem(STORAGE_KEY, urlSecret);
+      setSecret(urlSecret);
+    }
+  }, [urlSecret]);
 
   const [shelters, setShelters] = useState<BookableShelter[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,14 +62,16 @@ function AdminSheltersContent() {
 
   const origin = typeof window !== "undefined" ? window.location.origin : "https://shelterdk.dk";
 
+  const authHeaders = { "x-admin-secret": secret };
+
   const load = useCallback(async () => {
     setLoading(true);
-    const res = await fetch(`/api/admin/shelters?secret=${encodeURIComponent(secret)}`);
+    const res = await fetch(`/api/admin/shelters`, { headers: authHeaders });
     if (res.status === 401) { setAuthError(true); setLoading(false); return; }
     const data = await res.json();
     setShelters(data.shelters ?? []);
     setLoading(false);
-  }, [secret]);
+  }, [secret]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { load(); }, [load]);
 
@@ -60,9 +79,9 @@ function AdminSheltersContent() {
     e.preventDefault();
     setCreating(true);
     setCreateError(null);
-    const res = await fetch(`/api/admin/shelters?secret=${encodeURIComponent(secret)}`, {
+    const res = await fetch(`/api/admin/shelters`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...authHeaders },
       body: JSON.stringify({
         ...form,
         max_persons: Number(form.max_persons),
@@ -77,9 +96,9 @@ function AdminSheltersContent() {
 
   const handleDelete = async (id: string, title: string) => {
     if (!confirm(`Slet "${title}"? Dette fjerner også alle bookings og tokens.`)) return;
-    await fetch(`/api/admin/shelters?secret=${encodeURIComponent(secret)}`, {
+    await fetch(`/api/admin/shelters`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...authHeaders },
       body: JSON.stringify({ id }),
     });
     load();

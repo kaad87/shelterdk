@@ -1,12 +1,9 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import { getPaymentsForAdmin, getPayoutsForAdmin } from "@/lib/payment-db";
+"use client";
 
-export const dynamic = "force-dynamic";
-export const metadata: Metadata = {
-  robots: { index: false, follow: false },
-  title: { absolute: "Admin – Betalinger | ShelterDK" },
-};
+import { useState, useEffect } from "react";
+import Link from "next/link";
+
+const STORAGE_KEY = "shelterdk-admin-secret";
 
 function Badge({ status }: { status: string }) {
   const styles: Record<string, string> = {
@@ -15,159 +12,115 @@ function Badge({ status }: { status: string }) {
     expired: "bg-red-100 text-red-500",
     failed: "bg-gray-100 text-gray-500",
   };
-  const labels: Record<string, string> = {
-    paid: "Betalt",
-    pending: "Afventer",
-    expired: "Udløbet",
-    failed: "Fejlet",
-  };
+  const labels: Record<string, string> = { paid: "Betalt", pending: "Afventer", expired: "Udløbet", failed: "Fejlet" };
   return (
-    <span
-      className={`text-xs px-2 py-0.5 rounded-full font-medium ${styles[status] ?? "bg-gray-100 text-gray-500"}`}
-    >
+    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${styles[status] ?? "bg-gray-100 text-gray-500"}`}>
       {labels[status] ?? status}
     </span>
   );
 }
 
-export default async function AdminPaymentsPage() {
-  const [payments, payouts] = await Promise.all([
-    getPaymentsForAdmin(),
-    getPayoutsForAdmin(),
-  ]);
+export default function AdminPaymentsPage() {
+  const [secret] = useState<string>(() =>
+    typeof window !== "undefined" ? sessionStorage.getItem(STORAGE_KEY) ?? "" : ""
+  );
+  const [payments, setPayments] = useState<any[]>([]);
+  const [payouts, setPayouts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState(false);
+
+  useEffect(() => {
+    if (!secret) { setAuthError(true); setLoading(false); return; }
+    const headers = { "x-admin-secret": secret };
+    Promise.all([
+      fetch("/api/admin/payments", { headers }).then((r) => r.ok ? r.json() : Promise.reject(r.status)),
+      fetch("/api/admin/payouts", { headers }).then((r) => r.ok ? r.json() : Promise.reject(r.status)),
+    ])
+      .then(([p, o]) => { setPayments(p); setPayouts(o); setLoading(false); })
+      .catch((status) => {
+        if (status === 401) setAuthError(true);
+        setLoading(false);
+      });
+  }, [secret]);
+
+  if (authError) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <div className="text-4xl mb-3">🔒</div>
+        <p className="text-primary/60 text-sm">Log ind via <Link href="/admin" className="text-accent underline">admin-forsiden</Link> først.</p>
+      </div>
+    </div>
+  );
+
+  if (loading) return <div className="p-8 text-center text-primary/40">Indlæser…</div>;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 space-y-12">
       <nav className="mb-2 text-sm text-primary/60">
-        <Link href="/" className="hover:text-accent transition-colors">
-          Hjem
-        </Link>
+        <Link href="/" className="hover:text-accent transition-colors">Hjem</Link>
         <span className="mx-1.5">/</span>
-        <Link href="/admin" className="hover:text-accent transition-colors">
-          Admin
-        </Link>
+        <Link href="/admin" className="hover:text-accent transition-colors">Admin</Link>
         <span className="mx-1.5">/</span>
         <span className="text-primary font-medium">Betalinger</span>
       </nav>
 
-      {/* ── Transactions ── */}
+      {/* Transactions */}
       <section>
-        <h1 className="text-2xl font-bold text-primary mb-6">
-          Transaktioner ({payments.length})
-        </h1>
+        <h1 className="text-2xl font-bold text-primary mb-6">Transaktioner ({payments.length})</h1>
         <div className="overflow-x-auto rounded-xl border border-primary/10">
           <table className="w-full text-sm">
             <thead className="border-b border-primary/10 bg-primary/[0.02]">
               <tr>
-                {[
-                  "Shelter",
-                  "Gæst",
-                  "Datoer",
-                  "Total",
-                  "Gebyr",
-                  "Status",
-                  "Oprettet",
-                ].map((h) => (
-                  <th
-                    key={h}
-                    className="text-left px-4 py-3 text-primary/50 font-medium"
-                  >
-                    {h}
-                  </th>
+                {["Shelter","Gæst","Datoer","Total","Gebyr","Status","Oprettet"].map((h) => (
+                  <th key={h} className="text-left px-4 py-3 text-primary/50 font-medium">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {payments.map((p) => (
-                <tr
-                  key={p.id}
-                  className="border-b border-primary/5 hover:bg-primary/[0.02]"
-                >
+                <tr key={p.id} className="border-b border-primary/5 hover:bg-primary/[0.02]">
                   <td className="px-4 py-3 font-medium">{p.shelter_title}</td>
                   <td className="px-4 py-3 text-primary/70">{p.guest_name}</td>
-                  <td className="px-4 py-3 text-primary/50 text-xs">
-                    {p.check_in} – {p.check_out}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    {p.amount_total_dkk} kr
-                  </td>
-                  <td className="px-4 py-3 text-right text-primary/60">
-                    {p.amount_platform_dkk} kr
-                  </td>
-                  <td className="px-4 py-3">
-                    <Badge status={p.status} />
-                  </td>
-                  <td className="px-4 py-3 text-primary/40 text-xs">
-                    {new Date(p.created_at).toLocaleDateString("da-DK")}
-                  </td>
+                  <td className="px-4 py-3 text-primary/50 text-xs">{p.check_in} – {p.check_out}</td>
+                  <td className="px-4 py-3 text-right">{p.amount_total_dkk} kr</td>
+                  <td className="px-4 py-3 text-right text-primary/60">{p.amount_platform_dkk} kr</td>
+                  <td className="px-4 py-3"><Badge status={p.status} /></td>
+                  <td className="px-4 py-3 text-primary/40 text-xs">{new Date(p.created_at).toLocaleDateString("da-DK")}</td>
                 </tr>
               ))}
               {payments.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={7}
-                    className="px-4 py-8 text-center text-primary/30"
-                  >
-                    Ingen transaktioner endnu
-                  </td>
-                </tr>
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-primary/30">Ingen transaktioner endnu</td></tr>
               )}
             </tbody>
           </table>
         </div>
       </section>
 
-      {/* ── Payouts ── */}
+      {/* Payouts */}
       <section>
-        <h2 className="text-xl font-bold text-primary mb-6">
-          Udbetalinger ({payouts.length})
-        </h2>
+        <h2 className="text-xl font-bold text-primary mb-6">Udbetalinger ({payouts.length})</h2>
         <div className="overflow-x-auto rounded-xl border border-primary/10">
           <table className="w-full text-sm">
             <thead className="border-b border-primary/10 bg-primary/[0.02]">
               <tr>
-                {["Shelter", "Periode", "Beløb", "Status", "Udbetalt", "Note"].map(
-                  (h) => (
-                    <th
-                      key={h}
-                      className="text-left px-4 py-3 text-primary/50 font-medium"
-                    >
-                      {h}
-                    </th>
-                  )
-                )}
+                {["Shelter","Periode","Beløb","Status","Udbetalt","Note"].map((h) => (
+                  <th key={h} className="text-left px-4 py-3 text-primary/50 font-medium">{h}</th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {payouts.map((p) => (
                 <tr key={p.id} className="border-b border-primary/5">
                   <td className="px-4 py-3 font-medium">{p.shelter_title}</td>
-                  <td className="px-4 py-3 text-primary/50 text-xs">
-                    {p.period_start} – {p.period_end}
-                  </td>
+                  <td className="px-4 py-3 text-primary/50 text-xs">{p.period_start} – {p.period_end}</td>
                   <td className="px-4 py-3 text-right">{p.amount_dkk} kr</td>
-                  <td className="px-4 py-3">
-                    <Badge status={p.status} />
-                  </td>
-                  <td className="px-4 py-3 text-primary/40 text-xs">
-                    {p.paid_at
-                      ? new Date(p.paid_at).toLocaleDateString("da-DK")
-                      : "—"}
-                  </td>
-                  <td className="px-4 py-3 text-primary/40 text-xs">
-                    {p.notes ?? "—"}
-                  </td>
+                  <td className="px-4 py-3"><Badge status={p.status} /></td>
+                  <td className="px-4 py-3 text-primary/40 text-xs">{p.paid_at ? new Date(p.paid_at).toLocaleDateString("da-DK") : "—"}</td>
+                  <td className="px-4 py-3 text-primary/40 text-xs">{p.notes ?? "—"}</td>
                 </tr>
               ))}
               {payouts.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="px-4 py-8 text-center text-primary/30"
-                  >
-                    Ingen udbetalinger endnu
-                  </td>
-                </tr>
+                <tr><td colSpan={6} className="px-4 py-8 text-center text-primary/30">Ingen udbetalinger endnu</td></tr>
               )}
             </tbody>
           </table>

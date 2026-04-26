@@ -52,6 +52,10 @@ export async function POST(
     );
   if (!/^\d{4}-\d{2}-\d{2}$/.test(check_in) || !/^\d{4}-\d{2}-\d{2}$/.test(check_out))
     return NextResponse.json({ error: "Ugyldigt datoformat (YYYY-MM-DD)" }, { status: 400 });
+  const inDate = new Date(check_in);
+  const outDate = new Date(check_out);
+  if (isNaN(inDate.getTime()) || isNaN(outDate.getTime()))
+    return NextResponse.json({ error: "Ugyldige datoer" }, { status: 400 });
   if (check_in >= check_out)
     return NextResponse.json({ error: "Afrejsedato skal være efter ankomstdato" }, { status: 400 });
   const today = new Date().toISOString().slice(0, 10);
