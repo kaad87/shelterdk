@@ -37,9 +37,14 @@ export async function createCheckoutSession(
 ): Promise<{ url: string; sessionId: string }> {
   const stripe = getStripe();
 
-  const priceDkk = shelter.shelter_price_dkk ?? 0;
+  const pricePerNightDkk = shelter.shelter_price_dkk ?? 0;
+  const nights = Math.max(
+    1,
+    Math.round((new Date(booking.check_out).getTime() - new Date(booking.check_in).getTime()) / 86_400_000)
+  );
+  const shelterTotalDkk = pricePerNightDkk * nights;
   const { shelterDkk, platformDkk } = calculateFee(
-    priceDkk,
+    shelterTotalDkk,
     shelter.platform_fee_pct,
     shelter.platform_fee_min_dkk
   );
@@ -51,9 +56,9 @@ export async function createCheckoutSession(
       price_data: {
         currency: "dkk",
         product_data: { name: `Overnatning: ${shelter.title}` },
-        unit_amount: shelterDkk * 100, // øre
+        unit_amount: pricePerNightDkk * 100, // øre pr. nat
       },
-      quantity: 1,
+      quantity: nights,
     });
   }
 

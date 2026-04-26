@@ -16,6 +16,10 @@ import { createBookingPayment, getPaymentByBookingId } from "@/lib/payment-db";
 
 export const dynamic = "force-dynamic";
 
+function calcNights(checkIn: string, checkOut: string): number {
+  return Math.max(1, Math.round((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / 86_400_000));
+}
+
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ token: string }> }
@@ -67,8 +71,9 @@ export async function POST(
       // after_confirmation: create Stripe session + send payment request to guest
       try {
         const { url, sessionId } = await createCheckoutSession(booking, shelter);
+        const nights = calcNights(booking.check_in, booking.check_out);
         const { shelterDkk, platformDkk, totalDkk } = calculateFee(
-          shelter.shelter_price_dkk ?? 0,
+          (shelter.shelter_price_dkk ?? 0) * nights,
           shelter.platform_fee_pct,
           shelter.platform_fee_min_dkk
         );
@@ -160,10 +165,38 @@ export async function POST(
     if (existing?.status === "paid")
       return NextResponse.json({ error: "Betaling allerede gennemført" }, { status: 409 });
 
+    // If a pending payment already exists, don't create a duplicate — just resend the existing link
+    if (existing?.status === "pending" && existing.stripe_checkout_session_id) {
+      try {
+        const { default: Stripe } = await import("stripe");
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+        const session = await stripe.checkout.sessions.retrieve(existing.stripe_checkout_session_id);
+        if (session.url && session.status === "open") {
+          await sendPaymentRequestToGuest({
+            guestEmail: booking.guest_email,
+            guestName: booking.guest_name,
+            shelterTitle: shelter.title,
+            checkIn: booking.check_in,
+            checkOut: booking.check_out,
+            amountTotalDkk: existing.amount_total_dkk,
+            amountShelterDkk: existing.amount_shelter_dkk,
+            amountPlatformDkk: existing.amount_platform_dkk,
+            paymentUrl: session.url,
+          });
+          return NextResponse.json({ ok: true });
+        }
+        // Session expired — fall through to create a new one
+      } catch (err) {
+        console.error("resend-payment: error reusing existing session:", err);
+        // Fall through to create new session
+      }
+    }
+
     try {
       const { url, sessionId } = await createCheckoutSession(booking, shelter);
+      const nights = calcNights(booking.check_in, booking.check_out);
       const { shelterDkk, platformDkk, totalDkk } = calculateFee(
-        shelter.shelter_price_dkk ?? 0,
+        (shelter.shelter_price_dkk ?? 0) * nights,
         shelter.platform_fee_pct,
         shelter.platform_fee_min_dkk
       );

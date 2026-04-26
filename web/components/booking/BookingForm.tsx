@@ -113,8 +113,9 @@ export function BookingForm({
     : 0;
 
   const isUpfront = paymentMode === "upfront";
-  const platformFee = Math.max(Math.round(shelterPriceDkk * platformFeePct / 100), platformFeeMinDkk);
-  const totalDkk = shelterPriceDkk + platformFee;
+  const shelterTotalDkk = shelterPriceDkk * (nights || 1);
+  const platformFee = Math.max(Math.round(shelterTotalDkk * platformFeePct / 100), platformFeeMinDkk);
+  const totalDkk = shelterTotalDkk + platformFee;
 
   const trustSignals = isUpfront
     ? ["Sikker betaling via MobilePay eller kort", "Du betaler nu og ejeren bekræfter herefter", "Fuld refundering ved afvisning"]
@@ -193,8 +194,8 @@ export function BookingForm({
               {isUpfront && shelterPriceDkk > 0 && (
                 <div className="border-t border-accent/10 px-4 py-3 space-y-1.5">
                   <div className="flex justify-between text-xs text-primary/60">
-                    <span>Overnatning</span>
-                    <span>{shelterPriceDkk} kr</span>
+                    <span>Overnatning ({nights} {nights === 1 ? "nat" : "nætter"} × {shelterPriceDkk} kr)</span>
+                    <span>{shelterTotalDkk} kr</span>
                   </div>
                   <div className="flex justify-between text-xs text-primary/60">
                     <span>Administrationsgebyr</span>
