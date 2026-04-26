@@ -87,6 +87,6 @@ describe("SoegContent", () => {
         view="split"
       />
     );
-    expect(screen.getByText(/ingen shelters fundet/i)).toBeInTheDocument();
+    expect(screen.getByText(/ingen shelters matcher din søgning/i)).toBeInTheDocument();
   });
 });

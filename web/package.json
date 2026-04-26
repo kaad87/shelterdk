@@ -36,9 +36,11 @@
     "lucide-react": "^0.294.0",
     "next": "^14.2.35",
     "react": "^18.2.0",
+    "react-day-picker": "^9.14.0",
     "react-dom": "^18.2.0",
     "react-leaflet": "^4.2.1",
-    "resend": "^6.9.4"
+    "resend": "^6.9.4",
+    "stripe": "^22.1.0"
   },
   "devDependencies": {
     "@netlify/functions": "^5.2.0",

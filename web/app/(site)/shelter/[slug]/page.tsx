@@ -33,6 +33,7 @@ import { NO_KOMMUNE_SLUG } from "@/lib/danmark-silo";
 import { getAreaBySlug, prepositionForArea } from "@/lib/area-db";
 import { getWeatherForecast } from "@/lib/weather";
 import { ShelterDetailContent } from "@/components/ShelterDetailContent";
+import { getBookableShelterByShelterDbId } from "@/lib/booking-db";
 import { ShelterSchema } from "@/components/seo/ShelterSchema";
 import { getRoutesForShelter } from "@/lib/shelter-routes";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
@@ -151,6 +152,9 @@ export default async function ShelterPage({ params }: PageProps) {
     getReviews(shelter.google_place_id ?? null),
     areaSlug ? getAreaBySlug(areaSlug) : Promise.resolve(null),
   ]);
+
+  // Tjek om dette shelter har en bookbar side på ShelterDK
+  const bookableShelter = await getBookableShelterByShelterDbId(shelter.id).catch(() => null);
   const embeddedPlaces = shelter.google_places;
   const embeddedRefs = Array.isArray(embeddedPlaces)
     ? embeddedPlaces?.[0]?.photo_references
@@ -229,6 +233,23 @@ export default async function ShelterPage({ params }: PageProps) {
     <>
       <ShelterSchema shelter={shelter} canonicalPath={`/shelter/${slug}`} reviews={reviews} />
       <BreadcrumbSchema items={breadcrumbSchemaItems} />
+      {bookableShelter && (
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-4">
+          <div className="rounded-xl border border-accent/20 bg-accent/5 p-4 flex items-center justify-between gap-4">
+            <p className="text-sm font-semibold text-primary">
+              Book dette shelter direkte på ShelterDK
+            </p>
+            <a
+              href={`/embed/book/${bookableShelter.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-accent text-white px-4 py-2 text-sm font-semibold hover:bg-accent/90 transition-colors"
+            >
+              Book nu →
+            </a>
+          </div>
+        </div>
+      )}
       <ShelterDetailContent
       shelter={shelter}
       slug={slug}

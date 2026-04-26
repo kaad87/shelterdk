@@ -21,6 +21,7 @@ import {
   Inbox,
   Archive,
   Eye,
+  BookOpen,
 } from "lucide-react";
 import { getProxiedImageSrc } from "@/lib/image-proxy";
 import { FACILITY_FIELDS } from "@/lib/community";
@@ -35,7 +36,19 @@ declare global {
 
 const STORAGE_KEY = "shelterdk-admin-secret";
 
-type TabKey = "photos" | "community" | "instagram" | "newsletter" | "contact" | "oplevelser" | "submissions";
+type TabKey = "photos" | "community" | "instagram" | "newsletter" | "contact" | "oplevelser" | "submissions" | "bookinger";
+
+type BookableShelterAdmin = {
+  id: string;
+  slug: string;
+  title: string;
+  owner_email: string;
+  owner_token: string;
+  max_persons: number;
+  description: string | null;
+  booking_mode: "shelterdk" | "iframe";
+  created_at: string;
+};
 
 type Submission = {
   id: string;
@@ -118,6 +131,7 @@ const TAB_CONFIG: { key: TabKey; label: string; icon: typeof Camera }[] = [
   { key: "contact", label: "Beskeder", icon: Inbox },
   { key: "oplevelser", label: "Oplevelser", icon: Camera },
   { key: "submissions", label: "Indsendte", icon: Plus },
+  { key: "bookinger", label: "Bookinger", icon: BookOpen },
 ];
 
 export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKey }) {
@@ -138,6 +152,17 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
   const [newIgUrl, setNewIgUrl] = useState("");
   const [igScriptReady, setIgScriptReady] = useState(false);
   const embedRef = useRef(0);
+
+  // Bookinger tab
+  const [bookableShelters, setBookableShelters] = useState<BookableShelterAdmin[]>([]);
+  const [shelterForm, setShelterForm] = useState({ slug: "", title: "", owner_email: "", max_persons: "6", description: "", shelter_id: "", booking_mode: "shelterdk" as "shelterdk" | "iframe" });
+  const [shelterCreating, setShelterCreating] = useState(false);
+  const [shelterCreateError, setShelterCreateError] = useState<string | null>(null);
+  // Shelter search
+  const [shelterSearch, setShelterSearch] = useState("");
+  const [shelterSearchResults, setShelterSearchResults] = useState<{ id: string; title: string; slug: string; kommune: string | null; region: string | null }[]>([]);
+  const [shelterSearchLoading, setShelterSearchLoading] = useState(false);
+  const [shelterSearchOpen, setShelterSearchOpen] = useState(false);
 
   const processEmbeds = useCallback(() => {
     if (typeof window !== "undefined" && window.instgrm?.Embeds) {
@@ -170,7 +195,7 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
     setError("");
     try {
       const ts = Date.now();
-      const [photoRes, communityRes, igRes, nlRes, contactRes, experiencesRes, submissionsRes] = await Promise.all([
+      const [photoRes, communityRes, igRes, nlRes, contactRes, experiencesRes, submissionsRes, sheltersRes] = await Promise.all([
         fetch(`/api/admin/pending-photos?t=${ts}`, {
           headers: { "x-admin-secret": s },
           cache: "no-store",
@@ -196,6 +221,10 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
           cache: "no-store",
         }),
         fetch(`/api/admin/pending-shelter-submissions?t=${ts}`, {
+          headers: { "x-admin-secret": s },
+          cache: "no-store",
+        }),
+        fetch(`/api/admin/shelters?t=${ts}`, {
           headers: { "x-admin-secret": s },
           cache: "no-store",
         }),
@@ -254,6 +283,11 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
         const subsData = await submissionsRes.json();
         setShelterSubmissions(subsData.submissions ?? []);
       }
+
+      if (sheltersRes.ok) {
+        const sheltersData = await sheltersRes.json();
+        setBookableShelters(sheltersData.shelters ?? []);
+      }
     } finally {
       setLoading(false);
     }
@@ -293,6 +327,7 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
     setIgPosts([]);
     setNlSubs([]);
     setContactMsgs([]);
+    setBookableShelters([]);
   };
 
   const act = async (
@@ -434,6 +469,7 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
     contact: unreadMsgs.length,
     oplevelser: experiences.length,
     submissions: shelterSubmissions.length,
+    bookinger: bookableShelters.length,
   };
 
   // ── Login screen ──
@@ -1323,6 +1359,284 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* ── BOOKINGER TAB ── */}
+      {tab === "bookinger" && (
+        <div className="space-y-8">
+          {/* Create form */}
+          <section className="rounded-2xl border border-primary/10 bg-white p-6">
+            <h2 className="font-serif text-lg font-bold text-primary mb-1">Opret nyt bookbart shelter</h2>
+            <p className="text-xs text-primary/40 mb-5">Søg efter shelteret i databasen for at linke det korrekt, eller udfyld manuelt.</p>
+
+            {/* Shelter search */}
+            <div className="mb-5 relative">
+              <label className="block text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1">
+                Søg shelter i ShelterDK-databasen
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={shelterSearch}
+                  onChange={async (e) => {
+                    const q = e.target.value;
+                    setShelterSearch(q);
+                    setShelterSearchOpen(true);
+                    if (q.length < 2) { setShelterSearchResults([]); return; }
+                    setShelterSearchLoading(true);
+                    const res = await fetch(`/api/admin/search-shelters?q=${encodeURIComponent(q)}`, {
+                      headers: { "x-admin-secret": secret },
+                    });
+                    const data = await res.json();
+                    setShelterSearchResults(data.shelters ?? []);
+                    setShelterSearchLoading(false);
+                  }}
+                  onFocus={() => setShelterSearchOpen(true)}
+                  placeholder="Skriv shelternavn…"
+                  className="w-full rounded-lg border border-primary/20 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40"
+                />
+                {shelterSearchLoading && (
+                  <div className="absolute right-3 top-2.5">
+                    <Loader2 size={14} className="animate-spin text-primary/30" />
+                  </div>
+                )}
+              </div>
+              {shelterSearchOpen && shelterSearchResults.length > 0 && (
+                <div className="absolute z-20 mt-1 w-full rounded-lg border border-primary/15 bg-white shadow-lg overflow-hidden">
+                  {shelterSearchResults.map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setShelterForm((f) => ({
+                          ...f,
+                          title: s.title,
+                          slug: s.slug,
+                          shelter_id: s.id,
+                        }));
+                        setShelterSearch(s.title);
+                        setShelterSearchOpen(false);
+                        setShelterSearchResults([]);
+                      }}
+                      className="w-full text-left px-4 py-2.5 hover:bg-accent/5 transition-colors border-b border-primary/5 last:border-0"
+                    >
+                      <p className="text-sm font-medium text-primary">{s.title}</p>
+                      <p className="text-xs text-primary/40">{[s.kommune, s.region].filter(Boolean).join(", ")}</p>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {shelterForm.shelter_id && (
+                <p className="mt-1.5 text-xs text-green-600 flex items-center gap-1">
+                  <Check size={12} /> Linket til shelter i databasen
+                </p>
+              )}
+            </div>
+
+            <div className="border-t border-primary/8 pt-5">
+              <p className="text-xs text-primary/35 mb-4">Udfyld eller juster detaljerne:</p>
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  setShelterCreating(true);
+                  setShelterCreateError(null);
+                  const res = await fetch("/api/admin/shelters", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "x-admin-secret": secret },
+                    body: JSON.stringify({
+                      ...shelterForm,
+                      max_persons: Number(shelterForm.max_persons),
+                      shelter_id: shelterForm.shelter_id || null,
+                      booking_mode: shelterForm.booking_mode,
+                    }),
+                  });
+                  const data = await res.json();
+                  if (!res.ok) { setShelterCreateError(data.error); setShelterCreating(false); return; }
+                  setShelterForm({ slug: "", title: "", owner_email: "", max_persons: "6", description: "", shelter_id: "", booking_mode: "shelterdk" });
+                  setShelterSearch("");
+                  setShelterCreating(false);
+                  fetchAll(secret);
+                }}
+                className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+              >
+                <div>
+                  <label className="block text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1">Titel *</label>
+                  <input required value={shelterForm.title}
+                    onChange={(e) => setShelterForm((f) => ({ ...f, title: e.target.value }))}
+                    placeholder="Skovly Shelter"
+                    className="w-full rounded-lg border border-primary/20 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1">
+                    Slug * <span className="font-normal normal-case text-primary/30">(URL: /book/slug)</span>
+                  </label>
+                  <input required value={shelterForm.slug}
+                    onChange={(e) => setShelterForm((f) => ({ ...f, slug: e.target.value.toLowerCase().replace(/\s+/g, "-"), shelter_id: "" }))}
+                    placeholder="skovly-shelter"
+                    className="w-full rounded-lg border border-primary/20 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-accent/40"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1">Ejer-email *</label>
+                  <input required type="email" value={shelterForm.owner_email}
+                    onChange={(e) => setShelterForm((f) => ({ ...f, owner_email: e.target.value }))}
+                    placeholder="ejer@shelter.dk"
+                    className="w-full rounded-lg border border-primary/20 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1">Maks personer</label>
+                  <input required type="number" min={1} max={50} value={shelterForm.max_persons}
+                    onChange={(e) => setShelterForm((f) => ({ ...f, max_persons: e.target.value }))}
+                    className="w-full rounded-lg border border-primary/20 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-primary/50 uppercase tracking-wide mb-2">Bookingtype *</label>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {(["shelterdk", "iframe"] as const).map((mode) => {
+                      const isSelected = shelterForm.booking_mode === mode;
+                      return (
+                        <button
+                          key={mode}
+                          type="button"
+                          onClick={() => setShelterForm((f) => ({ ...f, booking_mode: mode }))}
+                          className={`text-left rounded-xl border-2 px-4 py-3 transition-all ${
+                            isSelected
+                              ? "border-accent bg-accent/[0.04]"
+                              : "border-primary/15 hover:border-primary/30"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 mb-1">
+                            <div className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSelected ? "border-accent" : "border-primary/30"}`}>
+                              {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-accent" />}
+                            </div>
+                            <span className="text-sm font-semibold text-primary">
+                              {mode === "shelterdk" ? "ShelterDK" : "Iframe / embed"}
+                            </span>
+                          </div>
+                          <p className="text-xs text-primary/45 pl-5 leading-relaxed">
+                            {mode === "shelterdk"
+                              ? "Booking foregår på shelterdk.dk/book/[slug] — til shelters uden egen hjemmeside"
+                              : "Ejeren embedder en iframe på sin egen hjemmeside"}
+                          </p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1">Beskrivelse <span className="font-normal normal-case text-primary/30">(valgfri)</span></label>
+                  <textarea rows={2} value={shelterForm.description}
+                    onChange={(e) => setShelterForm((f) => ({ ...f, description: e.target.value }))}
+                    className="w-full rounded-lg border border-primary/20 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40 resize-none"
+                  />
+                </div>
+                {shelterCreateError && (
+                  <div className="sm:col-span-2">
+                    <p className="text-red-600 text-sm bg-red-50 rounded-lg px-3 py-2">{shelterCreateError}</p>
+                  </div>
+                )}
+                <div className="sm:col-span-2">
+                  <button type="submit" disabled={shelterCreating}
+                    className="rounded-lg bg-accent text-white px-5 py-2 text-sm font-semibold hover:bg-accent/90 disabled:opacity-50 transition-colors">
+                    {shelterCreating ? "Opretter…" : "Opret shelter"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </section>
+
+          {/* Shelter list */}
+          <section>
+            <h2 className="font-serif text-lg font-bold text-primary mb-3">
+              Bookbare shelters ({loading ? "…" : bookableShelters.length})
+            </h2>
+            {loading && <div className="text-primary/50 text-sm">Henter…</div>}
+            {!loading && bookableShelters.length === 0 && (
+              <p className="text-primary/40 text-sm">Ingen bookbare shelters endnu.</p>
+            )}
+            <div className="space-y-3">
+              {bookableShelters.map((s) => {
+                const origin = typeof window !== "undefined" ? window.location.origin : "https://shelterdk.dk";
+                const mode = s.booking_mode ?? "iframe";
+                const bookingUrl = mode === "shelterdk"
+                  ? `${origin}/book/${s.slug}`
+                  : `${origin}/embed/book/${s.slug}`;
+                const dashboardUrl = `${origin}/owner/${s.owner_token}`;
+                const embedCode = mode === "iframe"
+                  ? `<iframe src="${bookingUrl}" width="100%" height="700" frameborder="0" style="border:0;border-radius:12px" loading="lazy" title="Shelter booking leveret af ShelterDK" allowfullscreen></iframe>\n<a href="https://shelterdk.dk" title="Find og book shelters i hele Danmark">Shelter booking leveret af ShelterDK</a>`
+                  : null;
+                return (
+                  <div key={s.id} className="rounded-xl border border-primary/10 bg-white p-4">
+                    <div className="flex items-start justify-between gap-4 mb-3">
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                          <p className="font-semibold text-primary text-sm">{s.title}</p>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${
+                            mode === "shelterdk"
+                              ? "bg-accent/10 text-accent"
+                              : "bg-primary/8 text-primary/50"
+                          }`}>
+                            {mode === "shelterdk" ? "ShelterDK" : "Iframe"}
+                          </span>
+                        </div>
+                        <p className="text-xs text-primary/50">{s.owner_email} · maks {s.max_persons} pers.</p>
+                      </div>
+                      <button
+                        onClick={async () => {
+                          if (!confirm(`Slet "${s.title}"? Dette fjerner også alle bookings.`)) return;
+                          await fetch("/api/admin/shelters", {
+                            method: "DELETE",
+                            headers: { "Content-Type": "application/json", "x-admin-secret": secret },
+                            body: JSON.stringify({ id: s.id }),
+                          });
+                          fetchAll(secret);
+                        }}
+                        className="text-xs text-red-400 hover:text-red-600 shrink-0"
+                      >
+                        Slet
+                      </button>
+                    </div>
+                    <div className="space-y-1.5">
+                      {[
+                        { label: mode === "shelterdk" ? "Bookingside" : "Embed-URL", value: bookingUrl },
+                        { label: "Dashboard", value: dashboardUrl },
+                      ].map(({ label, value }) => (
+                        <div key={label} className="flex items-center gap-2">
+                          <span className="text-xs text-primary/35 w-24 shrink-0">{label}</span>
+                          <code className="text-xs text-primary/60 bg-primary/5 px-2 py-0.5 rounded flex-1 truncate">{value}</code>
+                          <button
+                            onClick={() => navigator.clipboard.writeText(value)}
+                            className="text-xs px-2 py-0.5 rounded border border-primary/15 hover:bg-primary/5 transition-colors shrink-0 text-primary/50"
+                          >
+                            Kopiér
+                          </button>
+                        </div>
+                      ))}
+                      {embedCode && (
+                        <div className="mt-2 pt-2 border-t border-primary/5">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs text-primary/35">Embed-kode</span>
+                            <button
+                              onClick={() => navigator.clipboard.writeText(embedCode)}
+                              className="text-xs px-2 py-0.5 rounded border border-primary/15 hover:bg-primary/5 transition-colors text-primary/50"
+                            >
+                              Kopiér kode
+                            </button>
+                          </div>
+                          <pre className="text-[10px] text-primary/40 bg-primary/[0.03] rounded-lg p-2 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed">{embedCode}</pre>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
         </div>
       )}
     </div>

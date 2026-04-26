@@ -1,9 +1,9 @@
 // lib/email.ts
 import { Resend } from "resend";
 
-const FROM_EMAIL = "ShelterDK <onboarding@resend.dev>";
+export const FROM_EMAIL = "ShelterDK <onboarding@resend.dev>";
 
-function escapeHtml(str: string): string {
+export function escapeHtml(str: string): string {
   return str
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -12,7 +12,7 @@ function escapeHtml(str: string): string {
     .replace(/'/g, "&#39;");
 }
 
-function getResend() {
+export function getResend() {
   return new Resend(process.env.RESEND_API_KEY);
 }
 
