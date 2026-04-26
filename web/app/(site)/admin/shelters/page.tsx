@@ -217,7 +217,7 @@ function AdminSheltersContent() {
               </label>
               <select
                 value={form.payment_mode}
-                onChange={(e) => setForm((f) => ({ ...f, payment_mode: e.target.value }))}
+                onChange={(e) => setForm((f) => ({ ...f, payment_mode: e.target.value as "after_confirmation" | "upfront" }))}
                 className="w-full rounded-lg border border-primary/20 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
               >
                 <option value="after_confirmation">Betal efter accept (standard)</option>
