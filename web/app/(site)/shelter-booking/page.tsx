@@ -16,7 +16,7 @@ const BOOKING_FAQ: FaqItem[] = [
   { question: "Kan man booke shelter til en gruppe?", answer: "Ja, mange shelterpladser kan bookes til grupper. Nogle pladser har flere shelters der kan bookes samlet. Ved booking angiver du typisk antal personer. For større grupper (spejder, firmatur) kan det være en god idé at kontakte pladsen direkte." },
 ];
 
-const PAGE_TITLE = "Book shelter i Danmark – guide til shelter-booking | ShelterDK";
+const PAGE_TITLE = "Book shelter i Danmark | ShelterDK";
 export const metadata: Metadata = {
   title: { absolute: PAGE_TITLE },
   description:

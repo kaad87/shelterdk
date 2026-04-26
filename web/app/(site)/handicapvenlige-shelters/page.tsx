@@ -41,7 +41,7 @@ const FAQ_ITEMS: FaqItem[] = [
 ];
 
 const PAGE_TITLE =
-  "Handicapvenlige shelters i Danmark – tilgængelige overnatningspladser | ShelterDK";
+  "Handicapvenlige shelters i Danmark | ShelterDK";
 export const metadata: Metadata = {
   title: { absolute: PAGE_TITLE },
   description:

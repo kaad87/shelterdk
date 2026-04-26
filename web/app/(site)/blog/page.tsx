@@ -8,12 +8,12 @@ const featured = getFeaturedPost();
 export const metadata: Metadata = {
   title: { absolute: "Blog – Tips og inspiration til naturovernatning | ShelterDK" },
   description:
-    "Tips, guider og nyheder om shelters og naturovernatning i Danmark.",
+    "Læs tips, guider og inspiration til shelterture i Danmark. Vi skriver om pakkelister, de bedste shelterpladser, årstidens muligheder og naturovernatning.",
   alternates: { canonical: "https://shelterdk.dk/blog" },
   openGraph: {
     title: "Blog – Tips og inspiration til naturovernatning | ShelterDK",
     description:
-      "Tips, guider og nyheder om shelters og naturovernatning i Danmark.",
+      "Læs tips, guider og inspiration til shelterture i Danmark. Vi skriver om pakkelister, de bedste shelterpladser, årstidens muligheder og naturovernatning.",
     url: "/blog",
     images: [
       {

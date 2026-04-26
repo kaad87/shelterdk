@@ -18,7 +18,7 @@ const SHOWER_FAQ: FaqItem[] = [
   { question: "Hvilke shelters har de bedste badefaciliteter?", answer: "Shelters tilknyttet friluftsgårde, naturcentre eller campingpladser har typisk de bedste badefaciliteter. Pladser ved Naturstyrelsen har sjældent bruser, men kan have andre faciliteter som toilet og drikkevand." },
 ];
 
-const PAGE_TITLE = "Shelter med bruser i Danmark – overnatning med badefaciliteter | ShelterDK";
+const PAGE_TITLE = "Shelter med bruser i Danmark | ShelterDK";
 export const metadata: Metadata = {
   title: { absolute: PAGE_TITLE },
   description:
