@@ -1,7 +1,7 @@
 // lib/email.ts
 import { Resend } from "resend";
 
-export const FROM_EMAIL = "ShelterDK <onboarding@resend.dev>";
+export const FROM_EMAIL = "ShelterDK <no-reply@shelterdk.dk>";
 
 export function escapeHtml(str: string): string {
   return str
