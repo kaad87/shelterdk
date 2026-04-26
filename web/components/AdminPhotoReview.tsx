@@ -46,7 +46,7 @@ type BookableShelterAdmin = {
   owner_token: string;
   max_persons: number;
   description: string | null;
-  booking_mode: "shelterdk" | "iframe";
+  booking_mode: "shelterdk" | "iframe" | "both";
   created_at: string;
 };
 
@@ -155,7 +155,7 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
 
   // Bookinger tab
   const [bookableShelters, setBookableShelters] = useState<BookableShelterAdmin[]>([]);
-  const [shelterForm, setShelterForm] = useState({ slug: "", title: "", owner_email: "", max_persons: "6", description: "", shelter_id: "", booking_mode: "shelterdk" as "shelterdk" | "iframe", payment_mode: "after_confirmation" as "after_confirmation" | "upfront", shelter_price_dkk: "", platform_fee_pct: "5", platform_fee_min_dkk: "25" });
+  const [shelterForm, setShelterForm] = useState({ slug: "", title: "", owner_email: "", max_persons: "6", description: "", shelter_id: "", booking_mode: "shelterdk" as "shelterdk" | "iframe" | "both", payment_mode: "after_confirmation" as "after_confirmation" | "upfront", shelter_price_dkk: "", platform_fee_pct: "5", platform_fee_min_dkk: "25" });
   const [shelterCreating, setShelterCreating] = useState(false);
   const [shelterCreateError, setShelterCreateError] = useState<string | null>(null);
   // Shelter search
@@ -1458,7 +1458,7 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
                   });
                   const data = await res.json();
                   if (!res.ok) { setShelterCreateError(data.error); setShelterCreating(false); return; }
-                  setShelterForm({ slug: "", title: "", owner_email: "", max_persons: "6", description: "", shelter_id: "", booking_mode: "shelterdk", payment_mode: "after_confirmation", shelter_price_dkk: "", platform_fee_pct: "5", platform_fee_min_dkk: "25" });
+                  setShelterForm({ slug: "", title: "", owner_email: "", max_persons: "6", description: "", shelter_id: "", booking_mode: "shelterdk", payment_mode: "after_confirmation" as "after_confirmation" | "upfront", shelter_price_dkk: "", platform_fee_pct: "5", platform_fee_min_dkk: "25" });
                   setShelterSearch("");
                   setShelterCreating(false);
                   fetchAll(secret);
@@ -1499,34 +1499,36 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-primary/50 uppercase tracking-wide mb-2">Bookingtype *</label>
+                  <label className="block text-xs font-semibold text-primary/50 uppercase tracking-wide mb-2">Bookingkanaler * <span className="font-normal normal-case text-primary/30">(vælg én eller begge)</span></label>
                   <div className="grid sm:grid-cols-2 gap-3">
-                    {(["shelterdk", "iframe"] as const).map((mode) => {
-                      const isSelected = shelterForm.booking_mode === mode;
+                    {([
+                      { key: "shelterdk", label: "ShelterDK", desc: "shelterdk.dk/book/[slug] — til shelters uden egen hjemmeside" },
+                      { key: "iframe", label: "Iframe / embed", desc: "Ejeren embedder en iframe på sin egen hjemmeside" },
+                    ] as const).map(({ key, label, desc }) => {
+                      const checked = shelterForm.booking_mode === key || shelterForm.booking_mode === "both";
+                      const toggle = () => setShelterForm((f) => {
+                        const cur = f.booking_mode;
+                        if (key === "shelterdk") {
+                          if (cur === "both") return { ...f, booking_mode: "iframe" };
+                          if (cur === "iframe") return { ...f, booking_mode: "both" };
+                          return f; // already shelterdk, can't uncheck last one
+                        } else {
+                          if (cur === "both") return { ...f, booking_mode: "shelterdk" };
+                          if (cur === "shelterdk") return { ...f, booking_mode: "both" };
+                          return f; // already iframe, can't uncheck last one
+                        }
+                      });
                       return (
-                        <button
-                          key={mode}
-                          type="button"
-                          onClick={() => setShelterForm((f) => ({ ...f, booking_mode: mode }))}
-                          className={`text-left rounded-xl border-2 px-4 py-3 transition-all ${
-                            isSelected
-                              ? "border-accent bg-accent/[0.04]"
-                              : "border-primary/15 hover:border-primary/30"
-                          }`}
+                        <button key={key} type="button" onClick={toggle}
+                          className={`text-left rounded-xl border-2 px-4 py-3 transition-all ${checked ? "border-accent bg-accent/[0.04]" : "border-primary/15 hover:border-primary/30"}`}
                         >
                           <div className="flex items-center gap-2 mb-1">
-                            <div className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSelected ? "border-accent" : "border-primary/30"}`}>
-                              {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-accent" />}
+                            <div className={`w-3.5 h-3.5 rounded-sm border-2 flex items-center justify-center shrink-0 ${checked ? "border-accent bg-accent" : "border-primary/30"}`}>
+                              {checked && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 10 8"><path d="M1 4l3 3 5-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                             </div>
-                            <span className="text-sm font-semibold text-primary">
-                              {mode === "shelterdk" ? "ShelterDK" : "Iframe / embed"}
-                            </span>
+                            <span className="text-sm font-semibold text-primary">{label}</span>
                           </div>
-                          <p className="text-xs text-primary/45 pl-5 leading-relaxed">
-                            {mode === "shelterdk"
-                              ? "Booking foregår på shelterdk.dk/book/[slug] — til shelters uden egen hjemmeside"
-                              : "Ejeren embedder en iframe på sin egen hjemmeside"}
-                          </p>
+                          <p className="text-xs text-primary/45 pl-5 leading-relaxed">{desc}</p>
                         </button>
                       );
                     })}
@@ -1609,12 +1611,11 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
               {bookableShelters.map((s) => {
                 const origin = typeof window !== "undefined" ? window.location.origin : "https://shelterdk.dk";
                 const mode = s.booking_mode ?? "iframe";
-                const bookingUrl = mode === "shelterdk"
-                  ? `${origin}/book/${s.slug}`
-                  : `${origin}/embed/book/${s.slug}`;
+                const shelterDkUrl = `${origin}/book/${s.slug}`;
+                const embedUrl = `${origin}/embed/book/${s.slug}`;
                 const dashboardUrl = `${origin}/owner/${s.owner_token}`;
-                const embedCode = mode === "iframe"
-                  ? `<iframe src="${bookingUrl}" width="100%" height="700" frameborder="0" style="border:0;border-radius:12px" loading="lazy" title="Shelter booking leveret af ShelterDK" allowfullscreen></iframe>\n<a href="https://shelterdk.dk" title="Find og book shelters i hele Danmark">Shelter booking leveret af ShelterDK</a>`
+                const embedCode = (mode === "iframe" || mode === "both")
+                  ? `<iframe src="${embedUrl}" width="100%" height="700" frameborder="0" style="border:0;border-radius:12px" loading="lazy" title="Shelter booking leveret af ShelterDK" allowfullscreen></iframe>\n<a href="https://shelterdk.dk" title="Find og book shelters i hele Danmark">Shelter booking leveret af ShelterDK</a>`
                   : null;
                 return (
                   <div key={s.id} className="rounded-xl border border-primary/10 bg-white p-4">
@@ -1622,13 +1623,12 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
                       <div>
                         <div className="flex items-center gap-2 flex-wrap mb-0.5">
                           <p className="font-semibold text-primary text-sm">{s.title}</p>
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${
-                            mode === "shelterdk"
-                              ? "bg-accent/10 text-accent"
-                              : "bg-primary/8 text-primary/50"
-                          }`}>
-                            {mode === "shelterdk" ? "ShelterDK" : "Iframe"}
-                          </span>
+                          {(mode === "shelterdk" || mode === "both") && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide bg-accent/10 text-accent">ShelterDK</span>
+                          )}
+                          {(mode === "iframe" || mode === "both") && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide bg-primary/8 text-primary/50">Iframe</span>
+                          )}
                         </div>
                         <p className="text-xs text-primary/50">{s.owner_email} · maks {s.max_persons} pers.</p>
                       </div>
@@ -1649,7 +1649,8 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
                     </div>
                     <div className="space-y-1.5">
                       {[
-                        { label: mode === "shelterdk" ? "Bookingside" : "Embed-URL", value: bookingUrl },
+                        ...(mode === "shelterdk" || mode === "both" ? [{ label: "Bookingside", value: shelterDkUrl }] : []),
+                        ...(mode === "iframe" || mode === "both" ? [{ label: "Embed-URL", value: embedUrl }] : []),
                         { label: "Dashboard", value: dashboardUrl },
                       ].map(({ label, value }) => (
                         <div key={label} className="flex items-center gap-2">

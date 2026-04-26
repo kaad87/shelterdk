@@ -7,7 +7,7 @@ interface Props { params: Promise<{ slug: string }> }
 export default async function EmbedBookPage({ params }: Props) {
   const { slug } = await params;
   const shelter = await getBookableShelterBySlug(slug);
-  if (!shelter) notFound();
+  if (!shelter || shelter.booking_mode === "shelterdk") notFound();
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] px-5 py-8 sm:px-8">

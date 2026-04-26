@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
       max_persons: Number(max_persons) || 6,
       description: description?.trim() || null,
       shelter_id: shelter_id || null,
-      booking_mode: booking_mode === "shelterdk" ? "shelterdk" : "iframe",
+      booking_mode: (["shelterdk", "iframe", "both"] as const).includes(booking_mode) ? booking_mode : "iframe",
       payment_mode: payment_mode === "upfront" ? "upfront" : "after_confirmation",
       shelter_price_dkk: shelter_price_dkk ? Number(shelter_price_dkk) : null,
       platform_fee_pct: platform_fee_pct != null ? Number(platform_fee_pct) : 5,

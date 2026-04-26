@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function BookShelterPage({ params }: Props) {
   const { slug } = await params;
   const shelter = await getBookableShelterBySlug(slug);
-  if (!shelter) notFound();
+  if (!shelter || shelter.booking_mode === "iframe") notFound();
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">

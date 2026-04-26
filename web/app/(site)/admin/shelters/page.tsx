@@ -55,7 +55,7 @@ function AdminSheltersContent() {
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(false);
   const [form, setForm] = useState({
-    slug: "", title: "", owner_email: "", max_persons: "6", description: "", booking_mode: "shelterdk", payment_mode: "after_confirmation", shelter_price_dkk: "", platform_fee_pct: "5", platform_fee_min_dkk: "25",
+    slug: "", title: "", owner_email: "", max_persons: "6", description: "", booking_mode: "shelterdk" as "shelterdk" | "iframe" | "both", payment_mode: "after_confirmation" as "after_confirmation" | "upfront", shelter_price_dkk: "", platform_fee_pct: "5", platform_fee_min_dkk: "25",
   });
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
@@ -89,7 +89,7 @@ function AdminSheltersContent() {
     });
     const data = await res.json();
     if (!res.ok) { setCreateError(data.error); setCreating(false); return; }
-    setForm({ slug: "", title: "", owner_email: "", max_persons: "6", description: "", booking_mode: "shelterdk", payment_mode: "after_confirmation", shelter_price_dkk: "", platform_fee_pct: "5", platform_fee_min_dkk: "25" });
+    setForm({ slug: "", title: "", owner_email: "", max_persons: "6", description: "", booking_mode: "shelterdk" as "shelterdk" | "iframe" | "both", payment_mode: "after_confirmation" as "after_confirmation" | "upfront", shelter_price_dkk: "", platform_fee_pct: "5", platform_fee_min_dkk: "25" });
     setCreating(false);
     load();
   };
@@ -175,35 +175,40 @@ function AdminSheltersContent() {
             </div>
             <div className="sm:col-span-2">
               <label className="block text-sm font-medium text-primary mb-2">
-                Bookingtype *
+                Bookingkanaler * <span className="text-primary/40 font-normal">— vælg én eller begge</span>
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {[
-                  { value: "shelterdk", label: "ShelterDK", desc: "Booking foregår på shelterdk.dk/book/[slug]" },
-                  { value: "iframe", label: "Iframe / embed", desc: "Ejeren embedder en iframe på sin egen hjemmeside" },
-                ].map((opt) => (
-                  <label
-                    key={opt.value}
-                    className={`flex items-start gap-3 rounded-xl border p-4 cursor-pointer transition-colors ${
-                      form.booking_mode === opt.value
-                        ? "border-accent bg-accent/5"
-                        : "border-primary/20 hover:border-primary/40"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="booking_mode"
-                      value={opt.value}
-                      checked={form.booking_mode === opt.value}
-                      onChange={(e) => setForm((f) => ({ ...f, booking_mode: e.target.value }))}
-                      className="mt-0.5 accent-accent"
-                    />
-                    <div>
-                      <div className="text-sm font-semibold text-primary">{opt.label}</div>
-                      <div className="text-xs text-primary/50 mt-0.5">{opt.desc}</div>
-                    </div>
-                  </label>
-                ))}
+                  { key: "shelterdk" as const, label: "ShelterDK", desc: "shelterdk.dk/book/[slug] — til shelters uden egen hjemmeside" },
+                  { key: "iframe" as const, label: "Iframe / embed", desc: "Ejeren embedder en iframe på sin egen hjemmeside" },
+                ].map(({ key, label, desc }) => {
+                  const checked = form.booking_mode === key || form.booking_mode === "both";
+                  const toggle = () => setForm((f) => {
+                    const cur = f.booking_mode;
+                    if (key === "shelterdk") {
+                      if (cur === "both") return { ...f, booking_mode: "iframe" };
+                      if (cur === "iframe") return { ...f, booking_mode: "both" };
+                      return f;
+                    } else {
+                      if (cur === "both") return { ...f, booking_mode: "shelterdk" };
+                      if (cur === "shelterdk") return { ...f, booking_mode: "both" };
+                      return f;
+                    }
+                  });
+                  return (
+                    <button key={key} type="button" onClick={toggle}
+                      className={`flex items-start gap-3 rounded-xl border p-4 cursor-pointer transition-colors text-left ${checked ? "border-accent bg-accent/5" : "border-primary/20 hover:border-primary/40"}`}
+                    >
+                      <div className={`mt-0.5 w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 ${checked ? "border-accent bg-accent" : "border-primary/30"}`}>
+                        {checked && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 10 8"><path d="M1 4l3 3 5-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold text-primary">{label}</div>
+                        <div className="text-xs text-primary/50 mt-0.5">{desc}</div>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
             <div>

@@ -7,7 +7,7 @@ export interface BookableShelter {
   owner_email: string;
   owner_token: string;
   max_persons: number;
-  booking_mode: "shelterdk" | "iframe";
+  booking_mode: "shelterdk" | "iframe" | "both";
   ical_import_url: string | null;
   ical_last_synced_at: string | null;
   shelter_price_dkk: number | null;
