@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
+import { Route, Package, Users } from "lucide-react";
 import { WebSiteSchema } from "@/components/seo/WebSiteSchema";
 import { FrontPageShelterGrid } from "@/components/FrontPageShelterGrid";
 import { SearchBar } from "@/components/SearchBar";
@@ -398,6 +399,14 @@ export default async function HomePage() {
               shelters={featuredShelters}
               maxVisible={FRONT_PAGE_SHELTER_LIMIT}
             />
+            <div className="mt-6 text-center">
+              <Link
+                href="/soeg"
+                className="inline-flex items-center gap-2 rounded-xl border border-primary/15 bg-white px-5 py-2.5 text-sm font-medium text-primary/70 hover:border-accent/30 hover:text-accent transition-colors shadow-sm"
+              >
+                Se alle shelters →
+              </Link>
+            </div>
           </div>
         </section>
       )}
@@ -429,7 +438,7 @@ export default async function HomePage() {
       </section>
 
       <section
-        className="pt-4 pb-8 bg-background"
+        className="pt-4 pb-8 bg-primary/[0.03]"
         id="kort"
         aria-labelledby="heading-kort"
       >
@@ -440,18 +449,21 @@ export default async function HomePage() {
           <figure className="rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[320px] sm:min-h-[400px] md:min-h-[560px] h-[60vh] sm:h-[70vh] md:h-[75vh] max-h-[960px]" aria-label="Interaktivt kort med shelters">
             <MapComponent shelters={mapShelters} className="w-full h-full" />
           </figure>
-          <p className="text-center mt-4">
-            <Link href="/soeg" className="text-accent font-medium hover:underline">
-              Søg shelters med liste og kort →
+          <div className="mt-5 text-center">
+            <Link
+              href="/soeg"
+              className="inline-flex items-center gap-2 rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#b8923f] transition-colors"
+            >
+              Søg og filtrer alle shelters →
             </Link>
-          </p>
+          </div>
         </div>
       </section>
 
       <HomepageDealsWidget />
 
       <section
-        className="py-8 bg-background"
+        className="py-8 bg-primary/[0.03]"
         id="planlaeg-din-tur"
         aria-labelledby="heading-planlaeg"
       >
@@ -464,6 +476,9 @@ export default async function HomePage() {
               href="/ruteplanner"
               className="group rounded-xl border border-primary/10 bg-white p-6 hover:border-accent/30 hover:shadow-md transition-all"
             >
+              <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+                <Route size={20} className="text-accent" aria-hidden />
+              </div>
               <h3 className="font-serif text-xl font-bold text-primary mb-2 group-hover:text-accent transition-colors">
                 Vandreruter med shelters
               </h3>
@@ -475,6 +490,9 @@ export default async function HomePage() {
               href="/guides/pakkeliste-til-sheltertur"
               className="group rounded-xl border border-primary/10 bg-white p-6 hover:border-accent/30 hover:shadow-md transition-all"
             >
+              <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+                <Package size={20} className="text-accent" aria-hidden />
+              </div>
               <h3 className="font-serif text-xl font-bold text-primary mb-2 group-hover:text-accent transition-colors">
                 Pakkeliste til sheltertur
               </h3>
@@ -486,6 +504,9 @@ export default async function HomePage() {
               href="/turvenner"
               className="group rounded-xl border border-primary/10 bg-white p-6 hover:border-accent/30 hover:shadow-md transition-all"
             >
+              <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+                <Users size={20} className="text-accent" aria-hidden />
+              </div>
               <h3 className="font-serif text-xl font-bold text-primary mb-2 group-hover:text-accent transition-colors">
                 Find turvenner
               </h3>

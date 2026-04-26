@@ -5,7 +5,7 @@ import { MapPin, CheckCircle, Flame, Gift, Bath } from "lucide-react";
 
 const PILLS = [
   { label: "Nær mig", href: "/shelter-naer-mig", icon: MapPin, accent: true },
-  { label: "Bookbar", href: "/soeg?bookbar=1", icon: CheckCircle, accent: false },
+  { label: "Book shelter", href: "/shelter-booking", icon: CheckCircle, accent: false },
   { label: "Med bål", href: "/shelter-med-baalplads", icon: Flame, accent: false },
   { label: "Gratis", href: "/soeg?gratis=1", icon: Gift, accent: false },
   { label: "Med toilet", href: "/shelter-med-toilet", icon: Bath, accent: false },
