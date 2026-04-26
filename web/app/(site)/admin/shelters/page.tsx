@@ -38,7 +38,7 @@ function AdminSheltersContent() {
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(false);
   const [form, setForm] = useState({
-    slug: "", title: "", owner_email: "", max_persons: "6", description: "", payment_mode: "after_confirmation",
+    slug: "", title: "", owner_email: "", max_persons: "6", description: "", booking_mode: "shelterdk", payment_mode: "after_confirmation",
   });
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
@@ -70,7 +70,7 @@ function AdminSheltersContent() {
     });
     const data = await res.json();
     if (!res.ok) { setCreateError(data.error); setCreating(false); return; }
-    setForm({ slug: "", title: "", owner_email: "", max_persons: "6", description: "", payment_mode: "after_confirmation" });
+    setForm({ slug: "", title: "", owner_email: "", max_persons: "6", description: "", booking_mode: "shelterdk", payment_mode: "after_confirmation" });
     setCreating(false);
     load();
   };
@@ -153,6 +153,39 @@ function AdminSheltersContent() {
                 onChange={(e) => setForm((f) => ({ ...f, max_persons: e.target.value }))}
                 className="w-full rounded-lg border border-primary/20 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
               />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-medium text-primary mb-2">
+                Bookingtype *
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {[
+                  { value: "shelterdk", label: "ShelterDK", desc: "Booking foregår på shelterdk.dk/book/[slug]" },
+                  { value: "iframe", label: "Iframe / embed", desc: "Ejeren embedder en iframe på sin egen hjemmeside" },
+                ].map((opt) => (
+                  <label
+                    key={opt.value}
+                    className={`flex items-start gap-3 rounded-xl border p-4 cursor-pointer transition-colors ${
+                      form.booking_mode === opt.value
+                        ? "border-accent bg-accent/5"
+                        : "border-primary/20 hover:border-primary/40"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="booking_mode"
+                      value={opt.value}
+                      checked={form.booking_mode === opt.value}
+                      onChange={(e) => setForm((f) => ({ ...f, booking_mode: e.target.value }))}
+                      className="mt-0.5 accent-accent"
+                    />
+                    <div>
+                      <div className="text-sm font-semibold text-primary">{opt.label}</div>
+                      <div className="text-xs text-primary/50 mt-0.5">{opt.desc}</div>
+                    </div>
+                  </label>
+                ))}
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-primary mb-1">
