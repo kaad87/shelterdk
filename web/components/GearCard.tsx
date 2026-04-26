@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { ExternalLink } from "lucide-react";
 import { getProduct, type AffiliateProduct } from "@/lib/affiliate-products";
+import { trackOutboundClick } from "@/lib/tracking";
 
 export type GearCardVariant = "editorial" | "product" | "pill";
 
@@ -119,6 +120,7 @@ function EditorialVariant({
             target="_blank"
             rel="sponsored nofollow noopener"
             className="mt-2 inline-flex items-center gap-1 border-b border-primary pb-px text-sm font-medium text-primary hover:border-accent hover:text-accent"
+            onClick={() => trackOutboundClick(product.affiliate_url, `${product.product_name} [editorial]`)}
           >
             Se tilbud hos <RetailerLabel retailer={product.retailer} />
             <ExternalLink size={12} />
@@ -191,6 +193,7 @@ function ProductVariant({
               target="_blank"
               rel="sponsored nofollow noopener"
               className="block rounded-lg bg-primary px-3 md:px-4 py-2 md:py-2.5 text-center text-xs md:text-sm font-semibold text-white hover:bg-accent"
+              onClick={() => trackOutboundClick(product.affiliate_url, `${product.product_name} [product]`)}
             >
               Se tilbud
             </a>
@@ -222,6 +225,7 @@ function PillVariant({
       className={`inline-flex items-center gap-2 rounded-full border border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50 py-1.5 pl-1.5 pr-3 align-middle text-sm no-underline transition-all hover:-translate-y-0.5 hover:border-accent hover:shadow-md ${outOfStock ? "opacity-60" : ""} ${className ?? ""}`}
       aria-label={`Affiliate-link til ${product.product_name}`}
       title="Annonce · Sponsoreret link"
+      onClick={() => trackOutboundClick(product.affiliate_url, `${product.product_name} [pill]`)}
     >
       <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full bg-white">
         <Image
