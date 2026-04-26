@@ -129,9 +129,11 @@ export async function createActionTokens(
     ])
     .select("action, token");
   if (error || !data) throw new Error("Kunne ikke oprette action tokens: " + error?.message);
-  const confirmToken = data.find((r) => r.action === "confirm")!.token;
-  const rejectToken = data.find((r) => r.action === "reject")!.token;
-  return { confirmToken, rejectToken };
+  const confirmRecord = data.find((r) => r.action === "confirm");
+  const rejectRecord = data.find((r) => r.action === "reject");
+  if (!confirmRecord || !rejectRecord)
+    throw new Error("Action tokens mangler efter insert — uventet databasesvar");
+  return { confirmToken: confirmRecord.token, rejectToken: rejectRecord.token };
 }
 
 // ─── Action token resolution ─────────────────────────────────────────────────
@@ -188,10 +190,12 @@ export async function updateBookingStatus(
   bookingId: string,
   status: "confirmed" | "rejected"
 ): Promise<void> {
+  // Only update if still pending — prevents race conditions and double-processing
   await createAdminClient()
     .from("shelter_bookings")
     .update({ status, updated_at: new Date().toISOString() })
-    .eq("id", bookingId);
+    .eq("id", bookingId)
+    .eq("status", "pending");
 }
 
 /**

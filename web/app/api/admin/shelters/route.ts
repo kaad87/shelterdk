@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
       slug: slug.trim().toLowerCase(),
       title: title.trim(),
       owner_email: owner_email.trim().toLowerCase(),
-      max_persons: Number(max_persons) || 6,
+      max_persons: (Number.isInteger(Number(max_persons)) && Number(max_persons) > 0) ? Number(max_persons) : 6,
       description: description?.trim() || null,
       shelter_id: shelter_id || null,
       booking_mode: (["shelterdk", "iframe", "both"] as const).includes(booking_mode) ? booking_mode : "iframe",

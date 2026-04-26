@@ -52,10 +52,9 @@ export async function POST(
         { status: 409 }
       );
 
-    await updateBookingStatus(bookingId, "confirmed");
-
     if (shelter.payment_mode === "upfront") {
-      // Payment already captured — just send confirmation email, no new Stripe session
+      // Payment already captured — confirm first, then send confirmation email
+      await updateBookingStatus(bookingId, "confirmed");
       try {
         await sendBookingConfirmedToGuest({
           guestEmail: booking.guest_email,
@@ -68,7 +67,8 @@ export async function POST(
         console.error("owner confirm (upfront): confirmation email error:", err);
       }
     } else {
-      // after_confirmation: create Stripe session + send payment request to guest
+      // after_confirmation: create Stripe session FIRST — only confirm if that succeeds
+      // This prevents the booking from being stuck as "confirmed" with no payment link
       try {
         const { url, sessionId } = await createCheckoutSession(booking, shelter);
         const nights = calcNights(booking.check_in, booking.check_out);
@@ -77,6 +77,7 @@ export async function POST(
           shelter.platform_fee_pct,
           shelter.platform_fee_min_dkk
         );
+        await updateBookingStatus(bookingId, "confirmed");
         await createBookingPayment({
           bookingId,
           stripeCheckoutSessionId: sessionId,
@@ -97,7 +98,10 @@ export async function POST(
         });
       } catch (err) {
         console.error("owner confirm: payment setup error:", err);
-        // Booking is confirmed but no payment row — admin can resend via dashboard
+        return NextResponse.json(
+          { error: "Kunne ikke oprette betalingslink — prøv igen om et øjeblik" },
+          { status: 500 }
+        );
       }
     }
 

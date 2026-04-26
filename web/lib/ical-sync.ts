@@ -54,6 +54,10 @@ export async function syncIcalForShelter(
   if (!text.includes("BEGIN:VCALENDAR")) {
     throw new Error("Response does not contain BEGIN:VCALENDAR — not a valid iCal feed");
   }
+  if (!text.includes("BEGIN:VEVENT")) {
+    // Empty calendar is technically valid, but log a warning before clearing all blocked dates
+    console.warn(`ical-sync: feed for shelter ${shelterId} has no VEVENT entries — will clear all synced dates`);
+  }
 
   const events = parseIcal(text);
   const dates = expandDates(events);

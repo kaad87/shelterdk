@@ -27,7 +27,7 @@ function fmt(iso: string) {
 
 function ChevronIcon({ dir }: { dir: "left" | "right" }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-primary/30">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-primary/30" aria-hidden="true">
       <path
         d={dir === "right" ? "M6 3l5 5-5 5" : "M10 3L5 8l5 5"}
         stroke="currentColor"
@@ -41,7 +41,7 @@ function ChevronIcon({ dir }: { dir: "left" | "right" }) {
 
 function CalendarIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" className="text-primary/25">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" className="text-primary/25" aria-hidden="true">
       <rect x="2" y="3" width="14" height="13" rx="2" stroke="currentColor" strokeWidth="1.4" />
       <path d="M6 1v4M12 1v4M2 7h14" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
     </svg>
@@ -50,7 +50,7 @@ function CalendarIcon() {
 
 function CheckIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
       <path d="M2.5 7l3.5 3.5 5.5-6" stroke="#c5a059" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
