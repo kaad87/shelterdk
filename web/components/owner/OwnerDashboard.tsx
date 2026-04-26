@@ -502,9 +502,9 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
               return (
               <div key={b.id} className={`rounded-2xl border-2 bg-white shadow-sm overflow-hidden ${hasPaidUpfront ? "border-emerald-300" : "border-amber-200"}`}>
                 <div className="px-5 py-4">
-                  <div className="flex items-start gap-4">
+                  <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
                     {/* Date range */}
-                    <div className={`hidden sm:grid grid-cols-2 divide-x rounded-xl border overflow-hidden shrink-0 ${hasPaidUpfront ? "divide-emerald-100 border-emerald-200 bg-emerald-50" : "divide-amber-100 border-amber-200 bg-amber-50"}`}>
+                    <div className={`grid grid-cols-2 divide-x rounded-xl border overflow-hidden w-full sm:w-auto sm:shrink-0 ${hasPaidUpfront ? "divide-emerald-100 border-emerald-200 bg-emerald-50" : "divide-amber-100 border-amber-200 bg-amber-50"}`}>
                       <div className="px-3 py-2 text-center">
                         <p className={`text-[9px] font-bold uppercase tracking-widest ${hasPaidUpfront ? "text-emerald-600" : "text-amber-600"}`}>Ankomst</p>
                         <p className="text-sm font-bold text-primary mt-0.5">{fmt(b.check_in)}</p>
@@ -529,10 +529,6 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
                         )}
                       </div>
                       <p className="text-xs text-primary/50 mt-0.5">{b.guest_email}</p>
-                      {/* Mobile dates */}
-                      <p className="sm:hidden text-sm font-medium text-primary mt-1">
-                        {fmt(b.check_in)} → {fmt(b.check_out)}
-                      </p>
                       {b.message && (
                         <p className="mt-2 text-sm text-primary/65 italic bg-primary/[0.02] rounded-lg px-3 py-2 border border-primary/5">
                           &ldquo;{b.message}&rdquo;

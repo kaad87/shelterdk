@@ -54,13 +54,13 @@ export function BookingCalendar({ unavailableDates, onRangeSelect }: BookingCale
           root: "w-full select-none relative",
           months: "w-full",
           month: "w-full relative",
-          month_caption: "flex items-center justify-center h-10 mb-2",
+          month_caption: "flex items-center justify-center h-11 mb-2",
           caption_label: "font-serif text-[15px] font-bold text-primary capitalize tracking-wide",
-          nav: "absolute top-0 inset-x-0 h-10 flex items-center justify-between z-10",
+          nav: "absolute top-0 inset-x-0 h-11 flex items-center justify-between z-10",
           button_previous:
-            "w-8 h-8 flex items-center justify-center rounded-full text-primary/40 hover:text-primary hover:bg-primary/6 transition-all duration-150 active:scale-95",
+            "w-11 h-11 flex items-center justify-center rounded-full text-primary/40 hover:text-primary hover:bg-primary/6 transition-all duration-150 active:scale-95",
           button_next:
-            "w-8 h-8 flex items-center justify-center rounded-full text-primary/40 hover:text-primary hover:bg-primary/6 transition-all duration-150 active:scale-95",
+            "w-11 h-11 flex items-center justify-center rounded-full text-primary/40 hover:text-primary hover:bg-primary/6 transition-all duration-150 active:scale-95",
           month_grid: "w-full table-fixed",
           weekdays: "mb-0.5",
           weekday:
@@ -68,7 +68,7 @@ export function BookingCalendar({ unavailableDates, onRangeSelect }: BookingCale
           week: "",
           day: "cal-day p-0 relative text-center",
           day_button:
-            "cal-day-btn w-full h-10 flex items-center justify-center text-sm font-medium text-primary rounded-full hover:bg-primary/6 transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 mx-auto",
+            "cal-day-btn w-full h-11 flex items-center justify-center text-sm font-medium text-primary rounded-full hover:bg-primary/6 transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 mx-auto",
           today: "cal-today",
           outside: "opacity-20 pointer-events-none",
           disabled: "cal-disabled",
@@ -80,7 +80,7 @@ export function BookingCalendar({ unavailableDates, onRangeSelect }: BookingCale
       />
 
       {/* Legend */}
-      <div className="flex items-center gap-5 mt-3">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-3">
         <span className="flex items-center gap-1.5 text-xs text-primary/50">
           <span className="w-2 h-2 rounded-full bg-green-300 inline-block" />
           Ledig

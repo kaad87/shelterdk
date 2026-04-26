@@ -178,13 +178,13 @@ export function BookingForm({
           {dateRange ? (
             <div className="rounded-2xl border border-accent/25 bg-white shadow-sm overflow-hidden">
               <div className="grid grid-cols-2 divide-x divide-accent/15">
-                <div className="px-4 py-3.5">
+                <div className="px-3 py-3">
                   <p className="text-[10px] font-semibold text-accent uppercase tracking-widest mb-0.5">Ankomst</p>
-                  <p className="text-[15px] font-bold text-primary leading-tight">{fmt(dateRange.checkIn)}</p>
+                  <p className="text-sm font-bold text-primary leading-tight">{fmt(dateRange.checkIn)}</p>
                 </div>
-                <div className="px-4 py-3.5">
+                <div className="px-3 py-3">
                   <p className="text-[10px] font-semibold text-accent uppercase tracking-widest mb-0.5">Afrejse</p>
-                  <p className="text-[15px] font-bold text-primary leading-tight">{fmt(dateRange.checkOut)}</p>
+                  <p className="text-sm font-bold text-primary leading-tight">{fmt(dateRange.checkOut)}</p>
                 </div>
               </div>
               <div className="border-t border-accent/10 px-4 py-2 bg-accent/[0.03] flex items-center justify-between">
@@ -192,18 +192,18 @@ export function BookingForm({
                 <span className="text-xs font-semibold text-primary">{nights} {nights === 1 ? "nat" : "nætter"}</span>
               </div>
               {isUpfront && shelterPriceDkk > 0 && (
-                <div className="border-t border-accent/10 px-4 py-3 space-y-1.5">
-                  <div className="flex justify-between text-xs text-primary/60">
-                    <span>Overnatning ({nights} {nights === 1 ? "nat" : "nætter"} × {shelterPriceDkk} kr)</span>
-                    <span>{shelterTotalDkk} kr</span>
+                <div className="border-t border-accent/10 px-3 py-3 space-y-1.5">
+                  <div className="flex justify-between gap-2 text-xs text-primary/60">
+                    <span className="min-w-0">Overnatning ({nights} {nights === 1 ? "nat" : "nætter"} × {shelterPriceDkk} kr)</span>
+                    <span className="shrink-0 tabular-nums">{shelterTotalDkk} kr</span>
                   </div>
-                  <div className="flex justify-between text-xs text-primary/60">
+                  <div className="flex justify-between gap-2 text-xs text-primary/60">
                     <span>Administrationsgebyr</span>
-                    <span>{platformFee} kr</span>
+                    <span className="shrink-0 tabular-nums">{platformFee} kr</span>
                   </div>
-                  <div className="flex justify-between text-xs font-bold text-primary border-t border-primary/10 pt-1.5">
+                  <div className="flex justify-between gap-2 text-xs font-bold text-primary border-t border-primary/10 pt-1.5">
                     <span>I alt</span>
-                    <span>{totalDkk} kr</span>
+                    <span className="shrink-0 tabular-nums">{totalDkk} kr</span>
                   </div>
                 </div>
               )}
@@ -258,7 +258,7 @@ export function BookingForm({
                     type="button"
                     onClick={() => setForm((f) => ({ ...f, guest_count: Math.max(1, f.guest_count - 1) }))}
                     disabled={form.guest_count <= 1}
-                    className="w-10 h-10 flex items-center justify-center text-primary/50 hover:text-primary hover:bg-primary/5 transition-colors disabled:opacity-30 border-r border-primary/10"
+                    className="w-11 h-11 flex items-center justify-center text-primary/50 hover:text-primary hover:bg-primary/5 transition-colors disabled:opacity-30 border-r border-primary/10"
                   >
                     <span className="text-lg leading-none mb-0.5">−</span>
                   </button>
@@ -269,7 +269,7 @@ export function BookingForm({
                     type="button"
                     onClick={() => setForm((f) => ({ ...f, guest_count: Math.min(maxPersons, f.guest_count + 1) }))}
                     disabled={form.guest_count >= maxPersons}
-                    className="w-10 h-10 flex items-center justify-center text-primary/50 hover:text-primary hover:bg-primary/5 transition-colors disabled:opacity-30 border-l border-primary/10"
+                    className="w-11 h-11 flex items-center justify-center text-primary/50 hover:text-primary hover:bg-primary/5 transition-colors disabled:opacity-30 border-l border-primary/10"
                   >
                     <span className="text-lg leading-none mb-0.5">+</span>
                   </button>
