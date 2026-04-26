@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json().catch(() => ({}));
-  const { slug, title, owner_email, max_persons, description, shelter_id, booking_mode, payment_mode } = body;
+  const { slug, title, owner_email, max_persons, description, shelter_id, booking_mode, payment_mode, shelter_price_dkk, platform_fee_pct, platform_fee_min_dkk } = body;
 
   if (!slug || !title || !owner_email)
     return NextResponse.json(
@@ -49,6 +49,9 @@ export async function POST(req: NextRequest) {
       shelter_id: shelter_id || null,
       booking_mode: booking_mode === "shelterdk" ? "shelterdk" : "iframe",
       payment_mode: payment_mode === "upfront" ? "upfront" : "after_confirmation",
+      shelter_price_dkk: shelter_price_dkk ? Number(shelter_price_dkk) : null,
+      platform_fee_pct: platform_fee_pct != null ? Number(platform_fee_pct) : 5,
+      platform_fee_min_dkk: platform_fee_min_dkk != null ? Number(platform_fee_min_dkk) : 25,
     })
     .select()
     .single();

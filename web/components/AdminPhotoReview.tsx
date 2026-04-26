@@ -155,7 +155,7 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
 
   // Bookinger tab
   const [bookableShelters, setBookableShelters] = useState<BookableShelterAdmin[]>([]);
-  const [shelterForm, setShelterForm] = useState({ slug: "", title: "", owner_email: "", max_persons: "6", description: "", shelter_id: "", booking_mode: "shelterdk" as "shelterdk" | "iframe", payment_mode: "after_confirmation" as "after_confirmation" | "upfront" });
+  const [shelterForm, setShelterForm] = useState({ slug: "", title: "", owner_email: "", max_persons: "6", description: "", shelter_id: "", booking_mode: "shelterdk" as "shelterdk" | "iframe", payment_mode: "after_confirmation" as "after_confirmation" | "upfront", shelter_price_dkk: "", platform_fee_pct: "5", platform_fee_min_dkk: "25" });
   const [shelterCreating, setShelterCreating] = useState(false);
   const [shelterCreateError, setShelterCreateError] = useState<string | null>(null);
   // Shelter search
@@ -1451,11 +1451,14 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
                       shelter_id: shelterForm.shelter_id || null,
                       booking_mode: shelterForm.booking_mode,
                       payment_mode: shelterForm.payment_mode,
+                      shelter_price_dkk: shelterForm.shelter_price_dkk || null,
+                      platform_fee_pct: shelterForm.platform_fee_pct,
+                      platform_fee_min_dkk: shelterForm.platform_fee_min_dkk,
                     }),
                   });
                   const data = await res.json();
                   if (!res.ok) { setShelterCreateError(data.error); setShelterCreating(false); return; }
-                  setShelterForm({ slug: "", title: "", owner_email: "", max_persons: "6", description: "", shelter_id: "", booking_mode: "shelterdk", payment_mode: "after_confirmation" });
+                  setShelterForm({ slug: "", title: "", owner_email: "", max_persons: "6", description: "", shelter_id: "", booking_mode: "shelterdk", payment_mode: "after_confirmation", shelter_price_dkk: "", platform_fee_pct: "5", platform_fee_min_dkk: "25" });
                   setShelterSearch("");
                   setShelterCreating(false);
                   fetchAll(secret);
@@ -1539,6 +1542,37 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
                     <option value="after_confirmation">Betal efter accept (standard)</option>
                     <option value="upfront">Betal ved booking (forudbetaling)</option>
                   </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1">
+                    Pris pr. nat (kr) <span className="font-normal normal-case text-primary/30">— tom = gratis/aftales</span>
+                  </label>
+                  <input
+                    type="number" min={0} value={shelterForm.shelter_price_dkk}
+                    onChange={(e) => setShelterForm((f) => ({ ...f, shelter_price_dkk: e.target.value }))}
+                    placeholder="f.eks. 200"
+                    className="w-full rounded-lg border border-primary/20 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1">
+                    Transaktionsgebyr % <span className="font-normal normal-case text-primary/30">— standard 5%</span>
+                  </label>
+                  <input
+                    type="number" min={0} max={100} step={0.5} value={shelterForm.platform_fee_pct}
+                    onChange={(e) => setShelterForm((f) => ({ ...f, platform_fee_pct: e.target.value }))}
+                    className="w-full rounded-lg border border-primary/20 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1">
+                    Minimumsgebyr (kr) <span className="font-normal normal-case text-primary/30">— standard 25 kr</span>
+                  </label>
+                  <input
+                    type="number" min={0} value={shelterForm.platform_fee_min_dkk}
+                    onChange={(e) => setShelterForm((f) => ({ ...f, platform_fee_min_dkk: e.target.value }))}
+                    className="w-full rounded-lg border border-primary/20 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40"
+                  />
                 </div>
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1">Beskrivelse <span className="font-normal normal-case text-primary/30">(valgfri)</span></label>
