@@ -28,10 +28,21 @@ export default function PrivacyPage() {
             ShelterDK er et hobbyprojekt. Her beskriver vi, hvilke cookies og tjenester vi bruger,
             og hvilke data der kan blive indsamlet.
           </p>
-          <p className="text-primary/50 text-sm mt-3">Senest opdateret: april 2025</p>
+          <p className="text-primary/50 text-sm mt-3">Senest opdateret: april 2026</p>
         </header>
 
         <div className="prose prose-primary max-w-none space-y-10">
+
+          {/* DATAANSVARLIG */}
+          <section>
+            <h2 className="font-serif text-2xl font-bold text-primary mt-8 mb-4">Dataansvarlig</h2>
+            <p className="text-primary/80 leading-relaxed">
+              ShelterDK drives som et personligt hobbyprojekt fra Danmark. Har du spørgsmål til
+              behandlingen af dine personoplysninger, kan du kontakte os via{" "}
+              <Link href="/kontakt" className="text-accent underline hover:no-underline">kontaktformularen</Link>.
+              Vi bestræber os på at svare inden for 30 dage.
+            </p>
+          </section>
 
           {/* COOKIES */}
           <section>
@@ -40,8 +51,8 @@ export default function PrivacyPage() {
               Første gang du besøger ShelterDK, spørger vi om du vil acceptere valgfrie cookies.
               Dit valg gemmes i din browser (localStorage og en cookie ved navn{" "}
               <code className="text-sm bg-primary/5 px-1 rounded">shelterdk_consent</code>) i op til ét år.
-              Du kan til enhver tid trække dit samtykke tilbage ved at slette cookies for shelterdk.dk
-              og genindlæse siden – så vises valget igen.
+              Du kan til enhver tid trække dit samtykke tilbage ved at klikke &quot;Nulstil cookievalg&quot;
+              i sidens footer – så vises valget igen.
             </p>
 
             <h3 className="font-serif text-lg font-semibold text-primary mt-6 mb-3">Nødvendige cookies</h3>
@@ -51,6 +62,7 @@ export default function PrivacyPage() {
             <ul className="list-disc pl-6 text-primary/80 space-y-2 mt-3">
               <li>
                 <strong>shelterdk_consent</strong> – Gemmer dit cookievalg. Sættes af os selv (1. part).
+                Opbevares i 1 år.
               </li>
             </ul>
 
@@ -99,16 +111,13 @@ export default function PrivacyPage() {
             </h2>
             <p className="text-primary/80 leading-relaxed">
               Vælger du &quot;Kun nødvendige&quot;, sættes ingen tracking-cookies. Google Tag Manager
-              kører stadig, men i <strong>Google Consent Mode v2</strong>: annoncelagring, brugerdata
-              og personalisering er deaktiveret. Google Analytics kan sende anonyme, aggregerede
-              modelleringssignaler uden cookies – ingen personlige data indsamles.
+              kører stadig, men med <strong>Google Consent Mode v2</strong> sat til &quot;denied&quot; for
+              alle kategorier: annoncelagring, brugerdata, personalisering og analyselagring er
+              alle deaktiveret. Google Analytics kan sende anonyme, aggregerede modelleringssignaler
+              uden cookies – ingen personlige data indsamles.
             </p>
             <p className="text-primary/80 leading-relaxed mt-4">
-              Derudover sender din browser et enkelt, anonymt sidevisningssignal til vores egne
-              servere, som videresender det til Google Analytics 4 via Measurement Protocol.
-              Signalet indeholder kun den besøgte URL og sidetitel. Hver sidevisning får et
-              tilfældigt genereret ID – ingen cookies, ingen fingerprint, ingen forbindelse til dig
-              personligt. StackAdapt indlæses slet ikke.
+              StackAdapt indlæses slet ikke ved valg af kun nødvendige cookies.
             </p>
           </section>
 
@@ -143,6 +152,33 @@ export default function PrivacyPage() {
                 <strong>Unsplash</strong> – Nogle generiske naturbilleder på siden stammer fra
                 Unsplash. Billederne hentes direkte fra Unsplashs CDN.
               </li>
+              <li>
+                <strong>Resend</strong> – Vi bruger Resend til at afsende transaktionelle e-mails
+                (bookingbekræftelser, ejeradvisering). E-mailadresser der indgår i en transaktion
+                videregives til Resend udelukkende med henblik på afsendelse.{" "}
+                <a
+                  href="https://resend.com/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-accent underline hover:no-underline"
+                >
+                  Resends privatlivspolitik
+                </a>
+                .
+              </li>
+              <li>
+                <strong>Stripe</strong> – Betalingstransaktioner håndteres af Stripe Payments Europe.
+                Vi gemmer ingen kortoplysninger – de behandles udelukkende af Stripe.{" "}
+                <a
+                  href="https://stripe.com/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-accent underline hover:no-underline"
+                >
+                  Stripes privatlivspolitik
+                </a>
+                .
+              </li>
             </ul>
           </section>
 
@@ -155,22 +191,42 @@ export default function PrivacyPage() {
               ShelterDK henter shelterdata fra offentlige kilder (bl.a. GeoFA, Naturstyrelsen,
               kommuner). Vi indsamler ikke persondata om dig, medmindre du aktivt sender os noget:
             </p>
-            <ul className="list-disc pl-6 text-primary/80 space-y-3 mt-3">
+            <ul className="list-disc pl-6 text-primary/80 space-y-4 mt-3">
+              <li>
+                <strong>Booking af shelter</strong> – Når du sender en bookingforespørgsel, gemmer
+                vi dit navn, din e-mailadresse, antal personer, ønskede datoer og en eventuel besked
+                til ejeren. Disse oplysninger deles med shelter-ejeren med henblik på behandling af
+                din forespørgsel, og med Resend og Stripe i forbindelse med henholdsvis
+                e-mailafsendelse og betaling. Retsgrundlaget er opfyldelse af aftale (GDPR art. 6,
+                stk. 1, litra b). Bookingdata opbevares i 13 måneder efter afrejsedato og slettes
+                herefter.
+              </li>
               <li>
                 <strong>Nyhedsbrev</strong> – Din e-mailadresse gemmes i vores database (Supabase)
                 udelukkende til udsendelse af nyhedsbreve. Vi deler den ikke med tredjeparter.
-                Du kan til enhver tid afmelde dig via et link i nyhedsbrevet eller ved at{" "}
-                <Link href="/kontakt" className="text-accent underline hover:no-underline">kontakte os</Link>.
+                Retsgrundlaget er samtykke (GDPR art. 6, stk. 1, litra a). Adressen opbevares
+                indtil du afmelder dig via link i nyhedsbrevet eller{" "}
+                <Link href="/kontakt" className="text-accent underline hover:no-underline">kontakter os</Link>.
               </li>
               <li>
                 <strong>Kontaktformular</strong> – Beskeder sendt via kontaktformularen gemmes
-                midlertidigt i vores database, så vi kan besvare dem. De slettes efter behandling.
+                midlertidigt i vores database, så vi kan besvare dem. De slettes senest 6 måneder
+                efter modtagelse.
               </li>
               <li>
                 <strong>Community-bidrag</strong> – Hvis du indsender tips, billeder eller
                 facilitetsopdateringer til et shelter, gemmes dit bidrag i vores database og
                 gennemgås af en administrator, inden det evt. vises på siden. Bidrag kan
                 indeholde et navn, du selv angiver. Vi deler ikke disse data med tredjeparter.
+                Bidrag opbevares på ubestemt tid, da de udgør en del af sidens indhold – skriv
+                til os hvis du ønsker et bidrag slettet.
+              </li>
+              <li>
+                <strong>Turvenner-opslag</strong> – Hvis du opretter et opslag for at finde
+                medrejsende, gemmes opslaget med det indhold du selv har angivet (tekst, område,
+                kontaktmetode m.v.) i vores database. Opslaget er offentligt synligt. Det slettes
+                automatisk 90 dage efter oprettelse, eller tidligere hvis du rapporterer det eller
+                kontakter os.
               </li>
             </ul>
           </section>
@@ -179,12 +235,31 @@ export default function PrivacyPage() {
           <section>
             <h2 className="font-serif text-2xl font-bold text-primary mt-8 mb-4">Dine rettigheder</h2>
             <p className="text-primary/80 leading-relaxed">
-              Du har ret til at få indsigt i, rettet eller slettet de personoplysninger, vi
-              eventuelt måtte have om dig. Kontakt os via{" "}
+              Du har efter GDPR ret til at:
+            </p>
+            <ul className="list-disc pl-6 text-primary/80 space-y-2 mt-3">
+              <li>Få indsigt i hvilke oplysninger vi har om dig</li>
+              <li>Få forkerte oplysninger rettet</li>
+              <li>Få oplysninger slettet (&quot;retten til at blive glemt&quot;)</li>
+              <li>Gøre indsigelse mod behandlingen</li>
+              <li>Trække dit samtykke tilbage (gælder nyhedsbrev og cookies)</li>
+            </ul>
+            <p className="text-primary/80 leading-relaxed mt-4">
+              Kontakt os via{" "}
               <Link href="/kontakt" className="text-accent underline hover:no-underline">
                 kontaktformularen
               </Link>{" "}
-              med dit ønske, og vi vender tilbage hurtigst muligt.
+              med dit ønske, og vi vender tilbage hurtigst muligt og senest inden 30 dage.
+              Du kan også klage til{" "}
+              <a
+                href="https://www.datatilsynet.dk"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-accent underline hover:no-underline"
+              >
+                Datatilsynet
+              </a>
+              , hvis du mener, at vi behandler dine data i strid med lovgivningen.
             </p>
           </section>
 
