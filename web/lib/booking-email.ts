@@ -2,6 +2,10 @@ import { getResend, FROM_EMAIL, escapeHtml } from "./email";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://shelterdk.dk";
 
+function bookingLink(guestToken: string): string {
+  return `${SITE_URL}/min-booking/${guestToken}`;
+}
+
 // ─── Placeholder replacement ─────────────────────────────────────────────────
 
 export interface AutoMessageContext {
@@ -188,6 +192,7 @@ export async function sendBookingConfirmedToGuest(opts: {
   shelterTitle: string;
   checkIn: string;
   checkOut: string;
+  guestToken: string;
 }) {
   const { error } = await getResend().emails.send({
     from: FROM_EMAIL,
@@ -199,6 +204,7 @@ export async function sendBookingConfirmedToGuest(opts: {
         <p>Hej ${esc(opts.guestName)}!</p>
         <p>Din booking af <strong>${esc(opts.shelterTitle)}</strong> fra <strong>${esc(formatDate(opts.checkIn))}</strong> til <strong>${esc(formatDate(opts.checkOut))}</strong> er bekræftet.</p>
         <p><strong>God tur!</strong></p>
+        <p><a href="${bookingLink(opts.guestToken)}" style="color:#c5a059;">Se og administrér din booking</a></p>
         <p style="color:#999;font-size:12px;">Sendt via <a href="https://shelterdk.dk">ShelterDK</a></p>
       </div>
     `,
@@ -240,6 +246,7 @@ export async function sendPaymentRequestToGuest(opts: {
   amountShelterDkk: number;
   amountPlatformDkk: number;
   paymentUrl: string;
+  guestToken: string;
 }) {
   const { error } = await getResend().emails.send({
     from: FROM_EMAIL,
@@ -272,6 +279,7 @@ export async function sendPaymentRequestToGuest(opts: {
             Betal nu via MobilePay
           </a>
         </div>
+        <p style="margin-top:16px;"><a href="${bookingLink(opts.guestToken)}" style="color:#c5a059;">Se din booking</a></p>
         <p style="color:#999;font-size:12px;">Sendt via <a href="https://shelterdk.dk">ShelterDK</a></p>
       </div>
     `,
@@ -288,6 +296,7 @@ export async function sendPaymentConfirmed(opts: {
   checkIn: string;
   checkOut: string;
   amountTotalDkk: number;
+  guestToken: string;
 }) {
   const resend = getResend();
   const [r1, r2] = await Promise.all([
@@ -304,6 +313,7 @@ export async function sendPaymentConfirmed(opts: {
              fra <strong>${esc(formatDate(opts.checkIn))}</strong>
              til <strong>${esc(formatDate(opts.checkOut))}</strong>.</p>
           <p>Din booking er nu bekræftet. <strong>God tur!</strong></p>
+          <p><a href="${bookingLink(opts.guestToken)}" style="color:#c5a059;">Se og administrér din booking</a></p>
           <p style="color:#999;font-size:12px;">Sendt via <a href="https://shelterdk.dk">ShelterDK</a></p>
         </div>
       `,
@@ -429,4 +439,106 @@ export async function sendBookingExpired(opts: {
   ]);
   if (r1.error) throw new Error("Email-fejl (udløbet gæst): " + JSON.stringify(r1.error));
   if (r2.error) throw new Error("Email-fejl (udløbet ejer): " + JSON.stringify(r2.error));
+}
+
+// ─── Cancellation emails ──────────────────────────────────────────────────────
+
+/** Til gæsten: de har selv annulleret */
+export async function sendGuestCancelledToGuest(opts: {
+  guestEmail: string;
+  guestName: string;
+  shelterTitle: string;
+  checkIn: string;
+  checkOut: string;
+  refundEligible: boolean;
+  amountTotalDkk: number | null;
+}) {
+  const refundLine = opts.refundEligible && opts.amountTotalDkk
+    ? `<p>Din betaling på <strong>${opts.amountTotalDkk} kr</strong> refunderes inden for 5–10 hverdage.</p>`
+    : opts.amountTotalDkk
+      ? `<p>Betalingen på <strong>${opts.amountTotalDkk} kr</strong> refunderes ikke, da annulleringen sker inden for aflysningsfristen.</p>`
+      : "";
+
+  const { error } = await getResend().emails.send({
+    from: FROM_EMAIL,
+    to: opts.guestEmail,
+    subject: `Din booking af ${esc(opts.shelterTitle)} er annulleret`,
+    html: `
+      <div style="font-family:sans-serif;max-width:600px;">
+        <h2 style="color:#2C3E50;">Booking annulleret</h2>
+        <p>Hej ${esc(opts.guestName)},</p>
+        <p>Din booking af <strong>${esc(opts.shelterTitle)}</strong>
+           (${esc(formatDate(opts.checkIn))}–${esc(formatDate(opts.checkOut))})
+           er nu annulleret.</p>
+        ${refundLine}
+        <p>Find andre shelters på <a href="https://shelterdk.dk">shelterdk.dk</a></p>
+        <p style="color:#999;font-size:12px;">Sendt via <a href="https://shelterdk.dk">ShelterDK</a></p>
+      </div>
+    `,
+  });
+  if (error) throw new Error("Email-fejl (gæst annulleret til gæst): " + JSON.stringify(error));
+}
+
+/** Til ejeren: en gæst har annulleret */
+export async function sendGuestCancelledToOwner(opts: {
+  ownerEmail: string;
+  ownerToken: string;
+  guestName: string;
+  shelterTitle: string;
+  checkIn: string;
+  checkOut: string;
+}) {
+  const dashboardUrl = `${SITE_URL}/owner/${opts.ownerToken}`;
+  const { error } = await getResend().emails.send({
+    from: FROM_EMAIL,
+    to: opts.ownerEmail,
+    subject: `Booking annulleret af gæst: ${esc(opts.shelterTitle)}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:600px;">
+        <h2 style="color:#2C3E50;">Booking annulleret af gæst</h2>
+        <p><strong>${esc(opts.guestName)}</strong> har annulleret sin booking af
+           <strong>${esc(opts.shelterTitle)}</strong>
+           (${esc(formatDate(opts.checkIn))}–${esc(formatDate(opts.checkOut))}).</p>
+        <p>Datoen er nu ledig igen.</p>
+        <div style="margin:24px 0;">
+          <a href="${dashboardUrl}" style="background:#c5a059;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;">Gå til dit dashboard</a>
+        </div>
+        <p style="color:#999;font-size:12px;">Sendt via <a href="https://shelterdk.dk">ShelterDK</a></p>
+      </div>
+    `,
+  });
+  if (error) throw new Error("Email-fejl (gæst annulleret til ejer): " + JSON.stringify(error));
+}
+
+/** Til gæsten: ejeren har annulleret deres bekræftede booking */
+export async function sendOwnerCancelledToGuest(opts: {
+  guestEmail: string;
+  guestName: string;
+  shelterTitle: string;
+  checkIn: string;
+  checkOut: string;
+  amountTotalDkk: number | null;
+}) {
+  const refundLine = opts.amountTotalDkk
+    ? `<p>Din betaling på <strong>${opts.amountTotalDkk} kr</strong> refunderes fuldt ud inden for 5–10 hverdage.</p>`
+    : "";
+
+  const { error } = await getResend().emails.send({
+    from: FROM_EMAIL,
+    to: opts.guestEmail,
+    subject: `Din booking af ${esc(opts.shelterTitle)} er annulleret af ejeren`,
+    html: `
+      <div style="font-family:sans-serif;max-width:600px;">
+        <h2 style="color:#dc2626;">Booking annulleret</h2>
+        <p>Hej ${esc(opts.guestName)},</p>
+        <p>Desværre har ejeren annulleret din booking af
+           <strong>${esc(opts.shelterTitle)}</strong>
+           (${esc(formatDate(opts.checkIn))}–${esc(formatDate(opts.checkOut))}).</p>
+        ${refundLine}
+        <p>Vi beklager ulejligheden. Find andre shelters på <a href="https://shelterdk.dk">shelterdk.dk</a></p>
+        <p style="color:#999;font-size:12px;">Sendt via <a href="https://shelterdk.dk">ShelterDK</a></p>
+      </div>
+    `,
+  });
+  if (error) throw new Error("Email-fejl (ejer annulleret til gæst): " + JSON.stringify(error));
 }
