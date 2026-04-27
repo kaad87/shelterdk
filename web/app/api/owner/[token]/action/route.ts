@@ -104,6 +104,7 @@ export async function POST(
           shelterTitle: shelter.title,
           checkIn: booking.check_in,
           checkOut: booking.check_out,
+          guestToken: booking.guest_token,
         });
       } catch (err) {
         console.error("owner confirm (upfront): confirmation email error:", err);
@@ -141,6 +142,7 @@ export async function POST(
           amountShelterDkk: shelterDkk,
           amountPlatformDkk: platformDkk,
           paymentUrl: url,
+          guestToken: booking.guest_token,
         });
       } catch (err) {
         console.error("owner confirm: payment setup error:", err);
@@ -236,6 +238,7 @@ export async function POST(
             amountShelterDkk: existing.amount_shelter_dkk,
             amountPlatformDkk: existing.amount_platform_dkk,
             paymentUrl: session.url,
+            guestToken: booking.guest_token,
           });
           return NextResponse.json({ ok: true });
         }
@@ -271,6 +274,7 @@ export async function POST(
         amountShelterDkk: shelterDkk,
         amountPlatformDkk: platformDkk,
         paymentUrl: url,
+        guestToken: booking.guest_token,
       });
     } catch (err) {
       console.error("resend-payment error:", err);
