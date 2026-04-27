@@ -85,7 +85,9 @@ getMessagesForBooking(bookingId: string): Promise<BookingMessage[]>
 // Opret en ny besked
 createMessage(bookingId: string, sender: "guest" | "owner", body: string): Promise<BookingMessage>
 
-// Markér alle beskeder fra en given afsender som læst (batch)
+// Markér alle beskeder fra en given afsender som læst (batch).
+// senderToMark = hvem der SENDTE beskederne (ikke hvem der læser).
+// Eks: ejer åbner tråden → markMessagesRead(id, "guest") markerer gæstens beskeder som læst af ejeren.
 markMessagesRead(bookingId: string, senderToMark: "guest" | "owner"): Promise<void>
 
 // Tæl ulæste beskeder per booking (til dashboard badge)
@@ -142,6 +144,7 @@ Body: `{ body: string }`
 ## Email-notifikationer (`lib/booking-email.ts`)
 
 ```typescript
+// ownerEmail og ownerToken hentes fra bookable_shelters via booking.bookable_shelter_id
 sendNewMessageToOwner(opts: {
   ownerEmail: string;
   ownerToken: string;
@@ -190,6 +193,7 @@ Per bekræftet/afventende booking:
 - Klik på badge/knap henter tråden og folder et inline panel ud under booking-rækken
 - Panel: boble-layout + textarea + Send
 - Badge forsvinder efter tråden er hentet (markeret som læst)
+- Ingen auto-polling — tråden genindlæses kun ved åbning eller efter send
 
 ---
 
