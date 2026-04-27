@@ -10,14 +10,56 @@ import {
   sendBookingConfirmedToGuest,
   sendPaymentRequestToGuest,
   sendRefundedToGuest,
+  sendBookingAutoMessage,
 } from "@/lib/booking-email";
 import { createCheckoutSession, calculateFee } from "@/lib/stripe";
 import { createBookingPayment, getPaymentByBookingId } from "@/lib/payment-db";
+import { createAdminClient } from "@/utils/supabase/server-admin";
 
 export const dynamic = "force-dynamic";
 
 function calcNights(checkIn: string, checkOut: string): number {
   return Math.max(1, Math.round((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / 86_400_000));
+}
+
+/**
+ * Look up the owner's message template for this shelter and send the
+ * confirmation auto-message if it is enabled.
+ * Returns true if sent, false if skipped. Never throws — email errors are logged.
+ */
+async function sendAutoMessageIfEnabled(
+  bookableShelterDbId: string,
+  booking: { guest_email: string; guest_name: string; check_in: string; check_out: string; guest_count: number },
+  shelterTitle: string
+): Promise<boolean> {
+  try {
+    const { data: template } = await createAdminClient()
+      .from("booking_message_templates")
+      .select("confirmation_enabled,confirmation_subject,confirmation_body")
+      .eq("shelter_id", bookableShelterDbId)
+      .single();
+
+    if (!template?.confirmation_enabled) return false;
+    if (!template.confirmation_subject?.trim() || !template.confirmation_body?.trim()) return false;
+
+    await sendBookingAutoMessage({
+      guestEmail: booking.guest_email,
+      subject: template.confirmation_subject,
+      body: template.confirmation_body,
+      ctx: {
+        guestName: booking.guest_name,
+        shelterTitle,
+        checkIn: booking.check_in,
+        checkOut: booking.check_out,
+        guestCount: booking.guest_count,
+      },
+    });
+
+    return true;
+  } catch (err) {
+    console.error("sendAutoMessageIfEnabled error:", err);
+    return false;
+  }
 }
 
 export async function POST(
@@ -66,6 +108,10 @@ export async function POST(
       } catch (err) {
         console.error("owner confirm (upfront): confirmation email error:", err);
       }
+      const confirmationEmailSent = await sendAutoMessageIfEnabled(
+        shelter.id, booking, shelter.title
+      );
+      return NextResponse.json({ ok: true, confirmationEmailSent });
     } else {
       // after_confirmation: create Stripe session FIRST — only confirm if that succeeds
       // This prevents the booking from being stuck as "confirmed" with no payment link
@@ -105,7 +151,11 @@ export async function POST(
       }
     }
 
-    return NextResponse.json({ ok: true });
+    // after_confirmation: payment request sent — also send owner's auto-message
+    const confirmationEmailSent = await sendAutoMessageIfEnabled(
+      shelter.id, booking, shelter.title
+    );
+    return NextResponse.json({ ok: true, confirmationEmailSent });
   }
 
   // ── reject ───────────────────────────────────────────────────────────────
