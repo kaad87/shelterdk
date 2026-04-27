@@ -1,7 +1,7 @@
 // lib/email.ts
 import { Resend } from "resend";
 
-export const FROM_EMAIL = "ShelterDK <no-reply@shelterdk.dk>";
+export const FROM_EMAIL = "ShelterDK <hej@shelterdk.dk>";
 
 export function escapeHtml(str: string): string {
   return str
@@ -15,6 +15,78 @@ export function escapeHtml(str: string): string {
 export function getResend() {
   return new Resend(process.env.RESEND_API_KEY);
 }
+
+// ─── Email template helpers ───────────────────────────────────────────────────
+
+export interface RenderEmailOpts {
+  title: string;      // Vises i header (escapes automatisk)
+  bodyHtml: string;   // Indhold — caller er ansvarlig for at escape dynamiske værdier
+  preheader?: string; // Skjult preview-tekst (escapes automatisk)
+}
+
+export interface RenderEmailTextOpts {
+  title: string;
+  lines: string[];
+  url?: string;
+}
+
+export function renderEmail(opts: RenderEmailOpts): string {
+  const { bodyHtml, preheader } = opts;
+  const safeTitle = escapeHtml(opts.title);
+  const preheaderHtml = preheader
+    ? `<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">${escapeHtml(preheader)}&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;</div>`
+    : "";
+  return `<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>${safeTitle}</title>
+</head>
+<body style="margin:0;padding:0;background:#f0ede8;font-family:-apple-system,Arial,sans-serif;">
+${preheaderHtml}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f0ede8;padding:24px 16px;">
+  <tr><td align="center">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:white;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.10);">
+      <tr>
+        <td style="background:#2C3E50;padding:18px 24px;">
+          <p style="color:#c5a059;font-size:10px;font-weight:700;letter-spacing:2px;margin:0 0 3px;text-transform:uppercase;">SHELTERDK</p>
+          <p style="color:white;font-size:15px;font-weight:600;margin:0;line-height:1.3;">${safeTitle}</p>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:20px 24px 16px;">
+          ${bodyHtml}
+        </td>
+      </tr>
+      <tr>
+        <td style="background:#faf9f7;border-top:1px solid #ede9e1;padding:11px 24px;">
+          <p style="font-size:10px;color:#bbb;margin:0;">Sendt via <a href="https://shelterdk.dk" style="color:#c5a059;text-decoration:none;">shelterdk.dk</a> · Find shelters i hele Danmark</p>
+        </td>
+      </tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>`;
+}
+
+export function renderEmailText(opts: RenderEmailTextOpts): string {
+  const { title, lines, url } = opts;
+  const sep = "-".repeat(30);
+  const parts: string[] = [`SHELTERDK — ${title}`, sep, ""];
+  for (const line of lines) {
+    parts.push(line, "");
+  }
+  if (url) {
+    parts.push(url, "");
+  }
+  parts.push(sep, "shelterdk.dk");
+  return parts.join("\n");
+}
+
+// ─── Email functions ──────────────────────────────────────────────────────────
 
 export async function sendContactEmail(opts: {
   toEmail: string;
@@ -30,20 +102,28 @@ export async function sendContactEmail(opts: {
     from: FROM_EMAIL,
     to: toEmail,
     replyTo: senderEmail,
-    subject: `Ny besked om dit opslag: ${escapeHtml(postTitle)}`,
-    html: `
-      <div style="font-family: sans-serif; max-width: 600px;">
-        <h2 style="color: #2C3E50;">Hej ${escapeHtml(toName)}!</h2>
-        <p>Du har fået en besked om dit opslag <strong>"${escapeHtml(postTitle)}"</strong> på ShelterDK.</p>
-        <hr style="border: 1px solid #eee;" />
-        <p><strong>Fra:</strong> ${escapeHtml(senderName)} (${escapeHtml(senderEmail)})</p>
-        <p><strong>Besked:</strong></p>
-        <p style="background: #f9f9f9; padding: 12px; border-radius: 8px;">${escapeHtml(message).replace(/\n/g, "<br>")}</p>
-        <hr style="border: 1px solid #eee;" />
-        <p style="color: #666; font-size: 14px;">Du kan svare direkte på denne email for at kontakte ${escapeHtml(senderName)}.</p>
-        <p style="color: #999; font-size: 12px;">Denne email er sendt via <a href="https://shelterdk.dk/turvenner">ShelterDK Turvenner</a></p>
-      </div>
-    `,
+    subject: `Ny besked om dit opslag: ${postTitle}`,
+    html: renderEmail({
+      title: "Ny besked via Turvenner",
+      preheader: `${senderName} har sendt dig en besked om "${postTitle}".`,
+      bodyHtml: `
+        <p style="font-size:13px;color:#333;line-height:1.65;margin:0 0 12px;">Hej <strong>${escapeHtml(toName)}</strong>! Du har fået en besked om dit opslag <strong>"${escapeHtml(postTitle)}"</strong> på ShelterDK.</p>
+        <p style="font-size:13px;color:#666;margin:0 0 4px;"><strong>Fra:</strong> ${escapeHtml(senderName)} (${escapeHtml(senderEmail)})</p>
+        <blockquote style="background:#f9f7f4;border-left:3px solid #c5a059;margin:12px 0;padding:10px 14px;border-radius:0 6px 6px 0;">
+          <p style="font-size:13px;color:#555;line-height:1.5;margin:0;">${escapeHtml(message).replace(/\n/g, "<br>")}</p>
+        </blockquote>
+        <p style="font-size:12px;color:#999;margin:12px 0 0;">Du kan svare direkte på denne email for at kontakte ${escapeHtml(senderName)}.</p>
+      `,
+    }),
+    text: renderEmailText({
+      title: "Ny besked via Turvenner",
+      lines: [
+        `Hej ${toName}! Du har fået en besked om dit opslag "${postTitle}".`,
+        `Fra: ${senderName} (${senderEmail})`,
+        message,
+        "Du kan svare direkte på denne email.",
+      ],
+    }),
   });
 
   if (error) {
