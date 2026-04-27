@@ -6,6 +6,22 @@ import type {
   BookingAction,
 } from "@/types/booking";
 
+// ─── Pure helpers ─────────────────────────────────────────────────────────────
+
+/**
+ * Returns true if a guest can get a full refund based on how far away check_in is.
+ * check_in is a date string "YYYY-MM-DD" interpreted as midnight UTC.
+ * now defaults to current time — pass explicitly in tests for determinism.
+ */
+export function isRefundEligible(
+  checkIn: string,
+  cutoffHours: number,
+  now: Date = new Date()
+): boolean {
+  const hoursUntilCheckIn = (new Date(checkIn).getTime() - now.getTime()) / 3_600_000;
+  return hoursUntilCheckIn > cutoffHours;
+}
+
 // ─── Shelter lookup ──────────────────────────────────────────────────────────
 
 export async function getBookableShelterBySlug(
@@ -244,6 +260,55 @@ export async function getBookingByIdForShelter(
     .eq("bookable_shelter_id", bookableShelterDbId)
     .single();
   return data as ShelterBooking | null;
+}
+
+/** Look up a booking by its guest_token UUID (guest page auth). */
+export async function getBookingByGuestToken(
+  guestToken: string
+): Promise<ShelterBooking | null> {
+  const { data } = await createAdminClient()
+    .from("shelter_bookings")
+    .select("*")
+    .eq("guest_token", guestToken)
+    .maybeSingle();
+  return data as ShelterBooking | null;
+}
+
+/**
+ * Mark a booking as cancelled. Only succeeds if current status is 'confirmed'
+ * (race-condition safe — concurrent requests get 409 from the API).
+ * Returns true if the row was actually updated (false = already not confirmed).
+ */
+export async function cancelBooking(
+  bookingId: string,
+  cancelledBy: "owner" | "guest"
+): Promise<boolean> {
+  const now = new Date().toISOString();
+  const { data, error } = await createAdminClient()
+    .from("shelter_bookings")
+    .update({
+      status: "cancelled",
+      cancelled_at: now,
+      cancelled_by: cancelledBy,
+      updated_at: now,
+    })
+    .eq("id", bookingId)
+    .eq("status", "confirmed")
+    .select("id");
+  if (error) throw new Error("cancelBooking: " + error.message);
+  return (data ?? []).length > 0;
+}
+
+/** Look up a bookable shelter by its primary key (id). */
+export async function getBookableShelterByPk(
+  id: string
+): Promise<BookableShelter | null> {
+  const { data } = await createAdminClient()
+    .from("bookable_shelters")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  return data ?? null;
 }
 
 export async function getBlockedDatesForShelter(
