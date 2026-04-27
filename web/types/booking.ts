@@ -101,3 +101,12 @@ export interface CreateBookingBody {
   check_out: string; // "YYYY-MM-DD"
   message?: string;
 }
+
+export interface BookingMessage {
+  id: string;
+  booking_id: string;
+  sender: "guest" | "owner";
+  body: string;
+  created_at: string;
+  read_at: string | null;
+}
