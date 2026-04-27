@@ -2,6 +2,108 @@ import { getResend, FROM_EMAIL, escapeHtml } from "./email";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://shelterdk.dk";
 
+// ─── Placeholder replacement ─────────────────────────────────────────────────
+
+export interface AutoMessageContext {
+  guestName: string;
+  shelterTitle: string;
+  checkIn: string;  // ISO date "YYYY-MM-DD"
+  checkOut: string; // ISO date "YYYY-MM-DD"
+  guestCount: number;
+}
+
+/**
+ * Replace placeholders in an owner-written template.
+ * All dynamic values are HTML-escaped so this output is safe to embed in HTML.
+ * Unknown placeholders are left as-is (spec: "ignoreres").
+ */
+export function applyMessagePlaceholders(
+  template: string,
+  ctx: AutoMessageContext
+): string {
+  const nights = Math.max(
+    1,
+    Math.round(
+      (new Date(ctx.checkOut).getTime() - new Date(ctx.checkIn).getTime()) /
+        86_400_000
+    )
+  );
+
+  function fmtDa(iso: string): string {
+    return new Date(iso + "T12:00:00").toLocaleDateString("da-DK", {
+      weekday: "short",
+      day: "numeric",
+      month: "long",
+    });
+  }
+
+  return template
+    .replace(/{gæst_navn}/g, escapeHtml(ctx.guestName))
+    .replace(/{shelter_navn}/g, escapeHtml(ctx.shelterTitle))
+    .replace(/{ankomst_dato}/g, escapeHtml(fmtDa(ctx.checkIn)))
+    .replace(/{afrejse_dato}/g, escapeHtml(fmtDa(ctx.checkOut)))
+    .replace(/{antal_nætter}/g, String(nights))
+    .replace(/{antal_personer}/g, String(ctx.guestCount));
+}
+
+/**
+ * Send an owner-authored auto-message to a guest.
+ * Subject is plain text (no HTML escaping). Body is HTML.
+ * Throws on Resend error — caller must wrap in try/catch.
+ */
+export async function sendBookingAutoMessage(opts: {
+  guestEmail: string;
+  subject: string; // raw owner template
+  body: string;    // raw owner template
+  ctx: AutoMessageContext;
+}) {
+  // Subject: plain text — replace with raw values (no HTML entities in email subjects)
+  function replacePlain(template: string): string {
+    const nights = Math.max(
+      1,
+      Math.round(
+        (new Date(opts.ctx.checkOut).getTime() - new Date(opts.ctx.checkIn).getTime()) /
+          86_400_000
+      )
+    );
+    function fmtDa(iso: string): string {
+      return new Date(iso + "T12:00:00").toLocaleDateString("da-DK", {
+        weekday: "short",
+        day: "numeric",
+        month: "long",
+      });
+    }
+    return template
+      .replace(/{gæst_navn}/g, opts.ctx.guestName)
+      .replace(/{shelter_navn}/g, opts.ctx.shelterTitle)
+      .replace(/{ankomst_dato}/g, fmtDa(opts.ctx.checkIn))
+      .replace(/{afrejse_dato}/g, fmtDa(opts.ctx.checkOut))
+      .replace(/{antal_nætter}/g, String(nights))
+      .replace(/{antal_personer}/g, String(opts.ctx.guestCount));
+  }
+
+  const subject = replacePlain(opts.subject);
+
+  // Body: HTML — escape the owner's free text first (XSS prevention),
+  // then replace placeholders with HTML-escaped values via applyMessagePlaceholders.
+  // Note: owner text containing "&" will appear as "&amp;" in the rendered email.
+  // This is the correct tradeoff: owner-written content is untrusted input.
+  const bodyHtml =
+    applyMessagePlaceholders(escapeHtml(opts.body), opts.ctx).replace(/\n/g, "<br>") +
+    '<p style="color:#999;font-size:12px;margin-top:24px;">Sendt via <a href="https://shelterdk.dk">ShelterDK</a></p>';
+
+  const { error } = await getResend().emails.send({
+    from: FROM_EMAIL,
+    to: opts.guestEmail,
+    subject,
+    html: `<div style="font-family:sans-serif;max-width:600px;">${bodyHtml}</div>`,
+  });
+
+  if (error) {
+    throw new Error("Email-fejl (auto-besked): " + JSON.stringify(error));
+  }
+}
+
 function esc(s: string): string {
   return escapeHtml(s);
 }
