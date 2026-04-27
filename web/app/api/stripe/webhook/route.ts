@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     try {
       const { data: booking } = await createAdminClient()
         .from("shelter_bookings")
-        .select("guest_email, guest_name, check_in, check_out, bookable_shelters!inner(owner_email, owner_token, title, payment_mode)")
+        .select("guest_email, guest_name, guest_token, check_in, check_out, bookable_shelters!inner(owner_email, owner_token, title, payment_mode)")
         .eq("id", payment.booking_id)
         .single();
 
@@ -67,6 +67,7 @@ export async function POST(req: NextRequest) {
             checkIn: booking.check_in,
             checkOut: booking.check_out,
             amountTotalDkk: payment.amount_total_dkk,
+            guestToken: booking.guest_token,
           });
         }
       }

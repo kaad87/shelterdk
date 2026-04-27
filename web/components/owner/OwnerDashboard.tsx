@@ -245,6 +245,16 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
   // confirmedWithEmail — tracks booking IDs that had auto-email sent this session
   const [confirmedWithEmail, setConfirmedWithEmail] = useState<Set<string>>(new Set());
 
+  // Owner cancel state
+  const [cancelConfirmId, setCancelConfirmId] = useState<string | null>(null);
+  const [cancelingId, setCancelingId] = useState<string | null>(null);
+  const [cancelError, setCancelError] = useState<string | null>(null);
+
+  // Cancellation policy state
+  const [cutoffHours, setCutoffHours] = useState<string>(String(shelter.cancellation_cutoff_hours));
+  const [cutoffSaving, setCutoffSaving] = useState(false);
+  const [cutoffMsg, setCutoffMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
   // Calendar state
   const now = new Date();
   const [calYear, setCalYear] = useState(now.getFullYear());
@@ -494,6 +504,55 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
     if (!res.ok) {
       const data = await res.json();
       setActionError(data.error ?? "Fejl ved gensendelse");
+    }
+  };
+
+  const handleOwnerCancel = async (bookingId: string) => {
+    setCancelingId(bookingId);
+    setCancelError(null);
+    try {
+      const res = await fetch(`/api/owner/${ownerToken}/action`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ booking_id: bookingId, action: "cancel" }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setCancelError(data.error ?? "Fejl"); return; }
+      setBookings((prev) =>
+        prev.map((b) => b.id === bookingId ? { ...b, status: "cancelled" } : b)
+      );
+      setCancelConfirmId(null);
+    } catch {
+      setCancelError("Noget gik galt");
+    } finally {
+      setCancelingId(null);
+    }
+  };
+
+  const handleCutoffSave = async () => {
+    setCutoffSaving(true);
+    setCutoffMsg(null);
+    try {
+      const hours = Number(cutoffHours);
+      if (!Number.isInteger(hours) || hours < 0) {
+        setCutoffMsg({ ok: false, text: "Ugyldig frist — angiv et helt tal ≥ 0" });
+        return;
+      }
+      const res = await fetch(`/api/owner/${ownerToken}/settings`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cancellation_cutoff_hours: hours }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setCutoffMsg({ ok: false, text: data.error ?? "Fejl" });
+      } else {
+        setCutoffMsg({ ok: true, text: "Aflysningsfrist gemt" });
+      }
+    } catch {
+      setCutoffMsg({ ok: false, text: "Noget gik galt" });
+    } finally {
+      setCutoffSaving(false);
     }
   };
 
@@ -792,7 +851,8 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
             {upcoming.map((b) => {
               const payment = payments.find((p) => p.booking_id === b.id);
               return (
-                <div key={b.id} className="rounded-xl border border-primary/8 bg-white shadow-sm px-4 py-3 flex items-center gap-4">
+                <div key={b.id} className="rounded-xl border border-primary/8 bg-white shadow-sm px-4 py-3">
+                  <div className="flex items-center gap-4">
                   <div className="hidden sm:flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 shrink-0">
                     <span className="text-xs font-bold text-emerald-700 leading-none">
                       {new Date(b.check_in + "T12:00:00").toLocaleDateString("da-DK", { day: "numeric" })}
@@ -840,7 +900,42 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
                         ✓ Velkomstmail sendt
                       </span>
                     )}
+                    {b.status === "confirmed" && cancelConfirmId !== b.id && (
+                      <button
+                        onClick={() => { setCancelConfirmId(b.id); setCancelError(null); }}
+                        className="text-xs text-red-500 hover:text-red-700 font-medium transition-colors"
+                      >
+                        Annullér
+                      </button>
+                    )}
                   </div>
+                  </div>{/* end inner flex row */}
+                  {cancelConfirmId === b.id && (
+                    <div className="mt-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3 w-full">
+                      <p className="text-xs text-red-700 font-medium mb-2">
+                        Annullér booking for {b.guest_name}? Gæsten får besked og evt. refundering.
+                      </p>
+                      {cancelError && (
+                        <p className="text-xs text-red-600 mb-2">{cancelError}</p>
+                      )}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleOwnerCancel(b.id)}
+                          disabled={cancelingId === b.id}
+                          className="bg-red-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-red-700 disabled:opacity-50"
+                        >
+                          {cancelingId === b.id ? "Annullerer…" : "Ja, annullér"}
+                        </button>
+                        <button
+                          onClick={() => { setCancelConfirmId(null); setCancelError(null); }}
+                          disabled={cancelingId === b.id}
+                          className="text-xs text-gray-600 px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50"
+                        >
+                          Fortryd
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -926,6 +1021,46 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
         {priceMsg && (
           <div className={`mt-3 rounded-xl px-4 py-2.5 text-sm ${priceMsg.ok ? "bg-emerald-50 border border-emerald-100 text-emerald-700" : "bg-red-50 border border-red-100 text-red-600"}`}>
             {priceMsg.text}
+          </div>
+        )}
+      </section>
+
+      {/* ── Aflysningspolitik ── */}
+      <section className="rounded-2xl border border-primary/8 bg-white shadow-sm px-5 py-5">
+        <h2 className="font-serif text-lg font-bold text-primary mb-1">Aflysningspolitik</h2>
+        <p className="text-xs text-primary/40 mb-4">
+          Angiv antallet af timer før ankomst, inden for hvilken gæster ikke kan få refundering ved aflysning.
+          Standard er 48 timer. Sæt til 0 for altid fuld refundering.
+        </p>
+        <div className="flex flex-wrap gap-3 items-end">
+          <div>
+            <label className="block text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1.5">
+              Frist (timer)
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={cutoffHours}
+                onChange={(e) => setCutoffHours(e.target.value)}
+                placeholder="48"
+                className="rounded-xl border border-primary/15 px-3 py-2 text-sm text-primary placeholder:text-primary/25 focus:outline-none focus:ring-2 focus:ring-accent/35 focus:border-accent/40 transition-all w-36"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-primary/40 pointer-events-none">t</span>
+            </div>
+          </div>
+          <button
+            onClick={handleCutoffSave}
+            disabled={cutoffSaving}
+            className="rounded-xl bg-accent text-white px-4 py-2 text-sm font-semibold hover:bg-accent/90 disabled:opacity-40 transition-colors"
+          >
+            {cutoffSaving ? "Gemmer…" : "Gem frist"}
+          </button>
+        </div>
+        {cutoffMsg && (
+          <div className={`mt-3 rounded-xl px-4 py-2.5 text-sm ${cutoffMsg.ok ? "bg-emerald-50 border border-emerald-100 text-emerald-700" : "bg-red-50 border border-red-100 text-red-600"}`}>
+            {cutoffMsg.text}
           </div>
         )}
       </section>

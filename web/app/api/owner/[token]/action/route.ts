@@ -4,6 +4,7 @@ import {
   getBookingByIdForShelter,
   updateBookingStatus,
   hasConfirmedOverlap,
+  cancelBooking,
 } from "@/lib/booking-db";
 import {
   sendBookingRejectedToGuest,
@@ -11,6 +12,7 @@ import {
   sendPaymentRequestToGuest,
   sendRefundedToGuest,
   sendBookingAutoMessage,
+  sendOwnerCancelledToGuest,
 } from "@/lib/booking-email";
 import { createCheckoutSession, calculateFee } from "@/lib/stripe";
 import { createBookingPayment, getPaymentByBookingId } from "@/lib/payment-db";
@@ -74,7 +76,7 @@ export async function POST(
   const bookingId: string = body.booking_id ?? "";
   const action: string = body.action ?? "";
 
-  if (!bookingId || !["confirm", "reject", "resend-payment"].includes(action))
+  if (!bookingId || !["confirm", "reject", "resend-payment", "cancel"].includes(action))
     return NextResponse.json({ error: "Ugyldige parametre" }, { status: 400 });
 
   const booking = await getBookingByIdForShelter(bookingId, shelter.id);
@@ -104,6 +106,7 @@ export async function POST(
           shelterTitle: shelter.title,
           checkIn: booking.check_in,
           checkOut: booking.check_out,
+          guestToken: booking.guest_token,
         });
       } catch (err) {
         console.error("owner confirm (upfront): confirmation email error:", err);
@@ -141,6 +144,7 @@ export async function POST(
           amountShelterDkk: shelterDkk,
           amountPlatformDkk: platformDkk,
           paymentUrl: url,
+          guestToken: booking.guest_token,
         });
       } catch (err) {
         console.error("owner confirm: payment setup error:", err);
@@ -236,6 +240,7 @@ export async function POST(
             amountShelterDkk: existing.amount_shelter_dkk,
             amountPlatformDkk: existing.amount_platform_dkk,
             paymentUrl: session.url,
+            guestToken: booking.guest_token,
           });
           return NextResponse.json({ ok: true });
         }
@@ -271,6 +276,7 @@ export async function POST(
         amountShelterDkk: shelterDkk,
         amountPlatformDkk: platformDkk,
         paymentUrl: url,
+        guestToken: booking.guest_token,
       });
     } catch (err) {
       console.error("resend-payment error:", err);
@@ -278,6 +284,57 @@ export async function POST(
     }
 
     return NextResponse.json({ ok: true });
+  }
+
+  // ── cancel ───────────────────────────────────────────────────────────────
+  if (action === "cancel") {
+    if (booking.status !== "confirmed")
+      return NextResponse.json({ error: "Kun bekræftede bookinger kan annulleres" }, { status: 409 });
+
+    const cancelled = await cancelBooking(bookingId, "owner");
+    if (!cancelled) {
+      return NextResponse.json(
+        { error: "Booking er allerede annulleret eller ikke bekræftet" },
+        { status: 409 }
+      );
+    }
+
+    // Owner cancel → always full refund if payment exists
+    const payment = await getPaymentByBookingId(bookingId);
+    let refunded = false;
+    if (payment?.status === "paid") {
+      try {
+        const { default: Stripe } = await import("stripe");
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+        const session = await stripe.checkout.sessions.retrieve(
+          payment.stripe_checkout_session_id,
+          { expand: ["payment_intent"] }
+        );
+        const pi = session.payment_intent as { id?: string };
+        if (pi?.id) {
+          await stripe.refunds.create({ payment_intent: pi.id });
+          refunded = true;
+        }
+      } catch (err) {
+        console.error("owner cancel: Stripe refund error:", err);
+        // Non-fatal — admin can issue manually
+      }
+    }
+
+    try {
+      await sendOwnerCancelledToGuest({
+        guestEmail: booking.guest_email,
+        guestName: booking.guest_name,
+        shelterTitle: shelter.title,
+        checkIn: booking.check_in,
+        checkOut: booking.check_out,
+        amountTotalDkk: payment?.status === "paid" ? payment.amount_total_dkk : null,
+      });
+    } catch (err) {
+      console.error("owner cancel: guest email error:", err);
+    }
+
+    return NextResponse.json({ ok: true, refunded });
   }
 
   return NextResponse.json({ error: "Ukendt handling" }, { status: 400 });

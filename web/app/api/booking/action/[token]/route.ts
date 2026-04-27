@@ -69,6 +69,7 @@ export async function GET(
         shelterTitle: shelter.title,
         checkIn: booking.check_in,
         checkOut: booking.check_out,
+        guestToken: booking.guest_token,
       });
     } else {
       await sendBookingRejectedToGuest({
