@@ -84,7 +84,7 @@ interface ThreadPanelProps {
   body: string;
   sending: boolean;
   error: string | null;
-  bottomRef: React.RefObject<HTMLDivElement | null>;
+  bottomRef: React.RefObject<HTMLDivElement>;
   onBodyChange: (v: string) => void;
   onSend: () => void;
 }
