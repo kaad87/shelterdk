@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import type { ShelterBooking, BookableShelter } from "@/types/booking";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -219,6 +219,32 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
   const [priceSaving, setPriceSaving] = useState(false);
   const [priceMsg, setPriceMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
+  // Messages (auto-beskeder) state
+  interface MsgTemplates {
+    confirmation_enabled: boolean;
+    confirmation_subject: string;
+    confirmation_body: string;
+    reminder_enabled: boolean;
+    reminder_subject: string;
+    reminder_body: string;
+  }
+  const [msgTemplates, setMsgTemplates] = useState<MsgTemplates | null>(null);
+  const [msgOriginal, setMsgOriginal] = useState<MsgTemplates | null>(null);
+  const [msgSaving, setMsgSaving] = useState(false);
+  const [msgSaved, setMsgSaved] = useState(false);
+  const [msgError, setMsgError] = useState<string | null>(null);
+
+  // Refs for cursor-position tracking (placeholder chip insertion)
+  const confSubjRef = useRef<HTMLInputElement>(null);
+  const confBodyRef = useRef<HTMLTextAreaElement>(null);
+  const remSubjRef = useRef<HTMLInputElement>(null);
+  const remBodyRef = useRef<HTMLTextAreaElement>(null);
+  type MsgField = "conf_subj" | "conf_body" | "rem_subj" | "rem_body";
+  const [activeMsgField, setActiveMsgField] = useState<MsgField | null>(null);
+
+  // confirmedWithEmail — tracks booking IDs that had auto-email sent this session
+  const [confirmedWithEmail, setConfirmedWithEmail] = useState<Set<string>>(new Set());
+
   // Calendar state
   const now = new Date();
   const [calYear, setCalYear] = useState(now.getFullYear());
@@ -273,6 +299,78 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
     return `${Math.floor(hours / 24)} dag${Math.floor(hours / 24) !== 1 ? "e" : ""} siden`;
   }
 
+  function previewMsg(template: string): string {
+    const previewCheckIn = new Date();
+    previewCheckIn.setDate(previewCheckIn.getDate() + 1);
+    const previewCheckOut = new Date(previewCheckIn);
+    previewCheckOut.setDate(previewCheckIn.getDate() + 2);
+    const fmtDa = (d: Date) =>
+      d.toLocaleDateString("da-DK", { weekday: "short", day: "numeric", month: "long" });
+    return template
+      .replace(/{gæst_navn}/g, "Lars")
+      .replace(/{shelter_navn}/g, shelter.title)
+      .replace(/{ankomst_dato}/g, fmtDa(previewCheckIn))
+      .replace(/{afrejse_dato}/g, fmtDa(previewCheckOut))
+      .replace(/{antal_nætter}/g, "2")
+      .replace(/{antal_personer}/g, "3");
+  }
+
+  const handleMsgSave = async () => {
+    if (!msgTemplates) return;
+    setMsgSaving(true);
+    setMsgError(null);
+    setMsgSaved(false);
+    try {
+      const res = await fetch(`/api/owner/${ownerToken}/messages`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(msgTemplates),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setMsgError(data.error ?? "Noget gik galt");
+      } else {
+        setMsgOriginal(msgTemplates);
+        setMsgSaved(true);
+        setTimeout(() => setMsgSaved(false), 3000);
+      }
+    } catch {
+      setMsgError("Noget gik galt");
+    } finally {
+      setMsgSaving(false);
+    }
+  };
+
+  const insertMsgPlaceholder = (placeholder: string) => {
+    if (!activeMsgField || !msgTemplates) return;
+    const refMap: Record<MsgField, React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>> = {
+      conf_subj: confSubjRef as React.RefObject<HTMLInputElement | null>,
+      conf_body: confBodyRef as React.RefObject<HTMLTextAreaElement | null>,
+      rem_subj: remSubjRef as React.RefObject<HTMLInputElement | null>,
+      rem_body: remBodyRef as React.RefObject<HTMLTextAreaElement | null>,
+    };
+    const fieldMap: Record<MsgField, keyof MsgTemplates> = {
+      conf_subj: "confirmation_subject",
+      conf_body: "confirmation_body",
+      rem_subj: "reminder_subject",
+      rem_body: "reminder_body",
+    };
+    const el = refMap[activeMsgField].current;
+    if (!el) return;
+    const start = el.selectionStart ?? el.value.length;
+    const end = el.selectionEnd ?? el.value.length;
+    const field = fieldMap[activeMsgField];
+    const current = String(msgTemplates[field]);
+    const newValue = current.slice(0, start) + placeholder + current.slice(end);
+    setMsgTemplates((prev) => (prev ? { ...prev, [field]: newValue } : null));
+    // Restore focus and cursor position after React re-renders
+    requestAnimationFrame(() => {
+      el.focus();
+      const pos = start + placeholder.length;
+      el.setSelectionRange(pos, pos);
+    });
+  };
+
   const fetchPayments = useCallback(async () => {
     try {
       const res = await fetch(`/api/owner/${ownerToken}/payments`);
@@ -283,6 +381,16 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
   }, [ownerToken]);
 
   useEffect(() => { fetchPayments(); }, [fetchPayments]);
+
+  useEffect(() => {
+    fetch(`/api/owner/${ownerToken}/messages`)
+      .then((r) => r.json())
+      .then((data: MsgTemplates) => {
+        setMsgTemplates(data);
+        setMsgOriginal(data);
+      })
+      .catch(() => {});
+  }, [ownerToken]);
 
   const handlePriceSave = async () => {
     setPriceSaving(true);
@@ -369,6 +477,9 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
       )
     );
     if (action === "confirm") fetchPayments();
+    if (action === "confirm" && data.confirmationEmailSent) {
+      setConfirmedWithEmail((prev) => new Set([...prev, bookingId]));
+    }
   };
 
   const handleResendPayment = async (bookingId: string) => {
@@ -724,6 +835,11 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
                         Bekræftet
                       </span>
                     )}
+                    {confirmedWithEmail.has(b.id) && (
+                      <span className="text-xs font-medium text-blue-600 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-full">
+                        ✓ Velkomstmail sendt
+                      </span>
+                    )}
                   </div>
                 </div>
               );
@@ -900,6 +1016,245 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
           </div>
         </section>
       )}
+
+      {/* ── Automatiske beskeder ── */}
+      <section className="rounded-2xl border border-primary/8 bg-white shadow-sm px-5 py-5 space-y-6">
+        <div>
+          <h2 className="font-serif text-lg font-bold text-primary mb-0.5">Automatiske beskeder</h2>
+          <p className="text-xs text-primary/40">
+            Skriv personlige emails der sendes automatisk til gæster. Brug pladsholdere til at indsætte navne og datoer.
+          </p>
+        </div>
+
+        {msgTemplates === null ? (
+          <p className="text-sm text-primary/40">Henter…</p>
+        ) : (
+          <>
+            {/* Placeholder chips */}
+            {(() => {
+              const PLACEHOLDERS = [
+                { label: "{gæst_navn}", title: "Gæstens navn" },
+                { label: "{shelter_navn}", title: "Shelterets navn" },
+                { label: "{ankomst_dato}", title: "Ankomstdato" },
+                { label: "{afrejse_dato}", title: "Afrejsedato" },
+                { label: "{antal_nætter}", title: "Antal nætter" },
+                { label: "{antal_personer}", title: "Antal personer" },
+              ];
+              return (
+                <div>
+                  <p className="text-xs font-semibold text-primary/50 uppercase tracking-wide mb-2">
+                    Pladsholdere — klik for at indsætte ved cursoren
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {PLACEHOLDERS.map((p) => (
+                      <button
+                        key={p.label}
+                        type="button"
+                        title={p.title}
+                        onClick={() => insertMsgPlaceholder(p.label)}
+                        className="rounded-lg border border-primary/15 bg-primary/[0.03] px-2.5 py-1 text-xs font-mono text-primary/70 hover:bg-accent/5 hover:border-accent/30 hover:text-accent transition-colors"
+                      >
+                        {p.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* ── Bekræftelsesbesked ── */}
+            <div className={`rounded-xl border p-4 space-y-3 transition-colors ${msgTemplates.confirmation_enabled ? "border-primary/10 bg-white" : "border-primary/6 bg-primary/[0.02]"}`}>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-primary">Bekræftelsesbesked</p>
+                  <p className="text-xs text-primary/40">Sendes til gæsten når du bekræfter en booking</p>
+                </div>
+                <label className="relative inline-flex cursor-pointer items-center gap-2">
+                  <input
+                    type="checkbox"
+                    className="sr-only"
+                    checked={msgTemplates.confirmation_enabled}
+                    onChange={(e) => {
+                      setMsgTemplates((prev) =>
+                        prev ? { ...prev, confirmation_enabled: e.target.checked } : null
+                      );
+                    }}
+                  />
+                  <div className={`relative h-5 w-9 rounded-full transition-colors ${msgTemplates.confirmation_enabled ? "bg-accent" : "bg-primary/20"}`}>
+                    <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${msgTemplates.confirmation_enabled ? "translate-x-4" : "translate-x-0.5"}`} />
+                  </div>
+                  <span className="text-xs text-primary/50">{msgTemplates.confirmation_enabled ? "Til" : "Fra"}</span>
+                </label>
+              </div>
+
+              {msgTemplates.confirmation_enabled ? (
+                <>
+                  <div>
+                    <label className="block text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1.5">Emne</label>
+                    <input
+                      ref={confSubjRef}
+                      type="text"
+                      value={msgTemplates.confirmation_subject}
+                      maxLength={200}
+                      onFocus={() => setActiveMsgField("conf_subj")}
+                      onChange={(e) =>
+                        setMsgTemplates((prev) =>
+                          prev ? { ...prev, confirmation_subject: e.target.value } : null
+                        )
+                      }
+                      className="w-full rounded-xl border border-primary/15 px-3 py-2 text-sm text-primary placeholder:text-primary/25 focus:outline-none focus:ring-2 focus:ring-accent/35 focus:border-accent/40 transition-all"
+                      placeholder="Emne til bekræftelses-email"
+                    />
+                    <p className="mt-0.5 text-right text-[10px] text-primary/30">{msgTemplates.confirmation_subject.length}/200</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1.5">Besked</label>
+                    <textarea
+                      ref={confBodyRef}
+                      value={msgTemplates.confirmation_body}
+                      maxLength={2000}
+                      rows={5}
+                      onFocus={() => setActiveMsgField("conf_body")}
+                      onChange={(e) =>
+                        setMsgTemplates((prev) =>
+                          prev ? { ...prev, confirmation_body: e.target.value } : null
+                        )
+                      }
+                      className="w-full rounded-xl border border-primary/15 px-3 py-2 text-sm text-primary placeholder:text-primary/25 focus:outline-none focus:ring-2 focus:ring-accent/35 focus:border-accent/40 transition-all resize-y"
+                      placeholder="Skriv din besked til gæsten…"
+                    />
+                    <p className="mt-0.5 text-right text-[10px] text-primary/30">{msgTemplates.confirmation_body.length}/2000</p>
+                  </div>
+                  {(msgTemplates.confirmation_subject || msgTemplates.confirmation_body) && (
+                    <div>
+                      <p className="text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1.5">Preview</p>
+                      <div className="rounded-xl border border-primary/8 bg-primary/[0.02] px-4 py-3 space-y-1">
+                        {msgTemplates.confirmation_subject && (
+                          <p className="font-semibold text-primary text-xs">
+                            {previewMsg(msgTemplates.confirmation_subject)}
+                          </p>
+                        )}
+                        <p className="whitespace-pre-wrap text-xs leading-relaxed text-primary/70">
+                          {previewMsg(msgTemplates.confirmation_body)}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-primary/40 italic">Beskeden er slået fra — gæsten modtager ingen automatisk bekræftelsesmail.</p>
+              )}
+            </div>
+
+            {/* ── Påmindelsesbesked ── */}
+            <div className={`rounded-xl border p-4 space-y-3 transition-colors ${msgTemplates.reminder_enabled ? "border-primary/10 bg-white" : "border-primary/6 bg-primary/[0.02]"}`}>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold text-primary">Påmindelsesbesked</p>
+                  <p className="text-xs text-primary/40">Sendes automatisk dagen før gæstens ankomst</p>
+                </div>
+                <label className="relative inline-flex cursor-pointer items-center gap-2">
+                  <input
+                    type="checkbox"
+                    className="sr-only"
+                    checked={msgTemplates.reminder_enabled}
+                    onChange={(e) => {
+                      setMsgTemplates((prev) =>
+                        prev ? { ...prev, reminder_enabled: e.target.checked } : null
+                      );
+                    }}
+                  />
+                  <div className={`relative h-5 w-9 rounded-full transition-colors ${msgTemplates.reminder_enabled ? "bg-accent" : "bg-primary/20"}`}>
+                    <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${msgTemplates.reminder_enabled ? "translate-x-4" : "translate-x-0.5"}`} />
+                  </div>
+                  <span className="text-xs text-primary/50">{msgTemplates.reminder_enabled ? "Til" : "Fra"}</span>
+                </label>
+              </div>
+
+              {msgTemplates.reminder_enabled ? (
+                <>
+                  <div>
+                    <label className="block text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1.5">Emne</label>
+                    <input
+                      ref={remSubjRef}
+                      type="text"
+                      value={msgTemplates.reminder_subject}
+                      maxLength={200}
+                      onFocus={() => setActiveMsgField("rem_subj")}
+                      onChange={(e) =>
+                        setMsgTemplates((prev) =>
+                          prev ? { ...prev, reminder_subject: e.target.value } : null
+                        )
+                      }
+                      className="w-full rounded-xl border border-primary/15 px-3 py-2 text-sm text-primary placeholder:text-primary/25 focus:outline-none focus:ring-2 focus:ring-accent/35 focus:border-accent/40 transition-all"
+                      placeholder="Emne til påmindelses-email"
+                    />
+                    <p className="mt-0.5 text-right text-[10px] text-primary/30">{msgTemplates.reminder_subject.length}/200</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1.5">Besked</label>
+                    <textarea
+                      ref={remBodyRef}
+                      value={msgTemplates.reminder_body}
+                      maxLength={2000}
+                      rows={4}
+                      onFocus={() => setActiveMsgField("rem_body")}
+                      onChange={(e) =>
+                        setMsgTemplates((prev) =>
+                          prev ? { ...prev, reminder_body: e.target.value } : null
+                        )
+                      }
+                      className="w-full rounded-xl border border-primary/15 px-3 py-2 text-sm text-primary placeholder:text-primary/25 focus:outline-none focus:ring-2 focus:ring-accent/35 focus:border-accent/40 transition-all resize-y"
+                      placeholder="Skriv din påmindelsesbesked…"
+                    />
+                    <p className="mt-0.5 text-right text-[10px] text-primary/30">{msgTemplates.reminder_body.length}/2000</p>
+                  </div>
+                  {(msgTemplates.reminder_subject || msgTemplates.reminder_body) && (
+                    <div>
+                      <p className="text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1.5">Preview</p>
+                      <div className="rounded-xl border border-primary/8 bg-primary/[0.02] px-4 py-3 space-y-1">
+                        {msgTemplates.reminder_subject && (
+                          <p className="font-semibold text-primary text-xs">
+                            {previewMsg(msgTemplates.reminder_subject)}
+                          </p>
+                        )}
+                        <p className="whitespace-pre-wrap text-xs leading-relaxed text-primary/70">
+                          {previewMsg(msgTemplates.reminder_body)}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-primary/40 italic">Beskeden er slået fra — gæsten modtager ingen automatisk påmindelsesmail.</p>
+              )}
+            </div>
+
+            {/* Save button */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleMsgSave}
+                disabled={
+                  msgSaving ||
+                  JSON.stringify(msgTemplates) === JSON.stringify(msgOriginal)
+                }
+                className="rounded-xl bg-accent text-white px-5 py-2 text-sm font-semibold hover:bg-accent/90 disabled:opacity-40 transition-colors"
+              >
+                {msgSaving ? "Gemmer…" : "Gem beskeder"}
+              </button>
+              {msgSaved && (
+                <span className="text-sm text-emerald-600 font-medium">✓ Beskeder gemt</span>
+              )}
+            </div>
+
+            {msgError && (
+              <div className="rounded-xl bg-red-50 border border-red-100 px-4 py-2.5 text-sm text-red-600">
+                {msgError}
+              </div>
+            )}
+          </>
+        )}
+      </section>
 
     </div>
   );
