@@ -32,6 +32,23 @@ export async function PATCH(
     if (priceError) return NextResponse.json({ error: priceError.message }, { status: 500 });
 
     // If only price was sent (no iCal fields), return early
+    if (!("ical_import_url" in body) && !("cancellation_cutoff_hours" in body))
+      return NextResponse.json({ ok: true });
+  }
+
+  // Handle cancellation cutoff update
+  if ("cancellation_cutoff_hours" in body) {
+    const raw = Number(body.cancellation_cutoff_hours);
+    if (!Number.isInteger(raw) || raw < 0) {
+      return NextResponse.json({ error: "Ugyldig aflysningsfrist" }, { status: 400 });
+    }
+    const { error: cutoffError } = await createAdminClient()
+      .from("bookable_shelters")
+      .update({ cancellation_cutoff_hours: raw })
+      .eq("id", shelter.id);
+    if (cutoffError) return NextResponse.json({ error: cutoffError.message }, { status: 500 });
+
+    // If only cutoff was sent (no iCal fields), return early
     if (!("ical_import_url" in body)) return NextResponse.json({ ok: true });
   }
 
