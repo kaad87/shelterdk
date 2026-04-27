@@ -14,6 +14,7 @@ export interface BookableShelter {
   platform_fee_pct: number;
   platform_fee_min_dkk: number;
   payment_mode: "after_confirmation" | "upfront";
+  cancellation_cutoff_hours: number; // default 48
   created_at: string;
 }
 
@@ -31,9 +32,12 @@ export interface ShelterBooking {
   status: BookingStatus;
   created_at: string;
   updated_at: string;
+  guest_token: string;
+  cancelled_at: string | null;
+  cancelled_by: "owner" | "guest" | "system" | null;
 }
 
-export type BookingAction = "confirm" | "reject";
+export type BookingAction = "confirm" | "reject" | "cancel";
 
 export interface BookingActionToken {
   id: string;

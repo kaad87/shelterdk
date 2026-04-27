@@ -15,6 +15,9 @@ function makeBooking(overrides: Partial<ShelterBooking> = {}): ShelterBooking {
     status: "confirmed",
     created_at: "2026-04-01T00:00:00Z",
     updated_at: "2026-04-01T00:00:00Z",
+    guest_token: "00000000-0000-0000-0000-000000000001",
+    cancelled_at: null,
+    cancelled_by: null,
     ...overrides,
   };
 }
