@@ -63,6 +63,17 @@ vi.mock("@/lib/booking-db", () => ({
   unblockDate: mockUnblockDate,
 }));
 
+// ── Supabase admin client mock (used by sendAutoMessageIfEnabled) ─────────────
+vi.mock("@/utils/supabase/server-admin", () => {
+  const chain = { data: null, error: null };
+  const qb: Record<string, unknown> = {};
+  const methods = ["from", "select", "eq", "neq", "is", "in", "lt", "gt", "gte", "lte", "insert", "update", "delete", "upsert", "order", "single", "maybeSingle"];
+  for (const m of methods) {
+    qb[m] = vi.fn(() => ({ ...qb, ...chain }));
+  }
+  return { createAdminClient: vi.fn(() => qb) };
+});
+
 vi.mock("@/lib/booking-email", () => ({
   sendBookingRequestToOwner: mockSendBookingRequestToOwner,
   sendBookingReceivedToGuest: mockSendBookingReceivedToGuest,
@@ -251,7 +262,7 @@ describe("GET /api/booking/action/[token]", () => {
       shelter: mockShelter(),
     });
     mockHasConfirmedOverlap.mockResolvedValue(false);
-    mockMarkTokenUsed.mockResolvedValue(undefined);
+    mockMarkTokenUsed.mockResolvedValue(true);
     mockUpdateBookingStatus.mockResolvedValue(undefined);
     mockSendBookingConfirmedToGuest.mockResolvedValue(undefined);
     const { GET } = await import("../booking/action/[token]/route");
