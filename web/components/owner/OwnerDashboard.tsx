@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import type { ShelterBooking, BookableShelter } from "@/types/booking";
+import type { ShelterBooking, BookableShelter, BookingMessage } from "@/types/booking";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -75,6 +75,85 @@ const DA_MONTHS = [
   "Juli", "August", "September", "Oktober", "November", "December",
 ];
 const DA_DAYS = ["Ma", "Ti", "On", "To", "Fr", "Lø", "Sø"];
+
+// ─── BookingThreadPanel ───────────────────────────────────────────────────────
+
+interface ThreadPanelProps {
+  bookingId: string;
+  messages: BookingMessage[] | null; // null = loading
+  body: string;
+  sending: boolean;
+  error: string | null;
+  bottomRef: React.RefObject<HTMLDivElement | null>;
+  onBodyChange: (v: string) => void;
+  onSend: () => void;
+}
+
+function BookingThreadPanel({
+  messages,
+  body,
+  sending,
+  error,
+  bottomRef,
+  onBodyChange,
+  onSend,
+}: ThreadPanelProps) {
+  return (
+    <div className="border-t border-primary/8 px-5 pt-4 pb-4 bg-gray-50/50">
+      {/* Messages */}
+      <div className="flex flex-col gap-2 max-h-64 overflow-y-auto mb-3 pr-1">
+        {messages === null && (
+          <p className="text-xs text-primary/40 text-center py-4">Henter beskeder…</p>
+        )}
+        {messages !== null && messages.length === 0 && (
+          <p className="text-xs text-primary/40 text-center py-4">Ingen beskeder endnu.</p>
+        )}
+        {(messages ?? []).map((m) => (
+          <div
+            key={m.id}
+            className={`max-w-[80%] rounded-xl px-3 py-2 text-sm ${
+              m.sender === "owner"
+                ? "self-end bg-[#c5a059] text-white"
+                : "self-start bg-white border border-gray-200 text-gray-800"
+            }`}
+          >
+            <p className="whitespace-pre-wrap">{m.body}</p>
+            <p className={`text-[10px] mt-1 ${m.sender === "owner" ? "text-yellow-100" : "text-gray-400"}`}>
+              {m.sender === "guest" ? "Gæst · " : ""}
+              {new Date(m.created_at).toLocaleString("da-DK", {
+                day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
+              })}
+            </p>
+          </div>
+        ))}
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Compose */}
+      <div className="flex gap-2 items-end">
+        <textarea
+          value={body}
+          onChange={(e) => onBodyChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); onSend(); }
+          }}
+          placeholder="Skriv en besked til gæsten…"
+          rows={2}
+          maxLength={2000}
+          className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#c5a059]"
+        />
+        <button
+          onClick={onSend}
+          disabled={sending || !body.trim()}
+          className="shrink-0 bg-[#c5a059] text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-[#b8904a] disabled:opacity-50 self-end"
+        >
+          {sending ? "…" : "Send"}
+        </button>
+      </div>
+      {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
+    </div>
+  );
+}
 
 function DayCell({
   iso,
@@ -255,6 +334,15 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
   const [cutoffSaving, setCutoffSaving] = useState(false);
   const [cutoffMsg, setCutoffMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
+  // ─── Booking messages (thread panel) ─────────────────────────────────────────
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+  const [openThreadId, setOpenThreadId] = useState<string | null>(null);
+  const [threadMessages, setThreadMessages] = useState<Record<string, BookingMessage[]>>({});
+  const [threadBody, setThreadBody] = useState("");
+  const [threadSending, setThreadSending] = useState(false);
+  const [threadError, setThreadError] = useState<string | null>(null);
+  const threadBottomRef = useRef<HTMLDivElement>(null);
+
   // Calendar state
   const now = new Date();
   const [calYear, setCalYear] = useState(now.getFullYear());
@@ -401,6 +489,58 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
       })
       .catch(() => {});
   }, [ownerToken]);
+
+  useEffect(() => {
+    fetch(`/api/owner/${ownerToken}/unread-counts`)
+      .then((r) => r.json())
+      .then((d) => setUnreadCounts(d.counts ?? {}))
+      .catch(() => {});
+  }, [ownerToken]);
+
+  useEffect(() => {
+    if (openThreadId) {
+      threadBottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [openThreadId, threadMessages]);
+
+  const openThread = useCallback(async (bookingId: string) => {
+    if (openThreadId === bookingId) { setOpenThreadId(null); return; }
+    setOpenThreadId(bookingId);
+    setThreadBody("");
+    setThreadError(null);
+    if (threadMessages[bookingId]) return; // already loaded
+    try {
+      const res = await fetch(`/api/owner/${ownerToken}/booking/${bookingId}/messages`);
+      const data = await res.json();
+      setThreadMessages((prev) => ({ ...prev, [bookingId]: data.messages ?? [] }));
+      // Clear unread badge for this booking
+      setUnreadCounts((prev) => { const next = { ...prev }; delete next[bookingId]; return next; });
+    } catch { /* silent */ }
+  }, [openThreadId, threadMessages, ownerToken]);
+
+  const sendOwnerMessage = useCallback(async (bookingId: string) => {
+    if (!threadBody.trim()) return;
+    setThreadSending(true);
+    setThreadError(null);
+    try {
+      const res = await fetch(`/api/owner/${ownerToken}/booking/${bookingId}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ body: threadBody }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error ?? "Noget gik galt");
+      setThreadMessages((prev) => ({
+        ...prev,
+        [bookingId]: [...(prev[bookingId] ?? []), data.message],
+      }));
+      setThreadBody("");
+    } catch (err) {
+      setThreadError(err instanceof Error ? err.message : "Noget gik galt");
+    } finally {
+      setThreadSending(false);
+    }
+  }, [ownerToken, threadBody]);
 
   const handlePriceSave = async () => {
     setPriceSaving(true);
@@ -734,7 +874,32 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
                     {hasPaidUpfront ? "Afvis & refundér" : "Afvis"}
                   </button>
+                  <div className="w-px bg-amber-100" />
+                  <button
+                    onClick={() => openThread(b.id)}
+                    className="relative px-4 py-3 text-sm font-semibold text-primary/60 hover:bg-primary/5 transition-colors flex items-center gap-1.5"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2h10v8H8l-3 2V10H2V2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/></svg>
+                    Beskeder
+                    {(unreadCounts[b.id] ?? 0) > 0 && (
+                      <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">
+                        {unreadCounts[b.id]}
+                      </span>
+                    )}
+                  </button>
                 </div>
+                {openThreadId === b.id && (
+                  <BookingThreadPanel
+                    bookingId={b.id}
+                    messages={threadMessages[b.id] ?? null}
+                    body={threadBody}
+                    sending={threadSending}
+                    error={threadError}
+                    bottomRef={threadBottomRef}
+                    onBodyChange={setThreadBody}
+                    onSend={() => sendOwnerMessage(b.id)}
+                  />
+                )}
               </div>
               );
             })}
@@ -908,8 +1073,32 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
                         Annullér
                       </button>
                     )}
+                    <button
+                      onClick={() => openThread(b.id)}
+                      className="relative text-xs font-medium text-primary/50 hover:text-primary/80 transition-colors flex items-center gap-1"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 2h10v8H8l-3 2V10H2V2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/></svg>
+                      Beskeder
+                      {(unreadCounts[b.id] ?? 0) > 0 && (
+                        <span className="w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">
+                          {unreadCounts[b.id]}
+                        </span>
+                      )}
+                    </button>
                   </div>
                   </div>{/* end inner flex row */}
+                  {openThreadId === b.id && (
+                    <BookingThreadPanel
+                      bookingId={b.id}
+                      messages={threadMessages[b.id] ?? null}
+                      body={threadBody}
+                      sending={threadSending}
+                      error={threadError}
+                      bottomRef={threadBottomRef}
+                      onBodyChange={setThreadBody}
+                      onSend={() => sendOwnerMessage(b.id)}
+                    />
+                  )}
                   {cancelConfirmId === b.id && (
                     <div className="mt-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3 w-full">
                       <p className="text-xs text-red-700 font-medium mb-2">
