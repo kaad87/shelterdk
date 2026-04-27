@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import type { ShelterBooking } from "@/types/booking";
+import { useState, useEffect, useRef } from "react";
+import type { ShelterBooking, BookingMessage } from "@/types/booking";
 
 const STATUS_LABELS: Record<string, string> = {
   pending: "Afventer bekræftelse",
@@ -45,6 +45,47 @@ export function BookingPageClient({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
+
+  // ─── Messaging ───────────────────────────────────────────────────────────────
+  const [messages, setMessages] = useState<BookingMessage[]>([]);
+  const [msgBody, setMsgBody] = useState("");
+  const [msgLoading, setMsgLoading] = useState(false);
+  const [msgError, setMsgError] = useState<string | null>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const canMessage = status === "pending" || status === "confirmed";
+
+  useEffect(() => {
+    if (!canMessage) return;
+    fetch(`/api/booking/${guestToken}/messages`)
+      .then((r) => r.json())
+      .then((d) => setMessages(d.messages ?? []))
+      .catch(() => {});
+  }, [guestToken, canMessage]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  async function sendMessage() {
+    if (!msgBody.trim()) return;
+    setMsgLoading(true);
+    setMsgError(null);
+    try {
+      const res = await fetch(`/api/booking/${guestToken}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ body: msgBody }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error ?? "Noget gik galt");
+      setMessages((prev) => [...prev, data.message]);
+      setMsgBody("");
+    } catch (err) {
+      setMsgError(err instanceof Error ? err.message : "Noget gik galt");
+    } finally {
+      setMsgLoading(false);
+    }
+  }
 
   async function handleCancel() {
     setLoading(true);
@@ -94,6 +135,76 @@ export function BookingPageClient({
         <Row label="Antal personer" value={String(booking.guest_count)} />
         {booking.message && <Row label="Din besked" value={booking.message} />}
       </div>
+
+      {/* Message thread — only for pending/confirmed bookings */}
+      {canMessage && (
+        <div className="mb-8">
+          <h2 className="text-base font-semibold text-[#2C3E50] mb-3">Beskeder</h2>
+
+          {/* Thread */}
+          <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 flex flex-col gap-2 max-h-72 overflow-y-auto mb-3">
+            {messages.length === 0 && (
+              <p className="text-sm text-gray-400 text-center py-4">
+                Ingen beskeder endnu. Skriv til ejeren herunder.
+              </p>
+            )}
+            {messages.map((m) => (
+              <div
+                key={m.id}
+                className={`max-w-[80%] rounded-xl px-3 py-2 text-sm ${
+                  m.sender === "guest"
+                    ? "self-end bg-[#c5a059] text-white"
+                    : "self-start bg-white border border-gray-200 text-gray-800"
+                }`}
+              >
+                <p className="whitespace-pre-wrap">{m.body}</p>
+                <p
+                  className={`text-[10px] mt-1 ${
+                    m.sender === "guest" ? "text-yellow-100" : "text-gray-400"
+                  }`}
+                >
+                  {new Date(m.created_at).toLocaleString("da-DK", {
+                    day: "numeric",
+                    month: "short",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
+              </div>
+            ))}
+            <div ref={bottomRef} />
+          </div>
+
+          {/* Compose */}
+          <div className="flex flex-col gap-2">
+            <textarea
+              value={msgBody}
+              onChange={(e) => setMsgBody(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                  e.preventDefault();
+                  sendMessage();
+                }
+              }}
+              placeholder="Skriv en besked til ejeren…"
+              rows={3}
+              maxLength={2000}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#c5a059]"
+            />
+            {msgError && <p className="text-xs text-red-600">{msgError}</p>}
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-400">{msgBody.length}/2000</span>
+              <button
+                onClick={sendMessage}
+                disabled={msgLoading || !msgBody.trim()}
+                className="bg-[#c5a059] text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-[#b8904a] disabled:opacity-50"
+              >
+                {msgLoading ? "Sender…" : "Send"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Cancel section — only for confirmed bookings */}
       {status === "confirmed" && !showConfirm && (
