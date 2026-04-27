@@ -130,7 +130,7 @@ Siden er designet til at være rolig, klar og tryg. Tone: neutral og venlig, ikk
 |--------|-------|---------------------|
 | `pending` | 🕐 Afventer bekræftelse | Nej |
 | `confirmed` | ✓ Bekræftet (grøn) | Ja, hvis check_in > i dag |
-| `cancelled` | ✗ Annulleret (grå) | Nej — viser hvornår + refund-info |
+| `cancelled` | ✗ Annulleret (grå) | Nej — viser hvornår (`cancelled_at`) + refund-info: genskabes fra `(check_in − cancelled_at) > cutoff AND payment.status = 'paid'` |
 | `rejected` | ✗ Afvist | Nej |
 
 ### Refund-information (under cancel-knappen)
@@ -249,30 +249,30 @@ if ("cancellation_cutoff_hours" in body) {
 
 ### `sendGuestCancelledToGuest`
 
-Til gæsten når de selv annullerer.
+Til gæsten (`booking.guest_email`) når de selv annullerer.
 
 - Subject: `"Din booking af {shelterTitle} er annulleret"`
 - Body:
   - Bookingdetaljer (shelter, datoer)
   - Refund-status: "Du modtager fuld refund inden for 5-10 hverdage" / "Ingen refund iht. afbestillingspolitikken"
-  - Link til "Min booking"-siden
+  - Link til "Min booking"-siden: `https://shelterdk.dk/min-booking/[guestToken]`
 
 ### `sendGuestCancelledToOwner`
 
-Til ejeren når en gæst annullerer.
+Til ejeren (`shelter.owner_email`) når en gæst annullerer.
 
 - Subject: `"{guestName} har annulleret sin booking"`
 - Body: Gæstenavn, shelter, datoer, refund-status
 
 ### `sendOwnerCancelledToGuest`
 
-Til gæsten når ejeren annullerer.
+Til gæsten (`booking.guest_email`) når ejeren annullerer.
 
 - Subject: `"Din booking af {shelterTitle} er annulleret af ejeren"`
 - Body:
   - Undskyldning og tydelig forklaring
-  - "Du modtager fuld refund inden for 5-10 hverdage" (altid fuld refund)
-  - Link til shelterside til at finde alternativ
+  - "Du modtager fuld refund inden for 5-10 hverdage" (altid fuld refund ved betalt payment)
+  - Link til shelterside til at finde alternativ: `https://shelterdk.dk/shelter/[shelter.slug]`
 
 ### Eksisterende emails der opdateres
 
@@ -347,19 +347,24 @@ export async function getBookingByGuestToken(
  * Markér booking som annulleret — bruges af begge cancel-routes.
  * Eksisterende updateBookingStatus() kan ikke bruges: den kræver status='pending'
  * og understøtter ikke cancelled_at/cancelled_by felterne.
+ * Returnerer true hvis rækken faktisk blev opdateret (race-condition guard).
  */
 export async function cancelBooking(
   bookingId: string,
   cancelledBy: "owner" | "guest"
-): Promise<void>
+): Promise<boolean>
 // Implementering: UPDATE shelter_bookings SET status='cancelled',
 //   cancelled_at=now(), cancelled_by=$cancelledBy, updated_at=now()
 //   WHERE id=$bookingId AND status='confirmed'
+//   → returner count > 0
+// Hvis false → API returnerer 409 og sender ikke emails
 ```
 
-`getBookingByGuestToken` returnerer kun `ShelterBooking`-felter (inkl. `bookable_shelter_id`). API-routes der også behøver shelter-data foretager en separat query.
+`getBookingByGuestToken` returnerer kun `ShelterBooking`-felter (inkl. `bookable_shelter_id`). API-routes der også behøver shelter-data kalder `getBookableShelterByShelterDbId(booking.bookable_shelter_id)` fra `lib/booking-db.ts` (eksisterende helper).
 
 Payment-data hentes via `getPaymentByBookingId(booking.id)` fra `lib/payment-db.ts`. Dashboard-bekræftelsespanelet viser "Gæsten vil modtage fuld refund" — det specifikke beløb vises ikke i dashboard (ingen ekstra fetch nødvendig). Beløbet fremgår af gæstens email.
+
+**Ejer modtager ikke bekræftelsesmail ved egne annulleringer** (ejeren har selv foretaget handlingen).
 
 ---
 
