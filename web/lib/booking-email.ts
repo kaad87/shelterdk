@@ -542,3 +542,64 @@ export async function sendOwnerCancelledToGuest(opts: {
   });
   if (error) throw new Error("Email-fejl (ejer annulleret til gæst): " + JSON.stringify(error));
 }
+
+// ─── Message notification emails ─────────────────────────────────────────────
+
+/** Til ejeren: gæsten har sendt en ny besked */
+export async function sendNewMessageToOwner(opts: {
+  ownerEmail: string;
+  shelterTitle: string;
+  ownerToken: string;
+  guestName: string;
+  messageBody: string;
+}) {
+  const dashboardUrl = `${SITE_URL}/owner/${opts.ownerToken}`;
+  const { error } = await getResend().emails.send({
+    from: FROM_EMAIL,
+    to: opts.ownerEmail,
+    subject: `Ny besked fra ${esc(opts.guestName)} – ${esc(opts.shelterTitle)}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:600px;">
+        <h2 style="color:#2C3E50;">Ny besked fra ${esc(opts.guestName)}</h2>
+        <p>Du har modtaget en besked vedrørende <strong>${esc(opts.shelterTitle)}</strong>:</p>
+        <blockquote style="border-left:3px solid #c5a059;margin:16px 0;padding:8px 16px;color:#444;">
+          ${esc(opts.messageBody).replace(/\n/g, "<br>")}
+        </blockquote>
+        <div style="margin:24px 0;">
+          <a href="${dashboardUrl}" style="background:#c5a059;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;">Svar via dit dashboard</a>
+        </div>
+        <p style="color:#999;font-size:12px;">Sendt via <a href="https://shelterdk.dk">ShelterDK</a></p>
+      </div>
+    `,
+  });
+  if (error) throw new Error("Email-fejl (besked til ejer): " + JSON.stringify(error));
+}
+
+/** Til gæsten: ejeren har sendt en ny besked */
+export async function sendNewMessageToGuest(opts: {
+  guestEmail: string;
+  guestName: string;
+  shelterTitle: string;
+  guestToken: string;
+  messageBody: string;
+}) {
+  const { error } = await getResend().emails.send({
+    from: FROM_EMAIL,
+    to: opts.guestEmail,
+    subject: `Ny besked om din booking af ${esc(opts.shelterTitle)}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:600px;">
+        <h2 style="color:#2C3E50;">Hej ${esc(opts.guestName)}!</h2>
+        <p>Ejeren af <strong>${esc(opts.shelterTitle)}</strong> har sendt dig en besked:</p>
+        <blockquote style="border-left:3px solid #c5a059;margin:16px 0;padding:8px 16px;color:#444;">
+          ${esc(opts.messageBody).replace(/\n/g, "<br>")}
+        </blockquote>
+        <div style="margin:24px 0;">
+          <a href="${bookingLink(opts.guestToken)}" style="background:#c5a059;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;">Svar via din booking</a>
+        </div>
+        <p style="color:#999;font-size:12px;">Sendt via <a href="https://shelterdk.dk">ShelterDK</a></p>
+      </div>
+    `,
+  });
+  if (error) throw new Error("Email-fejl (besked til gæst): " + JSON.stringify(error));
+}
