@@ -92,15 +92,21 @@ export async function sendBookingAutoMessage(opts: {
   // then replace placeholders with HTML-escaped values via applyMessagePlaceholders.
   // Note: owner text containing "&" will appear as "&amp;" in the rendered email.
   // This is the correct tradeoff: owner-written content is untrusted input.
-  const bodyHtml =
-    applyMessagePlaceholders(escapeHtml(opts.body), opts.ctx).replace(/\n/g, "<br>") +
-    '<p style="color:#999;font-size:12px;margin-top:24px;">Sendt via <a href="https://shelterdk.dk">ShelterDK</a></p>';
+  const bodyHtml = applyMessagePlaceholders(escapeHtml(opts.body), opts.ctx).replace(/\n/g, "<br>");
+  const bodyPlain = replacePlain(opts.body);
 
   const { error } = await getResend().emails.send({
     from: FROM_EMAIL,
     to: opts.guestEmail,
     subject,
-    html: `<div style="font-family:sans-serif;max-width:600px;">${bodyHtml}</div>`,
+    html: renderEmail({
+      title: subject,
+      bodyHtml: `<p style="font-size:13px;color:#333;line-height:1.65;">${bodyHtml}</p>`,
+    }),
+    text: renderEmailText({
+      title: subject,
+      lines: [bodyPlain],
+    }),
   });
 
   if (error) {
@@ -135,28 +141,45 @@ export async function sendBookingRequestToOwner(opts: {
   const confirmUrl = `${SITE_URL}/api/booking/action/${opts.confirmToken}`;
   const rejectUrl = `${SITE_URL}/api/booking/action/${opts.rejectToken}`;
   const dashboardUrl = `${SITE_URL}/owner/${opts.ownerToken}`;
+  const messageBlock = opts.message
+    ? `<div style="background:#f9f7f4;border-left:3px solid #c5a059;border-radius:0 6px 6px 0;padding:9px 13px;margin:12px 0;">
+        <p style="font-size:10px;color:#999;margin:0 0 2px;text-transform:uppercase;letter-spacing:0.5px;">Besked fra gæst</p>
+        <p style="font-size:13px;color:#555;margin:0;">${esc(opts.message)}</p>
+      </div>`
+    : "";
 
   const { error } = await getResend().emails.send({
     from: FROM_EMAIL,
     to: opts.ownerEmail,
     subject: `Ny bookingforespørgsel til ${esc(opts.shelterTitle)}`,
-    html: `
-      <div style="font-family:sans-serif;max-width:600px;">
-        <h2 style="color:#2C3E50;">Ny bookingforespørgsel</h2>
-        <p><strong>${esc(opts.guestName)}</strong> (${esc(opts.guestEmail)}) ønsker at booke <strong>${esc(opts.shelterTitle)}</strong>.</p>
-        <table style="border-collapse:collapse;width:100%;margin:16px 0;">
-          <tr><td style="padding:8px;color:#666;">Datoer</td><td style="padding:8px;"><strong>${esc(formatDate(opts.checkIn))} → ${esc(formatDate(opts.checkOut))}</strong></td></tr>
-          <tr style="background:#f9f9f9;"><td style="padding:8px;color:#666;">Antal personer</td><td style="padding:8px;">${opts.guestCount}</td></tr>
-          ${opts.message ? `<tr><td style="padding:8px;color:#666;">Besked</td><td style="padding:8px;">${esc(opts.message)}</td></tr>` : ""}
-        </table>
-        <div style="margin:24px 0;">
-          <a href="${confirmUrl}" style="background:#16a34a;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;">✓ Acceptér booking</a>
-          &nbsp;&nbsp;
-          <a href="${rejectUrl}" style="background:#dc2626;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;">✗ Afvis booking</a>
+    html: renderEmail({
+      title: "Ny bookingforespørgsel",
+      preheader: `${opts.guestName} ønsker at booke ${opts.shelterTitle} (${formatDate(opts.checkIn)}–${formatDate(opts.checkOut)}).`,
+      bodyHtml: `
+        <p style="font-size:13px;color:#333;line-height:1.65;margin:0 0 10px;"><strong>${esc(opts.guestName)}</strong> (${esc(opts.guestEmail)}) ønsker at booke <strong>${esc(opts.shelterTitle)}</strong>.</p>
+        <div style="background:#f9f7f4;border-left:3px solid #c5a059;border-radius:0 6px 6px 0;padding:9px 13px;margin:12px 0;">
+          <p style="font-size:10px;color:#999;margin:0 0 2px;text-transform:uppercase;letter-spacing:0.5px;">Datoer · ${opts.guestCount} person${opts.guestCount !== 1 ? "er" : ""}</p>
+          <p style="font-size:13px;font-weight:600;color:#2C3E50;margin:0;">${esc(formatDate(opts.checkIn))} → ${esc(formatDate(opts.checkOut))}</p>
         </div>
-        <p style="color:#666;font-size:14px;">Eller administrér via dit <a href="${dashboardUrl}">dashboard</a>. Linkene udløber om 7 dage.</p>
-      </div>
-    `,
+        ${messageBlock}
+        <div style="margin:20px 0;">
+          <a href="${confirmUrl}" style="display:inline-block;background:#16a34a;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;margin-right:8px;">✓ Acceptér booking</a>
+          <a href="${rejectUrl}" style="display:inline-block;background:#dc2626;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">✗ Afvis booking</a>
+        </div>
+        <p style="font-size:12px;color:#999;margin:0;">Eller administrér via dit <a href="${dashboardUrl}" style="color:#c5a059;">dashboard</a>. Linkene udløber om 7 dage.</p>
+      `,
+    }),
+    text: renderEmailText({
+      title: "Ny bookingforespørgsel",
+      lines: [
+        `${opts.guestName} (${opts.guestEmail}) ønsker at booke ${opts.shelterTitle}.`,
+        `Datoer: ${formatDate(opts.checkIn)} → ${formatDate(opts.checkOut)} · ${opts.guestCount} person${opts.guestCount !== 1 ? "er" : ""}`,
+        ...(opts.message ? [`Besked: ${opts.message}`] : []),
+        `Acceptér: ${confirmUrl}`,
+        `Afvis: ${rejectUrl}`,
+      ],
+      url: dashboardUrl,
+    }),
   });
   if (error) throw new Error("Email-fejl (ejer forespørgsel): " + JSON.stringify(error));
 }
@@ -337,34 +360,52 @@ export async function sendPaymentConfirmed(opts: {
     resend.emails.send({
       from: FROM_EMAIL,
       to: opts.guestEmail,
-      subject: "Betaling modtaget – booking bekræftet! 🎉",
-      html: `
-        <div style="font-family:sans-serif;max-width:600px;">
-          <h2 style="color:#16a34a;">Betaling modtaget – god tur! 🎉</h2>
-          <p>Hej ${esc(opts.guestName)}!</p>
-          <p>Vi har modtaget din betaling på <strong>${opts.amountTotalDkk} kr</strong>
-             for <strong>${esc(opts.shelterTitle)}</strong>
-             fra <strong>${esc(formatDate(opts.checkIn))}</strong>
-             til <strong>${esc(formatDate(opts.checkOut))}</strong>.</p>
-          <p>Din booking er nu bekræftet. <strong>God tur!</strong></p>
-          <p><a href="${bookingLink(opts.guestToken)}" style="color:#c5a059;">Se og administrér din booking</a></p>
-          <p style="color:#999;font-size:12px;">Sendt via <a href="https://shelterdk.dk">ShelterDK</a></p>
-        </div>
-      `,
+      subject: "Betaling modtaget – booking bekræftet!",
+      html: renderEmail({
+        title: "Betaling modtaget – god tur!",
+        preheader: `Din betaling på ${opts.amountTotalDkk} kr er modtaget. Din booking af ${opts.shelterTitle} er bekræftet.`,
+        bodyHtml: `
+          <p style="font-size:13px;color:#333;line-height:1.65;margin:0 0 10px;">Hej <strong>${esc(opts.guestName)}</strong>! Vi har modtaget din betaling på <strong>${opts.amountTotalDkk} kr</strong>.</p>
+          <div style="background:#f0fdf4;border-left:3px solid #16a34a;border-radius:0 6px 6px 0;padding:9px 13px;margin:12px 0;">
+            <p style="font-size:10px;color:#999;margin:0 0 2px;text-transform:uppercase;letter-spacing:0.5px;">Bekræftet ophold</p>
+            <p style="font-size:13px;font-weight:600;color:#2C3E50;margin:0 0 2px;">${esc(opts.shelterTitle)}</p>
+            <p style="font-size:12px;color:#666;margin:0;">${esc(formatDate(opts.checkIn))} → ${esc(formatDate(opts.checkOut))}</p>
+          </div>
+          <p style="font-size:13px;color:#666;margin:0 0 16px;">Din booking er nu bekræftet. <strong>God tur!</strong></p>
+          <a href="${bookingLink(opts.guestToken)}" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">Se og administrér din booking</a>
+        `,
+      }),
+      text: renderEmailText({
+        title: "Betaling modtaget – god tur!",
+        lines: [
+          `Hej ${opts.guestName}! Vi har modtaget din betaling på ${opts.amountTotalDkk} kr.`,
+          `${opts.shelterTitle} · ${formatDate(opts.checkIn)} → ${formatDate(opts.checkOut)}`,
+          "Din booking er nu bekræftet. God tur!",
+        ],
+        url: bookingLink(opts.guestToken),
+      }),
     }),
     resend.emails.send({
       from: FROM_EMAIL,
       to: opts.ownerEmail,
       subject: `Betaling modtaget: ${esc(opts.shelterTitle)}`,
-      html: `
-        <div style="font-family:sans-serif;max-width:600px;">
-          <h2 style="color:#16a34a;">Betaling modtaget</h2>
-          <p>${esc(opts.guestName)} har betalt <strong>${opts.amountTotalDkk} kr</strong>
-             for <strong>${esc(opts.shelterTitle)}</strong>
-             (${esc(formatDate(opts.checkIn))}–${esc(formatDate(opts.checkOut))}).</p>
-          <p style="color:#999;font-size:12px;">Sendt via <a href="https://shelterdk.dk">ShelterDK</a></p>
-        </div>
-      `,
+      html: renderEmail({
+        title: "Betaling modtaget",
+        bodyHtml: `
+          <p style="font-size:13px;color:#333;line-height:1.65;margin:0 0 10px;"><strong>${esc(opts.guestName)}</strong> har betalt <strong>${opts.amountTotalDkk} kr</strong> for <strong>${esc(opts.shelterTitle)}</strong>.</p>
+          <div style="background:#f9f7f4;border-left:3px solid #c5a059;border-radius:0 6px 6px 0;padding:9px 13px;margin:12px 0;">
+            <p style="font-size:10px;color:#999;margin:0 0 2px;text-transform:uppercase;letter-spacing:0.5px;">Datoer</p>
+            <p style="font-size:13px;font-weight:600;color:#2C3E50;margin:0;">${esc(formatDate(opts.checkIn))} → ${esc(formatDate(opts.checkOut))}</p>
+          </div>
+        `,
+      }),
+      text: renderEmailText({
+        title: "Betaling modtaget",
+        lines: [
+          `${opts.guestName} har betalt ${opts.amountTotalDkk} kr for ${opts.shelterTitle}.`,
+          `Datoer: ${formatDate(opts.checkIn)} → ${formatDate(opts.checkOut)}`,
+        ],
+      }),
     }),
   ]);
   if (r1.error) throw new Error("Email-fejl (betaling gæst): " + JSON.stringify(r1.error));
@@ -463,32 +504,41 @@ export async function sendBookingExpired(opts: {
       from: FROM_EMAIL,
       to: opts.guestEmail,
       subject: "Din booking er udløbet",
-      html: `
-        <div style="font-family:sans-serif;max-width:600px;">
-          <h2 style="color:#dc2626;">Din booking er udløbet</h2>
-          <p>Hej ${esc(opts.guestName)},</p>
-          <p>Din booking af <strong>${esc(opts.shelterTitle)}</strong>
-             (${esc(formatDate(opts.checkIn))}–${esc(formatDate(opts.checkOut))})
-             er desværre annulleret, da betalingsfristen på 24 timer ikke blev overholdt.</p>
-          <p>Find andre shelters på <a href="https://shelterdk.dk">shelterdk.dk</a>.</p>
-          <p style="color:#999;font-size:12px;">Sendt via <a href="https://shelterdk.dk">ShelterDK</a></p>
-        </div>
-      `,
+      html: renderEmail({
+        title: "Din booking er udløbet",
+        bodyHtml: `
+          <p style="font-size:13px;color:#333;line-height:1.65;margin:0 0 10px;">Hej <strong>${esc(opts.guestName)}</strong>,</p>
+          <p style="font-size:13px;color:#666;line-height:1.65;margin:0 0 16px;">Din booking af <strong>${esc(opts.shelterTitle)}</strong> (${esc(formatDate(opts.checkIn))}–${esc(formatDate(opts.checkOut))}) er desværre annulleret, da betalingsfristen på 24 timer ikke blev overholdt.</p>
+          <a href="https://shelterdk.dk/soeg" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">Find andre shelters</a>
+        `,
+      }),
+      text: renderEmailText({
+        title: "Din booking er udløbet",
+        lines: [
+          `Hej ${opts.guestName},`,
+          `Din booking af ${opts.shelterTitle} (${formatDate(opts.checkIn)}–${formatDate(opts.checkOut)}) er annulleret, da betalingsfristen på 24 timer ikke blev overholdt.`,
+        ],
+        url: "https://shelterdk.dk/soeg",
+      }),
     }),
     resend.emails.send({
       from: FROM_EMAIL,
       to: opts.ownerEmail,
       subject: `Booking udløbet — dato er ledig igen`,
-      html: `
-        <div style="font-family:sans-serif;max-width:600px;">
-          <h2 style="color:#dc2626;">Booking udløbet</h2>
-          <p>Bookingen fra ${esc(opts.guestName)} af <strong>${esc(opts.shelterTitle)}</strong>
-             (${esc(formatDate(opts.checkIn))}–${esc(formatDate(opts.checkOut))})
-             er annulleret, da gæsten ikke betalte inden for 24 timer.
-             Datoen er ledig igen.</p>
-          <p style="color:#999;font-size:12px;">Sendt via <a href="https://shelterdk.dk">ShelterDK</a></p>
-        </div>
-      `,
+      html: renderEmail({
+        title: "Booking udløbet",
+        bodyHtml: `
+          <p style="font-size:13px;color:#333;line-height:1.65;margin:0 0 10px;">Bookingen fra <strong>${esc(opts.guestName)}</strong> af <strong>${esc(opts.shelterTitle)}</strong> (${esc(formatDate(opts.checkIn))}–${esc(formatDate(opts.checkOut))}) er annulleret, da gæsten ikke betalte inden for 24 timer.</p>
+          <p style="font-size:13px;color:#666;margin:0;">Datoen er ledig igen.</p>
+        `,
+      }),
+      text: renderEmailText({
+        title: "Booking udløbet",
+        lines: [
+          `Bookingen fra ${opts.guestName} af ${opts.shelterTitle} (${formatDate(opts.checkIn)}–${formatDate(opts.checkOut)}) er annulleret da gæsten ikke betalte inden for 24 timer.`,
+          "Datoen er ledig igen.",
+        ],
+      }),
     }),
   ]);
   if (r1.error) throw new Error("Email-fejl (udløbet gæst): " + JSON.stringify(r1.error));
@@ -587,26 +637,37 @@ export async function sendOwnerCancelledToGuest(opts: {
   checkOut: string;
   amountTotalDkk: number | null;
 }) {
-  const refundLine = opts.amountTotalDkk
-    ? `<p>Din betaling på <strong>${opts.amountTotalDkk} kr</strong> refunderes fuldt ud inden for 5–10 hverdage.</p>`
+  const refundHtml = opts.amountTotalDkk
+    ? `<p style="font-size:13px;color:#666;margin:0 0 16px;">Din betaling på <strong>${opts.amountTotalDkk} kr</strong> refunderes fuldt ud inden for 5–10 hverdage.</p>`
+    : "";
+  const refundText = opts.amountTotalDkk
+    ? `Din betaling på ${opts.amountTotalDkk} kr refunderes fuldt ud inden for 5–10 hverdage.`
     : "";
 
   const { error } = await getResend().emails.send({
     from: FROM_EMAIL,
     to: opts.guestEmail,
     subject: `Din booking af ${esc(opts.shelterTitle)} er annulleret af ejeren`,
-    html: `
-      <div style="font-family:sans-serif;max-width:600px;">
-        <h2 style="color:#dc2626;">Booking annulleret</h2>
-        <p>Hej ${esc(opts.guestName)},</p>
-        <p>Desværre har ejeren annulleret din booking af
-           <strong>${esc(opts.shelterTitle)}</strong>
-           (${esc(formatDate(opts.checkIn))}–${esc(formatDate(opts.checkOut))}).</p>
-        ${refundLine}
-        <p>Vi beklager ulejligheden. Find andre shelters på <a href="https://shelterdk.dk">shelterdk.dk</a></p>
-        <p style="color:#999;font-size:12px;">Sendt via <a href="https://shelterdk.dk">ShelterDK</a></p>
-      </div>
-    `,
+    html: renderEmail({
+      title: "Booking annulleret af ejeren",
+      bodyHtml: `
+        <p style="font-size:13px;color:#333;line-height:1.65;margin:0 0 10px;">Hej <strong>${esc(opts.guestName)}</strong>,</p>
+        <p style="font-size:13px;color:#666;line-height:1.65;margin:0 0 10px;">Desværre har ejeren annulleret din booking af <strong>${esc(opts.shelterTitle)}</strong> (${esc(formatDate(opts.checkIn))}–${esc(formatDate(opts.checkOut))}).</p>
+        ${refundHtml}
+        <p style="font-size:13px;color:#666;margin:0 0 16px;">Vi beklager ulejligheden.</p>
+        <a href="https://shelterdk.dk/soeg" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">Find andre shelters</a>
+      `,
+    }),
+    text: renderEmailText({
+      title: "Booking annulleret af ejeren",
+      lines: [
+        `Hej ${opts.guestName},`,
+        `Desværre har ejeren annulleret din booking af ${opts.shelterTitle} (${formatDate(opts.checkIn)}–${formatDate(opts.checkOut)}).`,
+        ...(refundText ? [refundText] : []),
+        "Vi beklager ulejligheden.",
+      ],
+      url: "https://shelterdk.dk/soeg",
+    }),
   });
   if (error) throw new Error("Email-fejl (ejer annulleret til gæst): " + JSON.stringify(error));
 }
@@ -626,19 +687,25 @@ export async function sendNewMessageToOwner(opts: {
     from: FROM_EMAIL,
     to: opts.ownerEmail,
     subject: `Ny besked fra ${esc(opts.guestName)} – ${esc(opts.shelterTitle)}`,
-    html: `
-      <div style="font-family:sans-serif;max-width:600px;">
-        <h2 style="color:#2C3E50;">Ny besked fra ${esc(opts.guestName)}</h2>
-        <p>Du har modtaget en besked vedrørende <strong>${esc(opts.shelterTitle)}</strong>:</p>
-        <blockquote style="border-left:3px solid #c5a059;margin:16px 0;padding:8px 16px;color:#444;">
-          ${esc(opts.messageBody).replace(/\n/g, "<br>")}
+    html: renderEmail({
+      title: `Ny besked fra ${opts.guestName}`,
+      preheader: `${opts.guestName} har sendt en besked om ${opts.shelterTitle}.`,
+      bodyHtml: `
+        <p style="font-size:13px;color:#333;line-height:1.65;margin:0 0 12px;"><strong>${esc(opts.guestName)}</strong> har sendt en besked om <strong>${esc(opts.shelterTitle)}</strong>:</p>
+        <blockquote style="background:#f9f7f4;border-left:3px solid #c5a059;margin:0 0 16px;padding:10px 14px;border-radius:0 6px 6px 0;">
+          <p style="font-size:13px;color:#555;line-height:1.5;margin:0;font-style:italic;">${esc(opts.messageBody).replace(/\n/g, "<br>")}</p>
         </blockquote>
-        <div style="margin:24px 0;">
-          <a href="${dashboardUrl}" style="background:#c5a059;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;">Svar via dit dashboard</a>
-        </div>
-        <p style="color:#999;font-size:12px;">Sendt via <a href="https://shelterdk.dk">ShelterDK</a></p>
-      </div>
-    `,
+        <a href="${dashboardUrl}" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">Svar via dashboard</a>
+      `,
+    }),
+    text: renderEmailText({
+      title: `Ny besked fra ${opts.guestName}`,
+      lines: [
+        `${opts.guestName} har sendt en besked om ${opts.shelterTitle}:`,
+        opts.messageBody,
+      ],
+      url: dashboardUrl,
+    }),
   });
   if (error) throw new Error("Email-fejl (besked til ejer): " + JSON.stringify(error));
 }
@@ -655,19 +722,25 @@ export async function sendNewMessageToGuest(opts: {
     from: FROM_EMAIL,
     to: opts.guestEmail,
     subject: `Ny besked om din booking af ${esc(opts.shelterTitle)}`,
-    html: `
-      <div style="font-family:sans-serif;max-width:600px;">
-        <h2 style="color:#2C3E50;">Hej ${esc(opts.guestName)}!</h2>
-        <p>Ejeren af <strong>${esc(opts.shelterTitle)}</strong> har sendt dig en besked:</p>
-        <blockquote style="border-left:3px solid #c5a059;margin:16px 0;padding:8px 16px;color:#444;">
-          ${esc(opts.messageBody).replace(/\n/g, "<br>")}
+    html: renderEmail({
+      title: "Ny besked fra ejeren",
+      preheader: `Ejeren af ${opts.shelterTitle} har sendt dig en besked.`,
+      bodyHtml: `
+        <p style="font-size:13px;color:#333;line-height:1.65;margin:0 0 12px;">Hej <strong>${esc(opts.guestName)}</strong>! Ejeren af <strong>${esc(opts.shelterTitle)}</strong> har sendt dig en besked:</p>
+        <blockquote style="background:#f9f7f4;border-left:3px solid #c5a059;margin:0 0 16px;padding:10px 14px;border-radius:0 6px 6px 0;">
+          <p style="font-size:13px;color:#555;line-height:1.5;margin:0;font-style:italic;">${esc(opts.messageBody).replace(/\n/g, "<br>")}</p>
         </blockquote>
-        <div style="margin:24px 0;">
-          <a href="${bookingLink(opts.guestToken)}" style="background:#c5a059;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;">Svar via din booking</a>
-        </div>
-        <p style="color:#999;font-size:12px;">Sendt via <a href="https://shelterdk.dk">ShelterDK</a></p>
-      </div>
-    `,
+        <a href="${bookingLink(opts.guestToken)}" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">Svar via din booking</a>
+      `,
+    }),
+    text: renderEmailText({
+      title: "Ny besked fra ejeren",
+      lines: [
+        `Hej ${opts.guestName}! Ejeren af ${opts.shelterTitle} har sendt dig en besked:`,
+        opts.messageBody,
+      ],
+      url: bookingLink(opts.guestToken),
+    }),
   });
   if (error) throw new Error("Email-fejl (besked til gæst): " + JSON.stringify(error));
 }
