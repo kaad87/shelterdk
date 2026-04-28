@@ -34,6 +34,7 @@ export function CollectPageView() {
       body: JSON.stringify({
         path: window.location.pathname || "/",
         title: document.title || undefined,
+        referrer: document.referrer || "",
       }),
     }).catch(() => {});
   }, [pathname]);
