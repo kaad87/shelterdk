@@ -10,6 +10,7 @@ import {
 } from "@/lib/booking-email";
 import { createCheckoutSession, calculateFee } from "@/lib/stripe";
 import { createBookingPayment } from "@/lib/payment-db";
+import { sendGa4Event } from "@/lib/server-analytics";
 
 export const dynamic = "force-dynamic";
 
@@ -100,6 +101,7 @@ export async function POST(
 
     // For upfront shelters: create Stripe checkout session immediately
     let checkoutUrl: string | undefined;
+    let amountTotalDkk: number | undefined;
     if (shelter.payment_mode === "upfront") {
       try {
         const { url, sessionId } = await createCheckoutSession(booking, shelter);
@@ -108,6 +110,7 @@ export async function POST(
           shelter.platform_fee_pct,
           shelter.platform_fee_min_dkk
         );
+        amountTotalDkk = totalDkk;
         await createBookingPayment({
           bookingId: booking.id,
           stripeCheckoutSessionId: sessionId,
@@ -120,6 +123,41 @@ export async function POST(
         console.error("book route: upfront checkout error:", err);
         // Non-fatal: booking is created; guest will need to contact support
       }
+    }
+
+    const referrer = req.headers.get("referer") ?? undefined;
+    await sendGa4Event({
+      headers: req.headers,
+      eventName: "booking_request_submitted",
+      path: referrer,
+      referrer,
+      eventParams: {
+        shelter_slug: slug,
+        payment_mode: shelter.payment_mode,
+        guest_count,
+        nights: Math.max(
+          1,
+          Math.round((new Date(check_out).getTime() - new Date(check_in).getTime()) / 86_400_000)
+        ),
+        has_message: Boolean(message),
+        checkout_ready: Boolean(checkoutUrl),
+      },
+    });
+
+    if (checkoutUrl && amountTotalDkk !== undefined) {
+      await sendGa4Event({
+        headers: req.headers,
+        eventName: "payment_started",
+        path: referrer,
+        referrer,
+        eventParams: {
+          booking_id: booking.id,
+          shelter_slug: slug,
+          payment_mode: shelter.payment_mode,
+          amount_total_dkk: amountTotalDkk,
+          payment_context: "upfront_booking",
+        },
+      });
     }
 
     return NextResponse.json(

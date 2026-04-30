@@ -3,13 +3,15 @@
 import Script from "next/script";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import {
+  CONSENT_COOKIE,
+  CONSENT_KEY,
+  CONSENT_UPDATED_EVENT,
+  type ConsentChoice,
+} from "@/lib/consent";
 
-const CONSENT_KEY = "shelterdk_consent";
-const CONSENT_COOKIE = "shelterdk_consent";
 const COOKIE_MAX_AGE_DAYS = 365;
 const GTM_ID = "GTM-MT8S798N";
-
-export type ConsentChoice = "accept" | "necessary";
 
 function getStoredConsent(): ConsentChoice | null {
   if (typeof window === "undefined") return null;
@@ -26,15 +28,28 @@ function setConsentStorage(choice: ConsentChoice) {
   try {
     localStorage.setItem(CONSENT_KEY, choice);
     document.cookie = `${CONSENT_COOKIE}=${choice}; path=/; max-age=${COOKIE_MAX_AGE_DAYS * 24 * 60 * 60}; SameSite=Lax; Secure`;
+    window.dispatchEvent(new CustomEvent(CONSENT_UPDATED_EVENT, { detail: choice }));
   } catch {
     // ignore
   }
 }
 
 function updateGtagConsent(granted: boolean) {
-  const w = window as unknown as { dataLayer: unknown[] };
+  const w = window as unknown as {
+    dataLayer: unknown[];
+    gtag?: (...args: unknown[]) => void;
+  };
   w.dataLayer = w.dataLayer || [];
   const state = granted ? "granted" : "denied";
+  if (typeof w.gtag === "function") {
+    w.gtag("consent", "update", {
+      ad_storage: state,
+      ad_user_data: state,
+      ad_personalization: state,
+      analytics_storage: state,
+    });
+    return;
+  }
   w.dataLayer.push([
     "consent",
     "update",
@@ -88,20 +103,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','${GTM_ID}');`,
         }}
       />
-      <noscript>
-        <iframe
-          src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
-          height="0"
-          width="0"
-          style={{ display: "none", visibility: "hidden" }}
-          title="Google Tag Manager"
-        />
-      </noscript>
 
-      {/* AdSense — respects Consent Mode (non-personalized ads when denied) */}
-      {process.env.NEXT_PUBLIC_ADSENSE_PUB_ID && (
+      {/* AdSense — only loads after explicit accept to reduce consent risk */}
+      {consent === "accept" && process.env.NEXT_PUBLIC_ADSENSE_PUB_ID && (
         <Script
           async
+          id="adsense"
           src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_PUB_ID}`}
           crossOrigin="anonymous"
           strategy="lazyOnload"
@@ -124,8 +131,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           <div className="rounded-xl border border-primary/20 bg-white shadow-lg ring-1 ring-black/5">
             <div className="p-4 sm:p-5">
               <p className="text-sm text-primary leading-relaxed">
-                Vi bruger nødvendige cookies så siden fungerer, og valgfrie cookies til statistik
-                og forbedring. Du kan vælge kun nødvendige eller acceptere alle.{" "}
+                Vi bruger nødvendige cookies, og valgfrie teknologier fra Google og
+                StackAdapt til statistik og annoncering. Vælger du kun nødvendige,
+                bruger vi ingen statistik- eller annoncecookies.{" "}
                 <Link
                   href="/privacy"
                   className="text-accent underline hover:no-underline focus:outline-none focus:ring-2 focus:ring-accent rounded"

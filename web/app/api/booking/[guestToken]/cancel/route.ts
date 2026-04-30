@@ -10,6 +10,7 @@ import {
   sendGuestCancelledToGuest,
   sendGuestCancelledToOwner,
 } from "@/lib/booking-email";
+import { sendGa4Event } from "@/lib/server-analytics";
 
 export const dynamic = "force-dynamic";
 
@@ -100,6 +101,19 @@ export async function POST(
   } catch (err) {
     console.error("guest cancel: owner email error:", err);
   }
+
+  await sendGa4Event({
+    headers: _req.headers,
+    eventName: "booking_cancelled",
+    referrer: _req.headers.get("referer") ?? undefined,
+    eventParams: {
+      booking_id: booking.id,
+      shelter_id: shelter.id,
+      payment_mode: shelter.payment_mode,
+      cancelled_by: "guest",
+      refunded,
+    },
+  });
 
   return NextResponse.json({ ok: true, refunded });
 }

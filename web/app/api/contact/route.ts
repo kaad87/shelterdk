@@ -1,4 +1,5 @@
 import { createPublicClient } from "@/utils/supabase/server-public";
+import { sendGa4Event } from "@/lib/server-analytics";
 
 export const dynamic = "force-dynamic";
 
@@ -68,6 +69,17 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
+
+  await sendGa4Event({
+    headers: request.headers,
+    eventName: "contact_form_submitted",
+    path: request.headers.get("referer") ?? undefined,
+    referrer: request.headers.get("referer") ?? undefined,
+    eventParams: {
+      contact_category: category,
+      message_length: message.length,
+    },
+  });
 
   return Response.json({ ok: true });
 }

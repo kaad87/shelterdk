@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { usePathname } from "next/navigation";
-
-const CONSENT_KEY = "shelterdk_consent";
+import { useEffect, useRef, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { CONSENT_KEY, CONSENT_UPDATED_EVENT } from "@/lib/consent";
 
 function getConsent(): string | null {
   if (typeof window === "undefined") return null;
@@ -20,11 +19,31 @@ function getConsent(): string | null {
  */
 export function CollectPageView() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [consent, setConsent] = useState<string | null>(null);
   const sent = useRef<string | null>(null);
+  const query = searchParams.toString();
+  const path = pathname ?? "/";
+  const pagePath = query ? `${path}?${query}` : path;
 
   useEffect(() => {
-    if (getConsent() !== "necessary") return;
-    const key = pathname ?? "/";
+    const syncConsent = () => {
+      setConsent(getConsent());
+    };
+
+    syncConsent();
+    window.addEventListener(CONSENT_UPDATED_EVENT, syncConsent);
+    window.addEventListener("storage", syncConsent);
+
+    return () => {
+      window.removeEventListener(CONSENT_UPDATED_EVENT, syncConsent);
+      window.removeEventListener("storage", syncConsent);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (consent !== "necessary") return;
+    const key = pagePath;
     if (sent.current === key) return;
     sent.current = key;
 
@@ -32,12 +51,12 @@ export function CollectPageView() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        path: window.location.pathname || "/",
+        path: `${window.location.pathname}${window.location.search}` || "/",
         title: document.title || undefined,
         referrer: document.referrer || "",
       }),
     }).catch(() => {});
-  }, [pathname]);
+  }, [consent, pagePath]);
 
   return null;
 }
