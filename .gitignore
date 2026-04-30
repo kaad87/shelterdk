@@ -12,11 +12,13 @@ venv/
 env/
 
 # Next.js / web
+node_modules/
 web/node_modules/
 web/.next/
 web/out/
 .next/
 out/
+*.tsbuildinfo
 
 # OS
 .DS_Store
@@ -32,6 +34,7 @@ web/.playwright/
 # IDE
 .idea/
 .vscode/
+.claude/
 *.swp
 *.swo
 
@@ -42,6 +45,8 @@ bookenshelter_captured_debug.json
 bookenshelter_sitemap_scraped.json
 naturstyrelsen_scraped.json
 web/public/data/trails.json
+new_shelters_found.json
+signatur-hej.html
 
 # Behold eksempler
 !*.example

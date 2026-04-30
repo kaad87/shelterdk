@@ -30,7 +30,7 @@ migrations/040_booking_message_templates.sql
 app/api/owner/[token]/messages/route.ts
 app/api/owner/[token]/action/route.ts        ← udvides
 netlify/functions/send-reminders.mts
-lib/email.ts                                  ← ny funktion
+lib/email.ts                                  ← ny funktion: sendBookingAutoMessage
 components/owner/OwnerDashboard.tsx           ← ny sektion
 ```
 
@@ -54,6 +54,11 @@ CREATE TABLE booking_message_templates (
   updated_at              TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE(shelter_id)
 );
+
+-- Trigger til at holde updated_at opdateret (genbruger eksisterende trigger-funktion hvis den findes)
+CREATE TRIGGER booking_message_templates_updated_at
+  BEFORE UPDATE ON booking_message_templates
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 ```
 
 ### Ny kolonne: `shelter_bookings.reminder_sent_at`
@@ -64,6 +69,19 @@ ALTER TABLE shelter_bookings
 ```
 
 Bruges til idempotens — forhindrer dobbeltsendelse hvis cron'en genstartes.
+
+---
+
+## FK-kolonnenavne
+
+`shelter_bookings` bruger `bookable_shelter_id` (ikke `shelter_id`) som FK til `bookable_shelters.id`.
+`booking_message_templates` bruger `shelter_id` som FK til `bookable_shelters.id`.
+
+Cron-queryen joiner derfor:
+```sql
+JOIN bookable_shelters s ON s.id = b.bookable_shelter_id
+JOIN booking_message_templates t ON t.shelter_id = b.bookable_shelter_id
+```
 
 ---
 
@@ -81,6 +99,8 @@ Tilgængelige i både subject og body:
 | `{antal_personer}` | `booking.guest_count` |
 
 Ukendte pladsholdere ignoreres (erstattes ikke, vises som de er).
+
+**Sikkerhed:** Alle pladsholder-værdier og al ejer-skrevet tekst escapes via den eksisterende `escapeHtml()` i `lib/email.ts` inden de indsættes i HTML-emailen. Newlines i body konverteres til `<br>`.
 
 ---
 
@@ -150,15 +170,19 @@ Gemmer templates via upsert på `shelter_id`.
 
 **Trigger:** `POST /api/owner/[token]/action` med `action: "confirm"`
 
+**Adfærd per betalingstilstand:**
+- **`after_confirmation`:** Den eksisterende betalings-request email sendes stadig (uændret). Den automatiske bekræftelsesmail sendes DERUDOVER som et personligt velkomst-supplement. Gæsten modtager to emails: betalingslinket og ejerens personlige besked.
+- **`upfront`:** Gæsten har allerede betalt. Den automatiske bekræftelsesmail sendes som den primære bekræftelse.
+
 **Flow:**
-1. Booking-status sættes til "confirmed" (eksisterende logik)
-2. Hent template fra `booking_message_templates` for shelterets `shelter_id`
+1. Eksisterende logik kører (status → confirmed, Stripe/betaling som i dag)
+2. Hent template fra `booking_message_templates` via `bookable_shelter_id`
 3. Hvis template ikke findes eller `confirmation_enabled = false` → skip stille
-4. Erstat pladsholdere i subject og body
+4. Erstat pladsholdere, escape alle værdier
 5. Send email til `booking.guest_email` via Resend
 6. Returner `{ ..., confirmationEmailSent: true/false }` i response
 
-**Fejlhåndtering:** Email-fejl må ikke forhindre booking-bekræftelsen. Wrap i try/catch — log fejl, men return 200 uanset.
+**Fejlhåndtering:** Email-fejl må ikke forhindre booking-bekræftelsen. Wrap i try/catch — log fejl, return 200 uanset.
 
 ---
 
@@ -168,26 +192,28 @@ Gemmer templates via upsert på `shelter_id`.
 
 **Schedule:** `0 8 * * *` (kl. 08:00 UTC hver dag)
 
+**Autentificering:** Netlify Scheduled Functions kaldes internt af Netlifys scheduler — der er ingen indgående HTTP-request med headers. Funktionen autentificerer sig mod Supabase via `SUPABASE_SERVICE_ROLE_KEY` direkte. Ingen `CRON_SECRET` er nødvendig for den planlagte kørsel.
+
+Hvis en manuel trigger-endpoint ønskes til test (`POST /api/admin/trigger-reminders`), beskyttes den af den eksisterende `ADMIN_SECRET`.
+
 **Flow:**
 ```
 1. Beregn tomorrow = YYYY-MM-DD for næste dag (UTC)
 2. Query:
-   SELECT b.*, s.title, s.owner_email, t.*
+   SELECT b.*, s.title, t.*
    FROM shelter_bookings b
-   JOIN bookable_shelters s ON s.id = b.shelter_id  
-   JOIN booking_message_templates t ON t.shelter_id = b.shelter_id
+   JOIN bookable_shelters s ON s.id = b.bookable_shelter_id
+   JOIN booking_message_templates t ON t.shelter_id = b.bookable_shelter_id
    WHERE b.check_in = tomorrow
      AND b.status = 'confirmed'
      AND b.reminder_sent_at IS NULL
      AND t.reminder_enabled = true
 3. For hvert resultat:
-   a. Erstat pladsholdere
+   a. Erstat pladsholdere, escape alle værdier
    b. Send email til booking.guest_email
    c. Sæt reminder_sent_at = now() på bookingen
 4. Log: antal forsøgt, antal sendt, antal fejlet
 ```
-
-**Autentificering:** Header `x-cron-secret` sammenlignes med env `CRON_SECRET`.
 
 **Fejlhåndtering:** Fejl på én booking stopper ikke resten. Alle fejl logges. `reminder_sent_at` sættes KUN efter vellykket afsendelse.
 
@@ -231,7 +257,7 @@ Ny sektion nederst i `OwnerDashboard.tsx`: **"Automatiske beskeder"**
 - Toggle off gråtoner felterne og viser "Beskeden er slået fra"
 - Gem-knap er disabled indtil der er ændringer (dirty state)
 - Efter gem: "✓ Beskeder gemt" feedback i 3 sekunder
-- Bekræftelsesmail-status vises i pending booking-kort: lille "✓ Bekræftelsesmail sendt" badge
+- Efter bekræftelse af booking: lille "✓ Velkomstmail sendt" badge vises i det bekræftede booking-kort (kun hvis `confirmationEmailSent: true` i response)
 
 ### State-håndtering
 Ny useState-blok i OwnerDashboard — henter templates via GET ved mount, PATCH ved gem. Følger præcis samme mønster som den eksisterende pris-sektion.
@@ -242,9 +268,9 @@ Ny useState-blok i OwnerDashboard — henter templates via GET ved mount, PATCH 
 
 | Variabel | Brug |
 |----------|------|
-| `CRON_SECRET` | Autentificering af Netlify scheduled function |
+| `SUPABASE_SERVICE_ROLE_KEY` | Allerede i brug — bruges af scheduled function |
 
-`RESEND_API_KEY` og `SUPABASE_SERVICE_ROLE_KEY` bruges allerede og kræver ikke ny konfiguration.
+`RESEND_API_KEY` og `SUPABASE_SERVICE_ROLE_KEY` bruges allerede og kræver ikke ny konfiguration. Ingen nye env-variabler nødvendige.
 
 ---
 
@@ -254,7 +280,7 @@ Ny useState-blok i OwnerDashboard — henter templates via GET ved mount, PATCH 
 - Besked-historik / log til ejeren
 - Gæst kan svare på emails (reply-to kan sættes til owner_email som en nem forbedring senere)
 - Tak-besked efter afrejse (feature C fra backlog)
-- Tredje beskedtype (check-ud påmindelse, regler-email etc.)
+- Manuel trigger-endpoint (kan tilføjes til test-formål uden for dette scope)
 
 ---
 
