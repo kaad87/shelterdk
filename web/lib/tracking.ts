@@ -5,11 +5,41 @@
 
 type EventParams = Record<string, string | number | boolean | undefined>;
 
+function sendServerEvent(event: string, params?: EventParams) {
+  if (typeof window === "undefined") return;
+
+  const payload = JSON.stringify({
+    event,
+    params,
+    path: `${window.location.pathname}${window.location.search}` || "/",
+    title: document.title || undefined,
+    referrer: document.referrer || "",
+  });
+
+  try {
+    if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
+      const blob = new Blob([payload], { type: "application/json" });
+      navigator.sendBeacon("/api/track", blob);
+      return;
+    }
+  } catch {
+    // Fall back to fetch below.
+  }
+
+  fetch("/api/track", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: payload,
+    keepalive: true,
+  }).catch(() => {});
+}
+
 function push(event: string, params?: EventParams) {
   if (typeof window === "undefined") return;
   const w = window as unknown as { dataLayer: unknown[] };
   w.dataLayer = w.dataLayer || [];
   w.dataLayer.push({ event, ...params });
+  sendServerEvent(event, params);
 }
 
 export function trackSearch(query: string, region?: string, filterCount?: number) {

@@ -17,6 +17,7 @@ import {
 import { createCheckoutSession, calculateFee } from "@/lib/stripe";
 import { createBookingPayment, getPaymentByBookingId } from "@/lib/payment-db";
 import { createAdminClient } from "@/utils/supabase/server-admin";
+import { sendGa4Event } from "@/lib/server-analytics";
 
 export const dynamic = "force-dynamic";
 
@@ -114,6 +115,17 @@ export async function POST(
       const confirmationEmailSent = await sendAutoMessageIfEnabled(
         shelter.id, booking, shelter.title
       );
+      await sendGa4Event({
+        headers: req.headers,
+        eventName: "booking_confirmed",
+        referrer: req.headers.get("referer") ?? undefined,
+        eventParams: {
+          booking_id: bookingId,
+          shelter_id: shelter.id,
+          payment_mode: shelter.payment_mode,
+          confirmation_channel: "owner_dashboard",
+        },
+      });
       return NextResponse.json({ ok: true, confirmationEmailSent });
     } else {
       // after_confirmation: create Stripe session FIRST — only confirm if that succeeds
@@ -146,6 +158,18 @@ export async function POST(
           paymentUrl: url,
           guestToken: booking.guest_token,
         });
+        await sendGa4Event({
+          headers: req.headers,
+          eventName: "payment_started",
+          referrer: req.headers.get("referer") ?? undefined,
+          eventParams: {
+            booking_id: bookingId,
+            shelter_id: shelter.id,
+            payment_mode: shelter.payment_mode,
+            amount_total_dkk: totalDkk,
+            payment_context: "owner_confirm",
+          },
+        });
       } catch (err) {
         console.error("owner confirm: payment setup error:", err);
         return NextResponse.json(
@@ -159,6 +183,17 @@ export async function POST(
     const confirmationEmailSent = await sendAutoMessageIfEnabled(
       shelter.id, booking, shelter.title
     );
+    await sendGa4Event({
+      headers: req.headers,
+      eventName: "booking_confirmed",
+      referrer: req.headers.get("referer") ?? undefined,
+      eventParams: {
+        booking_id: bookingId,
+        shelter_id: shelter.id,
+        payment_mode: shelter.payment_mode,
+        confirmation_channel: "owner_dashboard",
+      },
+    });
     return NextResponse.json({ ok: true, confirmationEmailSent });
   }
 
@@ -211,6 +246,18 @@ export async function POST(
       }
     }
 
+    await sendGa4Event({
+      headers: req.headers,
+      eventName: "booking_rejected",
+      referrer: req.headers.get("referer") ?? undefined,
+      eventParams: {
+        booking_id: bookingId,
+        shelter_id: shelter.id,
+        payment_mode: shelter.payment_mode,
+        refunded: shelter.payment_mode === "upfront" && payment?.status === "paid",
+      },
+    });
+
     return NextResponse.json({ ok: true });
   }
 
@@ -241,6 +288,18 @@ export async function POST(
             amountPlatformDkk: existing.amount_platform_dkk,
             paymentUrl: session.url,
             guestToken: booking.guest_token,
+          });
+          await sendGa4Event({
+            headers: req.headers,
+            eventName: "payment_started",
+            referrer: req.headers.get("referer") ?? undefined,
+            eventParams: {
+              booking_id: bookingId,
+              shelter_id: shelter.id,
+              payment_mode: shelter.payment_mode,
+              amount_total_dkk: existing.amount_total_dkk,
+              payment_context: "owner_resend",
+            },
           });
           return NextResponse.json({ ok: true });
         }
@@ -277,6 +336,18 @@ export async function POST(
         amountPlatformDkk: platformDkk,
         paymentUrl: url,
         guestToken: booking.guest_token,
+      });
+      await sendGa4Event({
+        headers: req.headers,
+        eventName: "payment_started",
+        referrer: req.headers.get("referer") ?? undefined,
+        eventParams: {
+          booking_id: bookingId,
+          shelter_id: shelter.id,
+          payment_mode: shelter.payment_mode,
+          amount_total_dkk: totalDkk,
+          payment_context: "owner_resend",
+        },
       });
     } catch (err) {
       console.error("resend-payment error:", err);
@@ -333,6 +404,19 @@ export async function POST(
     } catch (err) {
       console.error("owner cancel: guest email error:", err);
     }
+
+    await sendGa4Event({
+      headers: req.headers,
+      eventName: "booking_cancelled",
+      referrer: req.headers.get("referer") ?? undefined,
+      eventParams: {
+        booking_id: bookingId,
+        shelter_id: shelter.id,
+        payment_mode: shelter.payment_mode,
+        cancelled_by: "owner",
+        refunded,
+      },
+    });
 
     return NextResponse.json({ ok: true, refunded });
   }

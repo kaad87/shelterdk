@@ -68,12 +68,13 @@ export default function PrivacyPage() {
 
             <h3 className="font-serif text-lg font-semibold text-primary mt-6 mb-3">Valgfrie cookies (statistik og annoncering)</h3>
             <p className="text-primary/80 leading-relaxed">
-              Vælger du &quot;Acceptér alle&quot;, aktiveres disse tjenester med fuld cookie-adgang:
+              Vælger du &quot;Acceptér alle&quot;, aktiveres disse tjenester:
             </p>
             <ul className="list-disc pl-6 text-primary/80 space-y-3 mt-3">
               <li>
                 <strong>Google Analytics 4 (via Google Tag Manager)</strong> – Statistik om besøg,
-                sider og adfærd på siden. Data behandles af Google LLC (USA).{" "}
+                sider og adfærd på siden. Ved accept kan Google Analytics bruge cookies og lignende
+                teknologier. Data behandles af Google LLC (USA).{" "}
                 <a
                   href="https://policies.google.com/privacy"
                   target="_blank"
@@ -86,7 +87,8 @@ export default function PrivacyPage() {
               </li>
               <li>
                 <strong>Google AdSense</strong> – Personaliserede annoncer baseret på dine interesser.
-                Administreres af Google LLC (USA).
+                Scriptet indlæses kun hvis du vælger &quot;Acceptér alle&quot;. Administreres af
+                Google LLC (USA).
               </li>
               <li>
                 <strong>StackAdapt</strong> – Annonceringsplatform. Indlæses <em>kun</em> hvis du
@@ -110,14 +112,19 @@ export default function PrivacyPage() {
               Hvad sker der ved &quot;Kun nødvendige&quot;?
             </h2>
             <p className="text-primary/80 leading-relaxed">
-              Vælger du &quot;Kun nødvendige&quot;, sættes ingen tracking-cookies. Google Tag Manager
-              kører stadig, men med <strong>Google Consent Mode v2</strong> sat til &quot;denied&quot; for
-              alle kategorier: annoncelagring, brugerdata, personalisering og analyselagring er
-              alle deaktiveret. Google Analytics kan sende anonyme, aggregerede modelleringssignaler
-              uden cookies – ingen personlige data indsamles.
+              Vælger du &quot;Kun nødvendige&quot;, sætter vi ikke statistik- eller annoncecookies.
+              Google Tag Manager kan stadig indlæses for at respektere dit samtykkevalg, men{" "}
+              <strong>Google Consent Mode v2</strong>{" "}
+              er sat til &quot;denied&quot; for annoncelagring, brugerdata, personalisering og
+              analyselagring. Det betyder, at Google-tjenester ikke må bruge disse lagringsformer
+              uden dit samtykke.
             </p>
             <p className="text-primary/80 leading-relaxed mt-4">
-              StackAdapt indlæses slet ikke ved valg af kun nødvendige cookies.
+              For at kunne måle overordnede besøgstal sender vi desuden et begrænset, cookiefrit
+              server-side page view til GA4 med en kortlivet pseudonym identifikator baseret på
+              IP-adresse og browseroplysninger. Oplysningen bruges kun til aggregeret statistik og
+              gemmes ikke som en varig cookie i din browser. StackAdapt og AdSense indlæses slet
+              ikke ved valg af kun nødvendige cookies.
             </p>
           </section>
 

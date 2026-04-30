@@ -9,13 +9,14 @@ import {
   sendBookingConfirmedToGuest,
   sendBookingRejectedToGuest,
 } from "@/lib/booking-email";
+import { sendGa4Event } from "@/lib/server-analytics";
 
 export const dynamic = "force-dynamic";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://shelterdk.dk";
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ token: string }> }
 ) {
   const { token } = await params;
@@ -84,6 +85,18 @@ export async function GET(
     console.error("action email error:", err);
     // Don't fail the action if email fails
   }
+
+  await sendGa4Event({
+    headers: req.headers,
+    eventName: newStatus === "confirmed" ? "booking_confirmed" : "booking_rejected",
+    referrer: req.headers.get("referer") ?? undefined,
+    eventParams: {
+      booking_id: booking.id,
+      shelter_id: shelter.id,
+      payment_mode: shelter.payment_mode,
+      confirmation_channel: "magic_link",
+    },
+  });
 
   return NextResponse.redirect(`${SITE_URL}/booking/svar/${token}?status=${newStatus}`);
 }

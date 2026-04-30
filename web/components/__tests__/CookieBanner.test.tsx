@@ -50,6 +50,7 @@ beforeEach(() => {
     value: storage,
     writable: true,
   });
+  delete process.env.NEXT_PUBLIC_ADSENSE_PUB_ID;
 });
 
 describe("CookieBanner", () => {
@@ -95,6 +96,14 @@ describe("CookieBanner", () => {
     expect(screen.queryByTestId("script-stackadapt-events")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /acceptér alle/i }));
     expect(screen.getByTestId("script-stackadapt-events")).toBeInTheDocument();
+  });
+
+  it("viser AdSense kun ved accept", () => {
+    process.env.NEXT_PUBLIC_ADSENSE_PUB_ID = "pub-123";
+    render(<CookieBanner />);
+    expect(screen.queryByTestId("script-adsense")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /acceptér alle/i }));
+    expect(screen.getByTestId("script-adsense")).toBeInTheDocument();
   });
 
   it("viser IKKE StackAdapt ved necessary", () => {

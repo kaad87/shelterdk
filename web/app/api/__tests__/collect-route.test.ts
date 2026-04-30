@@ -100,9 +100,7 @@ describe("POST /api/collect", () => {
         engagement_time_msec: 100,
       },
     });
-    expect(body.client_id).toMatch(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-    );
+    expect(body.client_id).toMatch(/^[0-9a-f]{16}$/i);
   });
 
   it("sender page_view når cookie mangler (ny besøgende)", async () => {

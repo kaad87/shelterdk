@@ -3,6 +3,7 @@ import { constructWebhookEvent } from "@/lib/stripe";
 import { getPaymentBySessionId, markPaymentPaid } from "@/lib/payment-db";
 import { sendPaymentConfirmed, sendUpfrontPaymentReceived } from "@/lib/booking-email";
 import { createAdminClient } from "@/utils/supabase/server-admin";
+import { sendGa4Event } from "@/lib/server-analytics";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +46,16 @@ export async function POST(req: NextRequest) {
 
       if (booking) {
         const shelter = (booking as any).bookable_shelters;
+        await sendGa4Event({
+          eventName: "payment_completed",
+          identityKey: `payment:${payment.booking_id}`,
+          eventParams: {
+            booking_id: payment.booking_id,
+            payment_mode: shelter.payment_mode,
+            amount_total_dkk: payment.amount_total_dkk,
+          },
+        });
+
         if (shelter.payment_mode === "upfront") {
           // Booking is still pending owner confirmation — notify owner
           await sendUpfrontPaymentReceived({
