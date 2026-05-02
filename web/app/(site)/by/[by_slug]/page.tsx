@@ -79,7 +79,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 function shelterHref(region: string | null | undefined, kommune: string | null | undefined, slug: string): string {
-  if (!region) return `/soeg`;
+  if (!region) return `/by`;
   const r = slugifySegment(region);
   const m = kommune ? slugifySegment(kommune) : NO_KOMMUNE_SLUG;
   return `/danmark/${r}/${m}/${slug}`;

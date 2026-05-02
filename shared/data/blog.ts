@@ -11,6 +11,7 @@ export interface BlogPost {
   excerpt: string;
   content: string;
   date: string;
+  updatedAt?: string;
   category: BlogCategory;
   coverImage: string;
   readingTime: number;
@@ -24,6 +25,19 @@ export const BLOG_CATEGORIES: BlogCategory[] = [
   "Udstyr",
   "Inspiration",
 ];
+
+const BLOG_CATEGORY_DESCRIPTIONS: Record<BlogCategory, string> = {
+  Guides:
+    "Guides og forklarende artikler om shelters, regler, booking og planlægning af naturovernatning i Danmark.",
+  Sæson:
+    "Sæsonartikler om shelterture i forår, sommer, efterår og vinter med fokus på vejr, stemning og planlægning.",
+  Tips:
+    "Praktiske tips til at finde det rigtige shelter, vælge mellem shelter og telt og få mere ud af turen.",
+  Udstyr:
+    "Udstyrsanbefalinger og pakketips til shelterture, så du ved hvad der er værd at tage med.",
+  Inspiration:
+    "Inspiration til de bedste shelteroplevelser, destinationer og ideer til næste tur i naturen.",
+};
 
 const BLOG_POSTS: BlogPost[] = [
   {
@@ -1282,7 +1296,9 @@ Læs også om [hvordan du vælger det rigtige shelter](/blog/hvordan-vælge-shel
 
 export function getBlogPosts(): BlogPost[] {
   return [...BLOG_POSTS].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    (a, b) =>
+      new Date(b.updatedAt ?? b.date).getTime() -
+      new Date(a.updatedAt ?? a.date).getTime()
   );
 }
 
@@ -1296,4 +1312,23 @@ export function getBlogCategories(): BlogCategory[] {
 
 export function getFeaturedPost(): BlogPost {
   return getBlogPosts()[0];
+}
+
+export function getBlogUpdatedAt(post: BlogPost): string {
+  return post.updatedAt ?? post.date;
+}
+
+export function getBlogCategoryDescription(category: BlogCategory): string {
+  return BLOG_CATEGORY_DESCRIPTIONS[category];
+}
+
+export function getRelatedBlogPosts(slug: string, limit = 3): BlogPost[] {
+  const current = getBlogPostBySlug(slug);
+  if (!current) return [];
+
+  const allPosts = getBlogPosts().filter((post) => post.slug !== slug);
+  const sameCategory = allPosts.filter((post) => post.category === current.category);
+  const otherPosts = allPosts.filter((post) => post.category !== current.category);
+
+  return [...sameCategory, ...otherPosts].slice(0, limit);
 }

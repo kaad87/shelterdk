@@ -57,8 +57,8 @@ export default async function OmraadeIndexPage() {
         </h1>
         <p className="text-primary/80 mb-10">
           Vælg et område og find shelters med kort, billeder og book muligheder.{" "}
-          <Link href="/soeg" className="text-accent font-medium hover:underline">
-            Søg alle shelters
+          <Link href="/danmark" className="text-accent font-medium hover:underline">
+            Udforsk alle shelters i Danmark
           </Link>
         </p>
 

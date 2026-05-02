@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getBlogCategories, getBlogPosts, type BlogCategory } from "@/data/blog";
+import {
+  getBlogCategories,
+  getBlogCategoryDescription,
+  getBlogPosts,
+  type BlogCategory,
+} from "@/data/blog";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { BlogContent } from "@/components/BlogContent";
 import { slugifySegment } from "@/lib/slug";
@@ -27,9 +33,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const posts = getBlogPosts().filter((post) => post.category === category);
-  const description =
-    posts[0]?.excerpt ||
-    `Læs ShelterDKs blogindlæg om ${category.toLowerCase()} og få mere inspiration til din næste sheltertur.`;
+  const description = getBlogCategoryDescription(category);
   const canonicalPath = `/blog/kategori/${slug}`;
 
   return {
@@ -53,6 +57,23 @@ export default async function BlogCategoryPage({ params }: PageProps) {
   if (!category) notFound();
 
   const posts = getBlogPosts().filter((post) => post.category === category);
+  const description = getBlogCategoryDescription(category);
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: `ShelterDK Blog: ${category}`,
+    description,
+    url: `https://shelterdk.dk/blog/kategori/${slug}`,
+    mainEntity: {
+      "@type": "ItemList",
+      itemListElement: posts.map((post, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        url: `https://shelterdk.dk/blog/${post.slug}`,
+        name: post.title,
+      })),
+    },
+  };
 
   return (
     <>
@@ -63,6 +84,31 @@ export default async function BlogCategoryPage({ params }: PageProps) {
           { label: category },
         ]}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }}
+      />
+      <section className="border-b border-primary/10 bg-background">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10 lg:py-12">
+          <p className="text-sm text-primary/50 uppercase tracking-[0.18em] mb-3">
+            Blogkategori
+          </p>
+          <h1 className="font-serif text-3xl sm:text-4xl font-bold text-primary mb-4">
+            Blog om {category.toLowerCase()}
+          </h1>
+          <p className="max-w-3xl text-primary/80 text-base sm:text-lg leading-relaxed">
+            {description}
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3 text-sm">
+            <Link href="/blog" className="text-accent hover:underline">
+              Se alle blogindlæg
+            </Link>
+            <Link href="/guides" className="text-accent hover:underline">
+              Udforsk også guides
+            </Link>
+          </div>
+        </div>
+      </section>
       <BlogContent
         posts={posts}
         categories={getBlogCategories()}

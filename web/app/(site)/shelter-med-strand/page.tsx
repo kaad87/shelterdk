@@ -55,14 +55,11 @@ export default async function ShelterMedStrandPage() {
 
   return (
     <>
-    <BreadcrumbSchema items={[{ label: "Hjem", href: "/" }, { label: "Søg shelters", href: "/soeg" }, { label: "Shelter ved stranden" }]} />
+    <BreadcrumbSchema items={[{ label: "Hjem", href: "/" }, { label: "Shelter ved stranden" }]} />
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-primary/70 py-2">
           <Link href="/" className="py-1 -my-1 hover:text-accent transition-colors touch-manipulation">Hjem</Link>
-          <ChevronRight size={14} className="text-primary/50 shrink-0" />
-          <Link href="/soeg" className="py-1 -my-1 hover:text-accent transition-colors touch-manipulation">Søg shelters</Link>
-          <ChevronRight size={14} className="text-primary/50" />
           <span className="text-primary font-medium">Shelter ved stranden</span>
         </nav>
 
@@ -111,9 +108,9 @@ export default async function ShelterMedStrandPage() {
 
         {shelters.length === 0 && (
           <p className="text-primary/70 py-8">
-            Vi finder ingen shelters nær strand endnu. Prøv at kigge i{" "}
-            <Link href="/soeg" className="text-accent hover:underline">søgningen</Link>{" "}
-            med Strand-filteret aktiveret.
+            Vi finder ingen shelters nær strand endnu. Prøv i stedet at udforske{" "}
+            <Link href="/danmark" className="text-accent hover:underline">shelters i Danmark</Link>{" "}
+            og de regionale kystsider.
           </p>
         )}
 

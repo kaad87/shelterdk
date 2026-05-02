@@ -81,7 +81,6 @@ export default async function HandicapvenligeSheltersPage() {
       <BreadcrumbSchema
         items={[
           { label: "Hjem", href: "/" },
-          { label: "Søg shelters", href: "/soeg" },
           { label: "Handicapvenlige shelters" },
         ]}
       />
@@ -94,14 +93,6 @@ export default async function HandicapvenligeSheltersPage() {
             >
               Hjem
             </Link>
-            <ChevronRight size={14} className="text-primary/50 shrink-0" />
-            <Link
-              href="/soeg"
-              className="py-1 -my-1 hover:text-accent transition-colors touch-manipulation"
-            >
-              Søg shelters
-            </Link>
-            <ChevronRight size={14} className="text-primary/50" />
             <span className="text-primary font-medium">Handicapvenlige shelters</span>
           </nav>
 
@@ -156,8 +147,8 @@ export default async function HandicapvenligeSheltersPage() {
             <p className="text-primary/70 py-8">
               Vi finder ingen shelters med registreret handicaptilgængelighed endnu. Tjek den
               enkelte shelterside for tilgængelighedsoplysninger, eller{" "}
-              <Link href="/soeg" className="text-accent hover:underline">
-                søg alle shelters
+              <Link href="/danmark" className="text-accent hover:underline">
+                udforsk shelters i Danmark
               </Link>
               .
             </p>
@@ -195,9 +186,8 @@ export default async function HandicapvenligeSheltersPage() {
               <Link href="/handicapvenlige-shelters/fyn" className="text-accent hover:underline">Fyn</Link>{" "}
               og{" "}
               <Link href="/handicapvenlige-shelters/bornholm" className="text-accent hover:underline">Bornholm</Link>.
-              Kombiner med andre filtre i vores{" "}
-              <Link href="/soeg" className="text-accent hover:underline">sheltersøgning</Link>{" "}
-              for at finde shelters med f.eks. både handicaptilgængelighed og toilet.
+              Brug region- og fasilitetssiderne her på ShelterDK til at finde shelters med
+              både handicaptilgængelighed og andre praktiske faciliteter som toilet eller vand.
             </p>
 
             <p>
@@ -220,7 +210,7 @@ export default async function HandicapvenligeSheltersPage() {
               {" · "}
               <Link href="/guides/pakkeliste-til-sheltertur" className="text-accent hover:underline">pakkeliste</Link>
               {" · "}
-              <Link href="/soeg" className="text-accent hover:underline">søg alle shelters</Link>.
+              <Link href="/danmark" className="text-accent hover:underline">udforsk alle shelters i Danmark</Link>.
             </p>
           </section>
 

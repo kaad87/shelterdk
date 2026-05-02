@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getGuideCategories, getGuides, type GuideCategory } from "@/data/guides";
+import {
+  getGuideCategories,
+  getGuideCategoryDescription,
+  getGuides,
+  type GuideCategory,
+} from "@/data/guides";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { GuidesContent } from "@/components/GuidesContent";
 import { slugifySegment } from "@/lib/slug";
@@ -27,9 +33,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const guides = getGuides().filter((guide) => guide.category === category);
-  const description =
-    guides[0]?.excerpt ||
-    `Guides om ${category.toLowerCase()} til shelterture, udstyr og naturovernatning.`;
+  const description = getGuideCategoryDescription(category);
   const canonicalPath = `/guides/kategori/${slug}`;
 
   return {
@@ -53,6 +57,23 @@ export default async function GuideCategoryPage({ params }: PageProps) {
   if (!category) notFound();
 
   const guides = getGuides().filter((guide) => guide.category === category);
+  const description = getGuideCategoryDescription(category);
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: `ShelterDK Guides: ${category}`,
+    description,
+    url: `https://shelterdk.dk/guides/kategori/${slug}`,
+    mainEntity: {
+      "@type": "ItemList",
+      itemListElement: guides.map((guide, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        url: `https://shelterdk.dk/guides/${guide.slug}`,
+        name: guide.title,
+      })),
+    },
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -62,6 +83,10 @@ export default async function GuideCategoryPage({ params }: PageProps) {
           { label: "Guides", href: "/guides" },
           { label: category },
         ]}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }}
       />
 
       <header className="bg-primary text-white py-14 md:py-20">
@@ -81,8 +106,16 @@ export default async function GuideCategoryPage({ params }: PageProps) {
             Guides om {category.toLowerCase()}
           </h1>
           <p className="text-white/80 max-w-2xl text-base sm:text-lg leading-relaxed">
-            Samlet arkiv over ShelterDK-guides i kategorien {category.toLowerCase()}. Her finder du praktiske råd, inspiration og konkrete næste skridt til din næste tur.
+            {description}
           </p>
+          <div className="mt-6 flex flex-wrap gap-3 text-sm">
+            <Link href="/guides" className="text-white/90 hover:text-white underline-offset-4 hover:underline">
+              Se alle guides
+            </Link>
+            <Link href="/blog" className="text-white/90 hover:text-white underline-offset-4 hover:underline">
+              Suppler med blogindlæg
+            </Link>
+          </div>
         </div>
       </header>
 

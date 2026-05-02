@@ -61,7 +61,7 @@ export default async function ShelterMedBaalpladsPage() {
 
   return (
     <>
-    <BreadcrumbSchema items={[{ label: "Hjem", href: "/" }, { label: "Søg shelters", href: "/soeg" }, { label: "Shelter med bålplads" }]} />
+    <BreadcrumbSchema items={[{ label: "Hjem", href: "/" }, { label: "Shelter med bålplads" }]} />
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-primary/70 py-2">
@@ -71,14 +71,6 @@ export default async function ShelterMedBaalpladsPage() {
           >
             Hjem
           </Link>
-          <ChevronRight size={14} className="text-primary/50 shrink-0" />
-          <Link
-            href="/soeg"
-            className="py-1 -my-1 hover:text-accent transition-colors touch-manipulation"
-          >
-            Søg shelters
-          </Link>
-          <ChevronRight size={14} className="text-primary/50" />
           <span className="text-primary font-medium">Shelter med bålplads</span>
         </nav>
 
@@ -133,8 +125,8 @@ export default async function ShelterMedBaalpladsPage() {
           <p className="text-primary/70 py-8">
             Vi finder ingen shelters med registreret bålplads endnu. Tjek den enkelte shelterside
             – mange pladser har bålplads beskrevet i teksten. Du kan også{" "}
-            <Link href="/soeg" className="text-accent hover:underline">
-              søge alle shelters
+            <Link href="/danmark" className="text-accent hover:underline">
+              udforske shelters i Danmark
             </Link>
             .
           </p>
@@ -196,7 +188,7 @@ export default async function ShelterMedBaalpladsPage() {
             {" · "}
             <Link href="/shelter-booking" className="text-accent hover:underline">book shelter</Link>
             {" · "}
-            <Link href="/soeg" className="text-accent hover:underline">søg alle shelters
+            <Link href="/danmark" className="text-accent hover:underline">udforsk alle shelters i Danmark
             </Link>
             .
           </p>

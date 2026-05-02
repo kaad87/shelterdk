@@ -73,7 +73,7 @@ export default function BookTakPage() {
         {/* Back to ShelterDK */}
         <div className="mt-6 text-center">
           <Link
-            href="/soeg?bookbar=1"
+            href="/shelter-booking"
             className="inline-flex items-center gap-1.5 text-sm text-accent hover:text-accent/80 font-medium transition-colors"
           >
             Find flere bookbare shelters →

@@ -49,8 +49,8 @@ export default function FaqPage() {
           </h2>
           <ul className="space-y-2 text-primary/90">
             <li>
-              <Link href="/soeg" className="text-accent hover:underline">
-                → Søg alle shelters i Danmark
+              <Link href="/danmark" className="text-accent hover:underline">
+                → Udforsk alle shelters i Danmark
               </Link>
             </li>
             <li>

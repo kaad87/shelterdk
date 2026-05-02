@@ -86,7 +86,6 @@ export default function ShelterTilCykelturPage() {
       <BreadcrumbSchema
         items={[
           { label: "Hjem", href: "/" },
-          { label: "Søg shelters", href: "/soeg" },
           { label: "Shelter til cykeltur" },
         ]}
       />
@@ -94,9 +93,6 @@ export default function ShelterTilCykelturPage() {
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
           <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-primary/70 py-2">
             <Link href="/" className="py-1 -my-1 hover:text-accent transition-colors">Hjem</Link>
-            <ChevronRight size={14} className="text-primary/50 shrink-0" />
-            <Link href="/soeg" className="py-1 -my-1 hover:text-accent transition-colors">Søg shelters</Link>
-            <ChevronRight size={14} className="text-primary/50" />
             <span className="text-primary font-medium">Shelter til cykeltur</span>
           </nav>
 

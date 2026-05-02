@@ -31,6 +31,8 @@ const STATIC_PAGES: Array<{
   priority: number;
 }> = [
   { path: "", source: "app/(site)/page.tsx", changeFrequency: "daily", priority: 1 },
+  { path: "/danmark", source: "app/(site)/danmark/page.tsx", changeFrequency: "weekly", priority: 0.82 },
+  { path: "/fakta", source: "app/(site)/fakta/page.tsx", changeFrequency: "weekly", priority: 0.74 },
   { path: "/shelter-naer-mig", source: "app/(site)/shelter-naer-mig/page.tsx", changeFrequency: "weekly", priority: 0.88 },
   { path: "/shelter-med-toilet", source: "app/(site)/shelter-med-toilet/page.tsx", changeFrequency: "weekly", priority: 0.85 },
   { path: "/shelter-med-vand", source: "app/(site)/shelter-med-vand/page.tsx", changeFrequency: "weekly", priority: 0.85 },
@@ -217,6 +219,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   );
   const byTemplateModified = getFileModified("app", "(site)", "by", "[by_slug]", "page.tsx");
   const areaTemplateModified = getFileModified("app", "(site)", "omraade", "[slug]", "page.tsx");
+  const routeRegionTemplateModified = getFileModified("app", "(site)", "ruteplanner", "region", "[region]", "page.tsx");
 
   for (const { path, source, changeFrequency, priority } of STATIC_PAGES) {
     entries.push(
@@ -271,6 +274,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const routeIndex: CuratedRouteIndex[] = JSON.parse(fs.readFileSync(routeIndexPath, "utf-8"));
     const routesPageModified = getFileModified("app", "(site)", "ruteplanner", "[slug]", "page.tsx");
     const routeIndexModified = fs.statSync(routeIndexPath).mtime;
+    const routeRegions = [...new Set(routeIndex.map((route) => route.region))];
+    for (const region of routeRegions) {
+      const regionSlug = slugifySegment(region);
+      if (!regionSlug) continue;
+      entries.push(
+        entry(
+          `${BASE_URL}/ruteplanner/region/${regionSlug}`,
+          "monthly",
+          0.62,
+          newestIsoDate(routeRegionTemplateModified, routeIndexModified)
+        )
+      );
+    }
     for (const route of routeIndex) {
       entries.push(
         entry(

@@ -2,7 +2,12 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getBlogPosts, getBlogPostBySlug } from "@/data/blog";
+import {
+  getBlogPosts,
+  getBlogPostBySlug,
+  getBlogUpdatedAt,
+  getRelatedBlogPosts,
+} from "@/data/blog";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { renderContent } from "@/lib/renderContent";
 import { AuthorBio } from "@/components/AuthorBio";
@@ -11,6 +16,7 @@ import { ShelterCTA } from "@/components/ShelterCTA";
 import { ShareExperience } from "@/components/ShareExperience";
 import dynamic from "next/dynamic";
 import { ArrowLeft, Calendar, Clock } from "lucide-react";
+import { slugifySegment } from "@/lib/slug";
 
 const InstagramFeed = dynamic(
   () => import("@/components/InstagramFeed").then((m) => ({ default: m.InstagramFeed })),
@@ -44,9 +50,12 @@ export async function generateMetadata({
     description,
     alternates: { canonical: `https://shelterdk.dk${canonicalPath}` },
     openGraph: {
+      type: "article",
       title,
       description,
       url: canonicalPath,
+      publishedTime: post.date,
+      modifiedTime: getBlogUpdatedAt(post),
       images: [
         { url: post.coverImage, width: 1200, height: 630, alt: post.title },
       ],
@@ -67,7 +76,7 @@ export default async function BlogPostPage({ params }: PageProps) {
     "@type": "BlogPosting",
     headline: post.title,
     datePublished: post.date,
-    dateModified: post.date,
+    dateModified: getBlogUpdatedAt(post),
     image: post.coverImage,
     articleSection: post.category,
     author: {
@@ -89,10 +98,7 @@ export default async function BlogPostPage({ params }: PageProps) {
   const secondHalf = contentBlocks.slice(midpoint);
 
   // Related posts — same category first, then fill from other categories
-  const allPosts = getBlogPosts().filter((p) => p.slug !== post.slug);
-  const sameCategory = allPosts.filter((p) => p.category === post.category);
-  const otherPosts = allPosts.filter((p) => p.category !== post.category);
-  const relatedPosts = [...sameCategory, ...otherPosts].slice(0, 3);
+  const relatedPosts = getRelatedBlogPosts(post.slug, 3);
 
   return (
     <>
@@ -123,7 +129,12 @@ export default async function BlogPostPage({ params }: PageProps) {
           <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-10 md:p-16">
             <div className="max-w-3xl">
               <span className="inline-block bg-accent text-white text-xs font-medium px-3 py-1 rounded-full mb-3">
-                {post.category}
+                <Link
+                  href={`/blog/kategori/${slugifySegment(post.category)}`}
+                  className="hover:text-white/90 transition-colors"
+                >
+                  {post.category}
+                </Link>
               </span>
               <h1 className="font-serif text-2xl sm:text-3xl md:text-5xl font-bold text-white leading-tight">
                 {post.title}
@@ -191,6 +202,7 @@ export default async function BlogPostPage({ params }: PageProps) {
               <Link href="/danmark/sjaelland" className="text-sm bg-accent/10 text-accent font-medium px-3 py-1.5 rounded-full hover:bg-accent/20 transition-colors">Shelters på Sjælland</Link>
               <Link href="/danmark/fyn" className="text-sm bg-accent/10 text-accent font-medium px-3 py-1.5 rounded-full hover:bg-accent/20 transition-colors">Shelters på Fyn</Link>
               <Link href="/danmark/bornholm" className="text-sm bg-accent/10 text-accent font-medium px-3 py-1.5 rounded-full hover:bg-accent/20 transition-colors">Shelters på Bornholm</Link>
+              <Link href={`/blog/kategori/${slugifySegment(post.category)}`} className="text-sm bg-accent/10 text-accent font-medium px-3 py-1.5 rounded-full hover:bg-accent/20 transition-colors">Flere indlæg om {post.category.toLowerCase()}</Link>
               <Link href="/fakta/shelters-i-danmark" className="text-sm bg-accent/10 text-accent font-medium px-3 py-1.5 rounded-full hover:bg-accent/20 transition-colors">Fakta om shelters</Link>
               <Link href="/fakta/gratis-shelters" className="text-sm bg-accent/10 text-accent font-medium px-3 py-1.5 rounded-full hover:bg-accent/20 transition-colors">Gratis shelters</Link>
               <Link href="/guides/shelter-for-begyndere-forste-tur" className="text-sm bg-accent/10 text-accent font-medium px-3 py-1.5 rounded-full hover:bg-accent/20 transition-colors">Begynderguide</Link>

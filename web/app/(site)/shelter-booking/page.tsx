@@ -98,7 +98,7 @@ export default async function ShelterBookingPage() {
           </ul>
           <p>
             På ShelterDK kan du{" "}
-            <Link href="/soeg?bookbar=1" className="text-accent hover:underline">filtrere efter bookbare shelters</Link>{" "}
+            <Link href="/shelter-booking" className="text-accent hover:underline">gå direkte til oversigten over bookbare shelters</Link>{" "}
             og finde direkte links til booking for hvert enkelt shelter.
           </p>
 
@@ -174,7 +174,7 @@ export default async function ShelterBookingPage() {
           </p>
           <ul>
             <li>
-              <Link href="/soeg?bookbar=1" className="text-accent hover:underline">Bookbare shelters</Link>{" "}
+              <Link href="/shelter-booking" className="text-accent hover:underline">Bookbare shelters</Link>{" "}
               — alle shelters der kan reserveres
             </li>
             <li>

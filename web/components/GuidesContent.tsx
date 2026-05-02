@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Search, Star } from "lucide-react";
+import { ArrowRight, Calendar, Search, Star } from "lucide-react";
 import type { Guide, GuideCategory } from "@/data/guides";
 import { useInView } from "@/lib/useInView";
 import { slugifySegment } from "@/lib/slug";
@@ -54,6 +54,15 @@ function GuideCard({ guide, index }: { guide: Guide; index: number }) {
             <p className="text-sm text-primary/80 flex-1 line-clamp-2">
               {guide.excerpt}
             </p>
+            <span className="inline-flex items-center gap-1 text-xs text-primary/50" suppressHydrationWarning>
+              <Calendar size={12} />
+              Opdateret{" "}
+              {new Date(guide.updatedAt).toLocaleDateString("da-DK", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              })}
+            </span>
             <span className="inline-flex items-center gap-1 text-accent font-semibold text-sm group-hover:underline">
               Læs guiden
               <span aria-hidden>→</span>
@@ -84,7 +93,17 @@ function PopularGuideCard({ guide }: { guide: Guide }) {
         <h4 className="font-serif text-sm font-bold text-primary group-hover:text-accent transition-colors line-clamp-2">
           {guide.title}
         </h4>
-        <span className="text-accent text-xs font-medium">{guide.category}</span>
+        <div className="mt-1 flex flex-col gap-1">
+          <span className="text-accent text-xs font-medium">{guide.category}</span>
+          <span className="text-primary/50 text-xs" suppressHydrationWarning>
+            Opdateret{" "}
+            {new Date(guide.updatedAt).toLocaleDateString("da-DK", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })}
+          </span>
+        </div>
       </div>
     </Link>
   );
@@ -240,13 +259,13 @@ export function GuidesContent({
               Mangler du et shelter?
             </h2>
             <p className="text-white/80 mb-6 max-w-lg mx-auto">
-              Søg på vores kort og find det perfekte shelter til din næste tur.
+              Udforsk vores indekserede shelteroversigt og find det rette område, by eller shelter til din næste tur.
             </p>
             <Link
-              href="/soeg"
+              href="/danmark"
               className="inline-flex items-center gap-2 bg-accent text-white px-6 py-3 rounded-full font-medium hover:bg-accent/90 transition-colors"
             >
-              Søg på kortet
+              Udforsk shelters i Danmark
               <ArrowRight size={16} />
             </Link>
           </div>

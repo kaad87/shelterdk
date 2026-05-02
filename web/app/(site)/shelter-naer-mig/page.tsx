@@ -20,7 +20,6 @@ export const metadata: Metadata = {
 
 const breadcrumbItems = [
   { label: "Hjem", href: "/" },
-  { label: "Søg shelters", href: "/soeg" },
   { label: "Shelter nær mig" },
 ];
 
@@ -58,8 +57,8 @@ export default function ShelterNaerMigPage() {
             </h2>
             <p>
               Foretrækker du ikke at dele din placering, kan du bruge{" "}
-              <Link href="/soeg" className="text-accent hover:underline">
-                søgesiden
+              <Link href="/danmark" className="text-accent hover:underline">
+                Danmark-overblikket
               </Link>{" "}
               til at filtrere shelters på region eller område. Du kan også
               udforske{" "}

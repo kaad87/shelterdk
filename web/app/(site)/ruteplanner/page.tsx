@@ -5,6 +5,7 @@ import * as path from "path";
 import Link from "next/link";
 import { CuratedRoutesClient } from "@/components/CuratedRoutesClient";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
+import { slugifySegment } from "@/lib/slug";
 import type { CuratedRouteIndex } from "@/types/curated-route";
 
 export const metadata: Metadata = {
@@ -32,6 +33,9 @@ function loadIndex(): CuratedRouteIndex[] {
 
 export default function RutePlannerPage() {
   const index = loadIndex();
+  const routeRegions = [...new Set(index.map((route) => route.region).filter(Boolean))].sort((a, b) =>
+    a.localeCompare(b, "da")
+  );
 
   return (
     <>
@@ -49,6 +53,25 @@ export default function RutePlannerPage() {
     {/* Server-rendered route links for crawler discoverability */}
     {index.length > 0 && (
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 border-t border-primary/10">
+        {routeRegions.length > 0 && (
+          <div className="mb-8">
+            <h2 className="font-serif text-lg font-bold text-primary mb-4">
+              Udforsk vandreruter efter region
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {routeRegions.map((region) => (
+                <Link
+                  key={region}
+                  href={`/ruteplanner/region/${slugifySegment(region)}`}
+                  className="rounded-full border border-primary/10 bg-white px-4 py-2 text-sm font-medium text-primary hover:border-accent/30 hover:text-accent transition-colors"
+                >
+                  {region}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
         <h2 className="font-serif text-lg font-bold text-primary mb-4">
           Alle {index.length} vandreruter
         </h2>

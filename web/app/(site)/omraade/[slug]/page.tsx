@@ -71,6 +71,32 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
   const featuredShelters = shelters.slice(0, 12);
   const regionSlug = slugifySegment(area.region);
   const remainingShelters = shelters.slice(12);
+  const placeCounts = new Map<string, number>();
+  const municipalityCounts = new Map<string, number>();
+  for (const shelter of shelters) {
+    const place = shelter.place?.trim();
+    if (place) {
+      placeCounts.set(place, (placeCounts.get(place) ?? 0) + 1);
+    }
+    const kommune = shelter.kommune?.trim();
+    if (kommune) {
+      municipalityCounts.set(kommune, (municipalityCounts.get(kommune) ?? 0) + 1);
+    }
+  }
+  const topPlaces = [...placeCounts.entries()]
+    .sort((a, b) => {
+      if (b[1] !== a[1]) return b[1] - a[1];
+      return a[0].localeCompare(b[0], "da");
+    })
+    .slice(0, 6)
+    .map(([name, count]) => ({ name, count, slug: slugifySegment(name) }));
+  const topMunicipalities = [...municipalityCounts.entries()]
+    .sort((a, b) => {
+      if (b[1] !== a[1]) return b[1] - a[1];
+      return a[0].localeCompare(b[0], "da");
+    })
+    .slice(0, 6)
+    .map(([name, count]) => ({ name, count, slug: slugifySegment(name) }));
 
   return (
     <>
@@ -145,6 +171,49 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
               </p>
             </div>
           </section>
+
+          {(topPlaces.length > 0 || topMunicipalities.length > 0) && (
+            <section className="mb-12 grid gap-6 lg:grid-cols-2">
+              {topPlaces.length > 0 && (
+                <div className="rounded-2xl border border-primary/10 bg-white p-6 shadow-sm">
+                  <h2 className="font-serif text-xl font-bold text-primary mb-3">
+                    Populære byer i {area.name}
+                  </h2>
+                  <div className="flex flex-wrap gap-2">
+                    {topPlaces.map((place) => (
+                      <Link
+                        key={place.slug}
+                        href={`/by/${place.slug}`}
+                        className="rounded-full border border-primary/10 bg-primary/[0.02] px-4 py-2 text-sm font-medium text-primary hover:border-accent/30 hover:text-accent transition-colors"
+                      >
+                        Shelter {place.name}
+                        <span className="ml-2 text-primary/40">{place.count}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {topMunicipalities.length > 0 && (
+                <div className="rounded-2xl border border-primary/10 bg-white p-6 shadow-sm">
+                  <h2 className="font-serif text-xl font-bold text-primary mb-3">
+                    Kommuner i området
+                  </h2>
+                  <div className="flex flex-wrap gap-2">
+                    {topMunicipalities.map((municipality) => (
+                      <Link
+                        key={municipality.slug}
+                        href={`/danmark/${regionSlug}/${municipality.slug}`}
+                        className="rounded-full border border-primary/10 bg-primary/[0.02] px-4 py-2 text-sm font-medium text-primary hover:border-accent/30 hover:text-accent transition-colors"
+                      >
+                        {municipality.name}
+                        <span className="ml-2 text-primary/40">{municipality.count}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </section>
+          )}
 
           <section className="mb-12">
             <div className="flex items-end justify-between gap-4 mb-5">
@@ -221,7 +290,21 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
                         </p>
                         {(shelter.place || shelter.kommune) && (
                           <p className="text-sm text-primary/60 mt-1">
-                            {shelter.place || shelter.kommune}
+                            {shelter.place ? (
+                              <Link
+                                href={`/by/${slugifySegment(shelter.place)}`}
+                                className="hover:text-accent transition-colors"
+                              >
+                                {shelter.place}
+                              </Link>
+                            ) : shelter.kommune ? (
+                              <Link
+                                href={`/danmark/${regionSlug}/${slugifySegment(shelter.kommune)}`}
+                                className="hover:text-accent transition-colors"
+                              >
+                                {shelter.kommune}
+                              </Link>
+                            ) : null}
                           </p>
                         )}
                       </div>

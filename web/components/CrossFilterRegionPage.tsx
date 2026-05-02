@@ -48,7 +48,21 @@ export function CrossFilterRegionPage({
   relatedLinks,
 }: CrossFilterRegionPageProps) {
   const inRegion = `${preposition} ${regionName}`;
+  const regionSlug = slugifySegment(regionName);
   const topShelters = shelters.slice(0, 5);
+  const placeCounts = new Map<string, number>();
+  for (const shelter of shelters) {
+    const place = shelter.place?.trim();
+    if (!place) continue;
+    placeCounts.set(place, (placeCounts.get(place) ?? 0) + 1);
+  }
+  const topPlaces = [...placeCounts.entries()]
+    .sort((a, b) => {
+      if (b[1] !== a[1]) return b[1] - a[1];
+      return a[0].localeCompare(b[0], "da");
+    })
+    .slice(0, 8)
+    .map(([name, count]) => ({ name, count, slug: slugifySegment(name) }));
   const avgRating = (() => {
     const rated = shelters.filter((s) => s.google_rating != null);
     if (rated.length === 0) return null;
@@ -105,12 +119,39 @@ export function CrossFilterRegionPage({
                   <tbody>
                     {kommuneBreakdown.map((row) => (
                       <tr key={row.kommune} className="border-b border-primary/5">
-                        <td className="py-2 pr-4 text-sm text-primary">{row.kommune}</td>
+                        <td className="py-2 pr-4 text-sm text-primary">
+                          <Link
+                            href={`/danmark/${regionSlug}/${slugifySegment(row.kommune)}`}
+                            className="hover:text-accent transition-colors"
+                          >
+                            {row.kommune}
+                          </Link>
+                        </td>
                         <td className="py-2 text-sm text-primary font-medium text-right">{row.count}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </section>
+          )}
+
+          {topPlaces.length > 0 && (
+            <section className="mb-8">
+              <h2 className="font-serif text-lg font-bold text-primary mb-3">
+                Populære byer {inRegion}
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                {topPlaces.map((place) => (
+                  <Link
+                    key={place.slug}
+                    href={`/by/${place.slug}`}
+                    className="rounded-full border border-primary/10 bg-white px-4 py-2 text-sm font-medium text-primary hover:border-accent/30 hover:text-accent transition-colors"
+                  >
+                    Shelter {place.name}
+                    <span className="ml-2 text-primary/40">{place.count}</span>
+                  </Link>
+                ))}
               </div>
             </section>
           )}

@@ -69,7 +69,7 @@ export function FaktaPage({
       <BreadcrumbSchema
         items={[
           { label: "Hjem", href: "/" },
-          { label: "Fakta", href: "/fakta/shelters-i-danmark" },
+          { label: "Fakta", href: "/fakta" },
           { label: title },
         ]}
       />
@@ -87,7 +87,7 @@ export function FaktaPage({
               Hjem
             </Link>
             <ChevronRight size={14} className="text-primary/50 shrink-0" />
-            <Link href="/fakta/shelters-i-danmark" className="py-1 -my-1 hover:text-accent transition-colors touch-manipulation">
+            <Link href="/fakta" className="py-1 -my-1 hover:text-accent transition-colors touch-manipulation">
               Fakta
             </Link>
             <ChevronRight size={14} className="text-primary/50" />

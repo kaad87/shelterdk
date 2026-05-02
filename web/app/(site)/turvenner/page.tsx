@@ -48,8 +48,8 @@ export default function TurvennerPage() {
           </h2>
           <ul className="space-y-2 text-sm text-primary/80">
             <li>
-              <Link href="/soeg" className="text-accent hover:underline">
-                Søg shelters
+              <Link href="/danmark" className="text-accent hover:underline">
+                Shelters i Danmark
               </Link>
               {" "}– find det perfekte shelter til din tur
             </li>

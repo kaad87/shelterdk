@@ -8,6 +8,7 @@ import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { RouteDetailMap } from "@/components/RouteDetailMap";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import { formatDistance } from "@/lib/haversine";
+import { slugifySegment } from "@/lib/slug";
 import type { CuratedRouteIndex, CuratedRouteDataMap, RouteShelter } from "@/types/curated-route";
 
 export const revalidate = 86400;
@@ -105,6 +106,7 @@ export default async function RouteDetailPage({ params }: PageProps) {
       answer: `Ja, der er ${shelters.length} shelters langs ruten med en samlet kapacitet på ca. ${totalCapacity} pladser. Se listen nedenfor for detaljer om faciliteter.`,
     },
   ];
+  const routeRegionSlug = slugifySegment(route.region);
 
   return (
     <>
@@ -112,6 +114,7 @@ export default async function RouteDetailPage({ params }: PageProps) {
         items={[
           { label: "Hjem", href: "/" },
           { label: "Vandreruter", href: "/ruteplanner" },
+          { label: route.region, href: `/ruteplanner/region/${routeRegionSlug}` },
           { label: route.name },
         ]}
       />
@@ -124,6 +127,13 @@ export default async function RouteDetailPage({ params }: PageProps) {
             <ChevronRight size={14} className="text-primary/50 shrink-0" />
             <Link href="/ruteplanner" className="py-1 -my-1 hover:text-accent transition-colors">
               Vandreruter
+            </Link>
+            <ChevronRight size={14} className="text-primary/50" />
+            <Link
+              href={`/ruteplanner/region/${routeRegionSlug}`}
+              className="py-1 -my-1 hover:text-accent transition-colors"
+            >
+              {route.region}
             </Link>
             <ChevronRight size={14} className="text-primary/50" />
             <span className="text-primary font-medium">{route.name}</span>
@@ -287,7 +297,7 @@ export default async function RouteDetailPage({ params }: PageProps) {
               <Link href="/guides/pakkeliste-til-sheltertur" className="text-sm bg-accent/10 text-accent font-medium px-3 py-1.5 rounded-full hover:bg-accent/20 transition-colors">Pakkeliste</Link>
               <Link href="/guides/shelter-for-begyndere-forste-tur" className="text-sm bg-accent/10 text-accent font-medium px-3 py-1.5 rounded-full hover:bg-accent/20 transition-colors">Begynderguide</Link>
               <Link href="/fakta/shelters-i-danmark" className="text-sm bg-accent/10 text-accent font-medium px-3 py-1.5 rounded-full hover:bg-accent/20 transition-colors">Fakta om shelters</Link>
-              <Link href="/soeg" className="text-sm bg-accent/10 text-accent font-medium px-3 py-1.5 rounded-full hover:bg-accent/20 transition-colors">Søg shelters</Link>
+              <Link href="/danmark" className="text-sm bg-accent/10 text-accent font-medium px-3 py-1.5 rounded-full hover:bg-accent/20 transition-colors">Shelters i Danmark</Link>
             </div>
           </section>
         </div>

@@ -220,21 +220,21 @@ export default async function ShelterPage({ params }: PageProps) {
   const shelterFaqJsonLd =
     shelterFaqItems.length > 0 ? JSON.stringify(faqToJsonLd(shelterFaqItems)) : undefined;
 
-  // /shelter bruges kun når vi ikke har region-silo. Breadcrumbs følger derfor søgning som primær sti.
-  // Område vises separat på siden.
-  const breadcrumbs = [
+  const breadcrumbParent =
+    shelter.place?.trim()
+      ? { label: `Shelter ${shelter.place.trim()}`, href: `/by/${slugifySegment(shelter.place.trim())}` }
+      : shelter.region?.trim()
+        ? { label: shelter.region.trim(), href: `/danmark/${slugifySegment(shelter.region.trim())}` }
+        : { label: "Danmark", href: "/danmark" };
+  const breadcrumbs: { label: string; href?: string }[] = [
     { label: "Hjem", href: "/" },
-    { label: "Søg shelters", href: "/soeg" },
+    breadcrumbParent,
     { label: shelter.title },
   ];
-
-  const breadcrumbSchemaItems: { label: string; href?: string }[] = breadcrumbs.map((b) =>
-    b.href ? { label: b.label, href: b.href } : { label: b.label }
-  );
   return (
     <>
       <ShelterSchema shelter={shelter} canonicalPath={`/shelter/${slug}`} reviews={reviews} />
-      <BreadcrumbSchema items={breadcrumbSchemaItems} />
+      <BreadcrumbSchema items={breadcrumbs} />
       {bookableShelter && (
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-4">
           <div className="rounded-xl border border-accent/20 bg-accent/5 p-4 flex items-center justify-between gap-4">

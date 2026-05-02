@@ -2,13 +2,19 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getGuides, getGuideBySlug } from "@/data/guides";
+import {
+  getGuideBySlug,
+  getRelatedGuides,
+  getGuides,
+} from "@/data/guides";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { renderContent } from "@/lib/renderContent";
 import { AuthorBio } from "@/components/AuthorBio";
 import { ArticleFaq } from "@/components/ArticleFaq";
 import { ShelterCTA } from "@/components/ShelterCTA";
 import { ShareExperience } from "@/components/ShareExperience";
+import { Calendar } from "lucide-react";
+import { slugifySegment } from "@/lib/slug";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -67,15 +73,7 @@ export default async function GuidePage({ params }: PageProps) {
   const firstHalf = contentBlocks.slice(0, midpoint);
   const secondHalf = contentBlocks.slice(midpoint);
 
-  // Related guides from other categories
-  const allGuides = getGuides().filter((g) => g.slug !== guide.slug);
-  const relatedGuides = allGuides
-    .filter((g) => g.category !== guide.category)
-    .slice(0, 2);
-  const fallbackGuides =
-    relatedGuides.length < 2
-      ? [...relatedGuides, ...allGuides.filter((g) => g.category === guide.category)].slice(0, 2)
-      : relatedGuides;
+  const relatedGuides = getRelatedGuides(guide.slug, 2);
 
   const BASE_URL = "https://shelterdk.dk";
   const canonicalPath = `/guides/${guide.slug}`;
@@ -160,6 +158,35 @@ export default async function GuidePage({ params }: PageProps) {
             <p className="mt-3 text-white/90 max-w-2xl text-sm sm:text-base">
               {guide.excerpt}
             </p>
+            <div
+              className="mt-4 flex flex-wrap items-center gap-4 text-sm text-white/75"
+              suppressHydrationWarning
+            >
+              <span className="flex items-center gap-1.5">
+                <Calendar size={14} />
+                Udgivet{" "}
+                {new Date(guide.publishedAt).toLocaleDateString("da-DK", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Calendar size={14} />
+                Opdateret{" "}
+                {new Date(guide.updatedAt).toLocaleDateString("da-DK", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}
+              </span>
+              <Link
+                href={`/guides/kategori/${slugifySegment(guide.category)}`}
+                className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white hover:bg-white/15 transition-colors"
+              >
+                {guide.category}
+              </Link>
+            </div>
           </div>
         </div>
       </header>
@@ -196,6 +223,7 @@ export default async function GuidePage({ params }: PageProps) {
             <Link href="/danmark/sjaelland" className="text-sm bg-accent/10 text-accent font-medium px-3 py-1.5 rounded-full hover:bg-accent/20 transition-colors">Shelters på Sjælland</Link>
             <Link href="/danmark/fyn" className="text-sm bg-accent/10 text-accent font-medium px-3 py-1.5 rounded-full hover:bg-accent/20 transition-colors">Shelters på Fyn</Link>
             <Link href="/danmark/bornholm" className="text-sm bg-accent/10 text-accent font-medium px-3 py-1.5 rounded-full hover:bg-accent/20 transition-colors">Shelters på Bornholm</Link>
+            <Link href={`/guides/kategori/${slugifySegment(guide.category)}`} className="text-sm bg-accent/10 text-accent font-medium px-3 py-1.5 rounded-full hover:bg-accent/20 transition-colors">Flere guides om {guide.category.toLowerCase()}</Link>
             <Link href="/fakta/shelters-i-danmark" className="text-sm bg-accent/10 text-accent font-medium px-3 py-1.5 rounded-full hover:bg-accent/20 transition-colors">Fakta om shelters</Link>
             <Link href="/fakta/gratis-shelters" className="text-sm bg-accent/10 text-accent font-medium px-3 py-1.5 rounded-full hover:bg-accent/20 transition-colors">Gratis shelters</Link>
             <Link href="/blog/gratis-shelters-i-danmark" className="text-sm bg-accent/10 text-accent font-medium px-3 py-1.5 rounded-full hover:bg-accent/20 transition-colors">Gratis shelters guide</Link>
@@ -210,13 +238,13 @@ export default async function GuidePage({ params }: PageProps) {
         <ShelterCTA variant="full" />
 
         {/* Related guides */}
-        {fallbackGuides.length > 0 && (
+        {relatedGuides.length > 0 && (
           <section className="mt-12 pt-10 border-t border-primary/10">
             <h2 className="font-serif text-2xl font-bold text-primary mb-6">
               Relaterede guides
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {fallbackGuides.map((related) => (
+              {relatedGuides.map((related) => (
                 <Link
                   key={related.slug}
                   href={`/guides/${related.slug}`}

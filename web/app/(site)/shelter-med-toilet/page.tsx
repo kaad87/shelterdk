@@ -67,7 +67,7 @@ export default async function ShelterMedToiletPage() {
 
   return (
     <>
-    <BreadcrumbSchema items={[{ label: "Hjem", href: "/" }, { label: "Søg shelters", href: "/soeg" }, { label: "Shelter med toilet" }]} />
+    <BreadcrumbSchema items={[{ label: "Hjem", href: "/" }, { label: "Shelter med toilet" }]} />
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-primary/70 py-2">
@@ -77,14 +77,6 @@ export default async function ShelterMedToiletPage() {
           >
             Hjem
           </Link>
-          <ChevronRight size={14} className="text-primary/50 shrink-0" />
-          <Link
-            href="/soeg"
-            className="py-1 -my-1 hover:text-accent transition-colors touch-manipulation"
-          >
-            Søg shelters
-          </Link>
-          <ChevronRight size={14} className="text-primary/50" />
           <span className="text-primary font-medium">Shelter med toilet</span>
         </nav>
 
@@ -151,9 +143,9 @@ export default async function ShelterMedToiletPage() {
 
         {shelters.length === 0 && (
           <p className="text-primary/70 py-8">
-            Vi finder ingen shelters med registreret toilet endnu. Prøv at kigge i{" "}
-            <Link href="/soeg" className="text-accent hover:underline">
-              søgningen
+            Vi finder ingen shelters med registreret toilet endnu. Prøv i stedet at udforske{" "}
+            <Link href="/danmark" className="text-accent hover:underline">
+              shelters i Danmark
             </Link>{" "}
             eller tjek den enkelte shelterside – mange pladser har toilet beskrevet i teksten.
           </p>
@@ -218,7 +210,7 @@ export default async function ShelterMedToiletPage() {
             {" · "}
             <Link href="/shelter-booking" className="text-accent hover:underline">book shelter</Link>
             {" · "}
-            <Link href="/soeg" className="text-accent hover:underline">søg alle shelters</Link>.
+            <Link href="/danmark" className="text-accent hover:underline">udforsk alle shelters i Danmark</Link>.
           </p>
         </section>
 

@@ -81,6 +81,19 @@ export default async function DanmarkRegionPage({ params }: PageProps) {
       getMunicipalitiesWithCounts(regionName),
     ]);
   const initialShelters = await enrichSheltersWithGooglePhotoRef(rawShelters);
+  const placeCounts = new Map<string, number>();
+  for (const shelter of initialShelters) {
+    const place = shelter.place?.trim();
+    if (!place) continue;
+    placeCounts.set(place, (placeCounts.get(place) ?? 0) + 1);
+  }
+  const topPlaces = [...placeCounts.entries()]
+    .sort((a, b) => {
+      if (b[1] !== a[1]) return b[1] - a[1];
+      return a[0].localeCompare(b[0], "da");
+    })
+    .slice(0, 8)
+    .map(([name, count]) => ({ name, count, slug: slugifySegment(name) }));
 
   const totalCount = initialShelters.length;
   const freeCount = facilityCounts.gratis;
@@ -105,7 +118,7 @@ export default async function DanmarkRegionPage({ params }: PageProps) {
 
   const breadcrumbItems = [
     { label: "Hjem", href: "/" },
-    { label: "Søg shelters", href: "/soeg" },
+    { label: "Danmark", href: "/danmark" },
     { label: regionName },
   ];
 
@@ -128,8 +141,8 @@ export default async function DanmarkRegionPage({ params }: PageProps) {
               ← Til forsiden
             </Link>
             <span className="text-primary/40" aria-hidden>|</span>
-            <Link href="/soeg" className="text-primary/80 hover:text-accent text-sm font-medium">
-              Alle shelters
+            <Link href="/danmark" className="text-primary/80 hover:text-accent text-sm font-medium">
+              Danmark
             </Link>
           </nav>
 
@@ -147,6 +160,26 @@ export default async function DanmarkRegionPage({ params }: PageProps) {
             headline={`${regionName} har ${totalCount} shelters. ${freeCount} er gratis, ${facilityCounts.toilet} har toilet.`}
             crossPageLinks={crossPageLinks}
           />
+
+          {topPlaces.length > 0 && (
+            <section className="mb-10">
+              <h2 className="font-serif text-xl font-bold text-primary mb-4">
+                Populære byer i {regionName}
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                {topPlaces.map((place) => (
+                  <Link
+                    key={place.slug}
+                    href={`/by/${place.slug}`}
+                    className="rounded-full border border-primary/10 bg-white px-4 py-2 text-sm font-medium text-primary hover:border-accent/30 hover:text-accent transition-colors"
+                  >
+                    Shelter {place.name}
+                    <span className="ml-2 text-primary/40">{place.count}</span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
 
           {municipalities.length > 0 && (
             <section className="mb-10">

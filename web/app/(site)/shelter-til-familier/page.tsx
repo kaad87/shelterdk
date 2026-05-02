@@ -75,7 +75,6 @@ export default async function ShelterTilFamilierPage() {
       <BreadcrumbSchema
         items={[
           { label: "Hjem", href: "/" },
-          { label: "Søg shelters", href: "/soeg" },
           { label: "Shelter til familier" },
         ]}
       />
@@ -83,9 +82,6 @@ export default async function ShelterTilFamilierPage() {
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
           <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-primary/70 py-2">
             <Link href="/" className="py-1 -my-1 hover:text-accent transition-colors">Hjem</Link>
-            <ChevronRight size={14} className="text-primary/50 shrink-0" />
-            <Link href="/soeg" className="py-1 -my-1 hover:text-accent transition-colors">Søg shelters</Link>
-            <ChevronRight size={14} className="text-primary/50" />
             <span className="text-primary font-medium">Shelter til familier</span>
           </nav>
 
@@ -210,7 +206,7 @@ export default async function ShelterTilFamilierPage() {
               {" · "}
               <Link href="/guides/regler-for-shelter-og-teltning-i-danmark" className="text-accent hover:underline">regler for shelter</Link>
               {" · "}
-              <Link href="/soeg" className="text-accent hover:underline">søg alle shelters</Link>.
+              <Link href="/danmark" className="text-accent hover:underline">udforsk alle shelters i Danmark</Link>.
             </p>
           </section>
 

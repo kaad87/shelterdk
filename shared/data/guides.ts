@@ -17,6 +17,23 @@ export const GUIDE_CATEGORIES: GuideCategory[] = [
   "Natur",
 ];
 
+const GUIDE_CATEGORY_DESCRIPTIONS: Record<GuideCategory, string> = {
+  Pakkeliste:
+    "Pakkelister og tjeklister til shelterture, så du har styr på udstyr, tøj og de små detaljer.",
+  Regler:
+    "Guides til regler for shelter, teltning, booking og hvad du må i dansk natur.",
+  Begynder:
+    "Begynderguides til din første sheltertur med valg af shelter, planlægning og gode vaner.",
+  Mad:
+    "Guides til nem sheltermad, mad over bål og opskrifter der fungerer i naturen.",
+  Vinter:
+    "Råd om vinterovernatning, varme, sikkerhed og forberedelse til kolde shelterture.",
+  Udstyr:
+    "Guides til udstyr, sovegrej og praktiske valg før du tager på sheltertur.",
+  Natur:
+    "Inspiration og guider til naturområder, nationalparker og landskaber med gode shelters.",
+};
+
 export interface Guide {
   slug: string;
   title: string;
@@ -840,7 +857,11 @@ Læs også vores [pakkeliste til sheltertur](/guides/pakkeliste-til-sheltertur) 
 ];
 
 export function getGuides(): Guide[] {
-  return GUIDES;
+  return [...GUIDES].sort(
+    (a, b) =>
+      new Date(b.updatedAt ?? b.publishedAt).getTime() -
+      new Date(a.updatedAt ?? a.publishedAt).getTime()
+  );
 }
 
 export function getGuideBySlug(slug: string): Guide | undefined {
@@ -849,4 +870,19 @@ export function getGuideBySlug(slug: string): Guide | undefined {
 
 export function getGuideCategories(): GuideCategory[] {
   return GUIDE_CATEGORIES;
+}
+
+export function getGuideCategoryDescription(category: GuideCategory): string {
+  return GUIDE_CATEGORY_DESCRIPTIONS[category];
+}
+
+export function getRelatedGuides(slug: string, limit = 2): Guide[] {
+  const current = getGuideBySlug(slug);
+  if (!current) return [];
+
+  const allGuides = getGuides().filter((guide) => guide.slug !== slug);
+  const sameCategory = allGuides.filter((guide) => guide.category === current.category);
+  const otherGuides = allGuides.filter((guide) => guide.category !== current.category);
+
+  return [...sameCategory, ...otherGuides].slice(0, limit);
 }
