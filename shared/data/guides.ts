@@ -271,13 +271,41 @@ Hvis du er helt ny, anbefaler vi at starte med vores [begynderguide](/guides/she
     slug: "pakkeliste-til-sheltertur",
     title: "Pakkeliste til sheltertur – den komplette tjekliste",
     excerpt:
-      "Den store pakkeliste til sheltertur: sovegrej, tøj, mad, køkken, sikkerhed og små detaljer – så du ikke glemmer noget, før du tager afsted.",
+      "Den store pakkeliste til sheltertur med hurtig tjekliste, udstyr til børn og vinter samt de vigtigste ting, du ikke må glemme før du tager afsted.",
     coverImage:
       "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1200&q=80&auto=format&fit=crop",
     category: "Pakkeliste",
     publishedAt: "2025-03-21",
     updatedAt: "2026-03-28",
     content: `
+Hvis du leder efter en **pakkeliste til sheltertur**, er de vigtigste ting: sovepose, liggeunderlag, varmt tøj i lag, mad, vand, lys og en lille pose med hygiejne og førstehjælp. Resten handler om komfort og om at pakke rigtigt til årstid, turens længde og hvem du rejser med.
+
+## Kort pakkeliste til sheltertur
+
+Hvis du bare vil have den korte version, så pak mindst:
+
+- **Sovepose** der passer til årstiden
+- **Liggeunderlag** eller madrasunderlag
+- Varmt **tøj i lag** + ekstra sokker
+- **Mad og vand** til hele turen
+- **Pandelygte** eller lommelygte
+- Tandbørste, toiletpapir og **håndsprit**
+- Telefon + **powerbank**
+- Lille **førstehjælpskit**
+- Skraldeposer til affald og vådt tøj
+
+Det er minimumspakken til en almindelig sheltertur med én overnatning. Nedenfor får du den komplette tjekliste, plus ekstra udstyr til børn, vinter og begyndere.
+
+## Minimal pakkeliste til sheltertur med 1 overnatning
+
+Til en kort tur behøver du sjældent at pakke tungt. Tænk i tre niveauer:
+
+- **Sovegrej**: sovepose, liggeunderlag og evt. lille pude
+- **Beklædning**: ét sæt til turen, ét varmt lag til aftenen og ét tørt sæt til at sove i
+- **Mad og praktiske ting**: aftensmad, morgenmad, vand, bestik, lys og toiletgrej
+
+Hvis det er jeres første tur, kan det være en fordel at læse [Shelter for begyndere – sådan får du en god første tur](/guides/shelter-for-begyndere-forste-tur), så pakkelisten passer til en realistisk begyndertur og ikke til en ekspedition.
+
 ## 1. Sovegrej – det allervigtigste
 
 Hvis du kun skal huske én ting, er det **sovegrej**. Uden god søvn bliver alt andet surt.
@@ -294,6 +322,7 @@ Overvej også:
 
 - Lagenpose eller indersovepose (nemmere at vaske)
 - Tarp eller lille telt, hvis du er i tvivl om hvor tæt shelteret er
+- Ekstra tæppe eller fleecepose til kolde nætter
 
 ![Sovepose og liggeunderlag klar til en nat i shelteret](https://images.unsplash.com/photo-1510312305653-8ed496efae75?w=1200&q=80&auto=format&fit=crop)
 
@@ -310,6 +339,21 @@ Pak fx:
 - Hue, handsker og halstørklæde uden for sommersæsonen
 
 Til børn er det bedre at have **ét lag for meget** end ét for lidt – især om aftenen ved bålet. Læs også vores artikel om [shelter med børn](/blog/shelter-med-boern) for flere familietips.
+
+## Pakkeliste til sheltertur med børn
+
+Når du pakker til børn, er målet ikke bare at overleve natten, men at gøre turen rar nok til, at alle får lyst til at tage afsted igen.
+
+Pak typisk ekstra:
+
+- Ét ekstra varmt lag pr. barn
+- Ét ekstra tørt sæt tøj pr. barn
+- Hue og vanter, også i skuldersæsonerne
+- Snacks, drikkedunk og noget velkendt mad
+- Evt. bamse, lille pude eller andet tryghedsskabende
+- Vådservietter og flere skraldeposer end du tror
+
+Til familieture er det ofte de små komfortting, der redder aftenen. Se også vores guide til [shelter med børn](/blog/shelter-med-boern) og siden med [shelter til familier](/shelter-til-familier), hvis du vil finde pladser, der er nemmere at starte med.
 
 ## 3. Mad og køkken
 
@@ -337,6 +381,8 @@ Husk også:
 - **Vand** (hvis der ikke er vand ved shelteret)
 - Skraldeposer – alt du tager med ud, skal med hjem igen
 
+Hvis du mangler ideer til nem aftensmad og morgenmad, så læs [Mad over bål – nem shelter-mad til hele turen](/guides/mad-over-bal-nem-shelter-mad).
+
 ## 4. Hygiejne og komfort
 
 Det behøver ikke være luksus – men lidt komfort gør turen markant bedre.
@@ -347,6 +393,21 @@ Pak fx:
 - Håndsprit eller vådservietter
 - Toiletrulle i vandtæt pose
 - Lille førstehjælpskit (plaster, sportstape, smertestillende, vabelplastre)
+
+## Pakkeliste til sheltertur om vinteren
+
+En vinter-sheltertur kræver ikke nødvendigvis meget mere udstyr, men det kræver **varmere og mere gennemtestet udstyr**.
+
+Pak ekstra til vinter:
+
+- Varmere sovepose eller kombination af sovepose + inderpose
+- Isolerende liggeunderlag med høj R-værdi
+- Uldundertøj, varm hue og tørre sokker kun til natten
+- Termokande med varmt vand eller te
+- Ekstra handsker og evt. håndvarmere
+- Tørpose til tøj og elektronik
+
+Er du i tvivl om temperaturer, kondens og kulde, så læs [Overnatning i shelter om vinteren – sådan gør du](/guides/overnatning-i-shelter-om-vinteren) som supplement til denne pakkeliste.
 
 ## 5. Lys, strøm og sikkerhed
 
@@ -367,7 +428,21 @@ Tænk også over sikkerhed:
 
 ![Pandelygte og udstyr pakket klar til sheltertur](https://images.unsplash.com/photo-1532339142463-fd0a8979791a?w=1200&q=80&auto=format&fit=crop)
 
-## 6. Små ting der gør turen ekstra god
+## 6. 5 ting folk oftest glemmer
+
+Det er sjældent de store ting, der bliver glemt. Det er næsten altid småting, som først bliver irriterende, når man står derude.
+
+De mest glemte ting på sheltertur er:
+
+- Ekstra **sokker** eller tørt nattøj
+- **Toiletpapir** i en lukket pose
+- Opladt **powerbank**
+- Noget at sidde på ved bålet
+- Skraldeposer til vådt tøj og affald
+
+Hvis du vil undgå den klassiske "vi mangler noget"-følelse, så pak aftenen før og kryds af punkt for punkt.
+
+## 7. Små ting der gør turen ekstra god
 
 Det er ofte de små ting, man bliver gladest for:
 
@@ -378,7 +453,7 @@ Det er ofte de små ting, man bliver gladest for:
 
 Med denne pakkeliste er du dækket ind til de fleste shelterture – både med venner, kæreste og familie. Har du brug for mere inspiration til udstyr, så tjek vores [udstyrguide for begyndere](/blog/udstyr-guide-begyndere). Se også de [bedste outdoor-tilbud lige nu](/tilbud) og spar på udstyret.
 
-Hvis du vil dykke endnu mere ned i forberedelserne, kan du læse guiden [Shelter for begyndere – sådan får du en god første tur](/guides/shelter-for-begyndere-forste-tur) og vores tips til [Mad over bål – nem shelter-mad til hele turen](/guides/mad-over-bal-nem-shelter-mad). Begynder du at planlægge ture i de koldere måneder, er [Overnatning i shelter om vinteren – sådan gør du](/guides/overnatning-i-shelter-om-vinteren) et godt supplement til denne pakkeliste. Find din næste shelterplads via [Søg shelters](/soeg).
+Hvis du vil dykke endnu mere ned i forberedelserne, kan du læse guiden [Shelter for begyndere – sådan får du en god første tur](/guides/shelter-for-begyndere-forste-tur) og vores tips til [Mad over bål – nem shelter-mad til hele turen](/guides/mad-over-bal-nem-shelter-mad). Begynder du at planlægge ture i de koldere måneder, er [Overnatning i shelter om vinteren – sådan gør du](/guides/overnatning-i-shelter-om-vinteren) et godt supplement til denne pakkeliste. Find din næste shelterplads via [oversigten over shelters i Danmark](/danmark).
     `.trim(),
     faq: [
       {
@@ -395,6 +470,21 @@ Hvis du vil dykke endnu mere ned i forberedelserne, kan du læse guiden [Shelter
         question: "Hvad spiser man nemmest på sheltertur?",
         answer:
           "Pølser, one-pot pasta, havregrød og snobrød er klassikere, der er nemme at tilberede over bål eller gasblus. Læs mere i vores guide til shelter-mad.",
+      },
+      {
+        question: "Hvad er minimum man skal have med på en sheltertur?",
+        answer:
+          "Som minimum skal du have sovepose, liggeunderlag, varmt tøj, mad, vand, lys og lidt basisgrej til hygiejne og sikkerhed. Det er nok til en enkel sheltertur med én overnatning.",
+      },
+      {
+        question: "Hvad skal børn have med på sheltertur?",
+        answer:
+          "Børn skal især have varmt skiftetøj, tørre sokker, hue, enkel mad, drikkedunk og gerne en lille tryghedsting som bamse eller pude. På sheltertur med børn er ekstra komfort ofte vigtigere end at pakke ultralet.",
+      },
+      {
+        question: "Hvad skal man pakke til sheltertur om vinteren?",
+        answer:
+          "Til vinter bør du pakke varmere sovepose, mere isolerende liggeunderlag, uldlag, tørre sokker kun til natten og ekstra beskyttelse mod fugt og kulde. Vinterture handler især om at holde varmen nedefra og holde tøjet tørt.",
       },
     ],
   },
