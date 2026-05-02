@@ -14,16 +14,12 @@ import {
   sendBookingAutoMessage,
   sendOwnerCancelledToGuest,
 } from "@/lib/booking-email";
-import { createCheckoutSession, calculateFee } from "@/lib/stripe";
+import { createCheckoutSession, calculateBookingAmounts } from "@/lib/stripe";
 import { createBookingPayment, getPaymentByBookingId } from "@/lib/payment-db";
 import { createAdminClient } from "@/utils/supabase/server-admin";
 import { sendGa4Event } from "@/lib/server-analytics";
 
 export const dynamic = "force-dynamic";
-
-function calcNights(checkIn: string, checkOut: string): number {
-  return Math.max(1, Math.round((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / 86_400_000));
-}
 
 /**
  * Look up the owner's message template for this shelter and send the
@@ -132,12 +128,13 @@ export async function POST(
       // This prevents the booking from being stuck as "confirmed" with no payment link
       try {
         const { url, sessionId } = await createCheckoutSession(booking, shelter);
-        const nights = calcNights(booking.check_in, booking.check_out);
-        const { shelterDkk, platformDkk, totalDkk } = calculateFee(
-          (shelter.shelter_price_dkk ?? 0) * nights,
-          shelter.platform_fee_pct,
-          shelter.platform_fee_min_dkk
-        );
+        const { shelterDkk, platformDkk, totalDkk } = calculateBookingAmounts({
+          checkIn: booking.check_in,
+          checkOut: booking.check_out,
+          shelterPriceDkk: shelter.shelter_price_dkk,
+          feePct: shelter.platform_fee_pct,
+          feeMinDkk: shelter.platform_fee_min_dkk,
+        });
         await updateBookingStatus(bookingId, "confirmed");
         await createBookingPayment({
           bookingId,
@@ -312,12 +309,13 @@ export async function POST(
 
     try {
       const { url, sessionId } = await createCheckoutSession(booking, shelter);
-      const nights = calcNights(booking.check_in, booking.check_out);
-      const { shelterDkk, platformDkk, totalDkk } = calculateFee(
-        (shelter.shelter_price_dkk ?? 0) * nights,
-        shelter.platform_fee_pct,
-        shelter.platform_fee_min_dkk
-      );
+      const { shelterDkk, platformDkk, totalDkk } = calculateBookingAmounts({
+        checkIn: booking.check_in,
+        checkOut: booking.check_out,
+        shelterPriceDkk: shelter.shelter_price_dkk,
+        feePct: shelter.platform_fee_pct,
+        feeMinDkk: shelter.platform_fee_min_dkk,
+      });
       await createBookingPayment({
         bookingId,
         stripeCheckoutSessionId: sessionId,

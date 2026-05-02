@@ -1,7 +1,11 @@
 {
   "name": "shelterdk",
   "private": true,
-  "workspaces": ["shared", "web", "app"],
+  "workspaces": [
+    "shared",
+    "web",
+    "app"
+  ],
   "scripts": {
     "backfill:municipality": "cd web && npm run backfill:municipality",
     "backfill:municipality:alle": "cd web && npm run backfill:municipality:alle",
@@ -13,5 +17,8 @@
     "match:booking-urls:apply:empty": "node scripts/match-booking-urls-from-naturstyrelsen.js --apply --only-empty",
     "generate:ai-summaries": "node scripts/generateAiSummaries.js",
     "rewrite:descriptions": "node scripts/rewriteDescriptions.js"
+  },
+  "devDependencies": {
+    "xlsx": "^0.18.5"
   }
 }

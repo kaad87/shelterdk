@@ -26,6 +26,36 @@ export function calculateFee(
   return { shelterDkk, platformDkk, totalDkk: shelterDkk + platformDkk };
 }
 
+export function calculateBookingNights(
+  checkIn: string,
+  checkOut: string
+): number {
+  return Math.max(
+    1,
+    Math.round(
+      (new Date(checkOut).getTime() - new Date(checkIn).getTime()) / 86_400_000
+    )
+  );
+}
+
+export function calculateBookingAmounts(opts: {
+  checkIn: string;
+  checkOut: string;
+  shelterPriceDkk: number | null;
+  feePct: number;
+  feeMinDkk: number;
+}): { nights: number; shelterDkk: number; platformDkk: number; totalDkk: number } {
+  const nights = calculateBookingNights(opts.checkIn, opts.checkOut);
+  const shelterTotalDkk = (opts.shelterPriceDkk ?? 0) * nights;
+  const { shelterDkk, platformDkk, totalDkk } = calculateFee(
+    shelterTotalDkk,
+    opts.feePct,
+    opts.feeMinDkk
+  );
+
+  return { nights, shelterDkk, platformDkk, totalDkk };
+}
+
 /**
  * Create a Stripe Checkout Session for a booking.
  * Returns { url, sessionId } — url to redirect guest, sessionId to store in DB.
@@ -38,16 +68,13 @@ export async function createCheckoutSession(
   const stripe = getStripe();
 
   const pricePerNightDkk = shelter.shelter_price_dkk ?? 0;
-  const nights = Math.max(
-    1,
-    Math.round((new Date(booking.check_out).getTime() - new Date(booking.check_in).getTime()) / 86_400_000)
-  );
-  const shelterTotalDkk = pricePerNightDkk * nights;
-  const { shelterDkk, platformDkk } = calculateFee(
-    shelterTotalDkk,
-    shelter.platform_fee_pct,
-    shelter.platform_fee_min_dkk
-  );
+  const { nights, shelterDkk, platformDkk } = calculateBookingAmounts({
+    checkIn: booking.check_in,
+    checkOut: booking.check_out,
+    shelterPriceDkk: shelter.shelter_price_dkk,
+    feePct: shelter.platform_fee_pct,
+    feeMinDkk: shelter.platform_fee_min_dkk,
+  });
 
   const lineItems: any[] = [];
 

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/utils/supabase/server-admin";
 import { getPaymentByBookingId } from "@/lib/payment-db";
-import { createCheckoutSession, calculateFee } from "@/lib/stripe";
+import { createCheckoutSession, calculateBookingAmounts } from "@/lib/stripe";
 import { createBookingPayment } from "@/lib/payment-db";
 
 export const dynamic = "force-dynamic";
@@ -38,10 +38,13 @@ export default async function BetalPage({ params }: Props) {
     );
   }
 
-  const priceDkk = shelter.shelter_price_dkk ?? 0;
-  const feePct = shelter.platform_fee_pct ?? 5;
-  const feeMin = shelter.platform_fee_min_dkk ?? 25;
-  const { shelterDkk, platformDkk, totalDkk } = calculateFee(priceDkk, feePct, feeMin);
+  const { shelterDkk, platformDkk, totalDkk } = calculateBookingAmounts({
+    checkIn: booking.check_in,
+    checkOut: booking.check_out,
+    shelterPriceDkk: shelter.shelter_price_dkk,
+    feePct: shelter.platform_fee_pct ?? 5,
+    feeMinDkk: shelter.platform_fee_min_dkk ?? 25,
+  });
 
   let checkoutUrl: string | null = null;
   if (booking.status === "confirmed") {

@@ -17,6 +17,8 @@ vi.mock("stripe", () => ({
 vi.mock("@/lib/stripe", () => ({
   createCheckoutSession: vi.fn().mockResolvedValue({ url: "https://stripe.com/pay", sessionId: "cs_test" }),
   calculateFee: vi.fn().mockReturnValue({ shelterDkk: 100, platformDkk: 25, totalDkk: 125 }),
+  calculateBookingAmounts: vi.fn().mockReturnValue({ nights: 2, shelterDkk: 200, platformDkk: 25, totalDkk: 225 }),
+  calculateBookingNights: vi.fn().mockReturnValue(2),
   constructWebhookEvent: vi.fn(),
 }));
 
@@ -223,6 +225,39 @@ describe("POST /api/book/[slug]", () => {
     expect(mockCreateBooking).toHaveBeenCalledOnce();
     expect(mockSendBookingRequestToOwner).toHaveBeenCalledOnce();
     expect(mockSendBookingReceivedToGuest).toHaveBeenCalledOnce();
+  });
+
+  it("gemmer upfront betaling med total for alle nætter", async () => {
+    mockGetBookableShelterBySlug.mockResolvedValue(
+      mockShelter({ payment_mode: "upfront", shelter_price_dkk: 100, platform_fee_pct: 5, platform_fee_min_dkk: 25 })
+    );
+    mockCreateBooking.mockResolvedValue(
+      mockBooking({ check_in: "2027-06-01", check_out: "2027-06-03" })
+    );
+    mockCreateActionTokens.mockResolvedValue({ confirmToken: "ct", rejectToken: "rt" });
+    mockSendBookingRequestToOwner.mockResolvedValue(undefined);
+    mockSendBookingReceivedToGuest.mockResolvedValue(undefined);
+
+    const { POST } = await import("../book/[slug]/route");
+    const res = await POST(
+      new Request("http://localhost/api/book/test-shelter", {
+        method: "POST",
+        body: JSON.stringify(validBody),
+        headers: { "Content-Type": "application/json" },
+      }) as never,
+      { params: Promise.resolve({ slug: "test-shelter" }) }
+    );
+
+    expect(res.status).toBe(201);
+    const { createBookingPayment } = await import("@/lib/payment-db");
+    expect(createBookingPayment).toHaveBeenCalledWith(
+      expect.objectContaining({
+        bookingId: "booking-uuid-1",
+        amountTotalDkk: 225,
+        amountShelterDkk: 200,
+        amountPlatformDkk: 25,
+      })
+    );
   });
 });
 

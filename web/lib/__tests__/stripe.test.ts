@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { calculateFee } from "@/lib/stripe";
+import { calculateFee, calculateBookingAmounts, calculateBookingNights } from "@/lib/stripe";
 
 describe("calculateFee", () => {
   it("free shelter: guest pays minimum fee only", () => {
@@ -35,6 +35,31 @@ describe("calculateFee", () => {
   it("zero minimum: only percentage applies", () => {
     expect(calculateFee(200, 10, 0)).toEqual({
       shelterDkk: 200, platformDkk: 20, totalDkk: 220,
+    });
+  });
+});
+
+describe("calculateBookingNights", () => {
+  it("returns the number of nights between check-in and check-out", () => {
+    expect(calculateBookingNights("2027-06-01", "2027-06-04")).toBe(3);
+  });
+});
+
+describe("calculateBookingAmounts", () => {
+  it("multiplies shelter price by nights before platform fee is added", () => {
+    expect(
+      calculateBookingAmounts({
+        checkIn: "2027-06-01",
+        checkOut: "2027-06-04",
+        shelterPriceDkk: 100,
+        feePct: 5,
+        feeMinDkk: 25,
+      })
+    ).toEqual({
+      nights: 3,
+      shelterDkk: 300,
+      platformDkk: 25,
+      totalDkk: 325,
     });
   });
 });

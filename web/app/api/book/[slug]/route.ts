@@ -8,7 +8,11 @@ import {
   sendBookingRequestToOwner,
   sendBookingReceivedToGuest,
 } from "@/lib/booking-email";
-import { createCheckoutSession, calculateFee } from "@/lib/stripe";
+import {
+  createCheckoutSession,
+  calculateBookingAmounts,
+  calculateBookingNights,
+} from "@/lib/stripe";
 import { createBookingPayment } from "@/lib/payment-db";
 import { sendGa4Event } from "@/lib/server-analytics";
 
@@ -105,11 +109,13 @@ export async function POST(
     if (shelter.payment_mode === "upfront") {
       try {
         const { url, sessionId } = await createCheckoutSession(booking, shelter);
-        const { shelterDkk, platformDkk, totalDkk } = calculateFee(
-          shelter.shelter_price_dkk ?? 0,
-          shelter.platform_fee_pct,
-          shelter.platform_fee_min_dkk
-        );
+        const { shelterDkk, platformDkk, totalDkk } = calculateBookingAmounts({
+          checkIn: booking.check_in,
+          checkOut: booking.check_out,
+          shelterPriceDkk: shelter.shelter_price_dkk,
+          feePct: shelter.platform_fee_pct,
+          feeMinDkk: shelter.platform_fee_min_dkk,
+        });
         amountTotalDkk = totalDkk;
         await createBookingPayment({
           bookingId: booking.id,
@@ -135,10 +141,7 @@ export async function POST(
         shelter_slug: slug,
         payment_mode: shelter.payment_mode,
         guest_count,
-        nights: Math.max(
-          1,
-          Math.round((new Date(check_out).getTime() - new Date(check_in).getTime()) / 86_400_000)
-        ),
+        nights: calculateBookingNights(check_in, check_out),
         has_message: Boolean(message),
         checkout_ready: Boolean(checkoutUrl),
       },
