@@ -9,6 +9,7 @@ import { fetchPostnummerBbox, lookupPostnummer } from "@/lib/postnummer";
 import { AreaFaq } from "@/components/AreaFaq";
 import { getAreaFaqItems, faqToJsonLd, type FaqItem } from "@/lib/faq";
 import dynamic from "next/dynamic";
+import { slugifySegment } from "@/lib/slug";
 
 const MissingShelterBanner = dynamic(
   () => import("@/components/MissingShelterBanner").then((m) => m.MissingShelterBanner),
@@ -50,11 +51,12 @@ export async function generateMetadata(props: {
     const description =
       area.description?.slice(0, 155) ||
       `Find shelters og naturovernatning ${prep} ${area.name}. Se kort, billeder og book muligheder.`;
-    const canonicalPath = `/soeg?area=${encodeURIComponent(areaSlug.trim())}`;
+    const canonicalPath = `/omraade/${encodeURIComponent(areaSlug.trim())}`;
     return {
       title: { absolute: title },
       description,
       alternates: { canonical: `https://shelterdk.dk${canonicalPath}` },
+      robots: { index: false, follow: true },
       openGraph: {
         title: `Shelters ${prep} ${area.name} | ShelterDK`,
         description,
@@ -69,16 +71,16 @@ export async function generateMetadata(props: {
     const prep = prepositionForRegionName(regionTrim);
     const title = `Shelters ${prep} ${regionTrim} – Se kort og liste | ShelterDK`;
     const description = `Find shelters og overnatningspladser ${prep} ${regionTrim}. Se kort, billeder, faciliteter og book muligheder.`;
+    const canonicalPath = `/danmark/${slugifySegment(regionTrim)}`;
     return {
       title: { absolute: title },
       description,
-      // Keep canonical as /soeg (existing behavior) to avoid indexing many variants unless explicitly desired.
-      alternates: { canonical: "https://shelterdk.dk/soeg" },
+      alternates: { canonical: `https://shelterdk.dk${canonicalPath}` },
       robots: { index: false, follow: true },
       openGraph: {
         title: `Shelters ${prep} ${regionTrim} | ShelterDK`,
         description,
-        url: "/soeg",
+        url: canonicalPath,
       },
     };
   }
@@ -259,7 +261,7 @@ export default async function SoegPage({ searchParams }: SoegPageProps) {
   style="border: none;"
 ></iframe>
 <p style="text-align: right; font-size: 12px; margin-top: 5px;">
-  <a href="https://shelterdk.dk/soeg?area=${encodeURIComponent(area)}" target="_blank" rel="noopener">
+  <a href="https://shelterdk.dk/omraade/${encodeURIComponent(area)}" target="_blank" rel="noopener">
     Se alle shelters ${areaPreposition} ${areaInfo.name} hos Shelterdk.dk
   </a>
 </p>`}

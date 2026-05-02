@@ -24,6 +24,8 @@ export interface Guide {
   content: string;
   coverImage: string;
   category: GuideCategory;
+  publishedAt: string;
+  updatedAt: string;
   faq?: { question: string; answer: string }[];
 }
 
@@ -36,6 +38,8 @@ export const GUIDES: Guide[] = [
     coverImage:
       "https://images.unsplash.com/photo-1723637012148-6ea41e4517be?w=1200&q=80&auto=format&fit=crop",
     category: "Natur",
+    publishedAt: "2025-02-18",
+    updatedAt: "2026-03-06",
     content: `
 ## Derfor er nationalparkerne perfekte til shelterture
 
@@ -135,6 +139,8 @@ Har du brug for shelters med bestemte faciliteter som [toilet](/shelter-med-toil
     coverImage:
       "https://plus.unsplash.com/premium_photo-1697644694742-c97ff0266e69?w=1200&q=80&auto=format&fit=crop",
     category: "Begynder",
+    publishedAt: "2025-03-04",
+    updatedAt: "2026-02-14",
     content: `
 ## Find det shelter, der passer til netop din tur
 
@@ -252,6 +258,8 @@ Hvis du er helt ny, anbefaler vi at starte med vores [begynderguide](/guides/she
     coverImage:
       "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1200&q=80&auto=format&fit=crop",
     category: "Pakkeliste",
+    publishedAt: "2025-03-21",
+    updatedAt: "2026-03-28",
     content: `
 ## 1. Sovegrej – det allervigtigste
 
@@ -381,6 +389,8 @@ Hvis du vil dykke endnu mere ned i forberedelserne, kan du læse guiden [Shelter
     coverImage:
       "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&q=80&auto=format&fit=crop",
     category: "Regler",
+    publishedAt: "2025-04-11",
+    updatedAt: "2026-01-25",
     content: `
 ## Hvor længe må man blive på et shelter?
 
@@ -474,6 +484,8 @@ Vil du have hjælp til at vælge selve pladsen, kan du kombinere denne guide med
     coverImage:
       "https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?w=1200&q=80&auto=format&fit=crop",
     category: "Begynder",
+    publishedAt: "2025-04-28",
+    updatedAt: "2026-03-10",
     content: `
 ## Start simpelt – vælg en nem plads
 
@@ -554,6 +566,8 @@ Når du er klar til næste skridt, kan du bruge vores [Pakkeliste til sheltertur
     coverImage:
       "https://plus.unsplash.com/premium_photo-1682500052659-07fc479a4772?w=1200&q=80&auto=format&fit=crop",
     category: "Mad",
+    publishedAt: "2025-05-16",
+    updatedAt: "2026-02-20",
     content: `
 ## Basisudstyr til mad over bål
 
@@ -635,6 +649,8 @@ Hvis du gerne vil kombinere madplanen med en god pakkeliste og tips til valg af 
     coverImage:
       "https://images.unsplash.com/photo-1482192596544-9eb780fc7f66?w=1200&q=80&auto=format&fit=crop",
     category: "Vinter",
+    publishedAt: "2025-10-02",
+    updatedAt: "2026-01-08",
     content: `
 ## Er vinter-shelter noget for dig?
 
@@ -726,6 +742,8 @@ Det er en god idé at kombinere denne guide med [Pakkeliste til sheltertur – d
     coverImage:
       "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1200&q=80&auto=format&fit=crop",
     category: "Begynder",
+    publishedAt: "2025-11-14",
+    updatedAt: "2026-04-05",
     content: `
 ## Hvornår skal du booke shelter?
 
@@ -832,4 +850,3 @@ export function getGuideBySlug(slug: string): Guide | undefined {
 export function getGuideCategories(): GuideCategory[] {
   return GUIDE_CATEGORIES;
 }
-

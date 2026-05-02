@@ -74,6 +74,10 @@ const nextConfig = {
       },
       {
         protocol: "https",
+        hostname: "plus.unsplash.com",
+      },
+      {
+        protocol: "https",
         hostname: "placehold.co",
       },
       {
@@ -131,4 +135,3 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
-

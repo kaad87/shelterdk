@@ -4,6 +4,7 @@ import { ChevronRight } from "lucide-react";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { DatasetSchema } from "@/components/seo/DatasetSchema";
 import { ShelterCard } from "@/components/ShelterCard";
+import { getSitePageModified } from "@/lib/content-dates";
 import { faqToJsonLd } from "@/lib/faq";
 import { getSheltersInNationalParks } from "@/lib/fakta-db";
 import { slugifySegment } from "@/lib/slug";
@@ -31,6 +32,7 @@ function shelterHref(region: string | null, kommune: string | null, slug: string
 export default async function NationalparkerPage() {
   const parkData = await getSheltersInNationalParks();
   const totalInParks = parkData.reduce((sum, p) => sum + p.shelters.length, 0);
+  const datasetDateModified = getSitePageModified(CANONICAL);
 
   const faqItems = [
     { question: "Hvor mange shelters er der i Danmarks nationalparker?", answer: `Der er ca. ${totalInParks} shelters i eller n\u00e6r Danmarks 5 nationalparker.` },
@@ -46,6 +48,7 @@ export default async function NationalparkerPage() {
         name="Shelters i Danmarks nationalparker"
         description={`${totalInParks} shelters fordelt p\u00e5 Danmarks 5 nationalparker`}
         url={`https://shelterdk.dk${CANONICAL}`}
+        dateModified={datasetDateModified}
         variableMeasured={["shelter count per national park"]}
       />
       <div className="min-h-screen bg-background">

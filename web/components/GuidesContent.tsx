@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Search, ArrowRight, Star } from "lucide-react";
+import { ArrowRight, Search, Star } from "lucide-react";
 import type { Guide, GuideCategory } from "@/data/guides";
 import { useInView } from "@/lib/useInView";
+import { slugifySegment } from "@/lib/slug";
 
 function AnimatedCard({
   children,
@@ -18,7 +19,7 @@ function AnimatedCard({
   return (
     <div
       ref={ref}
-      className={isInView ? "animate-fade-in-up" : "opacity-0"}
+      className={isInView ? "animate-fade-in-up" : undefined}
       style={{ animationDelay: `${index * 80}ms` }}
     >
       {children}
@@ -41,7 +42,6 @@ function GuideCard({ guide, index }: { guide: Guide; index: number }) {
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-105"
               sizes="(max-width: 768px) 100vw, 50vw"
-              unoptimized
             />
             <span className="absolute top-3 left-3 bg-accent text-white text-xs font-medium px-2.5 py-1 rounded-full">
               {guide.category}
@@ -78,7 +78,6 @@ function PopularGuideCard({ guide }: { guide: Guide }) {
           fill
           className="object-cover transition-transform duration-300 group-hover:scale-105"
           sizes="80px"
-          unoptimized
         />
       </div>
       <div className="min-w-0">
@@ -94,27 +93,29 @@ function PopularGuideCard({ guide }: { guide: Guide }) {
 interface GuidesContentProps {
   guides: Guide[];
   categories: GuideCategory[];
+  activeCategory?: GuideCategory | null;
 }
 
-export function GuidesContent({ guides, categories }: GuidesContentProps) {
+export function GuidesContent({
+  guides,
+  categories,
+  activeCategory = null,
+}: GuidesContentProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState<GuideCategory | null>(
-    null
-  );
 
   const filteredGuides = useMemo(() => {
     let result = guides;
 
     if (activeCategory) {
-      result = result.filter((g) => g.category === activeCategory);
+      result = result.filter((guide) => guide.category === activeCategory);
     }
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(
-        (g) =>
-          g.title.toLowerCase().includes(q) ||
-          g.excerpt.toLowerCase().includes(q)
+        (guide) =>
+          guide.title.toLowerCase().includes(q) ||
+          guide.excerpt.toLowerCase().includes(q)
       );
     }
 
@@ -126,7 +127,6 @@ export function GuidesContent({ guides, categories }: GuidesContentProps) {
 
   return (
     <div className="flex gap-8">
-      {/* Desktop sidebar */}
       <aside className="hidden lg:block w-56 shrink-0">
         <nav className="sticky top-24">
           <h3 className="text-xs font-semibold text-primary/50 uppercase tracking-wider mb-3">
@@ -134,8 +134,8 @@ export function GuidesContent({ guides, categories }: GuidesContentProps) {
           </h3>
           <ul className="space-y-1">
             <li>
-              <button
-                onClick={() => setActiveCategory(null)}
+              <Link
+                href="/guides"
                 className={`block w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   activeCategory === null
                     ? "bg-accent/15 text-accent font-semibold"
@@ -143,29 +143,27 @@ export function GuidesContent({ guides, categories }: GuidesContentProps) {
                 }`}
               >
                 Alle guides
-              </button>
+              </Link>
             </li>
-            {categories.map((cat) => (
-              <li key={cat}>
-                <button
-                  onClick={() => setActiveCategory(cat)}
+            {categories.map((category) => (
+              <li key={category}>
+                <Link
+                  href={`/guides/kategori/${slugifySegment(category)}`}
                   className={`block w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                    activeCategory === cat
+                    activeCategory === category
                       ? "bg-accent/15 text-accent font-semibold"
                       : "text-primary/70 hover:bg-primary/5 hover:text-primary"
                   }`}
                 >
-                  {cat}
-                </button>
+                  {category}
+                </Link>
               </li>
             ))}
           </ul>
         </nav>
       </aside>
 
-      {/* Main content */}
       <div className="flex-1 min-w-0">
-        {/* Search bar */}
         <div className="relative mb-8">
           <Search
             size={18}
@@ -175,15 +173,14 @@ export function GuidesContent({ guides, categories }: GuidesContentProps) {
             type="text"
             placeholder="Søg i guides..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(event) => setSearchQuery(event.target.value)}
             className="w-full rounded-xl border border-primary/10 bg-white pl-11 pr-4 py-3 text-sm text-primary placeholder:text-primary/40 focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/50 transition-colors"
           />
         </div>
 
-        {/* Mobile category pills */}
         <div className="flex gap-2 overflow-x-auto pb-4 mb-8 lg:hidden scrollbar-hide">
-          <button
-            onClick={() => setActiveCategory(null)}
+          <Link
+            href="/guides"
             className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all ${
               activeCategory === null
                 ? "bg-primary text-white"
@@ -191,23 +188,22 @@ export function GuidesContent({ guides, categories }: GuidesContentProps) {
             }`}
           >
             Alle
-          </button>
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
+          </Link>
+          {categories.map((category) => (
+            <Link
+              key={category}
+              href={`/guides/kategori/${slugifySegment(category)}`}
               className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all ${
-                activeCategory === cat
+                activeCategory === category
                   ? "bg-primary text-white"
                   : "bg-white text-primary/70 border border-primary/10 hover:border-accent/30 hover:text-primary"
               }`}
             >
-              {cat}
-            </button>
+              {category}
+            </Link>
           ))}
         </div>
 
-        {/* Popular guides */}
         {showPopular && (
           <section className="mb-12">
             <h2 className="flex items-center gap-2 font-serif text-2xl font-bold text-primary mb-6">
@@ -222,11 +218,10 @@ export function GuidesContent({ guides, categories }: GuidesContentProps) {
           </section>
         )}
 
-        {/* Guide grid */}
         <section aria-label="Liste over guider">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {filteredGuides.map((guide, i) => (
-              <GuideCard key={guide.slug} guide={guide} index={i} />
+            {filteredGuides.map((guide, index) => (
+              <GuideCard key={guide.slug} guide={guide} index={index} />
             ))}
           </div>
 
@@ -239,7 +234,6 @@ export function GuidesContent({ guides, categories }: GuidesContentProps) {
           )}
         </section>
 
-        {/* CTA box */}
         <section className="mt-16">
           <div className="rounded-xl bg-primary text-white p-8 sm:p-10 text-center">
             <h2 className="font-serif text-2xl sm:text-3xl font-bold mb-3">

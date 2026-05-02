@@ -1,20 +1,19 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { Fragment } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar, Clock, ArrowRight } from "lucide-react";
-import type { BlogPost, BlogCategory } from "@/data/blog";
+import { ArrowRight, Calendar, Clock } from "lucide-react";
+import type { BlogCategory, BlogPost } from "@/data/blog";
 import { useInView } from "@/lib/useInView";
-
-const POSTS_PER_PAGE = 6;
+import { slugifySegment } from "@/lib/slug";
 
 function AnimatedCard({ children, index }: { children: React.ReactNode; index: number }) {
   const { ref, isInView } = useInView();
   return (
     <div
       ref={ref}
-      className={isInView ? "animate-fade-in-up" : "opacity-0"}
+      className={isInView ? "animate-fade-in-up" : undefined}
       style={{ animationDelay: `${index * 80}ms` }}
     >
       {children}
@@ -26,7 +25,10 @@ function BlogCard({ post, index }: { post: BlogPost; index: number }) {
   return (
     <AnimatedCard index={index}>
       <article className="group">
-        <Link href={`/blog/${post.slug}`} className="block outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 rounded-xl">
+        <Link
+          href={`/blog/${post.slug}`}
+          className="block outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 rounded-xl"
+        >
           <div className="relative aspect-[16/9] overflow-hidden rounded-xl bg-primary/10">
             <Image
               src={post.coverImage}
@@ -93,27 +95,33 @@ function GuidesCTA() {
 interface BlogContentProps {
   posts: BlogPost[];
   categories: BlogCategory[];
+  activeCategory?: BlogCategory | null;
 }
 
-export function BlogContent({ posts, categories }: BlogContentProps) {
-  const [activeCategory, setActiveCategory] = useState<BlogCategory | null>(null);
-  const [displayCount, setDisplayCount] = useState(POSTS_PER_PAGE);
-
-  const featured = posts[0];
-  const remainingPosts = posts.slice(1);
-
+export function BlogContent({
+  posts,
+  categories,
+  activeCategory = null,
+}: BlogContentProps) {
   const filteredPosts = activeCategory
-    ? remainingPosts.filter((p) => p.category === activeCategory)
-    : remainingPosts;
+    ? posts.filter((post) => post.category === activeCategory)
+    : posts;
+  const featured = filteredPosts[0];
+  const remainingPosts = filteredPosts.slice(1);
+  const ctaInsertIndex = 4;
 
-  const visiblePosts = filteredPosts.slice(0, displayCount);
-  const hasMore = visiblePosts.length < filteredPosts.length;
-
-  const CTA_INSERT_INDEX = 4;
+  if (!featured) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-16 text-center">
+          <p className="text-primary/60">Ingen blogindlæg i denne kategori endnu.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero — featured post */}
       <Link href={`/blog/${featured.slug}`} className="block group relative">
         <div className="relative h-[280px] sm:h-[340px] md:h-[420px] w-full overflow-hidden">
           <Image
@@ -156,13 +164,9 @@ export function BlogContent({ posts, categories }: BlogContentProps) {
       </Link>
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10 lg:py-14">
-        {/* Category filter bar */}
         <div className="flex gap-2 overflow-x-auto pb-4 mb-10 scrollbar-hide">
-          <button
-            onClick={() => {
-              setActiveCategory(null);
-              setDisplayCount(POSTS_PER_PAGE);
-            }}
+          <Link
+            href="/blog"
             className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all ${
               activeCategory === null
                 ? "bg-primary text-white"
@@ -170,54 +174,36 @@ export function BlogContent({ posts, categories }: BlogContentProps) {
             }`}
           >
             Alle
-          </button>
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => {
-                setActiveCategory(cat);
-                setDisplayCount(POSTS_PER_PAGE);
-              }}
+          </Link>
+          {categories.map((category) => (
+            <Link
+              key={category}
+              href={`/blog/kategori/${slugifySegment(category)}`}
               className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all ${
-                activeCategory === cat
+                activeCategory === category
                   ? "bg-primary text-white"
                   : "bg-white text-primary/70 border border-primary/10 hover:border-accent/30 hover:text-primary"
               }`}
             >
-              {cat}
-            </button>
+              {category}
+            </Link>
           ))}
         </div>
 
-        {/* Post grid with CTA insert */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {visiblePosts.map((post, i) => (
+          {remainingPosts.map((post, index) => (
             <Fragment key={post.slug}>
-              {i === CTA_INSERT_INDEX && <GuidesCTA />}
-              <BlogCard post={post} index={i} />
+              {index === ctaInsertIndex && <GuidesCTA />}
+              <BlogCard post={post} index={index} />
             </Fragment>
           ))}
-          {/* If fewer posts than CTA index, show CTA at end */}
-          {visiblePosts.length > 0 &&
-            visiblePosts.length <= CTA_INSERT_INDEX && <GuidesCTA />}
+          {remainingPosts.length > 0 && remainingPosts.length <= ctaInsertIndex && <GuidesCTA />}
         </div>
 
-        {filteredPosts.length === 0 && (
+        {remainingPosts.length === 0 && (
           <p className="text-center text-primary/60 py-12">
-            Ingen blogposts i denne kategori endnu.
+            Ingen flere blogindlæg i denne kategori endnu.
           </p>
-        )}
-
-        {/* Load more */}
-        {hasMore && (
-          <div className="mt-12 text-center">
-            <button
-              onClick={() => setDisplayCount((c) => c + POSTS_PER_PAGE)}
-              className="w-full max-w-sm py-3 rounded-xl border border-primary/10 text-primary/70 hover:text-primary hover:border-primary/30 font-medium transition-all"
-            >
-              Vis flere indlæg
-            </button>
-          </div>
         )}
       </div>
     </div>

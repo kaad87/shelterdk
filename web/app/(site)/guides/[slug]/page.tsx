@@ -30,9 +30,12 @@ export async function generateMetadata({
     description: guide.excerpt,
     alternates: { canonical: `https://shelterdk.dk${canonicalPath}` },
     openGraph: {
+      type: "article",
       title: `${guide.title} | ShelterDK`,
       description: guide.excerpt,
       url: canonicalPath,
+      publishedTime: guide.publishedAt,
+      modifiedTime: guide.updatedAt,
       images: guide.coverImage
         ? [
             {
@@ -81,6 +84,8 @@ export default async function GuidePage({ params }: PageProps) {
     "@type": "Article",
     headline: guide.title,
     description: guide.excerpt,
+    datePublished: guide.publishedAt,
+    dateModified: guide.updatedAt,
     image: guide.coverImage,
     author: {
       "@type": "Person",
@@ -112,7 +117,6 @@ export default async function GuidePage({ params }: PageProps) {
             className="object-cover opacity-40"
             sizes="100vw"
             priority
-            unoptimized
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/80 to-transparent" />
@@ -225,7 +229,6 @@ export default async function GuidePage({ params }: PageProps) {
                       fill
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
                       sizes="(max-width: 640px) 100vw, 50vw"
-                      unoptimized
                     />
                     <span className="absolute top-2 left-2 bg-accent text-white text-[10px] font-medium px-2 py-0.5 rounded-full">
                       {related.category}

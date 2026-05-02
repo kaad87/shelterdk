@@ -5,6 +5,7 @@ import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { DatasetSchema } from "@/components/seo/DatasetSchema";
 import { ShelterCard } from "@/components/ShelterCard";
 import { InstagramFeed } from "@/components/InstagramFeed";
+import { getSitePageModified } from "@/lib/content-dates";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import { slugifySegment } from "@/lib/slug";
 import type { Shelter } from "@/types/shelter";
@@ -61,6 +62,8 @@ export function FaktaPage({
   variableMeasured,
   children,
 }: FaktaPageProps) {
+  const datasetDateModified = getSitePageModified(canonicalPath);
+
   return (
     <>
       <BreadcrumbSchema
@@ -74,6 +77,7 @@ export function FaktaPage({
         name={datasetName}
         description={datasetDescription}
         url={`https://shelterdk.dk${canonicalPath}`}
+        dateModified={datasetDateModified}
         variableMeasured={variableMeasured}
       />
       <div className="min-h-screen bg-background">

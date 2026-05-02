@@ -15,7 +15,7 @@ export function DatasetSchema({
   name,
   description,
   url,
-  dateModified = new Date().toISOString().split("T")[0],
+  dateModified,
   spatialCoverage = "Danmark",
   variableMeasured = [],
 }: DatasetSchemaProps) {
@@ -30,7 +30,7 @@ export function DatasetSchema({
       name: "ShelterDK",
       url: "https://shelterdk.dk",
     },
-    dateModified,
+    ...(dateModified && { dateModified }),
     spatialCoverage: {
       "@type": "Place",
       name: spatialCoverage,

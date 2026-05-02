@@ -35,12 +35,10 @@ export default async function SheltersIDanmarkPage() {
     getAverageRating(),
   ]);
 
-  const today = new Date().toLocaleDateString("da-DK", { month: "long", year: "numeric" });
-
   return (
     <FaktaPage
       title="Shelters i Danmark"
-      heroStat={`Der er ${total.toLocaleString("da-DK")} shelters i Danmark (opdateret ${today})`}
+      heroStat={`Der er ${total.toLocaleString("da-DK")} shelters i Danmark`}
       summary={`Danmark har ${total.toLocaleString("da-DK")} registrerede shelters fordelt p\u00e5 ${regions.length} regioner. ${regions[0]?.region ?? "Jylland"} har flest med ${regions[0]?.count ?? 0} shelters. ${facilities.gratis} shelters er gratis, og ${facilities.toilet} har toilet.${avgRating ? ` Den gennemsnitlige Google-bed\u00f8mmelse er ${avgRating} ud af 5.` : ""}`}
       breakdownTitle="Shelters per region"
       breakdownRows={regions.map((r) => ({
