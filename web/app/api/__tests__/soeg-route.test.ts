@@ -6,17 +6,30 @@ vi.mock("@/lib/soeg-db", () => ({
   SOEG_PAGE_SIZE: 24,
 }));
 
+vi.mock("@/lib/postnummer", () => ({
+  fetchPostnummerBbox: vi.fn(),
+  lookupPostnummer: vi.fn(),
+}));
+
 vi.mock("@/lib/soeg-filters", () => ({
+  normalizeRegionFilter: (region: string | null) => {
+    if (!region) return null;
+    if (region === "Sjælland") return "Sjælland og Øerne";
+    return region;
+  },
   filterSheltersByRegion: (shelters: { id: string; region?: string | null }[], region: string | null) => {
     if (!region?.trim()) return shelters;
-    const r = region.trim();
+    const r = region === "Sjælland" ? "Sjælland og Øerne" : region.trim();
     return shelters.filter((s) => (s.region || "").trim() === r);
   },
 }));
 
 import { getSheltersPage } from "@/lib/soeg-db";
+import { fetchPostnummerBbox, lookupPostnummer } from "@/lib/postnummer";
 
 const mockGetSheltersPage = vi.mocked(getSheltersPage);
+const mockFetchPostnummerBbox = vi.mocked(fetchPostnummerBbox);
+const mockLookupPostnummer = vi.mocked(lookupPostnummer);
 
 function mockRequest(url: string) {
   return new Request(url) as unknown as import("next/server").NextRequest;
@@ -25,6 +38,8 @@ function mockRequest(url: string) {
 describe("GET /api/soeg", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockFetchPostnummerBbox.mockResolvedValue(null);
+    mockLookupPostnummer.mockReturnValue(null);
     mockGetSheltersPage.mockResolvedValue({
       shelters: [
         { id: "1", title: "A", slug: "a", region: "Jylland" } as never,
@@ -49,6 +64,21 @@ describe("GET /api/soeg", () => {
     await GET(req);
     expect(mockGetSheltersPage).toHaveBeenCalledWith(
       "Jylland",
+      null,
+      1,
+      24,
+      undefined,
+      undefined,
+      null,
+      undefined
+    );
+  });
+
+  it("normaliserer Sjælland til DB-regionen", async () => {
+    const req = mockRequest("http://localhost/api/soeg?region=Sj%C3%A6lland");
+    await GET(req);
+    expect(mockGetSheltersPage).toHaveBeenCalledWith(
+      "Sjælland og Øerne",
       null,
       1,
       24,
@@ -101,6 +131,22 @@ describe("GET /api/soeg", () => {
       24,
       undefined,
       { minLat: 55, maxLat: 57, minLon: 8, maxLon: 11 },
+      null,
+      undefined
+    );
+  });
+
+  it("falder tilbage til bynavn ved postnummer når bbox-opslag fejler", async () => {
+    mockLookupPostnummer.mockReturnValue("Billund");
+    const req = mockRequest("http://localhost/api/soeg?q=7190");
+    await GET(req);
+    expect(mockGetSheltersPage).toHaveBeenCalledWith(
+      null,
+      "Billund",
+      1,
+      24,
+      undefined,
+      undefined,
       null,
       undefined
     );

@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { getDistinctRegions, slugifySegment, NO_KOMMUNE_SLUG, getMunicipalitiesWithCounts } from "@/lib/danmark-silo";
 import { segmentSlugToName } from "@/lib/slug";
-import { getSheltersPage } from "@/lib/soeg-db";
+import { getSheltersPage, SOEG_PAGE_SIZE, type SoegFilters, type MapBbox } from "@/lib/soeg-db";
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 import { prepositionForRegionName } from "@/lib/area-db";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
@@ -16,9 +16,27 @@ import { getFacilityCountsForRegion, getTopRatedShelters } from "@/lib/fakta-db"
 import { generateRegionPageFaq } from "@/lib/fakta-faq";
 import { faqToJsonLd } from "@/lib/faq";
 import { FILTER_CONFIGS, REGION_SLUGS, REGION_NAMES } from "@/lib/cross-page-config";
+import { fetchPostnummerBbox, lookupPostnummer } from "@/lib/postnummer";
 
 interface PageProps {
   params: Promise<{ region: string }>;
+  searchParams: Promise<{
+    q?: string;
+    view?: string;
+    billede?: string;
+    anmeldelser?: string;
+    bookbar?: string;
+    vand?: string;
+    toilet?: string;
+    hund?: string;
+    baalplads?: string;
+    gratis?: string;
+    handicap?: string;
+    bord_baenk?: string;
+    strand?: string;
+    bruser?: string;
+    min_pladser?: string;
+  }>;
 }
 
 export const dynamicParams = false;
@@ -28,23 +46,55 @@ export const revalidate = 86400;
 
 const MAP_VIEW_PAGE_SIZE = 1000;
 
+type ViewMode = "list" | "map" | "split";
+
+function resolveRegionName(regionSlug: string, regions: string[]): string | null {
+  return REGION_NAMES[regionSlug] ?? segmentSlugToName(regionSlug, regions);
+}
+
+function resolveCanonicalRegionSlug(regionName: string, fallbackSlug: string): string {
+  const mapped = Object.entries(REGION_NAMES).find(([, name]) => name === regionName)?.[0];
+  return mapped ?? fallbackSlug;
+}
+
+function parseFilters(params: Awaited<PageProps["searchParams"]>): SoegFilters {
+  const filters: SoegFilters = {};
+  if (params.billede === "1") filters.billede = true;
+  if (params.anmeldelser === "1") filters.anmeldelser = true;
+  if (params.bookbar === "1") filters.bookbar = true;
+  if (params.vand === "1") filters.vand = true;
+  if (params.toilet === "1") filters.toilet = true;
+  if (params.hund === "1") filters.hund = true;
+  if (params.baalplads === "1") filters.baalplads = true;
+  if (params.bord_baenk === "1") filters.bord_baenk = true;
+  if (params.strand === "1") filters.strand = true;
+  if (params.bruser === "1") filters.bruser = true;
+  if (params.gratis === "1") filters.gratis = true;
+  if (params.handicap === "1") filters.handicap = true;
+  const minPladser = parseInt(params.min_pladser ?? "0", 10);
+  if (minPladser > 0) filters.min_pladser = minPladser;
+  return filters;
+}
 
 export async function generateStaticParams() {
   const regions = await getDistinctRegions();
-  return regions.map((region) => ({
-    region: slugifySegment(region),
-  }));
+  const slugs = new Set<string>(REGION_SLUGS);
+  for (const region of regions) {
+    slugs.add(resolveCanonicalRegionSlug(region, slugifySegment(region)));
+  }
+  return [...slugs].map((region) => ({ region }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { region: regionSlug } = await params;
   const regions = await getDistinctRegions();
-  const regionName = segmentSlugToName(regionSlug, regions);
+  const regionName = resolveRegionName(regionSlug, regions);
   if (!regionName) return { title: { absolute: "Region ikke fundet" } };
   const prep = prepositionForRegionName(regionName);
   const title = `Shelters ${prep} ${regionName} – Se kort og liste | ShelterDK`;
   const description = `Find alle shelters ${prep} ${regionName}. Udforsk overnatningspladser i naturen på interaktivt kort og liste – med billeder, faciliteter og booking.`;
-  const canonicalPath = `/danmark/${regionSlug}`;
+  const canonicalRegionSlug = resolveCanonicalRegionSlug(regionName, regionSlug);
+  const canonicalPath = `/danmark/${canonicalRegionSlug}`;
   return {
     title: { absolute: title },
     description,
@@ -65,17 +115,51 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function DanmarkRegionPage({ params }: PageProps) {
+export default async function DanmarkRegionPage({ params, searchParams }: PageProps) {
   const { region: regionSlug } = await params;
+  const urlParams = await searchParams;
   const regions = await getDistinctRegions();
-  const regionName = segmentSlugToName(regionSlug, regions);
+  const regionName = resolveRegionName(regionSlug, regions);
   if (!regionName) notFound();
+  const canonicalRegionSlug = resolveCanonicalRegionSlug(regionName, regionSlug);
 
   const prep = prepositionForRegionName(regionName);
+  const q = urlParams.q?.trim() || null;
+  const viewParam = (urlParams.view ?? "split").toLowerCase();
+  const view: ViewMode =
+    viewParam === "map" ? "map" : viewParam === "list" ? "list" : "split";
+  const filters = parseFilters(urlParams);
+  const initialPageSize =
+    view === "map" || view === "split" ? MAP_VIEW_PAGE_SIZE : SOEG_PAGE_SIZE;
+
+  let resolvedQ = q;
+  let postalBbox: MapBbox | undefined;
+  if (q) {
+    const postalCode = /^\d{4}$/.test(q)
+      ? q
+      : (q.match(/\((\d{4})\)$/) ?? [])[1] ?? null;
+    if (postalCode) {
+      const bbox = await fetchPostnummerBbox(postalCode);
+      if (bbox) {
+        postalBbox = bbox;
+        resolvedQ = null;
+      } else {
+        const cityName = lookupPostnummer(postalCode);
+        if (cityName) resolvedQ = cityName;
+      }
+    }
+  }
 
   const [{ shelters: rawShelters, hasMore: initialHasMore }, facilityCounts, topRated, municipalities] =
     await Promise.all([
-      getSheltersPage(regionName, null, 1, MAP_VIEW_PAGE_SIZE),
+      getSheltersPage(
+        regionName,
+        resolvedQ,
+        1,
+        initialPageSize,
+        Object.keys(filters).length ? filters : undefined,
+        postalBbox
+      ),
       getFacilityCountsForRegion(regionName),
       getTopRatedShelters(1, 3),
       getMunicipalitiesWithCounts(regionName),
@@ -207,15 +291,18 @@ export default async function DanmarkRegionPage({ params }: PageProps) {
 
           <Suspense fallback={<div className="h-14 bg-primary/5 rounded-xl animate-pulse mb-8" />}>
             <SoegContent
-              key={regionSlug}
+              key={`${regionSlug}-${q ?? ""}-${Object.entries(filters)
+                .sort()
+                .map(([k, v]) => `${k}:${v}`)
+                .join(",")}`}
               initialShelters={initialShelters}
               initialHasMore={initialHasMore}
               initialRegion={regionName}
-              initialQuery={null}
+              initialQuery={q}
               initialArea={null}
-              initialFilters={{}}
-              view="split"
-              basePath={`/danmark/${regionSlug}`}
+              initialFilters={filters}
+              view={view}
+              basePath={`/danmark/${canonicalRegionSlug}`}
             />
           </Suspense>
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@/test/test-utils";
+import { fireEvent, render, screen } from "@/test/test-utils";
 import { SearchBar } from "../SearchBar";
 
 const mockPush = vi.fn();
@@ -38,7 +38,21 @@ describe("SearchBar", () => {
     const options = Array.from(select.querySelectorAll("option")).map((o) => o.value);
     expect(options).toContain("");
     expect(options).toContain("Jylland");
-    expect(options).toContain("Sjælland");
+    expect(options).toContain("Sjælland og Øerne");
     expect(options).toContain("Fyn");
+    expect(options).toContain("Bornholm");
+  });
+
+  it("bevarer region-side ved view-skift", async () => {
+    render(
+      <SearchBar
+        mode="search"
+        initialRegion="Jylland"
+        filterBasePath="/danmark/jylland"
+        view="split"
+      />
+    );
+    fireEvent.click(screen.getByRole("button", { name: /kun kort/i }));
+    expect(mockPush).toHaveBeenCalledWith("/danmark/jylland?view=map", { scroll: false });
   });
 });

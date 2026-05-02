@@ -24,30 +24,31 @@ const PRIORITY_CITY_NAMES = [
   "Aarhus",
   "Billund",
   "Esbjerg",
-  "Frederikshavn",
   "Helsingør",
   "Herning",
   "Holstebro",
   "Horsens",
   "Kolding",
   "København",
-  "Maribo",
   "Næstved",
   "Odense",
   "Randers",
   "Roskilde",
   "Silkeborg",
-  "Skive",
   "Svendborg",
   "Vejle",
   "Viborg",
 ];
 
+const MIN_POPULAR_CITY_COUNT = 2;
+
 export default async function ByIndexPage() {
   const places = await getDistinctPlacesWithCounts(1);
   const priorityCities = PRIORITY_CITY_NAMES
     .map((cityName) => places.find((place) => place.place === cityName))
-    .filter(Boolean) as { place: string; count: number }[];
+    .filter((place): place is { place: string; count: number } =>
+      Boolean(place && place.count >= MIN_POPULAR_CITY_COUNT)
+    );
   const sortedByPopularity = [...places].sort((a, b) => {
     if (b.count !== a.count) return b.count - a.count;
     return a.place.localeCompare(b.place, "da");
@@ -58,7 +59,7 @@ export default async function ByIndexPage() {
           if (b.count !== a.count) return b.count - a.count;
           return a.place.localeCompare(b.place, "da");
         })
-      : sortedByPopularity.slice(0, 18);
+      : sortedByPopularity.filter((place) => place.count >= 4).slice(0, 12);
   const groupedPlaces = [...places]
     .sort((a, b) => a.place.localeCompare(b.place, "da"))
     .reduce<Record<string, { place: string; count: number }[]>>((groups, place) => {
@@ -100,11 +101,12 @@ export default async function ByIndexPage() {
 
           <section className="mb-12">
             <h2 className="font-serif text-2xl font-bold text-primary mb-5">
-              Store og populære byer
+              Kendte byer med flest shelters
             </h2>
             <p className="mb-5 max-w-3xl text-primary/75">
-              Her viser vi kendte danske byer med shelters, sorteret efter hvor mange shelters der
-              er registreret i byen. Den fulde A-Å-oversigt længere nede viser alle bysider.
+              Her viser vi genkendelige danske byer, hvor der er registreret flere shelters på
+              bysiden. Listen er sorteret efter hvor mange shelters der er registreret i byen,
+              mens den fulde A-Å-oversigt længere nede viser alle bysider.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {popular.map(({ place, count }) => (

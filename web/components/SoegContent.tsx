@@ -161,10 +161,10 @@ export function SoegContent({
         setShelters(list);
         setHasMore(Boolean(data.hasMore));
         setNextPage(2);
-        setListDisplayCount(list.length);
+        setListDisplayCount(view === "split" ? Math.min(24, list.length) : list.length);
       })
       .finally(() => setLoading(false));
-  }, [initialRegion]);
+  }, [initialRegion, view]);
 
   // On mount: if URL or server indicates filters, refetch to avoid stale ISR/cache in production
   const hasActiveFilters = effectiveFilters && Object.values(effectiveFilters).some(Boolean);
@@ -228,7 +228,7 @@ export function SoegContent({
       loadingRef.current = false;
       setLoading(false);
     }
-  }, [loading, hasMore, nextPage, initialRegion, buildApiParams]);
+  }, [loading, hasMore, nextPage, initialRegion, buildApiParams, view]);
 
   // IntersectionObserver: split – afslør flere fra listen (op til shelters.length) eller hent næste side
   useEffect(() => {
@@ -276,8 +276,10 @@ export function SoegContent({
   const buildViewUrl = useCallback((newView: ViewMode) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("view", newView);
-    return "/soeg?" + params.toString();
-  }, [searchParams]);
+    const base = basePath ?? "/soeg";
+    const queryString = params.toString();
+    return base + (queryString ? `?${queryString}` : "");
+  }, [searchParams, basePath]);
 
   const handleViewList = useCallback(() => {
     setView("list");

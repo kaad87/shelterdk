@@ -2,7 +2,8 @@ import { NextRequest } from "next/server";
 import { getSheltersPage, SOEG_PAGE_SIZE, type SoegFilters, type SoegSort, type MapBbox } from "@/lib/soeg-db";
 import { filterSheltersByRegion } from "@/lib/soeg-filters";
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
-import { fetchPostnummerBbox } from "@/lib/postnummer";
+import { fetchPostnummerBbox, lookupPostnummer } from "@/lib/postnummer";
+import { normalizeRegionFilter } from "@/lib/soeg-filters";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,7 @@ function parseNum(s: string | null): number | null {
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
-  const region = searchParams.get("region")?.trim() ?? null;
+  const region = normalizeRegionFilter(searchParams.get("region")?.trim() ?? null);
   const q = searchParams.get("q")?.trim() ?? null;
   const area = searchParams.get("area")?.trim() ?? null;
   const filters: SoegFilters = {};
@@ -60,6 +61,9 @@ export async function GET(request: NextRequest) {
       if (postalBbox) {
         effectiveBbox = postalBbox;
         effectiveQ = null; // bbox overtager — ingen tekstsøgning
+      } else {
+        const cityName = lookupPostnummer(postalCode);
+        if (cityName) effectiveQ = cityName;
       }
     }
   }

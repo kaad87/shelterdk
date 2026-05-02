@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { filterSheltersByRegion } from "../soeg-filters";
+import { filterSheltersByRegion, normalizeRegionFilter } from "../soeg-filters";
 import type { Shelter } from "@/types/shelter";
 
 function mk(id: string, region: string | null): Shelter {
@@ -40,9 +40,25 @@ describe("filterSheltersByRegion", () => {
     ]);
   });
 
-  it("matcher region case-sensitivt", () => {
+  it("normaliserer regionale aliaser", () => {
+    expect(normalizeRegionFilter("Sjælland")).toBe("Sjælland og Øerne");
+    expect(normalizeRegionFilter("sjælland og øerne")).toBe("Sjælland og Øerne");
+    expect(normalizeRegionFilter("Bornholm")).toBe("Bornholm");
+  });
+
+  it("matcher region uafhængigt af alias", () => {
     const list = [mk("1", "Jylland"), mk("2", "jylland")];
-    expect(filterSheltersByRegion(list, "Jylland")).toEqual([mk("1", "Jylland")]);
+    expect(filterSheltersByRegion(list, "Jylland")).toEqual([
+      mk("1", "Jylland"),
+      mk("2", "jylland"),
+    ]);
+  });
+
+  it("matcher Sjælland mod Sjælland og Øerne", () => {
+    const list = [mk("1", "Sjælland og Øerne"), mk("2", "Jylland")];
+    expect(filterSheltersByRegion(list, "Sjælland")).toEqual([
+      mk("1", "Sjælland og Øerne"),
+    ]);
   });
 
   it("trimmer region og shelter.region", () => {

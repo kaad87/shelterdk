@@ -1,1 +1,4 @@
-export { filterSheltersByRegion } from "@shared/lib/soeg-filters";
+export {
+  filterSheltersByRegion,
+  normalizeRegionFilter,
+} from "@shared/lib/soeg-filters";

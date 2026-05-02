@@ -10,6 +10,7 @@ import { AreaFaq } from "@/components/AreaFaq";
 import { getAreaFaqItems, faqToJsonLd, type FaqItem } from "@/lib/faq";
 import dynamic from "next/dynamic";
 import { slugifySegment } from "@/lib/slug";
+import { normalizeRegionFilter } from "@/lib/soeg-filters";
 
 const MissingShelterBanner = dynamic(
   () => import("@/components/MissingShelterBanner").then((m) => m.MissingShelterBanner),
@@ -115,7 +116,7 @@ function parseFilters(params: SoegPageProps["searchParams"] extends Promise<infe
 
 export default async function SoegPage({ searchParams }: SoegPageProps) {
   const params = await searchParams;
-  const region = params.region ?? null;
+  const region = normalizeRegionFilter(params.region ?? null);
   const q = params.q ?? null;
   const area = params.area ?? null;
   const viewParam = (params.view ?? "split").toLowerCase();

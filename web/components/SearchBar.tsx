@@ -29,6 +29,8 @@ import {
   X,
 } from "lucide-react";
 import type { SoegFilters, SearchSuggestion } from "@/lib/soeg-db";
+import { slugifySegment } from "@/lib/slug";
+import { normalizeRegionFilter } from "@/lib/soeg-filters";
 import { trackSearch, trackFilter } from "@/lib/tracking";
 import { addRecentSearch } from "@/lib/search-helpers";
 import { useSearchSuggestions } from "@/hooks/useSearchSuggestions";
@@ -36,8 +38,9 @@ import { useSearchSuggestions } from "@/hooks/useSearchSuggestions";
 const REGIONS = [
   { value: "", label: "Hele Danmark" },
   { value: "Jylland", label: "Jylland" },
-  { value: "Sjælland", label: "Sjælland" },
+  { value: "Sjælland og Øerne", label: "Sjælland" },
   { value: "Fyn", label: "Fyn" },
+  { value: "Bornholm", label: "Bornholm" },
 ] as const;
 
 type ViewMode = "list" | "map" | "split";
@@ -116,7 +119,9 @@ export function SearchBar({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [region, setRegion] = useState(
-    () => initialRegion ?? searchParams.get("region") ?? REGIONS[0].value
+    () =>
+      normalizeRegionFilter(initialRegion ?? searchParams.get("region")) ??
+      REGIONS[0].value
   );
   const [query, setQuery] = useState(
     () => initialQuery ?? searchParams.get("q") ?? ""
@@ -135,16 +140,32 @@ export function SearchBar({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialFilters.billede, initialFilters.anmeldelser, initialFilters.bookbar, initialFilters.vand, initialFilters.toilet, initialFilters.hund, initialFilters.baalplads, initialFilters.bord_baenk, initialFilters.strand, initialFilters.bruser, initialFilters.gratis, initialFilters.handicap, initialFilters.min_pladser]);
 
+  const resolveBasePath = useCallback(
+    (targetRegion: string) => {
+      const normalizedInitialRegion = normalizeRegionFilter(initialRegion);
+      const normalizedTargetRegion = normalizeRegionFilter(targetRegion);
+      if (
+        filterBasePath &&
+        normalizedInitialRegion &&
+        normalizedTargetRegion === normalizedInitialRegion
+      ) {
+        return filterBasePath;
+      }
+      return undefined;
+    },
+    [filterBasePath, initialRegion]
+  );
+
   const buildSoegUrl = useCallback(
     (r: string, q: string, v?: ViewMode, f?: SoegFilters, base?: string) => {
       const params = new URLSearchParams();
       const basePage = base ?? "/soeg";
-      const useCustomBase = !!base;
-      // Når vi bruger en custom base (region-side), udelades region og view fra params
-      // da de er implicitte i URL-stien
-      if (!useCustomBase && r) params.set("region", r);
+      if (!base && r) {
+        const normalizedRegion = normalizeRegionFilter(r) ?? r;
+        params.set("region", normalizedRegion);
+      }
       if (q.trim()) params.set("q", q.trim());
-      if (!useCustomBase && v) params.set("view", v);
+      if (v) params.set("view", v);
       const active = f ?? filters;
       if (active.billede) params.set("billede", "1");
       if (active.anmeldelser) params.set("anmeldelser", "1");
@@ -176,24 +197,34 @@ export function SearchBar({
       }
 
       if (suggestion.type === "region") {
-        // Set region dropdown and navigate without q
-        const regionValue = suggestion.name;
+        const regionValue = normalizeRegionFilter(suggestion.name) ?? suggestion.name;
         setRegion(regionValue);
         setQuery("");
-        const params = new URLSearchParams();
-        params.set("region", regionValue);
-        if (view && mode === "search") params.set("view", view);
-        router.push("/soeg?" + params.toString());
+        const basePath = `/danmark/${slugifySegment(suggestion.name)}`;
+        const url = buildSoegUrl(
+          "",
+          "",
+          mode === "search" ? view : "split",
+          mode === "search" ? filters : undefined,
+          basePath
+        );
+        router.push(url, { scroll: false });
         return;
       }
 
       addRecentSearch(suggestion.name);
       setQuery(suggestion.name);
       inputRef.current?.blur();
-      const url = buildSoegUrl(region, suggestion.name, mode === "search" ? view : "split", mode === "search" ? filters : undefined);
+      const url = buildSoegUrl(
+        region,
+        suggestion.name,
+        mode === "search" ? view : "split",
+        mode === "search" ? filters : undefined,
+        resolveBasePath(region)
+      );
       router.push(url, { scroll: false });
     },
-    [region, view, mode, filters, buildSoegUrl, router, setSuggestOpen]
+    [region, view, mode, filters, buildSoegUrl, router, setSuggestOpen, resolveBasePath]
   );
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -201,7 +232,13 @@ export function SearchBar({
     const hasSearch = region || query.trim();
     const initialView: ViewMode = hasSearch ? "split" : (mode === "search" ? view : "split");
     if (query.trim()) addRecentSearch(query.trim());
-    const url = buildSoegUrl(region, query, initialView);
+    const url = buildSoegUrl(
+      region,
+      query,
+      initialView,
+      undefined,
+      resolveBasePath(region)
+    );
     const activeCount = FILTER_OPTIONS.filter(({ key }) => filters[key]).length;
     trackSearch(query.trim() || "(tom)", region, activeCount);
     router.push(url);
@@ -209,17 +246,26 @@ export function SearchBar({
 
   const handleViewList = () => {
     onViewChange?.("list");
-    router.push(buildSoegUrl(region, query, "list"), { scroll: false });
+    router.push(
+      buildSoegUrl(region, query, "list", undefined, resolveBasePath(region)),
+      { scroll: false }
+    );
   };
 
   const handleViewSplit = () => {
     onViewChange?.("split");
-    router.push(buildSoegUrl(region, query, "split"), { scroll: false });
+    router.push(
+      buildSoegUrl(region, query, "split", undefined, resolveBasePath(region)),
+      { scroll: false }
+    );
   };
 
   const handleViewMap = () => {
     onViewChange?.("map");
-    router.push(buildSoegUrl(region, query, "map"), { scroll: false });
+    router.push(
+      buildSoegUrl(region, query, "map", undefined, resolveBasePath(region)),
+      { scroll: false }
+    );
   };
 
   const toggleFilter = useCallback(
@@ -228,12 +274,12 @@ export function SearchBar({
       const next = { ...filters, [key]: willBeActive ? true : undefined };
       setFilters(next);
       trackFilter(key, willBeActive);
-      const url = filterBasePath
-        ? buildSoegUrl("", "", undefined, next, filterBasePath)
+      const url = resolveBasePath(region)
+        ? buildSoegUrl(region, query, mode === "search" ? view : "split", next, resolveBasePath(region))
         : buildSoegUrl(region, query, mode === "search" ? view : "split", next);
       router.push(url, { scroll: false });
     },
-    [filters, region, query, view, mode, buildSoegUrl, router, filterBasePath]
+    [filters, region, query, view, mode, buildSoegUrl, router, resolveBasePath]
   );
 
   const activeFilterCount = FILTER_OPTIONS.filter(({ key }) => filters[key]).length;
@@ -241,11 +287,11 @@ export function SearchBar({
   const clearAllFilters = useCallback(() => {
     const next: SoegFilters = {};
     setFilters(next);
-    const url = filterBasePath
-      ? filterBasePath
+    const url = resolveBasePath(region)
+      ? buildSoegUrl(region, query, mode === "search" ? view : "split", next, resolveBasePath(region))
       : buildSoegUrl(region, query, mode === "search" ? view : "split", next);
     router.push(url, { scroll: false });
-  }, [region, query, view, mode, buildSoegUrl, router, filterBasePath]);
+  }, [region, query, view, mode, buildSoegUrl, router, resolveBasePath]);
 
   return (
     <div className="space-y-3">
