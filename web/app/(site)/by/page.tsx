@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
-import { getDistinctPlacesWithCounts, slugifySegment } from "@/lib/danmark-silo";
+import { getDistinctByLandingPages, slugifySegment } from "@/lib/danmark-silo";
 
 export const revalidate = 86400;
 
@@ -43,7 +43,7 @@ const PRIORITY_CITY_NAMES = [
 const MIN_POPULAR_CITY_COUNT = 2;
 
 export default async function ByIndexPage() {
-  const places = await getDistinctPlacesWithCounts(1);
+  const places = await getDistinctByLandingPages(1);
   const priorityCities = PRIORITY_CITY_NAMES
     .map((cityName) => places.find((place) => place.place === cityName))
     .filter((place): place is { place: string; count: number } =>

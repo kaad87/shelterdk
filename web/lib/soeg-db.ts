@@ -2,6 +2,7 @@ import { createPublicClient } from "@/utils/supabase/server-public";
 import type { Shelter } from "@/types/shelter";
 import { getLocationCoords, getDisplayScore, hasAnyImage } from "@/lib/shelter-detail";
 import { findPostnummerSuggestions } from "@/lib/postnummer";
+import { haversineKm } from "@/lib/haversine";
 
 /**
  * Geografiske synonymer: søgeord → kommuner/byer i databasen.
@@ -74,6 +75,71 @@ export interface MapBbox {
 }
 
 const BBOX_FETCH_LIMIT = 2000;
+const PLACE_OUTLIER_MIN_CLUSTER_SIZE = 4;
+const PLACE_OUTLIER_CLUSTER_RADIUS_KM = 50;
+const PLACE_OUTLIER_MAX_DISTANCE_KM = 90;
+
+function normalizeGeoSearchTerm(value: string | null | undefined): string {
+  return (value ?? "").trim().toLocaleLowerCase("da-DK");
+}
+
+function median(nums: number[]): number {
+  const sorted = [...nums].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0
+    ? (sorted[mid - 1] + sorted[mid]) / 2
+    : sorted[mid];
+}
+
+function matchesExactPlaceOnly(shelter: Shelter, term: string): boolean {
+  if (!term) return false;
+  const place = normalizeGeoSearchTerm(shelter.place);
+  if (place !== term) return false;
+
+  const kommune = normalizeGeoSearchTerm(shelter.kommune);
+  const region = normalizeGeoSearchTerm(shelter.region);
+  const title = normalizeGeoSearchTerm(shelter.title);
+
+  return kommune !== term && region !== term && !title.includes(term);
+}
+
+function matchesSearchAnchor(shelter: Shelter, term: string): boolean {
+  if (!term) return false;
+  const place = normalizeGeoSearchTerm(shelter.place);
+  const kommune = normalizeGeoSearchTerm(shelter.kommune);
+  const title = normalizeGeoSearchTerm(shelter.title);
+  return place === term || kommune === term || title.includes(term);
+}
+
+export function prunePlaceOutliersForExactQuery(
+  shelters: Shelter[],
+  q: string | null
+): Shelter[] {
+  const term = normalizeGeoSearchTerm(q);
+  if (!term || shelters.length < PLACE_OUTLIER_MIN_CLUSTER_SIZE) return shelters;
+
+  const anchors = shelters
+    .filter((shelter) => matchesSearchAnchor(shelter, term))
+    .map((shelter) => ({ shelter, coords: getLocationCoords(shelter) }))
+    .filter((row): row is { shelter: Shelter; coords: { lat: number; lon: number } } => Boolean(row.coords));
+
+  if (anchors.length < PLACE_OUTLIER_MIN_CLUSTER_SIZE) return shelters;
+
+  const medianLat = median(anchors.map((row) => row.coords.lat));
+  const medianLon = median(anchors.map((row) => row.coords.lon));
+  const closeAnchorCount = anchors.filter((row) => (
+    haversineKm(medianLat, medianLon, row.coords.lat, row.coords.lon) <= PLACE_OUTLIER_CLUSTER_RADIUS_KM
+  )).length;
+
+  if (closeAnchorCount < Math.ceil(anchors.length * 0.6)) return shelters;
+
+  return shelters.filter((shelter) => {
+    if (!matchesExactPlaceOnly(shelter, term)) return true;
+    const coords = getLocationCoords(shelter);
+    if (!coords) return true;
+    return haversineKm(medianLat, medianLon, coords.lat, coords.lon) <= PLACE_OUTLIER_MAX_DISTANCE_KM;
+  });
+}
 
 /**
  * Hent én side shelters med valgfri region, søgetekst, area_slug, filtre og bbox.
@@ -311,9 +377,9 @@ export async function getSheltersPage(
         );
       });
       list.sort(sortByImageAndScore);
-      return { shelters: list, hasMore: false };
+      return { shelters: prunePlaceOutliersForExactQuery(list, q), hasMore: false };
     }
-    list = list.slice(0, pageSize);
+    list = prunePlaceOutliersForExactQuery(list, q).slice(0, pageSize);
     list.sort(sortByImageAndScore);
     return {
       shelters: list,
@@ -327,6 +393,7 @@ export async function getSheltersPage(
   }
 
   let list = ((data as Shelter[]) ?? []).slice(0, pageSize);
+  list = prunePlaceOutliersForExactQuery(list, q);
   // Only apply default client sort when using standard sort (server already sorted)
   if (!sort || sort === "standard") {
     list = [...list].sort(sortByImageAndScore);

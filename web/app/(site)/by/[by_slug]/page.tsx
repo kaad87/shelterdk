@@ -5,8 +5,8 @@ import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { ShelterListSchema } from "@/components/seo/ShelterListSchema";
 import { ChevronRight } from "lucide-react";
 import {
-  getDistinctPlacesWithCounts,
-  getSheltersByPlace,
+  getByLandingData,
+  getDistinctByLandingPages,
   slugifySegment,
   NO_KOMMUNE_SLUG,
 } from "@/lib/danmark-silo";
@@ -26,12 +26,12 @@ export const dynamicParams = false;
 export const revalidate = 86400;
 
 export async function generateStaticParams() {
-  const places = await getDistinctPlacesWithCounts(1);
+  const places = await getDistinctByLandingPages(1);
   return places.map(({ place }) => ({ by_slug: slugifySegment(place) }));
 }
 
 async function resolvePlaceName(slug: string): Promise<string | null> {
-  const places = await getDistinctPlacesWithCounts(1);
+  const places = await getDistinctByLandingPages(1);
   return segmentSlugToName(slug, places.map((p) => p.place));
 }
 
@@ -40,10 +40,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const placeName = await resolvePlaceName(by_slug);
   if (!placeName) return { title: { absolute: "By ikke fundet" } };
 
-  const shelters = await getSheltersByPlace(placeName);
+  const { shelters, usesMunicipalityExpansion } = await getByLandingData(placeName);
   const count = shelters.length;
   const bookable = shelters.filter((s) => !!s.booking_url && String(s.booking_url).trim() !== "").length;
   const withWater = shelters.filter((s) => getWater(s) === true).length;
+  const locationLabel = usesMunicipalityExpansion ? `i og omkring ${placeName}` : `i ${placeName}`;
 
   const title = count > 0
     ? `Shelter ${placeName} | ${count} shelter${count !== 1 ? "s" : ""} i ${placeName} | ShelterDK`
@@ -53,7 +54,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (withWater > 0) statParts.push(`${withWater} med vand`);
   const statsText = statParts.length > 0 ? ` – ${statParts.join(", ")}` : "";
   const description = count > 0
-    ? `Leder du efter shelter i ${placeName}? Se ${count} shelter${count !== 1 ? "s" : ""} i ${placeName}${statsText}, med kort, faciliteter og praktisk info.`
+    ? `Leder du efter shelter i ${placeName}? Se ${count} shelter${count !== 1 ? "s" : ""} ${locationLabel}${statsText}, med kort, faciliteter og praktisk info.`
     : `Leder du efter shelter i ${placeName}? Se shelters, faciliteter og praktisk info på ShelterDK.`;
 
   const canonicalPath = `/by/${by_slug}`;
@@ -93,6 +94,7 @@ function ByProse({
   bookable,
   freeCount,
   kommuneLinks,
+  usesMunicipalityExpansion,
 }: {
   placeName: string;
   shelterCount: number;
@@ -101,12 +103,14 @@ function ByProse({
   bookable: number;
   freeCount: number;
   kommuneLinks: { name: string; slug: string; regionSlug: string }[];
+  usesMunicipalityExpansion: boolean;
 }) {
   const parts: string[] = [];
   if (withToilet > 0) parts.push(`${withToilet} har toilet`);
   if (withWater > 0) parts.push(`${withWater} har adgang til vand`);
   if (bookable > 0) parts.push(`${bookable} kan bookes online`);
   const facilityText = parts.length > 0 ? `, hvoraf ${parts.join(", ")}` : "";
+  const locationLabel = usesMunicipalityExpansion ? `i og omkring ${placeName}` : `i ${placeName}`;
 
   return (
     <section className="prose prose-primary max-w-none text-primary/90">
@@ -114,7 +118,7 @@ function ByProse({
         Shelter {placeName}
       </h2>
       <p>
-        Leder du efter shelter i {placeName}, finder du her {shelterCount} shelter{shelterCount !== 1 ? "s" : ""}{facilityText}.{" "}
+        Leder du efter shelter i {placeName}, finder du her {shelterCount} shelter{shelterCount !== 1 ? "s" : ""} {locationLabel}{facilityText}.{" "}
         {freeCount > 0 && `${freeCount} af pladserne er gratis og fungerer efter først-til-mølle-princippet. `}
         Siden er lavet som en samlet oversigt over shelters i byen, så du hurtigt kan sammenligne pladser,
         faciliteter og bookingmuligheder.
@@ -158,8 +162,8 @@ export default async function ByPage({ params }: PageProps) {
   const placeName = await resolvePlaceName(by_slug);
   if (!placeName) notFound();
 
-  const rawShelters = await getSheltersByPlace(placeName);
-  const shelters = await enrichSheltersWithGooglePhotoRef(rawShelters);
+  const { shelters: mergedShelters, usesMunicipalityExpansion } = await getByLandingData(placeName);
+  const shelters = await enrichSheltersWithGooglePhotoRef(mergedShelters);
 
   if (shelters.length === 0) notFound();
 
@@ -229,7 +233,7 @@ export default async function ByPage({ params }: PageProps) {
               Shelter {placeName}
             </h1>
             <p className="text-primary/80 text-lg">
-              {shelters.length} shelter{shelters.length !== 1 ? "s" : ""} i {placeName}.{" "}
+              {shelters.length} shelter{shelters.length !== 1 ? "s" : ""} {usesMunicipalityExpansion ? `i og omkring ${placeName}` : `i ${placeName}`}.{" "}
               <Link href="/by" className="text-accent font-medium hover:underline">
                 Se flere bysider
               </Link>
@@ -256,6 +260,7 @@ export default async function ByPage({ params }: PageProps) {
             bookable={bookable}
             freeCount={freeCount}
             kommuneLinks={kommuneLinks}
+            usesMunicipalityExpansion={usesMunicipalityExpansion}
           />
 
           {shelters.length > 0 && (

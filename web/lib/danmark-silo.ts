@@ -401,6 +401,61 @@ export async function getDistinctPlacesWithCounts(
     .sort((a, b) => a.place.localeCompare(b.place, "da"));
 }
 
+/** Distinct `kommune` values with shelter counts. Only returns municipalities with >= minCount shelters. */
+export async function getDistinctMunicipalitiesWithCounts(
+  minCount = 1
+): Promise<{ kommune: string; count: number }[]> {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("shelters")
+    .select("kommune")
+    .is("duplicate_of_shelter_id", null)
+    .not("kommune", "is", null)
+    .neq("kommune", "");
+
+  if (error) {
+    console.error("Supabase error (distinct municipalities):", error);
+    return [];
+  }
+
+  const counts = new Map<string, number>();
+  for (const row of (data as { kommune: string | null }[]) ?? []) {
+    const kommune = (row.kommune || "").trim();
+    if (!kommune) continue;
+    counts.set(kommune, (counts.get(kommune) ?? 0) + 1);
+  }
+
+  return [...counts.entries()]
+    .filter(([, c]) => c >= minCount)
+    .map(([kommune, count]) => ({ kommune, count }))
+    .sort((a, b) => a.kommune.localeCompare(b.kommune, "da"));
+}
+
+/**
+ * Landing pages for `/by/*`.
+ * Uses distinct `place` values as the page universe, but upgrades the displayed count when
+ * a municipality with the same name contains more shelters than the exact `place` match.
+ */
+export async function getDistinctByLandingPages(
+  minCount = 1
+): Promise<{ place: string; count: number }[]> {
+  const [places, municipalities] = await Promise.all([
+    getDistinctPlacesWithCounts(minCount),
+    getDistinctMunicipalitiesWithCounts(1),
+  ]);
+
+  const municipalityCounts = new Map(
+    municipalities.map(({ kommune, count }) => [kommune, count] as const)
+  );
+
+  return places
+    .map(({ place, count }) => ({
+      place,
+      count: Math.max(count, municipalityCounts.get(place) ?? 0),
+    }))
+    .sort((a, b) => a.place.localeCompare(b.place, "da"));
+}
+
 /** All shelters whose `place` matches the given value. */
 export async function getSheltersByPlace(place: string): Promise<Shelter[]> {
   const supabase = createPublicClient();
@@ -419,6 +474,63 @@ export async function getSheltersByPlace(place: string): Promise<Shelter[]> {
   const list = (data as Shelter[]) ?? [];
   list.sort(sortByImageAndScore);
   return list;
+}
+
+/** All shelters whose `kommune` matches the given value. */
+export async function getSheltersByMunicipalityName(kommune: string): Promise<Shelter[]> {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("shelters")
+    .select(SHELTER_SELECT)
+    .is("duplicate_of_shelter_id", null)
+    .eq("kommune", kommune)
+    .order("display_score", { ascending: false, nullsFirst: false })
+    .order("title", { ascending: true });
+
+  if (error) {
+    console.error("Supabase error (shelters by municipality name):", error);
+    return [];
+  }
+  const list = (data as Shelter[]) ?? [];
+  list.sort(sortByImageAndScore);
+  return list;
+}
+
+/**
+ * Data for `/by/[slug]` pages.
+ * We primarily use `place`, but if a municipality with the same name contains more shelters,
+ * we expand the page to cover the broader by/kommune-intent users typically search for.
+ */
+export async function getByLandingData(placeName: string): Promise<{
+  shelters: Shelter[];
+  placeCount: number;
+  municipalityCount: number;
+  usesMunicipalityExpansion: boolean;
+}> {
+  const [placeShelters, municipalityShelters] = await Promise.all([
+    getSheltersByPlace(placeName),
+    getSheltersByMunicipalityName(placeName),
+  ]);
+
+  const usesMunicipalityExpansion = municipalityShelters.length > placeShelters.length;
+  const merged = usesMunicipalityExpansion
+    ? [...placeShelters, ...municipalityShelters]
+    : placeShelters;
+
+  const unique = new Map<string | number, Shelter>();
+  for (const shelter of merged) {
+    unique.set(shelter.id, shelter);
+  }
+
+  const shelters = [...unique.values()];
+  shelters.sort(sortByImageAndScore);
+
+  return {
+    shelters,
+    placeCount: placeShelters.length,
+    municipalityCount: municipalityShelters.length,
+    usesMunicipalityExpansion,
+  };
 }
 
 export { slugifySegment };
