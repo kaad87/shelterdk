@@ -11,6 +11,29 @@ export const NO_KOMMUNE_SLUG = "ukendt-kommune";
 import type { Shelter } from "@/types/shelter";
 import { getLocationCoords, getDisplayScore, hasAnyImage } from "@/lib/shelter-detail";
 
+export const PRIORITY_BY_CITY_NAMES = [
+  "Aalborg",
+  "Aarhus",
+  "Billund",
+  "Esbjerg",
+  "Helsingør",
+  "Herning",
+  "Holstebro",
+  "Horsens",
+  "Kolding",
+  "København",
+  "Næstved",
+  "Odense",
+  "Randers",
+  "Roskilde",
+  "Silkeborg",
+  "Svendborg",
+  "Vejle",
+  "Viborg",
+] as const;
+
+const PRIORITY_BY_CITY_NAME_SET = new Set<string>(PRIORITY_BY_CITY_NAMES);
+
 const SHELTER_SELECT =
   "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, water, display_score, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
 
@@ -431,10 +454,45 @@ export async function getDistinctMunicipalitiesWithCounts(
     .sort((a, b) => a.kommune.localeCompare(b.kommune, "da"));
 }
 
+export function buildDistinctByLandingPages(
+  places: { place: string; count: number }[],
+  municipalities: { kommune: string; count: number }[],
+  minCount = 1
+): { place: string; count: number }[] {
+  const merged = new Map<string, number>();
+
+  for (const { place, count } of places) {
+    const name = place.trim();
+    if (!name || count < minCount) continue;
+    merged.set(name, Math.max(merged.get(name) ?? 0, count));
+  }
+
+  for (const { kommune, count } of municipalities) {
+    const name = kommune.trim();
+    if (!name || count < minCount) continue;
+
+    const existing = merged.get(name);
+    if (existing != null) {
+      merged.set(name, Math.max(existing, count));
+      continue;
+    }
+
+    // Some important city-intent landing pages exist only as municipality matches in the data,
+    // e.g. Billund has 0 exact `place` rows but many relevant shelters in Billund Kommune.
+    if (PRIORITY_BY_CITY_NAME_SET.has(name)) {
+      merged.set(name, count);
+    }
+  }
+
+  return [...merged.entries()]
+    .map(([place, count]) => ({ place, count }))
+    .sort((a, b) => a.place.localeCompare(b.place, "da"));
+}
+
 /**
  * Landing pages for `/by/*`.
- * Uses distinct `place` values as the page universe, but upgrades the displayed count when
- * a municipality with the same name contains more shelters than the exact `place` match.
+ * Uses distinct `place` values as the default page universe, upgrades counts when a municipality
+ * with the same name has more shelters, and adds municipality-only fallbacks for key city pages.
  */
 export async function getDistinctByLandingPages(
   minCount = 1
@@ -444,16 +502,7 @@ export async function getDistinctByLandingPages(
     getDistinctMunicipalitiesWithCounts(1),
   ]);
 
-  const municipalityCounts = new Map(
-    municipalities.map(({ kommune, count }) => [kommune, count] as const)
-  );
-
-  return places
-    .map(({ place, count }) => ({
-      place,
-      count: Math.max(count, municipalityCounts.get(place) ?? 0),
-    }))
-    .sort((a, b) => a.place.localeCompare(b.place, "da"));
+  return buildDistinctByLandingPages(places, municipalities, minCount);
 }
 
 /** All shelters whose `place` matches the given value. */

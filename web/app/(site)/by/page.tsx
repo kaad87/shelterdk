@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
-import { getDistinctByLandingPages, slugifySegment } from "@/lib/danmark-silo";
+import {
+  getDistinctByLandingPages,
+  PRIORITY_BY_CITY_NAMES,
+  slugifySegment,
+} from "@/lib/danmark-silo";
 
 export const revalidate = 86400;
 
@@ -19,32 +23,11 @@ export const metadata: Metadata = {
   },
 };
 
-const PRIORITY_CITY_NAMES = [
-  "Aalborg",
-  "Aarhus",
-  "Billund",
-  "Esbjerg",
-  "Helsingør",
-  "Herning",
-  "Holstebro",
-  "Horsens",
-  "Kolding",
-  "København",
-  "Næstved",
-  "Odense",
-  "Randers",
-  "Roskilde",
-  "Silkeborg",
-  "Svendborg",
-  "Vejle",
-  "Viborg",
-];
-
 const MIN_POPULAR_CITY_COUNT = 2;
 
 export default async function ByIndexPage() {
   const places = await getDistinctByLandingPages(1);
-  const priorityCities = PRIORITY_CITY_NAMES
+  const priorityCities = PRIORITY_BY_CITY_NAMES
     .map((cityName) => places.find((place) => place.place === cityName))
     .filter((place): place is { place: string; count: number } =>
       Boolean(place && place.count >= MIN_POPULAR_CITY_COUNT)
