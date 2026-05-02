@@ -14,7 +14,7 @@ import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 import { segmentSlugToName } from "@/lib/slug";
 import { ShelterCard } from "@/components/ShelterCard";
 import { getWater, getToilet } from "@/lib/shelter-detail";
-import { generateMunicipalityPageFaq } from "@/lib/fakta-faq";
+import { generatePlacePageFaq } from "@/lib/fakta-faq";
 import { faqToJsonLd } from "@/lib/faq";
 
 interface PageProps {
@@ -26,12 +26,12 @@ export const dynamicParams = false;
 export const revalidate = 86400;
 
 export async function generateStaticParams() {
-  const places = await getDistinctPlacesWithCounts(2);
+  const places = await getDistinctPlacesWithCounts(1);
   return places.map(({ place }) => ({ by_slug: slugifySegment(place) }));
 }
 
 async function resolvePlaceName(slug: string): Promise<string | null> {
-  const places = await getDistinctPlacesWithCounts(2);
+  const places = await getDistinctPlacesWithCounts(1);
   return segmentSlugToName(slug, places.map((p) => p.place));
 }
 
@@ -45,12 +45,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const bookable = shelters.filter((s) => !!s.booking_url && String(s.booking_url).trim() !== "").length;
   const withWater = shelters.filter((s) => getWater(s) === true).length;
 
-  const title = `${count} Shelter${count !== 1 ? "s" : ""} i ${placeName} | ShelterDK`;
+  const title = count > 0
+    ? `Shelter ${placeName} | ${count} shelter${count !== 1 ? "s" : ""} i ${placeName} | ShelterDK`
+    : `Shelter ${placeName} | ShelterDK`;
   const statParts: string[] = [];
   if (bookable > 0) statParts.push(`${bookable} kan bookes`);
   if (withWater > 0) statParts.push(`${withWater} med vand`);
   const statsText = statParts.length > 0 ? ` – ${statParts.join(", ")}` : "";
-  const description = `${count} shelters i ${placeName}${statsText}. Find overnatning i naturen og planlæg din næste sheltertur.`;
+  const description = count > 0
+    ? `Leder du efter shelter i ${placeName}? Se ${count} shelter${count !== 1 ? "s" : ""} i ${placeName}${statsText}, med kort, faciliteter og praktisk info.`
+    : `Leder du efter shelter i ${placeName}? Se shelters, faciliteter og praktisk info på ShelterDK.`;
 
   const canonicalPath = `/by/${by_slug}`;
   return {
@@ -66,7 +70,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
           url: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&q=80&auto=format&fit=crop",
           width: 1200,
           height: 630,
-          alt: `Shelters i ${placeName}`,
+          alt: `Shelter ${placeName}`,
         },
       ],
     },
@@ -107,13 +111,13 @@ function ByProse({
   return (
     <section className="prose prose-primary max-w-none text-primary/90">
       <h2 className="font-serif text-xl font-bold text-primary mb-4">
-        Overnatning i {placeName}
+        Shelter {placeName}
       </h2>
       <p>
-        I {placeName} finder du {shelterCount} shelter{shelterCount !== 1 ? "s" : ""}{facilityText}.{" "}
+        Leder du efter shelter i {placeName}, finder du her {shelterCount} shelter{shelterCount !== 1 ? "s" : ""}{facilityText}.{" "}
         {freeCount > 0 && `${freeCount} af pladserne er gratis og fungerer efter først-til-mølle-princippet. `}
-        Uanset om du søger en primitiv overnatning eller en shelter med faciliteter,
-        giver {placeName} muligheder for naturoplevelser.
+        Siden er lavet som en samlet oversigt over shelters i byen, så du hurtigt kan sammenligne pladser,
+        faciliteter og bookingmuligheder.
       </p>
       <p>
         {bookable > 0 ? (
@@ -128,7 +132,7 @@ function ByProse({
       </p>
       {kommuneLinks.length > 0 && (
         <p>
-          Se alle shelters i{" "}
+          Se også de tilhørende kommune-oversigter for{" "}
           {kommuneLinks.map((k, i) => (
             <span key={k.slug}>
               <Link href={`/danmark/${k.regionSlug}/${k.slug}`} className="text-accent hover:underline">
@@ -137,7 +141,7 @@ function ByProse({
               {i < kommuneLinks.length - 1 ? ", " : ""}
             </span>
           ))}
-          , eller udforsk shelters med specifikke faciliteter:{" "}
+          . Du kan også udforske shelters med specifikke faciliteter:{" "}
           <Link href="/shelter-med-toilet" className="text-accent hover:underline">toilet</Link>,{" "}
           <Link href="/shelter-med-vand" className="text-accent hover:underline">vand</Link>,{" "}
           <Link href="/shelter-med-hund" className="text-accent hover:underline">hund</Link>{" "}
@@ -183,22 +187,23 @@ export default async function ByPage({ params }: PageProps) {
   }
   const kommuneLinks = [...kommuneMap.values()].slice(0, 3);
 
-  const byFaq = generateMunicipalityPageFaq(placeName, {
+  const byFaq = generatePlacePageFaq(placeName, {
     totalCount: shelters.length,
     freeCount,
     toiletCount: withToilet,
     waterCount: withWater,
+    bookableCount: bookable,
   });
 
   return (
     <>
       <BreadcrumbSchema items={[
         { label: "Hjem", href: "/" },
-        { label: "Søg shelters", href: "/soeg" },
-        { label: `Shelters i ${placeName}` },
+        { label: "Byer", href: "/by" },
+        { label: `Shelter ${placeName}` },
       ]} />
       <ShelterListSchema
-        name={`Shelters i ${placeName}`}
+        name={`Shelter ${placeName}`}
         shelters={shelters}
         hrefFn={(s) => {
           const full = shelters.find((x) => x.id === s.id);
@@ -212,21 +217,21 @@ export default async function ByPage({ params }: PageProps) {
               Hjem
             </Link>
             <ChevronRight size={14} className="text-primary/50 shrink-0" />
-            <Link href="/soeg" className="py-1 -my-1 hover:text-accent transition-colors touch-manipulation">
-              Søg shelters
+            <Link href="/by" className="py-1 -my-1 hover:text-accent transition-colors touch-manipulation">
+              Byer
             </Link>
             <ChevronRight size={14} className="text-primary/50 shrink-0" />
-            <span className="text-primary font-medium">Shelters i {placeName}</span>
+            <span className="text-primary font-medium">Shelter {placeName}</span>
           </nav>
 
           <header className="mb-10">
             <h1 className="font-serif text-3xl md:text-4xl font-bold text-primary mb-2">
-              Shelters i {placeName}
+              Shelter {placeName}
             </h1>
             <p className="text-primary/80 text-lg">
               {shelters.length} shelter{shelters.length !== 1 ? "s" : ""} i {placeName}.{" "}
-              <Link href="/soeg" className="text-accent font-medium hover:underline">
-                Søg alle shelters
+              <Link href="/by" className="text-accent font-medium hover:underline">
+                Se flere bysider
               </Link>
             </p>
           </header>
@@ -256,7 +261,7 @@ export default async function ByPage({ params }: PageProps) {
           {shelters.length > 0 && (
             <section className="mt-12 pt-8 border-t border-primary/10">
               <h2 className="font-serif text-xl font-bold text-primary mb-6">
-                Ofte stillede spørgsmål om shelters i {placeName}
+                Ofte stillede spørgsmål om shelter i {placeName}
               </h2>
               <dl className="space-y-6">
                 {byFaq.map((item) => (

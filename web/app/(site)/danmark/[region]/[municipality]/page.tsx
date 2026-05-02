@@ -54,15 +54,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const bookable = shelters.filter((s) => !!s.booking_url && String(s.booking_url).trim() !== "").length;
   const withWater = shelters.filter((s) => getWater(s) === true).length;
   const title = count > 0
-    ? `${count} Shelter${count !== 1 ? "s" : ""} i ${municipalityName} – ${regionName} | ShelterDK`
-    : `Shelters i ${municipalityName}, ${regionName} | ShelterDK`;
+    ? `Shelters i ${municipalityName} Kommune – ${regionName} | ShelterDK`
+    : `Shelters i ${municipalityName} Kommune, ${regionName} | ShelterDK`;
   const statParts: string[] = [];
   if (bookable > 0) statParts.push(`${bookable} kan bookes`);
   if (withWater > 0) statParts.push(`${withWater} med vand`);
   const statsText = statParts.length > 0 ? ` – ${statParts.join(", ")}` : "";
   const description = count > 0
-    ? `${count} shelters i ${municipalityName}${statsText}. Find overnatning i naturen og planlæg din næste sheltertur.`
-    : `Find shelters og overnatningspladser i ${municipalityName}, ${regionName}. Se pladser og praktisk info.`;
+    ? `${count} shelters i ${municipalityName} Kommune${statsText}. Se alle shelterpladser i kommunen og find også lokale bysider for mere præcise søgninger.`
+    : `Find shelters og overnatningspladser i ${municipalityName} Kommune, ${regionName}. Se pladser og praktisk info.`;
   const canonicalPath = `/danmark/${regionSlug}/${municipalitySlug}`;
   return {
     title: { absolute: title },
@@ -77,7 +77,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
           url: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&q=80&auto=format&fit=crop",
           width: 1200,
           height: 630,
-          alt: `Shelters i ${municipalityName}, ${regionName}`,
+          alt: `Shelters i ${municipalityName} Kommune, ${regionName}`,
         },
       ],
     },
@@ -98,11 +98,13 @@ function MunicipalityProse({
   displayName,
   regionName,
   regionSlug,
+  placeLinks,
 }: {
   shelters: Shelter[];
   displayName: string;
   regionName: string;
   regionSlug: string;
+  placeLinks: { name: string; slug: string; count: number }[];
 }) {
   const total = shelters.length;
   const withToilet = shelters.filter((s) => {
@@ -129,26 +131,40 @@ function MunicipalityProse({
   return (
     <section className="prose prose-primary max-w-none text-primary/90">
       <h2 className="font-serif text-xl font-bold text-primary mb-4">
-        Overnatning i {displayName}
+        Shelters i {displayName} Kommune
       </h2>
       <p>
-        I {displayName} {prep} {regionName} finder du {total} shelter{total !== 1 ? "s" : ""}{facilityText}.
+        I {displayName} Kommune {prep} {regionName} finder du {total} shelter{total !== 1 ? "s" : ""}{facilityText}.
         {avgRating && ` Den gennemsnitlige Google-rating er ${avgRating} stjerner baseret på ${rated.length} bedømte pladser.`}
-        {" "}Uanset om du søger en primitiv overnatning under åben himmel eller en shelter med
-        faciliteter som toilet og vand, giver {displayName} muligheder for naturoplevelser {prep} {regionName}.
+        {" "}Kommunesiden samler alle shelters i kommunen, mens bysiderne giver dig de mere præcise
+        oversigter over shelter i de enkelte byer og lokalområder.
       </p>
       <p>
         {bookable > 0 ? (
-          <>Flere af pladserne i {displayName} kan bookes i forvejen via udinaturen.dk eller
+          <>Flere af pladserne i {displayName} Kommune kan bookes i forvejen via udinaturen.dk eller
           Naturstyrelsen, hvilket er praktisk i højsæsonen. </>
         ) : (
-          <>De fleste shelters i {displayName} fungerer efter først-til-mølle-princippet,
+          <>De fleste shelters i {displayName} Kommune fungerer efter først-til-mølle-princippet,
           så det kan betale sig at komme tidligt, særligt i højsæsonen. </>
         )}
         Husk at følge lokal skiltning og regler for overnatning, og efterlad altid pladsen
         pænere end du fandt den.
       </p>
       <p>
+        {placeLinks.length > 0 && (
+          <>
+            Populære bysider i kommunen:
+            {" "}
+            {placeLinks.map((place, index) => (
+              <span key={place.slug}>
+                <Link href={`/by/${place.slug}`} className="text-accent hover:underline">
+                  Shelter {place.name}
+                </Link>
+                {index < placeLinks.length - 1 ? ", " : ". "}
+              </span>
+            ))}
+          </>
+        )}
         Se alle shelters{" "}
         <Link href={`/danmark/${regionSlug}`} className="text-accent hover:underline">
           {prep} {regionName}
@@ -212,6 +228,17 @@ export default async function DanmarkMunicipalityPage({ params }: PageProps) {
     toiletCount: withToilet,
     waterCount: withWater,
   });
+  const placeCounts = new Map<string, number>();
+  for (const shelter of shelters) {
+    const place = (shelter.place ?? "").trim();
+    if (!place) continue;
+    placeCounts.set(place, (placeCounts.get(place) ?? 0) + 1);
+  }
+  const placeLinks = [...placeCounts.entries()]
+    .map(([name, count]) => ({ name, count, slug: slugifySegment(name) }))
+    .filter((place) => place.slug)
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, "da"))
+    .slice(0, 5);
 
   return (
     <>
@@ -220,8 +247,8 @@ export default async function DanmarkMunicipalityPage({ params }: PageProps) {
       { label: regionName, href: `/danmark/${regionSlug}` },
       { label: displayName },
     ]} />
-    <ShelterListSchema
-      name={`Shelters i ${displayName}, ${regionName}`}
+  <ShelterListSchema
+      name={`Shelters i ${displayName} Kommune, ${regionName}`}
       shelters={shelters}
       hrefFn={(s) => shelterHref(regionName, shelters.find((x) => x.id === s.id)?.kommune ?? null, s.slug)}
     />
@@ -230,10 +257,6 @@ export default async function DanmarkMunicipalityPage({ params }: PageProps) {
         <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-primary/70 py-2">
           <Link href="/" className="py-1 -my-1 hover:text-accent transition-colors touch-manipulation">
             Hjem
-          </Link>
-          <ChevronRight size={14} className="text-primary/50 shrink-0" />
-          <Link href="/soeg" className="py-1 -my-1 hover:text-accent transition-colors touch-manipulation">
-            Søg shelters
           </Link>
           <ChevronRight size={14} className="text-primary/50 shrink-0" />
           <Link
@@ -248,12 +271,12 @@ export default async function DanmarkMunicipalityPage({ params }: PageProps) {
 
         <header className="mb-10">
           <h1 className="font-serif text-3xl md:text-4xl font-bold text-primary mb-2">
-            Shelters i {displayName}
+            Shelters i {displayName} Kommune
           </h1>
           <p className="text-primary/80 text-lg">
             {shelters.length} shelter{shelters.length !== 1 ? "s" : ""} i {displayName}, {regionName}.{" "}
-            <Link href="/omraade" className="text-accent font-medium hover:underline">
-              Shelter efter område
+            <Link href="/by" className="text-accent font-medium hover:underline">
+              Se shelter efter by
             </Link>
           </p>
         </header>
@@ -275,6 +298,7 @@ export default async function DanmarkMunicipalityPage({ params }: PageProps) {
           displayName={displayName}
           regionName={regionName}
           regionSlug={regionSlug}
+          placeLinks={placeLinks}
         />
 
         {/* FAQ with JSON-LD */}

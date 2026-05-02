@@ -39,6 +39,7 @@ const STATIC_PAGES: Array<{
   { path: "/shelter-med-strand", source: "app/(site)/shelter-med-strand/page.tsx", changeFrequency: "weekly", priority: 0.85 },
   { path: "/shelter-med-bruser", source: "app/(site)/shelter-med-bruser/page.tsx", changeFrequency: "weekly", priority: 0.85 },
   { path: "/shelter-booking", source: "app/(site)/shelter-booking/page.tsx", changeFrequency: "weekly", priority: 0.85 },
+  { path: "/by", source: "app/(site)/by/page.tsx", changeFrequency: "weekly", priority: 0.78 },
   { path: "/omraade", source: "app/(site)/omraade/page.tsx", changeFrequency: "weekly", priority: 0.8 },
   { path: "/ruteplanner", source: "app/(site)/ruteplanner/page.tsx", changeFrequency: "monthly", priority: 0.7 },
   { path: "/handicapvenlige-shelters", source: "app/(site)/handicapvenlige-shelters/page.tsx", changeFrequency: "weekly", priority: 0.85 },
@@ -389,7 +390,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     );
   }
 
-  const places = await getDistinctPlacesWithCounts(2);
+  const places = await getDistinctPlacesWithCounts(1);
   for (const { place } of places) {
     const bySlug = slugifySegment(place);
     if (!bySlug) continue;

@@ -165,8 +165,10 @@ export default async function ShelterPage({ params }: PageProps) {
     ? await getWeatherForecast(coordsEarly.lat, coordsEarly.lon)
     : null;
 
-  const placeName = shelter.google_place_name ?? null;
-  const showReviews = isShelterPlace(placeName);
+  const googlePlaceName = shelter.google_place_name ?? null;
+  const showReviews = isShelterPlace(googlePlaceName);
+  const placeName = (shelter.place ?? "").trim() || null;
+  const placeSlug = placeName ? slugifySegment(placeName) : null;
   const city =
     getCity(shelter) ??
     (shelter.region && shelter.region !== "Danmark" ? shelter.region : null);
@@ -255,6 +257,8 @@ export default async function ShelterPage({ params }: PageProps) {
       slug={slug}
       breadcrumbs={breadcrumbs}
       city={city}
+      placeName={placeName}
+      placeSlug={placeSlug}
       areaSlug={area ? areaSlug : undefined}
       areaName={area?.name ?? undefined}
       areaPreposition={area ? prepositionForArea(area) : undefined}

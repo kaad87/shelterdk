@@ -6,6 +6,7 @@ const footerLinks = [
   { label: "Søg shelters", href: "/soeg" },
   { label: "Tilføj manglende shelter", href: "/registrer-shelter" },
   { label: "Book shelter", href: "/shelter-booking" },
+  { label: "Shelter by", href: "/by" },
   { label: "Shelter efter område", href: "/omraade" },
   { label: "Shelter med toilet", href: "/shelter-med-toilet" },
   { label: "Shelter med vand", href: "/shelter-med-vand" },
@@ -134,4 +135,3 @@ export function Footer() {
     </footer>
   );
 }
-

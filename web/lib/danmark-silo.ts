@@ -373,7 +373,7 @@ export async function getCanonicalShelterForRedirect(
 
 /** Distinct `place` values with shelter counts. Only returns places with >= minCount shelters. */
 export async function getDistinctPlacesWithCounts(
-  minCount = 2
+  minCount = 1
 ): Promise<{ place: string; count: number }[]> {
   const supabase = createPublicClient();
   const { data, error } = await supabase

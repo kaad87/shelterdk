@@ -171,8 +171,10 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
       ? null
       : segmentSlugToName(municipalitySlug, municipalitiesResult);
 
-  const placeName = shelter.google_place_name ?? null;
-  const showReviews = isShelterPlace(placeName);
+  const googlePlaceName = shelter.google_place_name ?? null;
+  const showReviews = isShelterPlace(googlePlaceName);
+  const placeName = (shelter.place ?? "").trim() || null;
+  const placeSlug = placeName ? slugifySegment(placeName) : null;
   const city =
     getCity(shelter) ??
     (shelter.region && shelter.region !== "Danmark" ? shelter.region : null);
@@ -248,6 +250,8 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
         slug={shelter_slug}
         breadcrumbs={breadcrumbs}
         city={city}
+        placeName={placeName}
+        placeSlug={placeSlug}
         areaSlug={area ? areaSlug : undefined}
         areaName={area?.name ?? undefined}
         areaPreposition={area ? prepositionForArea(area) : undefined}

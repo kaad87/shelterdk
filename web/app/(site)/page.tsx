@@ -11,6 +11,8 @@ import { MobileHomePills } from "@/components/MobileHomePills";
 import { HomepageDealsWidget } from "@/components/HomepageDealsWidget";
 import { createPublicClient } from "@/utils/supabase/server-public";
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
+import { getDistinctPlacesWithCounts } from "@/lib/danmark-silo";
+import { slugifySegment } from "@/lib/slug";
 
 const InstagramFeed = dynamic(
   () => import("@/components/InstagramFeed").then((m) => ({ default: m.InstagramFeed })),
@@ -281,6 +283,22 @@ export default async function HomePage() {
     // Use fallback
   }
 
+  const featuredCities = ["Aarhus", "Billund", "Silkeborg", "Svendborg", "Vejle", "Horsens"];
+  let cityLinks: { name: string; count: number; slug: string }[] = [];
+  try {
+    const places = await getDistinctPlacesWithCounts(1);
+    cityLinks = featuredCities
+      .map((name) => places.find((place) => place.place === name))
+      .filter(Boolean)
+      .map((place) => ({
+        name: place!.place,
+        count: place!.count,
+        slug: slugifySegment(place!.place),
+      }));
+  } catch (err) {
+    console.error("Forside: kunne ikke hente bylinks:", err);
+  }
+
   return (
     <>
       <WebSiteSchema />
@@ -383,6 +401,33 @@ export default async function HomePage() {
           </nav>
         </div>
       </section>
+
+      {cityLinks.length > 0 && (
+        <section className="py-4 bg-background" aria-labelledby="heading-byer">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <h2 id="heading-byer" className="font-serif text-2xl font-bold text-primary mb-4 text-center">
+              Populære shelter-byer
+            </h2>
+            <div className="flex flex-wrap justify-center gap-2">
+              {cityLinks.map((city) => (
+                <Link
+                  key={city.slug}
+                  href={`/by/${city.slug}`}
+                  className="rounded-full border border-primary/15 bg-white px-4 py-2 text-sm font-medium text-primary/75 hover:border-accent/30 hover:text-accent transition-colors shadow-sm"
+                >
+                  Shelter {city.name}
+                </Link>
+              ))}
+              <Link
+                href="/by"
+                className="rounded-full border border-accent/30 bg-accent/5 px-4 py-2 text-sm font-medium text-accent hover:bg-accent/10 transition-colors"
+              >
+                Se alle byer
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {featuredShelters.length > 0 && (
         <section

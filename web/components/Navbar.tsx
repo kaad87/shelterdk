@@ -28,6 +28,7 @@ const navEntries: NavEntry[] = [
     label: "Find shelter",
     items: [
       { label: "Søg shelters", href: "/soeg" },
+      { label: "Shelter by", href: "/by" },
       { label: "Shelter nær mig", href: "/shelter-naer-mig" },
       { label: "Områder", href: "/omraade" },
       { label: "Book shelter", href: "/shelter-booking" },

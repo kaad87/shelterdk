@@ -140,6 +140,44 @@ export function generateMunicipalityPageFaq(
   ];
 }
 
+interface PlacePageFaqData {
+  totalCount: number;
+  freeCount: number;
+  toiletCount: number;
+  waterCount: number;
+  bookableCount: number;
+}
+
+export function generatePlacePageFaq(
+  placeName: string,
+  data: PlacePageFaqData
+): FaqItem[] {
+  return [
+    {
+      question: `Hvor finder jeg shelter i ${placeName}?`,
+      answer: `På ShelterDK kan du se ${data.totalCount} shelter${data.totalCount !== 1 ? "s" : ""} i ${placeName} med kort, billeder, faciliteter og praktisk info.`,
+    },
+    {
+      question: `Hvor mange shelters er der i ${placeName}?`,
+      answer: `Der er ${data.totalCount} shelter${data.totalCount !== 1 ? "s" : ""} i ${placeName} registreret på ShelterDK.`,
+    },
+    {
+      question: `Kan man booke shelter i ${placeName}?`,
+      answer: data.bookableCount > 0
+        ? `Ja, ${data.bookableCount} shelter${data.bookableCount !== 1 ? "s" : ""} i ${placeName} kan bookes på forhånd.`
+        : `De fleste shelters i ${placeName} fungerer efter først-til-mølle-princippet, så tjek altid den enkelte plads før du tager afsted.`,
+    },
+    {
+      question: `Har shelters i ${placeName} toilet eller vand?`,
+      answer: `${data.toiletCount} shelters har toilet og ${data.waterCount} har adgang til vand i ${placeName}.`,
+    },
+    {
+      question: `Er der gratis shelters i ${placeName}?`,
+      answer: `Ja, ${data.freeCount} ud af ${data.totalCount} shelter${data.totalCount !== 1 ? "s" : ""} i ${placeName} er gratis.`,
+    },
+  ];
+}
+
 interface CrossPageFaqData {
   count: number;
   avgRating: number | null;

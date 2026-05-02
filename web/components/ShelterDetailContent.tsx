@@ -40,6 +40,8 @@ interface ShelterDetailContentProps {
   slug: string;
   breadcrumbs: BreadcrumbLink[];
   city: string | null;
+  placeName?: string | null;
+  placeSlug?: string | null;
   /** Område til intern linking: "Se alle shelters på/i/ved [område]" */
   areaSlug?: string | null;
   areaName?: string | null;
@@ -85,6 +87,8 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
     slug,
     breadcrumbs,
     city,
+    placeName = null,
+    placeSlug = null,
     areaSlug = null,
     areaName = null,
     areaPreposition = "i",
@@ -232,7 +236,13 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
               {city && (
                 <span className="flex items-center gap-2">
                   <MapPin size={18} className="text-accent shrink-0" />
-                  {city}
+                  {placeName && placeSlug ? (
+                    <Link href={`/by/${placeSlug}`} className="text-accent hover:underline">
+                      {city}
+                    </Link>
+                  ) : (
+                    city
+                  )}
                 </span>
               )}
               {capacity != null && (
@@ -374,7 +384,15 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                     {" "}– se alle shelters med denne facilitet
                   </li>
                 ))}
-                {breadcrumbs.length >= 2 && breadcrumbs[1]?.href && (
+                {placeName && placeSlug && (
+                  <li>
+                    <Link href={`/by/${placeSlug}`} className="text-accent hover:underline">
+                      Shelter {placeName}
+                    </Link>
+                    {" "}– alle shelters i byen
+                  </li>
+                )}
+                {breadcrumbs.length >= 2 && breadcrumbs[1]?.href && breadcrumbs[1].href !== "/soeg" && (
                   <li>
                     <Link href={breadcrumbs[1].href} className="text-accent hover:underline">
                       Shelters {prepositionForRegionName(breadcrumbs[1].label)} {breadcrumbs[1].label}
