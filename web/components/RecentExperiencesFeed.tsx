@@ -47,7 +47,11 @@ export function RecentExperiencesFeed() {
                   >
                     {coverUrl ? (
                       <div className="h-28 relative">
-                        <img src={coverUrl} alt="" className="w-full h-full object-cover" />
+                        <img
+                          src={coverUrl}
+                          alt={`Billede delt fra ${shelter?.title ?? "shelteroplevelse"}`}
+                          className="w-full h-full object-cover"
+                        />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                         <div className="absolute bottom-2 left-2.5 right-2.5">
                           <div className="text-[10px] text-white/80">📍 {shelter?.title ?? "Shelter"}</div>

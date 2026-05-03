@@ -6,13 +6,17 @@ import { getAllAreas } from "@/lib/area-db";
 import { getFileModified, newestIsoDate } from "@/lib/content-dates";
 import { FILTER_CONFIGS, REGION_NAMES, REGION_SLUGS } from "@/lib/cross-page-config";
 import {
-  getDistinctPlacesWithCounts,
+  getByLandingData,
+  getDistinctByLandingPages,
   getDistinctRegions,
   getRegionKommunePairs,
   NO_KOMMUNE_SLUG,
+  getSheltersByMunicipalityName,
+  shouldRedirectMunicipalityToByPage,
 } from "@/lib/danmark-silo";
 import { getFilterRegionCount } from "@/lib/fakta-db";
 import { getGuideCategories, getGuides } from "@/data/guides";
+import { SEARCH_SYNONYMS } from "@/lib/search-synonyms";
 import { slugifySegment } from "@/lib/slug";
 import type { CuratedRouteIndex } from "@/types/curated-route";
 import { createPublicClient } from "@/utils/supabase/server-public";
@@ -23,6 +27,43 @@ const BASE_URL = "https://shelterdk.dk";
 const BATCH_SIZE = 1000;
 
 type SitemapEntry = MetadataRoute.Sitemap[number];
+type SitemapShelterMeta = {
+  region: string | null;
+  kommune: string | null;
+  place: string | null;
+  area_slug: string | null;
+  updated_at?: string;
+  created_at?: string;
+};
+
+const BY_LANDING_SEARCH_SYNONYM_KEYS: Partial<Record<string, string>> = {
+  "København": "københavn",
+};
+
+async function getRedirectingMunicipalityNames(): Promise<Set<string>> {
+  const pairs = await getRegionKommunePairs(2);
+  const municipalityNames = [...new Set(pairs.map((pair) => pair.kommune).filter(Boolean))] as string[];
+  const redirecting = new Set<string>();
+
+  for (const municipalityName of municipalityNames) {
+    const [municipalityShelters, byLanding] = await Promise.all([
+      getSheltersByMunicipalityName(municipalityName),
+      getByLandingData(municipalityName),
+    ]);
+
+    if (
+      shouldRedirectMunicipalityToByPage(
+        municipalityName,
+        municipalityShelters,
+        byLanding.shelters
+      )
+    ) {
+      redirecting.add(municipalityName);
+    }
+  }
+
+  return redirecting;
+}
 
 const STATIC_PAGES: Array<{
   path: string;
@@ -190,6 +231,52 @@ async function getSheltersWithoutRegion(): Promise<
   return out;
 }
 
+async function getShelterMetadata(): Promise<SitemapShelterMeta[]> {
+  const supabase = createPublicClient();
+  const out: SitemapShelterMeta[] = [];
+  let offset = 0;
+
+  while (true) {
+    const { data, error } = await supabase
+      .from("shelters")
+      .select("region, kommune, place, area_slug, updated_at, created_at")
+      .is("duplicate_of_shelter_id", null)
+      .order("id")
+      .range(offset, offset + BATCH_SIZE - 1);
+
+    if (error) {
+      console.error("Supabase error (sitemap shelter metadata):", error);
+      break;
+    }
+
+    const rows =
+      (data as Array<{
+        region: string | null;
+        kommune: string | null;
+        place: string | null;
+        area_slug: string | null;
+        updated_at?: string;
+        created_at?: string;
+      }>) ?? [];
+
+    for (const row of rows) {
+      out.push({
+        region: row.region?.trim() || null,
+        kommune: row.kommune?.trim() || null,
+        place: row.place?.trim() || null,
+        area_slug: row.area_slug?.trim() || null,
+        updated_at: row.updated_at,
+        created_at: row.created_at,
+      });
+    }
+
+    if (rows.length < BATCH_SIZE) break;
+    offset += BATCH_SIZE;
+  }
+
+  return out;
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries: SitemapEntry[] = [];
   const regionTemplateModified = getFileModified("app", "(site)", "danmark", "[region]", "page.tsx");
@@ -220,6 +307,53 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const byTemplateModified = getFileModified("app", "(site)", "by", "[by_slug]", "page.tsx");
   const areaTemplateModified = getFileModified("app", "(site)", "omraade", "[slug]", "page.tsx");
   const routeRegionTemplateModified = getFileModified("app", "(site)", "ruteplanner", "region", "[region]", "page.tsx");
+  const shelterMetadata = await getShelterMetadata();
+  const regionLastModified = new Map<string, string>();
+  const municipalityLastModified = new Map<string, string>();
+  const byPlaceLastModified = new Map<string, string>();
+  const byMunicipalityLastModified = new Map<string, string>();
+  const areaLastModified = new Map<string, string>();
+
+  for (const shelter of shelterMetadata) {
+    const shelterModified = newestIsoDate(shelter.updated_at, shelter.created_at);
+    if (!shelterModified) continue;
+
+    if (shelter.region) {
+      regionLastModified.set(
+        shelter.region,
+        newestIsoDate(regionLastModified.get(shelter.region), shelterModified) ?? shelterModified
+      );
+
+      const municipalityKey = `${shelter.region}\n${shelter.kommune ?? ""}`;
+      municipalityLastModified.set(
+        municipalityKey,
+        newestIsoDate(municipalityLastModified.get(municipalityKey), shelterModified) ??
+          shelterModified
+      );
+    }
+
+    if (shelter.area_slug) {
+      areaLastModified.set(
+        shelter.area_slug,
+        newestIsoDate(areaLastModified.get(shelter.area_slug), shelterModified) ?? shelterModified
+      );
+    }
+
+    if (shelter.place) {
+      byPlaceLastModified.set(
+        shelter.place,
+        newestIsoDate(byPlaceLastModified.get(shelter.place), shelterModified) ?? shelterModified
+      );
+    }
+
+    if (shelter.kommune) {
+      byMunicipalityLastModified.set(
+        shelter.kommune,
+        newestIsoDate(byMunicipalityLastModified.get(shelter.kommune), shelterModified) ??
+          shelterModified
+      );
+    }
+  }
 
   for (const { path, source, changeFrequency, priority } of STATIC_PAGES) {
     entries.push(
@@ -311,7 +445,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         `${BASE_URL}/danmark/${regionSlug}`,
         "weekly",
         0.8,
-        newestIsoDate(regionTemplateModified)
+        newestIsoDate(regionLastModified.get(region.trim()), regionTemplateModified)
       )
     );
   }
@@ -359,22 +493,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         `${BASE_URL}/omraade/${area.slug}`,
         "weekly",
         0.72,
-        newestIsoDate(areaTemplateModified)
+        newestIsoDate(areaLastModified.get(area.slug), areaTemplateModified)
       )
     );
   }
 
-  const pairs = await getRegionKommunePairs(2);
+  const [pairs, redirectingMunicipalities] = await Promise.all([
+    getRegionKommunePairs(2),
+    getRedirectingMunicipalityNames(),
+  ]);
   for (const { region, kommune } of pairs) {
+    if (kommune && redirectingMunicipalities.has(kommune)) continue;
     const regionSlug = slugifySegment(region);
     const municipalitySlug = kommune ? slugifySegment(kommune) : NO_KOMMUNE_SLUG;
     if (!regionSlug || !municipalitySlug) continue;
+    const municipalityKey = `${region}\n${kommune ?? ""}`;
     entries.push(
       entry(
         `${BASE_URL}/danmark/${regionSlug}/${municipalitySlug}`,
         "weekly",
         0.75,
-        newestIsoDate(municipalityTemplateModified)
+        newestIsoDate(
+          municipalityLastModified.get(municipalityKey),
+          municipalityTemplateModified
+        )
       )
     );
   }
@@ -406,12 +548,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     );
   }
 
-  const places = await getDistinctPlacesWithCounts(1);
+  const places = await getDistinctByLandingPages(1);
   for (const { place } of places) {
     const bySlug = slugifySegment(place);
     if (!bySlug) continue;
+    const synonymKey = BY_LANDING_SEARCH_SYNONYM_KEYS[place];
+    const synonymDates = (synonymKey ? SEARCH_SYNONYMS[synonymKey] ?? [] : []).map((term) =>
+      byMunicipalityLastModified.get(term)
+    );
+    const landingLastModified = newestIsoDate(
+      byPlaceLastModified.get(place),
+      byMunicipalityLastModified.get(place),
+      ...synonymDates
+    );
     entries.push(
-      entry(`${BASE_URL}/by/${bySlug}`, "weekly", 0.7, newestIsoDate(byTemplateModified))
+      entry(
+        `${BASE_URL}/by/${bySlug}`,
+        "weekly",
+        0.7,
+        newestIsoDate(landingLastModified, byTemplateModified)
+      )
     );
   }
 

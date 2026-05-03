@@ -66,7 +66,11 @@ export function ShelterExperiencesSection({
               >
                 {coverUrl ? (
                   <div className="relative h-28">
-                    <img src={coverUrl} alt="" className="w-full h-full object-cover" />
+                    <img
+                      src={coverUrl}
+                      alt={`Billede delt af ${exp.author_name} fra ${shelterTitle}`}
+                      className="w-full h-full object-cover"
+                    />
                     {extra > 0 && (
                       <div className="absolute top-1.5 right-1.5 bg-black/50 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
                         +{extra}

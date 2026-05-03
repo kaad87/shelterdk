@@ -4,7 +4,19 @@ const BASE_URL = "https://shelterdk.dk";
 
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: { userAgent: "*", allow: "/", disallow: ["/admin/", "/api/", "/embed/"] },
+    rules: {
+      userAgent: "*",
+      allow: "/",
+      disallow: [
+        "/admin/",
+        "/api/",
+        "/embed/",
+        "/owner/",
+        "/min-booking/",
+        "/booking/",
+        "/book/",
+      ],
+    },
     sitemap: `${BASE_URL}/sitemap.xml`,
     host: BASE_URL,
   };

@@ -14,7 +14,7 @@ export function FrontPageShelterGrid({
   maxVisible = 12,
 }: FrontPageShelterGridProps) {
   const toShow = shelters.slice(0, maxVisible);
-  const priorityCount = 6;
+  const priorityCount = 1;
 
   return (
     <>
@@ -27,7 +27,7 @@ export function FrontPageShelterGrid({
           >
             <ShelterCard
               shelter={shelter}
-              priority={index < 2}
+              priority={index === 0}
             />
           </div>
         ))}

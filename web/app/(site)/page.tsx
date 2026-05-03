@@ -600,7 +600,6 @@ export default async function HomePage() {
                       fill
                       className="object-cover transition-transform duration-300 group-hover:scale-110"
                       sizes="(max-width: 768px) 100vw, 33vw"
-                      priority={i === 0}
                     />
                     <span className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/50 to-transparent" aria-hidden />
                     <h3 className="absolute bottom-0 left-0 right-0 p-6 font-serif text-2xl font-bold text-white m-0">

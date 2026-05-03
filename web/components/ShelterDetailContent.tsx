@@ -189,23 +189,28 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
   );
 
   return (
-    <div className="min-h-screen bg-background pb-20 lg:pb-0">
+    <main className="min-h-screen bg-background pb-20 lg:pb-0">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
-        <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-primary/70 py-2">
-          {breadcrumbs.map((b, i) => (
-            <span key={i} className="flex items-center gap-1">
-              {i > 0 && <span aria-hidden className="text-primary/50">/</span>}
-              {b.href ? (
-                <Link href={b.href} className="py-1 -my-1 hover:text-accent transition-colors touch-manipulation">
-                  {b.label}
-                </Link>
-              ) : (
-                <span className="text-primary font-medium truncate max-w-[200px] sm:max-w-none">
-                  {b.label}
-                </span>
-              )}
-            </span>
-          ))}
+        <nav aria-label="Brødkrummer" className="mb-6 py-2">
+          <ol className="flex flex-wrap items-center gap-2 text-sm text-primary/70">
+            {breadcrumbs.map((b, i) => (
+              <li key={i} className="flex items-center gap-2">
+                {i > 0 && <span aria-hidden className="text-primary/50">/</span>}
+                {b.href ? (
+                  <Link href={b.href} className="py-1 hover:text-accent transition-colors touch-manipulation">
+                    {b.label}
+                  </Link>
+                ) : (
+                  <span
+                    aria-current="page"
+                    className="text-primary font-medium truncate max-w-[200px] sm:max-w-none"
+                  >
+                    {b.label}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ol>
         </nav>
 
         {areaSlug && areaName && (
@@ -220,79 +225,82 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
         )}
 
         <div className="lg:grid lg:grid-cols-[1fr,340px] lg:gap-10 lg:items-start">
-          <article className="min-w-0">
-            <ShelterGallery
-              urls={allPhotoUrls}
-              title={shelter.title}
-              rating={showReviews ? shelter.google_rating : null}
-              ratingsTotal={showReviews ? shelter.google_user_ratings_total : null}
-              region={city}
-              slug={slug}
-              shelterId={shelter.id}
-              blurDataUrl={shelter.blur_data_url ?? undefined}
-            />
+          <article aria-labelledby="shelter-title" className="min-w-0">
+            <header className="mb-8">
+              <ShelterGallery
+                urls={allPhotoUrls}
+                title={shelter.title}
+                rating={showReviews ? shelter.google_rating : null}
+                ratingsTotal={showReviews ? shelter.google_user_ratings_total : null}
+                region={city}
+                slug={slug}
+                shelterId={shelter.id}
+                blurDataUrl={shelter.blur_data_url ?? undefined}
+                headingId="shelter-title"
+              />
 
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mb-8 text-primary/90">
-              {city && (
-                <span className="flex items-center gap-2">
-                  <MapPin size={18} className="text-accent shrink-0" />
-                  {placeName && placeSlug ? (
-                    <Link href={`/by/${placeSlug}`} className="text-accent hover:underline">
-                      {city}
-                    </Link>
-                  ) : (
-                    city
-                  )}
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-primary/90">
+                {city && (
+                  <span className="flex items-center gap-2">
+                    <MapPin size={18} className="text-accent shrink-0" />
+                    {placeName && placeSlug ? (
+                      <Link href={`/by/${placeSlug}`} className="text-accent hover:underline">
+                        {city}
+                      </Link>
+                    ) : (
+                      city
+                    )}
+                  </span>
+                )}
+                {capacity != null && (
+                  <span className="flex items-center gap-2">
+                    <Users size={18} className="text-accent shrink-0" />
+                    {capacity} pladser
+                  </span>
+                )}
+                {showReviews && shelter.google_rating != null && (
+                  <span className="flex items-center gap-2">
+                    <Star size={18} className="fill-accent text-accent shrink-0" />
+                    {shelter.google_rating.toFixed(1)}
+                    {shelter.google_user_ratings_total != null && (
+                      <span className="text-primary/70">
+                        ({shelter.google_user_ratings_total} anmeldelser)
+                      </span>
+                    )}
+                  </span>
+                )}
+                <span className="ml-auto">
+                  <ShareButtons title={shelter.title} url={`/shelter/${slug}`} />
                 </span>
-              )}
-              {capacity != null && (
-                <span className="flex items-center gap-2">
-                  <Users size={18} className="text-accent shrink-0" />
-                  {capacity} pladser
-                </span>
-              )}
-              {showReviews && shelter.google_rating != null && (
-                <span className="flex items-center gap-2">
-                  <Star size={18} className="fill-accent text-accent shrink-0" />
-                  {shelter.google_rating.toFixed(1)}
-                  {shelter.google_user_ratings_total != null && (
-                    <span className="text-primary/70">
-                      ({shelter.google_user_ratings_total} anmeldelser)
-                    </span>
-                  )}
-                </span>
-              )}
-              <span className="ml-auto">
-                <ShareButtons title={shelter.title} url={`/shelter/${slug}`} />
-              </span>
-            </div>
+              </div>
+            </header>
 
-            <section className="mb-10">
-              {features.length > 0 && (
-                <>
-                  <h2 className="font-serif text-xl font-bold text-primary mb-4">
-                    Faciliteter
-                  </h2>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {features.map((f, i) => (
-                      <div
-                        key={i}
-                        className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm text-primary"
-                      >
-                        <Check size={16} className="text-accent shrink-0" />
-                        <span>
-                          {f.label}
-                          {f.value != null && f.value !== "" && (
-                            <span className="text-primary/80"> · {f.value}</span>
-                          )}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-
-            </section>
+            {features.length > 0 && (
+              <section aria-labelledby="shelter-features-heading" className="mb-10">
+                <h2
+                  id="shelter-features-heading"
+                  className="font-serif text-xl font-bold text-primary mb-4"
+                >
+                  Faciliteter
+                </h2>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {features.map((f, i) => (
+                    <div
+                      key={i}
+                      className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm text-primary"
+                    >
+                      <Check size={16} className="text-accent shrink-0" />
+                      <span>
+                        {f.label}
+                        {f.value != null && f.value !== "" && (
+                          <span className="text-primary/80"> · {f.value}</span>
+                        )}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
 
             <div className="mb-6">
               <CommunityContributionPanel slug={slug} />
@@ -529,7 +537,10 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
             <ShelterFaq items={shelterFaqItems} jsonLd={shelterFaqJsonLd} />
           </article>
 
-          <aside className="lg:sticky lg:top-6 mt-8 lg:mt-0 space-y-4">
+          <aside
+            aria-label="Supplerende information om shelteret"
+            className="lg:sticky lg:top-6 mt-8 lg:mt-0 space-y-4"
+          >
             {/* Desktop: booking stays in sidebar */}
             <BookingCard className="hidden lg:block" />
 
@@ -596,6 +607,6 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
           </a>
         </div>
       )}
-    </div>
+    </main>
   );
 }

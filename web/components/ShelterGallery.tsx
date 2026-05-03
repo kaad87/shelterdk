@@ -19,6 +19,7 @@ interface ShelterGalleryProps {
   slug?: string;
   shelterId?: string;
   blurDataUrl?: string;
+  headingId?: string;
 }
 
 export function ShelterGallery({
@@ -30,6 +31,7 @@ export function ShelterGallery({
   slug,
   shelterId,
   blurDataUrl,
+  headingId,
 }: ShelterGalleryProps) {
   const HERO_W = 1200;
   const THUMB_W = 320;
@@ -175,7 +177,7 @@ export function ShelterGallery({
         )}
 
         <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 p-6 bg-gradient-to-t from-primary/90 to-transparent">
-          <h1 className="font-serif text-2xl md:text-3xl font-bold text-white">
+          <h1 id={headingId} className="font-serif text-2xl md:text-3xl font-bold text-white">
             {title}
           </h1>
           {(rating != null || region) && (

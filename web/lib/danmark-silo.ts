@@ -40,7 +40,7 @@ const BY_LANDING_SEARCH_SYNONYM_KEYS: Partial<Record<(typeof PRIORITY_BY_CITY_NA
 };
 
 const SHELTER_SELECT =
-  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, water, toilet, capacity, geofa_raw, display_score, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
+  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, water, toilet, capacity, geofa_raw, display_score, created_at, updated_at, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
 
 const SHELTER_SELECT_DETAIL =
   "id, title, slug, seo_title, description, seo_description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, toilet, water, geofa_raw, area_slug, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
