@@ -2,6 +2,7 @@ import { createPublicClient } from "@/utils/supabase/server-public";
 import type { Shelter } from "@/types/shelter";
 import { getLocationCoords } from "@/lib/shelter-detail";
 import { classifyShelterToParks, NATIONAL_PARKS } from "@/lib/national-parks";
+import { fetchAllShelterRows } from "@/lib/supabase-pagination";
 
 const SHELTER_SELECT_LIST =
   "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, toilet, water, capacity, display_score, google_places!shelters_google_place_id_fkey(photo_references)";
@@ -27,18 +28,18 @@ export async function getTotalShelterCount(): Promise<number> {
 export async function getCountPerRegion(): Promise<
   { region: string; count: number }[]
 > {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from("shelters")
-    .select("region")
-    .is("duplicate_of_shelter_id", null)
-    .not("region", "is", null)
-    .neq("region", "")
-    .neq("region", "Danmark");
-  if (error || !data) return [];
+  let data: { region: string }[];
+  try {
+    data = await fetchAllShelterRows<{ region: string }>("region", (query) =>
+      query.not("region", "is", null).neq("region", "").neq("region", "Danmark")
+    );
+  } catch (error) {
+    console.error("fakta-db: getCountPerRegion", error);
+    return [];
+  }
 
   const counts = new Map<string, number>();
-  for (const row of data as { region: string }[]) {
+  for (const row of data) {
     const r = (row.region || "").trim();
     if (!r) continue;
     counts.set(r, (counts.get(r) ?? 0) + 1);
@@ -157,14 +158,16 @@ export async function getTopRatedShelters(
 
 /** Average Google rating across all shelters with a rating. */
 export async function getAverageRating(): Promise<number | null> {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from("shelters")
-    .select("google_rating")
-    .is("duplicate_of_shelter_id", null)
-    .not("google_rating", "is", null);
-  if (error || !data || data.length === 0) return null;
-  const ratings = (data as { google_rating: number }[]).map(
+  let data: { google_rating: number }[];
+  try {
+    data = await fetchAllShelterRows<{ google_rating: number }>("google_rating", (query) =>
+      query.not("google_rating", "is", null)
+    );
+  } catch {
+    return null;
+  }
+  if (data.length === 0) return null;
+  const ratings = data.map(
     (r) => r.google_rating
   );
   const avg = ratings.reduce((sum, r) => sum + r, 0) / ratings.length;
@@ -389,15 +392,16 @@ export async function getHandicapShelters(limit: number = 50): Promise<Shelter[]
 export async function getSheltersInNationalParks(): Promise<
   { parkName: string; parkSlug: string; shelters: Shelter[] }[]
 > {
-  const supabase = createPublicClient();
-
   // Step 1: lightweight query to classify shelters by coords
-  const { data: locationData, error: locError } = await supabase
-    .from("shelters")
-    .select("id, location")
-    .is("duplicate_of_shelter_id", null)
-    .not("location", "is", null);
-  if (locError || !locationData) return [];
+  let locationData: { id: string; location: string }[];
+  try {
+    locationData = await fetchAllShelterRows<{ id: string; location: string }>(
+      "id, location",
+      (query) => query.not("location", "is", null)
+    );
+  } catch {
+    return [];
+  }
 
   const parkShelterIds = new Map<string, Set<string>>();
   for (const park of NATIONAL_PARKS) {
@@ -405,7 +409,7 @@ export async function getSheltersInNationalParks(): Promise<
   }
 
   const allParkIds = new Set<string>();
-  for (const row of locationData as { id: string; location: string }[]) {
+  for (const row of locationData) {
     const coords = getLocationCoords(row as unknown as Shelter);
     if (!coords) continue;
     const parks = classifyShelterToParks(coords.lat, coords.lon);
@@ -423,15 +427,19 @@ export async function getSheltersInNationalParks(): Promise<
     }));
   }
 
+  const supabase = createPublicClient();
   // Step 2: fetch full data only for shelters that are in a park
-  const { data: fullData, error: fullError } = await supabase
-    .from("shelters")
-    .select(SHELTER_SELECT_LIST)
-    .in("id", Array.from(allParkIds));
-  if (fullError || !fullData) return [];
+  let fullData: Shelter[];
+  try {
+    fullData = await fetchAllShelterRows<Shelter>(SHELTER_SELECT_LIST, (query) =>
+      query.in("id", Array.from(allParkIds))
+    );
+  } catch {
+    return [];
+  }
 
   const shelterById = new Map<string, Shelter>();
-  for (const s of fullData as Shelter[]) {
+  for (const s of fullData) {
     shelterById.set(s.id, s);
   }
 

@@ -1,5 +1,5 @@
-import { createPublicClient } from "@/utils/supabase/server-public";
 import { NextResponse } from "next/server";
+import { fetchAllShelterRows } from "@/lib/supabase-pagination";
 
 interface ShelterRow {
   id: string;
@@ -15,15 +15,13 @@ interface ShelterRow {
  * Response is ~50-100 KB and should be cached client-side.
  */
 export async function GET() {
-  const supabase = createPublicClient();
-
-  const { data, error } = await supabase
-    .from("shelters")
-    .select("id, title, slug, location")
-    .is("duplicate_of_shelter_id", null)
-    .not("location", "is", null);
-
-  if (error) {
+  let data: ShelterRow[];
+  try {
+    data = await fetchAllShelterRows<ShelterRow>(
+      "id, title, slug, location",
+      (query) => query.not("location", "is", null)
+    );
+  } catch (error) {
     console.error("Lightweight shelters fetch error:", error);
     return NextResponse.json(
       { error: "Kunne ikke hente shelters" },
@@ -31,7 +29,7 @@ export async function GET() {
     );
   }
 
-  const shelters = (data as ShelterRow[])
+  const shelters = data
     .map((s) => {
       if (!s.location) return null;
       // Parse POINT(lon lat) format

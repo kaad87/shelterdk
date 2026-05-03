@@ -5,6 +5,8 @@
 
 import { createPublicClient } from "@/utils/supabase/server-public";
 import { slugifySegment } from "@/lib/slug";
+import { fetchAllShelterRows } from "@/lib/supabase-pagination";
+import { SEARCH_SYNONYMS } from "@/lib/search-synonyms";
 
 /** URL segment when kommune is null/empty in DB. */
 export const NO_KOMMUNE_SLUG = "ukendt-kommune";
@@ -33,12 +35,63 @@ export const PRIORITY_BY_CITY_NAMES = [
 ] as const;
 
 const PRIORITY_BY_CITY_NAME_SET = new Set<string>(PRIORITY_BY_CITY_NAMES);
+const BY_LANDING_SEARCH_SYNONYM_KEYS: Partial<Record<(typeof PRIORITY_BY_CITY_NAMES)[number], string>> = {
+  "København": "københavn",
+};
 
 const SHELTER_SELECT =
-  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, water, display_score, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
+  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, water, toilet, capacity, geofa_raw, display_score, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
 
 const SHELTER_SELECT_DETAIL =
   "id, title, slug, seo_title, description, seo_description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, toilet, water, geofa_raw, area_slug, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
+
+function buildByLandingMunicipalitySynonyms(placeName: string): string[] {
+  const synonymKey = BY_LANDING_SEARCH_SYNONYM_KEYS[placeName as keyof typeof BY_LANDING_SEARCH_SYNONYM_KEYS];
+  if (!synonymKey) return [];
+  return (SEARCH_SYNONYMS[synonymKey] ?? []).map((synonym) => synonym.trim()).filter(Boolean);
+}
+
+function buildOrFiltersForTerms(column: "place" | "kommune", terms: string[]): string[] {
+  return terms.map((term) => `${column}.eq.${term}`);
+}
+
+async function getSheltersForByLanding(
+  placeName: string,
+  municipalitySynonyms: string[]
+): Promise<Shelter[]> {
+  const normalizedMunicipalitySynonyms = [
+    ...new Set(municipalitySynonyms.map((term) => term.trim()).filter(Boolean)),
+  ];
+
+  const supabase = createPublicClient();
+  const orParts = [
+    `place.eq.${placeName}`,
+    `kommune.eq.${placeName}`,
+    ...buildOrFiltersForTerms("kommune", normalizedMunicipalitySynonyms),
+  ];
+
+  const { data, error } = await supabase
+    .from("shelters")
+    .select(SHELTER_SELECT)
+    .is("duplicate_of_shelter_id", null)
+    .or(orParts.join(","))
+    .order("display_score", { ascending: false, nullsFirst: false })
+    .order("title", { ascending: true });
+
+  if (error) {
+    console.error("Supabase error (shelters by landing terms):", error);
+    return [];
+  }
+
+  const unique = new Map<string | number, Shelter>();
+  for (const shelter of (data as Shelter[]) ?? []) {
+    unique.set(shelter.id, shelter);
+  }
+
+  const shelters = [...unique.values()];
+  shelters.sort(sortByImageAndScore);
+  return shelters;
+}
 
 function sortByImageAndScore(a: Shelter, b: Shelter): number {
   const aHas = hasAnyImage(a) ? 1 : 0;
@@ -50,22 +103,19 @@ function sortByImageAndScore(a: Shelter, b: Shelter): number {
 
 /** Distinct regions that have at least one shelter (no duplicates, exclude null/empty). */
 export async function getDistinctRegions(): Promise<string[]> {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from("shelters")
-    .select("region")
-    .is("duplicate_of_shelter_id", null)
-    .not("region", "is", null)
-    .neq("region", "");
-
-  if (error) {
+  let data: { region: string }[];
+  try {
+    data = await fetchAllShelterRows<{ region: string }>("region", (query) =>
+      query.not("region", "is", null).neq("region", "")
+    );
+  } catch (error) {
     console.error("Supabase error (distinct regions):", error);
     return [];
   }
 
   const seen = new Set<string>();
   const out: string[] = [];
-  for (const row of (data as { region: string }[]) ?? []) {
+  for (const row of data) {
     const r = (row.region || "").trim();
     if (!r || seen.has(r)) continue;
     seen.add(r);
@@ -79,20 +129,16 @@ export async function getDistinctRegions(): Promise<string[]> {
 export async function getRegionKommunePairs(
   minShelters?: number
 ): Promise<{ region: string; kommune: string | null }[]> {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from("shelters")
-    .select("region, kommune")
-    .is("duplicate_of_shelter_id", null)
-    .not("region", "is", null)
-    .neq("region", "");
-
-  if (error) {
+  let rows: { region: string; kommune: string | null }[];
+  try {
+    rows = await fetchAllShelterRows<{ region: string; kommune: string | null }>(
+      "region, kommune",
+      (query) => query.not("region", "is", null).neq("region", "")
+    );
+  } catch (error) {
     console.error("Supabase error (region/kommune pairs):", error);
     return [];
   }
-
-  const rows = (data as { region: string; kommune: string | null }[]) ?? [];
 
   if (minShelters != null && minShelters > 0) {
     const counts = new Map<string, number>();
@@ -142,22 +188,19 @@ export async function getRegionKommunePairs(
 export async function getSheltersForStaticParams(): Promise<
   { region: string; kommune: string | null; slug: string }[]
 > {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from("shelters")
-    .select("region, kommune, slug")
-    .is("duplicate_of_shelter_id", null)
-    .not("region", "is", null)
-    .neq("region", "")
-    .not("slug", "is", null);
-
-  if (error) {
+  let rows: { region: string; kommune: string | null; slug: string }[];
+  try {
+    rows = await fetchAllShelterRows<{ region: string; kommune: string | null; slug: string }>(
+      "region, kommune, slug",
+      (query) => query.not("region", "is", null).neq("region", "").not("slug", "is", null)
+    );
+  } catch (error) {
     console.error("Supabase error (shelters for params):", error);
     return [];
   }
 
   const out: { region: string; kommune: string | null; slug: string }[] = [];
-  for (const row of (data as { region: string; kommune: string | null; slug: string }[]) ?? []) {
+  for (const row of rows) {
     const region = (row.region || "").trim();
     const kommune = row.kommune && String(row.kommune).trim() ? String(row.kommune).trim() : null;
     const slug = (row.slug || "").trim();
@@ -398,21 +441,16 @@ export async function getCanonicalShelterForRedirect(
 export async function getDistinctPlacesWithCounts(
   minCount = 1
 ): Promise<{ place: string; count: number }[]> {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from("shelters")
-    .select("place")
-    .is("duplicate_of_shelter_id", null)
-    .not("place", "is", null)
-    .neq("place", "");
-
-  if (error) {
+  let data: { place: string | null }[];
+  try {
+    data = await fetchAllShelterRows<{ place: string | null }>("place");
+  } catch (error) {
     console.error("Supabase error (distinct places):", error);
     return [];
   }
 
   const counts = new Map<string, number>();
-  for (const row of (data as { place: string | null }[]) ?? []) {
+  for (const row of data) {
     const p = (row.place || "").trim();
     if (!p) continue;
     counts.set(p, (counts.get(p) ?? 0) + 1);
@@ -428,21 +466,16 @@ export async function getDistinctPlacesWithCounts(
 export async function getDistinctMunicipalitiesWithCounts(
   minCount = 1
 ): Promise<{ kommune: string; count: number }[]> {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from("shelters")
-    .select("kommune")
-    .is("duplicate_of_shelter_id", null)
-    .not("kommune", "is", null)
-    .neq("kommune", "");
-
-  if (error) {
+  let data: { kommune: string | null }[];
+  try {
+    data = await fetchAllShelterRows<{ kommune: string | null }>("kommune");
+  } catch (error) {
     console.error("Supabase error (distinct municipalities):", error);
     return [];
   }
 
   const counts = new Map<string, number>();
-  for (const row of (data as { kommune: string | null }[]) ?? []) {
+  for (const row of data) {
     const kommune = (row.kommune || "").trim();
     if (!kommune) continue;
     counts.set(kommune, (counts.get(kommune) ?? 0) + 1);
@@ -455,38 +488,56 @@ export async function getDistinctMunicipalitiesWithCounts(
 }
 
 export function buildDistinctByLandingPages(
-  places: { place: string; count: number }[],
-  municipalities: { kommune: string; count: number }[],
+  shelterRows: { id: string | number; place: string | null; kommune: string | null }[],
   minCount = 1
 ): { place: string; count: number }[] {
-  const merged = new Map<string, number>();
+  const placeIds = new Map<string, Set<string | number>>();
+  const kommuneIds = new Map<string, Set<string | number>>();
 
-  for (const { place, count } of places) {
-    const name = place.trim();
-    if (!name || count < minCount) continue;
-    merged.set(name, Math.max(merged.get(name) ?? 0, count));
-  }
+  for (const row of shelterRows) {
+    const id = row.id;
+    const place = (row.place || "").trim();
+    const kommune = (row.kommune || "").trim();
 
-  for (const { kommune, count } of municipalities) {
-    const name = kommune.trim();
-    if (!name || count < minCount) continue;
-
-    const existing = merged.get(name);
-    if (existing != null) {
-      merged.set(name, Math.max(existing, count));
-      continue;
+    if (place) {
+      if (!placeIds.has(place)) placeIds.set(place, new Set());
+      placeIds.get(place)!.add(id);
     }
-
-    // Some important city-intent landing pages exist only as municipality matches in the data,
-    // e.g. Billund has 0 exact `place` rows but many relevant shelters in Billund Kommune.
-    if (PRIORITY_BY_CITY_NAME_SET.has(name)) {
-      merged.set(name, count);
+    if (kommune) {
+      if (!kommuneIds.has(kommune)) kommuneIds.set(kommune, new Set());
+      kommuneIds.get(kommune)!.add(id);
     }
   }
 
-  return [...merged.entries()]
-    .map(([place, count]) => ({ place, count }))
-    .sort((a, b) => a.place.localeCompare(b.place, "da"));
+  const pageNames = new Set<string>([...placeIds.keys(), ...PRIORITY_BY_CITY_NAMES]);
+
+  const pages: { place: string; count: number }[] = [];
+  for (const placeName of pageNames) {
+    const exactPlaceIds = placeIds.get(placeName) ?? new Set<string | number>();
+    const matchingMunicipalityIds = kommuneIds.get(placeName) ?? new Set<string | number>();
+    const municipalitySynonyms = buildByLandingMunicipalitySynonyms(placeName);
+    const synonymIds = new Set<string | number>();
+    for (const term of municipalitySynonyms) {
+      for (const id of kommuneIds.get(term) ?? []) synonymIds.add(id);
+    }
+
+    const usesMunicipalityExpansion =
+      matchingMunicipalityIds.size > exactPlaceIds.size || synonymIds.size > 0;
+
+    const effectiveIds = usesMunicipalityExpansion
+      ? new Set<string | number>([
+          ...exactPlaceIds,
+          ...matchingMunicipalityIds,
+          ...synonymIds,
+        ])
+      : exactPlaceIds;
+
+    if (effectiveIds.size >= minCount) {
+      pages.push({ place: placeName, count: effectiveIds.size });
+    }
+  }
+
+  return pages.sort((a, b) => a.place.localeCompare(b.place, "da"));
 }
 
 /**
@@ -497,12 +548,17 @@ export function buildDistinctByLandingPages(
 export async function getDistinctByLandingPages(
   minCount = 1
 ): Promise<{ place: string; count: number }[]> {
-  const [places, municipalities] = await Promise.all([
-    getDistinctPlacesWithCounts(minCount),
-    getDistinctMunicipalitiesWithCounts(1),
-  ]);
+  let data: { id: string | number; place: string | null; kommune: string | null }[];
+  try {
+    data = await fetchAllShelterRows<{ id: string | number; place: string | null; kommune: string | null }>(
+      "id, place, kommune"
+    );
+  } catch (error) {
+    console.error("Supabase error (by landing pages):", error);
+    return [];
+  }
 
-  return buildDistinctByLandingPages(places, municipalities, minCount);
+  return buildDistinctByLandingPages(data, minCount);
 }
 
 /** All shelters whose `place` matches the given value. */
@@ -556,30 +612,36 @@ export async function getByLandingData(placeName: string): Promise<{
   municipalityCount: number;
   usesMunicipalityExpansion: boolean;
 }> {
-  const [placeShelters, municipalityShelters] = await Promise.all([
+  const municipalitySynonyms = buildByLandingMunicipalitySynonyms(placeName);
+
+  const [placeShelters, municipalityShelters, effectiveShelters] = await Promise.all([
     getSheltersByPlace(placeName),
     getSheltersByMunicipalityName(placeName),
+    getSheltersForByLanding(placeName, municipalitySynonyms),
   ]);
 
-  const usesMunicipalityExpansion = municipalityShelters.length > placeShelters.length;
-  const merged = usesMunicipalityExpansion
-    ? [...placeShelters, ...municipalityShelters]
-    : placeShelters;
-
-  const unique = new Map<string | number, Shelter>();
-  for (const shelter of merged) {
-    unique.set(shelter.id, shelter);
-  }
-
-  const shelters = [...unique.values()];
-  shelters.sort(sortByImageAndScore);
+  const usesMunicipalityExpansion =
+    municipalityShelters.length > placeShelters.length || municipalitySynonyms.length > 0;
 
   return {
-    shelters,
+    shelters: usesMunicipalityExpansion ? effectiveShelters : placeShelters,
     placeCount: placeShelters.length,
     municipalityCount: municipalityShelters.length,
     usesMunicipalityExpansion,
   };
+}
+
+export function shouldRedirectMunicipalityToByPage(
+  municipalityName: string,
+  municipalityShelters: Array<Pick<Shelter, "id">>,
+  byShelters: Array<Pick<Shelter, "id">>
+): boolean {
+  if (!PRIORITY_BY_CITY_NAME_SET.has(municipalityName)) return false;
+  if (municipalityShelters.length === 0 || byShelters.length === 0) return false;
+  if (municipalityShelters.length !== byShelters.length) return false;
+
+  const byIds = new Set(byShelters.map((shelter) => shelter.id));
+  return municipalityShelters.every((shelter) => byIds.has(shelter.id));
 }
 
 export { slugifySegment };

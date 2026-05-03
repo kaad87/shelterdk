@@ -12,18 +12,56 @@ import {
 } from "@/lib/danmark-silo";
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 import { segmentSlugToName } from "@/lib/slug";
-import { ShelterCard } from "@/components/ShelterCard";
+import { ByShelterExplorer } from "@/components/ByShelterExplorer";
 import { getWater, getToilet } from "@/lib/shelter-detail";
 import { generatePlacePageFaq } from "@/lib/fakta-faq";
 import { faqToJsonLd } from "@/lib/faq";
+import type { SoegFilters } from "@/lib/soeg-db";
 
 interface PageProps {
   params: Promise<{ by_slug: string }>;
+  searchParams: Promise<{
+    view?: string;
+    billede?: string;
+    anmeldelser?: string;
+    bookbar?: string;
+    vand?: string;
+    toilet?: string;
+    hund?: string;
+    baalplads?: string;
+    gratis?: string;
+    handicap?: string;
+    bord_baenk?: string;
+    strand?: string;
+    bruser?: string;
+    min_pladser?: string;
+  }>;
 }
 
 export const dynamicParams = false;
 
 export const revalidate = 86400;
+
+type ViewMode = "list" | "map" | "split";
+
+function parseFilters(params: Awaited<PageProps["searchParams"]>): SoegFilters {
+  const filters: SoegFilters = {};
+  if (params.billede === "1") filters.billede = true;
+  if (params.anmeldelser === "1") filters.anmeldelser = true;
+  if (params.bookbar === "1") filters.bookbar = true;
+  if (params.vand === "1") filters.vand = true;
+  if (params.toilet === "1") filters.toilet = true;
+  if (params.hund === "1") filters.hund = true;
+  if (params.baalplads === "1") filters.baalplads = true;
+  if (params.bord_baenk === "1") filters.bord_baenk = true;
+  if (params.strand === "1") filters.strand = true;
+  if (params.bruser === "1") filters.bruser = true;
+  if (params.gratis === "1") filters.gratis = true;
+  if (params.handicap === "1") filters.handicap = true;
+  const minPladser = parseInt(params.min_pladser ?? "0", 10);
+  if (minPladser > 0) filters.min_pladser = minPladser;
+  return filters;
+}
 
 export async function generateStaticParams() {
   const places = await getDistinctByLandingPages(1);
@@ -157,10 +195,16 @@ function ByProse({
   );
 }
 
-export default async function ByPage({ params }: PageProps) {
+export default async function ByPage({ params, searchParams }: PageProps) {
   const { by_slug } = await params;
+  const urlParams = await searchParams;
   const placeName = await resolvePlaceName(by_slug);
   if (!placeName) notFound();
+
+  const viewParam = (urlParams.view ?? "split").toLowerCase();
+  const initialView: ViewMode =
+    viewParam === "map" ? "map" : viewParam === "list" ? "list" : "split";
+  const initialFilters = parseFilters(urlParams);
 
   const { shelters: mergedShelters, usesMunicipalityExpansion } = await getByLandingData(placeName);
   const shelters = await enrichSheltersWithGooglePhotoRef(mergedShelters);
@@ -179,6 +223,7 @@ export default async function ByPage({ params }: PageProps) {
   const kommuneMap = new Map<string, { name: string; slug: string; regionSlug: string }>();
   for (const s of shelters) {
     if (s.kommune && s.region) {
+      if (s.kommune === placeName) continue;
       const key = s.kommune;
       if (!kommuneMap.has(key)) {
         kommuneMap.set(key, {
@@ -240,17 +285,12 @@ export default async function ByPage({ params }: PageProps) {
             </p>
           </header>
 
-          <section className="mb-12">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {shelters.map((shelter) => (
-                <ShelterCard
-                  key={shelter.id}
-                  shelter={shelter}
-                  href={shelterHref(shelter.region, shelter.kommune, shelter.slug)}
-                />
-              ))}
-            </div>
-          </section>
+          <ByShelterExplorer
+            placeName={placeName}
+            shelters={shelters}
+            initialView={initialView}
+            initialFilters={initialFilters}
+          />
 
           <ByProse
             placeName={placeName}

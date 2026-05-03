@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { ShelterListSchema } from "@/components/seo/ShelterListSchema";
 import { ChevronRight } from "lucide-react";
 import {
+  getByLandingData,
   getRegionKommunePairs,
   getMunicipalitiesInRegion,
   getSheltersInMunicipality,
   slugifySegment,
   NO_KOMMUNE_SLUG,
+  shouldRedirectMunicipalityToByPage,
 } from "@/lib/danmark-silo";
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 import { segmentSlugToName } from "@/lib/slug";
@@ -28,6 +30,31 @@ export const dynamicParams = false;
 
 /** ISR: cache og revalider hver 24. time. */
 export const revalidate = 86400;
+
+async function getMunicipalityPageContext(
+  regionName: string,
+  municipalityName: string | null
+): Promise<{
+  shelters: Shelter[];
+  redirectBySlug: string | null;
+}> {
+  const shelters = await getSheltersInMunicipality(regionName, municipalityName);
+
+  if (!municipalityName) {
+    return { shelters, redirectBySlug: null };
+  }
+
+  const byLanding = await getByLandingData(municipalityName);
+  const redirectBySlug = shouldRedirectMunicipalityToByPage(
+    municipalityName,
+    shelters,
+    byLanding.shelters
+  )
+    ? slugifySegment(municipalityName)
+    : null;
+
+  return { shelters, redirectBySlug };
+}
 
 export async function generateStaticParams() {
   const pairs = await getRegionKommunePairs(2);
@@ -49,7 +76,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       ? "Ukendt kommune"
       : segmentSlugToName(municipalitySlug, municipalities);
   if (!municipalityName) return { title: { absolute: "Kommune ikke fundet" } };
-  const shelters = await getSheltersInMunicipality(regionName, municipalityName === "Ukendt kommune" ? null : (municipalityName ?? null));
+  const { shelters, redirectBySlug } = await getMunicipalityPageContext(
+    regionName,
+    municipalityName === "Ukendt kommune" ? null : municipalityName
+  );
   const count = shelters.length;
   const bookable = shelters.filter((s) => !!s.booking_url && String(s.booking_url).trim() !== "").length;
   const withWater = shelters.filter((s) => getWater(s) === true).length;
@@ -63,7 +93,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const description = count > 0
     ? `${count} shelters i ${municipalityName} Kommune${statsText}. Se alle shelterpladser i kommunen og find også lokale bysider for mere præcise søgninger.`
     : `Find shelters og overnatningspladser i ${municipalityName} Kommune, ${regionName}. Se pladser og praktisk info.`;
-  const canonicalPath = `/danmark/${regionSlug}/${municipalitySlug}`;
+  const canonicalPath = redirectBySlug
+    ? `/by/${redirectBySlug}`
+    : `/danmark/${regionSlug}/${municipalitySlug}`;
   return {
     title: { absolute: title },
     description,
@@ -209,7 +241,13 @@ export default async function DanmarkMunicipalityPage({ params }: PageProps) {
       : segmentSlugToName(municipalitySlug, municipalities);
   if (municipalitySlug !== NO_KOMMUNE_SLUG && !municipalityName) notFound();
 
-  const rawShelters = await getSheltersInMunicipality(regionName, municipalityName ?? null);
+  const { shelters: rawShelters, redirectBySlug } = await getMunicipalityPageContext(
+    regionName,
+    municipalityName
+  );
+  if (redirectBySlug) {
+    permanentRedirect(`/by/${redirectBySlug}`);
+  }
   const shelters = await enrichSheltersWithGooglePhotoRef(rawShelters);
   const displayName = municipalityName ?? "Ukendt kommune";
 
