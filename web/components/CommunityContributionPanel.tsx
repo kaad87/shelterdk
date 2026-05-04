@@ -257,7 +257,7 @@ export function CommunityContributionPanel({
               activeFacility === chip.key
                 ? "border-accent bg-accent/10 text-accent"
                 : "border-primary/15 bg-white text-primary/70 hover:border-primary/30 hover:text-primary"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2`}
           >
             {FACILITY_ICONS[chip.key] || null}
             {chip.label}
@@ -275,7 +275,7 @@ export function CommunityContributionPanel({
             showTipForm
               ? "border-accent bg-accent/10 text-accent"
               : "border-primary/15 bg-white text-primary/70 hover:border-primary/30 hover:text-primary"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2`}
         >
           <MessageSquare size={14} />
           Skriv et tip
@@ -292,7 +292,7 @@ export function CommunityContributionPanel({
             showPhotoForm
               ? "border-accent bg-accent/10 text-accent"
               : "border-primary/15 bg-white text-primary/70 hover:border-primary/30 hover:text-primary"
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2`}
         >
           <Camera size={14} />
           Billede
@@ -300,7 +300,7 @@ export function CommunityContributionPanel({
       </div>
 
       {/* Disclaimer */}
-      <p className="mt-2 flex items-center gap-1.5 text-xs text-primary/50">
+      <p className="mt-2 flex items-center gap-1.5 text-xs text-primary/60">
         <ShieldCheck size={12} />
         Alle bidrag gennemgås af admin inden de vises
       </p>
@@ -323,7 +323,7 @@ export function CommunityContributionPanel({
               type="button"
               disabled={sendingFacility}
               onClick={() => handleFacilityChip(activeFacility, "yes")}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500/50 focus-visible:ring-offset-2"
             >
               {sendingFacility ? (
                 <Loader2 size={14} className="animate-spin" />
@@ -336,7 +336,7 @@ export function CommunityContributionPanel({
               type="button"
               disabled={sendingFacility}
               onClick={() => handleFacilityChip(activeFacility, "no")}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-red-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-600 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-red-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-600 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/50 focus-visible:ring-offset-2"
             >
               {sendingFacility ? (
                 <Loader2 size={14} className="animate-spin" />
@@ -348,13 +348,13 @@ export function CommunityContributionPanel({
             <button
               type="button"
               onClick={() => setActiveFacility(null)}
-              className="rounded-lg border border-primary/15 px-3 py-1.5 text-sm text-primary/60 hover:text-primary"
+              className="rounded-lg border border-primary/15 px-3 py-1.5 text-sm text-primary/70 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2"
             >
               Annuller
             </button>
           </div>
           {facilityMessage && (
-            <p className="mt-2 text-sm text-primary/70">{facilityMessage}</p>
+            <p role="status" className="mt-2 text-sm text-primary/80">{facilityMessage}</p>
           )}
         </div>
       )}
@@ -370,19 +370,21 @@ export function CommunityContributionPanel({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Dit navn"
-            className="w-full rounded-lg border border-primary/15 px-3 py-2 text-sm text-primary"
+            aria-label="Dit navn"
+            className="w-full rounded-lg border border-primary/15 px-3 py-2 text-sm text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:border-accent/40"
           />
           <textarea
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
             placeholder="Fx: God plads til 2 familier, husk myggespray."
-            className="w-full rounded-lg border border-primary/15 px-3 py-2 text-sm text-primary min-h-[80px]"
+            aria-label="Dit tip"
+            className="w-full rounded-lg border border-primary/15 px-3 py-2 text-sm text-primary min-h-[80px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:border-accent/40"
           />
           <div className="flex items-center gap-2">
             <button
               type="submit"
               disabled={sendingComment}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent/90 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent/90 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2"
             >
               {sendingComment ? (
                 <Loader2 size={14} className="animate-spin" />
@@ -394,13 +396,13 @@ export function CommunityContributionPanel({
             <button
               type="button"
               onClick={() => setShowTipForm(false)}
-              className="text-sm text-primary/50 hover:text-primary"
+              className="text-sm text-primary/70 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 rounded-md"
             >
               Annuller
             </button>
           </div>
           {commentMessage && (
-            <p className="text-sm text-primary/70">{commentMessage}</p>
+            <p role="status" className="text-sm text-primary/80">{commentMessage}</p>
           )}
         </form>
       )}
@@ -415,13 +417,14 @@ export function CommunityContributionPanel({
             JPEG, PNG eller WebP (max 5 MB)
           </p>
           <div className="flex flex-wrap items-center gap-2">
-            <label className="inline-flex items-center gap-1.5 rounded-lg border border-primary/15 bg-white px-3 py-2 text-sm text-primary cursor-pointer hover:bg-primary/5">
+            <label className="inline-flex items-center gap-1.5 rounded-lg border border-primary/15 bg-white px-3 py-2 text-sm text-primary cursor-pointer hover:bg-primary/5 focus-within:ring-2 focus-within:ring-accent/50 focus-within:ring-offset-2">
               <Camera size={14} className="text-accent" />
               Vælg billede
               <input
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 className="hidden"
+                aria-label="Vælg billede"
                 onChange={(e) => setPhotoFile(e.target.files?.[0] ?? null)}
               />
             </label>
@@ -433,7 +436,7 @@ export function CommunityContributionPanel({
             <button
               type="submit"
               disabled={sendingPhoto || !photoFile}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent/90 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent/90 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2"
             >
               {sendingPhoto ? (
                 <Loader2 size={14} className="animate-spin" />
@@ -445,13 +448,13 @@ export function CommunityContributionPanel({
             <button
               type="button"
               onClick={() => setShowPhotoForm(false)}
-              className="text-sm text-primary/50 hover:text-primary"
+              className="text-sm text-primary/70 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 rounded-md"
             >
               Annuller
             </button>
           </div>
           {photoMessage && (
-            <p className="text-sm text-primary/70">{photoMessage}</p>
+            <p role="status" className="text-sm text-primary/80">{photoMessage}</p>
           )}
         </form>
       )}

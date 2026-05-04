@@ -9,6 +9,7 @@ import { FrontPageShelterGrid } from "@/components/FrontPageShelterGrid";
 import { SearchBar } from "@/components/SearchBar";
 import { MobileHomePills } from "@/components/MobileHomePills";
 import { HomepageDealsWidget } from "@/components/HomepageDealsWidget";
+import { RecentExperiencesFeed } from "@/components/RecentExperiencesFeed";
 import { createPublicClient } from "@/utils/supabase/server-public";
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 import { getDistinctPlacesWithCounts } from "@/lib/danmark-silo";
@@ -21,11 +22,6 @@ const InstagramFeed = dynamic(
 
 const NewsletterSignup = dynamic(
   () => import("@/components/NewsletterSignup"),
-  { ssr: false }
-);
-
-const RecentExperiencesFeed = dynamic(
-  () => import("@/components/RecentExperiencesFeed").then((m) => ({ default: m.RecentExperiencesFeed })),
   { ssr: false }
 );
 

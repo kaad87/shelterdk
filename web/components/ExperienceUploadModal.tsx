@@ -126,15 +126,20 @@ export function ExperienceUploadModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4">
+    <div
+      className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="experience-upload-modal-title"
+    >
       <div className="w-full sm:max-w-lg bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-primary/10">
           <div>
-            <div className="font-semibold text-primary text-base">Del din oplevelse</div>
+            <h2 id="experience-upload-modal-title" className="font-semibold text-primary text-base">Del din oplevelse</h2>
             <div className="text-xs text-primary/50">{shelterTitle}</div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-lg text-primary/50 hover:text-primary hover:bg-primary/5 touch-manipulation">
+          <button onClick={onClose} aria-label="Luk" className="p-2 rounded-lg text-primary/60 hover:text-primary hover:bg-primary/5 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50">
             <X size={20} />
           </button>
         </div>
@@ -143,14 +148,16 @@ export function ExperienceUploadModal({
           {/* Step: upload */}
           {step === "upload" && (
             <div className="space-y-4">
-              <div
+              <button
+                type="button"
                 onClick={() => fileRef.current?.click()}
-                className="border-2 border-dashed border-primary/20 rounded-xl p-8 flex flex-col items-center gap-2 cursor-pointer hover:border-accent/50 hover:bg-accent/5 transition-colors"
+                className="w-full border-2 border-dashed border-primary/20 rounded-xl p-8 flex flex-col items-center gap-2 cursor-pointer hover:border-accent/50 hover:bg-accent/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2"
+                aria-describedby="experience-upload-help"
               >
                 <Upload className="w-8 h-8 text-primary/30" />
                 <div className="text-sm font-medium text-primary/60">Klik for at vælge fotos</div>
-                <div className="text-xs text-primary/40">JPEG, PNG, WebP · maks 10 MB · op til 4 billeder</div>
-              </div>
+                <div id="experience-upload-help" className="text-xs text-primary/50">JPEG, PNG, WebP · maks 10 MB · op til 4 billeder</div>
+              </button>
               <input
                 ref={fileRef}
                 type="file"
@@ -165,10 +172,13 @@ export function ExperienceUploadModal({
                   <div className="text-xs text-primary/50 mb-2">Klik for at vælge forsidebillede</div>
                   <div className="flex gap-2 flex-wrap">
                     {previews.map((src, i) => (
-                      <div
+                      <button
+                        type="button"
                         key={i}
                         onClick={() => setCoverIndex(i)}
-                        className={`relative w-20 h-20 rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${i === coverIndex ? "border-accent shadow-md" : "border-transparent"}`}
+                        className={`relative w-20 h-20 rounded-lg overflow-hidden cursor-pointer border-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 ${i === coverIndex ? "border-accent shadow-md" : "border-transparent"}`}
+                        aria-label={i === coverIndex ? `Billede ${i + 1} valgt som forsidebillede` : `Vælg billede ${i + 1} som forsidebillede`}
+                        aria-pressed={i === coverIndex}
                       >
                         <img src={src} alt="" className="w-full h-full object-cover" />
                         {i === coverIndex && (
@@ -176,18 +186,18 @@ export function ExperienceUploadModal({
                             <Check className="w-5 h-5 text-accent" />
                           </div>
                         )}
-                      </div>
+                      </button>
                     ))}
                   </div>
                 </div>
               )}
 
-              {error && <div className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</div>}
+              {error && <div role="alert" className="text-sm text-red-700 bg-red-50 rounded-lg px-3 py-2">{error}</div>}
 
               <button
                 onClick={() => files.length > 0 ? setStep("text") : fileRef.current?.click()}
                 disabled={files.length === 0}
-                className="w-full bg-accent text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 disabled:opacity-40 touch-manipulation"
+                className="w-full bg-accent text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 disabled:opacity-40 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2"
               >
                 Næste <ChevronRight size={16} />
               </button>
@@ -204,7 +214,7 @@ export function ExperienceUploadModal({
                   onChange={(e) => setAuthorName(e.target.value)}
                   maxLength={60}
                   placeholder="Fx Allan"
-                  className="w-full border border-primary/15 rounded-xl px-4 py-3 text-sm text-primary placeholder:text-primary/40 focus:outline-none focus:border-accent/50"
+                  className="w-full border border-primary/15 rounded-xl px-4 py-3 text-sm text-primary placeholder:text-primary/40 focus:outline-none focus-visible:border-accent/50 focus-visible:ring-2 focus-visible:ring-accent/40"
                 />
               </div>
               <div>
@@ -215,17 +225,17 @@ export function ExperienceUploadModal({
                   maxLength={500}
                   rows={4}
                   placeholder="Fortæl kort om din tur..."
-                  className="w-full border border-primary/15 rounded-xl px-4 py-3 text-sm text-primary placeholder:text-primary/40 focus:outline-none focus:border-accent/50 resize-none"
+                  className="w-full border border-primary/15 rounded-xl px-4 py-3 text-sm text-primary placeholder:text-primary/40 focus:outline-none focus-visible:border-accent/50 focus-visible:ring-2 focus-visible:ring-accent/40 resize-none"
                 />
                 <div className="text-xs text-primary/40 text-right mt-1">{body.length}/500</div>
               </div>
 
-              {error && <div className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</div>}
+              {error && <div role="alert" className="text-sm text-red-700 bg-red-50 rounded-lg px-3 py-2">{error}</div>}
 
               <button
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="w-full bg-accent text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 disabled:opacity-60 touch-manipulation"
+                className="w-full bg-accent text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 disabled:opacity-60 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2"
               >
                 {submitting ? "Sender…" : "Indsend oplevelse"}
               </button>
@@ -255,7 +265,7 @@ export function ExperienceUploadModal({
               <div className="space-y-2">
                 <button
                   onClick={copyLink}
-                  className="w-full flex items-center justify-center gap-2 border border-primary/15 rounded-xl py-3 text-sm font-medium text-primary hover:bg-primary/5 touch-manipulation"
+                  className="w-full flex items-center justify-center gap-2 border border-primary/15 rounded-xl py-3 text-sm font-medium text-primary hover:bg-primary/5 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2"
                 >
                   {copied ? <Check size={16} className="text-accent" /> : <Copy size={16} />}
                   {copied ? "Kopieret!" : "Kopiér link"}
@@ -264,7 +274,7 @@ export function ExperienceUploadModal({
                   href={fbShareUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full flex items-center justify-center gap-2 bg-[#1877f2] text-white rounded-xl py-3 text-sm font-semibold touch-manipulation"
+                  className="w-full flex items-center justify-center gap-2 bg-[#1877f2] text-white rounded-xl py-3 text-sm font-semibold touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1877f2]/50 focus-visible:ring-offset-2"
                 >
                   Del i Facebook-gruppen
                 </a>

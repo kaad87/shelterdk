@@ -1,6 +1,3 @@
-"use client";
-
-import { useEffect } from "react";
 import Link from "next/link";
 import {
   ExternalLink,
@@ -23,12 +20,13 @@ import { CommunityContributionPanel } from "@/components/CommunityContributionPa
 import { CommunityApprovedSection } from "@/components/CommunityApprovedSection";
 import { ShelterExperiencesSection } from "@/components/ShelterExperiencesSection";
 import NewsletterSignup from "@/components/NewsletterSignup";
-import { trackShelterView, trackOutboundClick } from "@/lib/tracking";
 import type { DailyForecast } from "@/lib/weather";
 import type { Shelter } from "@/types/shelter";
 import type { FaqItem } from "@/lib/faq";
 import { formatRelativeTimeDa } from "@/lib/relative-time-da";
 import { prepositionForRegionName } from "@/lib/area-db";
+import { TrackShelterView } from "@/components/TrackShelterView";
+import { TrackedExternalLink } from "@/components/TrackedExternalLink";
 
 export interface BreadcrumbLink {
   label: string;
@@ -116,25 +114,18 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
     weatherForecast = null,
   } = props;
 
-  useEffect(() => {
-    trackShelterView(shelter.title, slug);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug]);
-
   const BookingCard = ({ className = "" }: { className?: string }) => (
     <div className={`rounded-2xl border border-primary/10 bg-white shadow-sm p-6 ${className}`}>
       {bookingUrl ? (
         <>
-          <a
+          <TrackedExternalLink
             href={bookingUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => trackOutboundClick(bookingUrl!, "Book shelter")}
+            eventLabel="Book shelter"
             className="flex items-center justify-center gap-2 w-full bg-accent text-white font-semibold px-6 py-4 rounded-xl hover:bg-accent/90 transition-colors"
           >
             <ExternalLink size={20} />
             Book shelter
-          </a>
+          </TrackedExternalLink>
           <p className="text-center text-primary/70 text-sm mt-3">
             Du sendes til booking-systemet
           </p>
@@ -190,6 +181,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
 
   return (
     <main className="min-h-screen bg-background pb-20 lg:pb-0">
+      <TrackShelterView shelterName={shelter.title} shelterId={slug} />
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
         <nav aria-label="Brødkrummer" className="mb-6 py-2">
           <ol className="flex flex-wrap items-center gap-2 text-sm text-primary/70">
@@ -594,17 +586,15 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
       {/* Sticky mobile booking bar */}
       {bookingUrl && (
         <div className="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-primary/10 p-3 lg:hidden" role="complementary" aria-label="Booking">
-          <a
+          <TrackedExternalLink
             href={bookingUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => trackOutboundClick(bookingUrl!, "Book dette shelter")}
+            eventLabel="Book dette shelter"
             aria-label={`Book ${shelter.title} – åbner i nyt vindue`}
             className="flex items-center justify-center gap-2 w-full bg-accent text-white text-center font-semibold py-3 rounded-lg hover:bg-accent/90 transition-colors"
           >
             <ExternalLink size={18} aria-hidden="true" />
             Book dette shelter
-          </a>
+          </TrackedExternalLink>
         </div>
       )}
     </main>

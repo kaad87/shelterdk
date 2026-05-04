@@ -309,7 +309,7 @@ export function SearchBar({
             name="region"
             value={region}
             onChange={(e) => setRegion(e.target.value)}
-            className="w-[140px] md:w-auto md:min-w-[160px] appearance-none bg-accent/15 text-primary font-medium py-3 md:py-3.5 pl-3 md:pl-4 pr-8 md:pr-10 text-sm rounded-l-xl rounded-r-none focus:outline-none focus:ring-2 focus:ring-accent/50 cursor-pointer touch-manipulation"
+            className="w-[140px] md:w-auto md:min-w-[160px] appearance-none bg-accent/15 text-primary font-medium py-3 md:py-3.5 pl-3 md:pl-4 pr-8 md:pr-10 text-sm rounded-l-xl rounded-r-none focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 cursor-pointer touch-manipulation"
             aria-label="Vælg region"
           >
             {REGIONS.map((r) => (
@@ -325,7 +325,15 @@ export function SearchBar({
         </div>
 
         {/* Søgefelt med by-forslag */}
-        <div className="flex-1 flex items-center min-w-0 relative" ref={suggestRef}>
+        <div
+          className="flex-1 flex items-center min-w-0 relative"
+          ref={suggestRef}
+          role="combobox"
+          aria-haspopup="listbox"
+          aria-expanded={suggestOpen}
+          aria-controls="byer-forslag"
+          aria-owns="byer-forslag"
+        >
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/30 pointer-events-none" aria-hidden />
           <input
             ref={inputRef}
@@ -355,7 +363,6 @@ export function SearchBar({
             className="w-full py-3 md:py-3.5 pl-9 pr-9 text-primary placeholder:text-primary/50 bg-transparent border-0 focus:outline-none focus:ring-0 text-sm touch-manipulation"
             aria-label="Søg efter område eller by"
             aria-autocomplete="list"
-            aria-expanded={suggestOpen}
             aria-controls="byer-forslag"
             aria-activedescendant={suggestIndex >= 0 ? `byer-${suggestIndex}` : undefined}
             id="soeg-by-input"
@@ -364,7 +371,7 @@ export function SearchBar({
             <button
               type="button"
               onClick={() => { setQuery(""); setSuggestOpen(false); }}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded text-primary/50 hover:text-primary hover:bg-primary/10"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded text-primary/60 hover:text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
               aria-label="Ryd søgefelt"
             >
               <X className="w-4 h-4" />
@@ -393,19 +400,25 @@ export function SearchBar({
                       <li
                         key={`${suggestion.type}-${suggestion.name}`}
                         id={`byer-${i}`}
-                        role="option"
-                        aria-selected={i === suggestIndex}
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          navigate(suggestion);
-                        }}
-                        className={`flex items-center gap-3 px-4 py-3 sm:py-2.5 text-base sm:text-sm cursor-pointer touch-manipulation ${i === suggestIndex ? "bg-accent/15 text-primary" : "text-primary hover:bg-primary/5 active:bg-primary/10"}`}
+                        className="px-0"
                       >
-                        <SuggestionIcon type={suggestion.type} />
-                        <span className="flex-1 min-w-0 truncate">{suggestion.name}</span>
-                        {label && (
-                          <span className="text-xs text-primary/35 ml-2 flex-shrink-0">{label}</span>
-                        )}
+                        <button
+                          type="button"
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            navigate(suggestion);
+                          }}
+                          onClick={() => navigate(suggestion)}
+                          role="option"
+                          aria-selected={i === suggestIndex}
+                          className={`flex w-full items-center gap-3 px-4 py-3 sm:py-2.5 text-base sm:text-sm cursor-pointer touch-manipulation text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-inset ${i === suggestIndex ? "bg-accent/15 text-primary" : "text-primary hover:bg-primary/5 active:bg-primary/10"}`}
+                        >
+                          <SuggestionIcon type={suggestion.type} />
+                          <span className="flex-1 min-w-0 truncate">{suggestion.name}</span>
+                          {label && (
+                            <span className="text-xs text-primary/50 ml-2 flex-shrink-0">{label}</span>
+                          )}
+                        </button>
                       </li>
                     );
                   })}
@@ -427,7 +440,7 @@ export function SearchBar({
                   view === "list"
                     ? "bg-primary/15 text-primary"
                     : "bg-white text-primary/70 hover:bg-primary/5"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-inset`}
                 aria-pressed={view === "list"}
                 aria-label="Kun liste"
               >
@@ -441,7 +454,7 @@ export function SearchBar({
                   view === "split"
                     ? "bg-primary/15 text-primary"
                     : "bg-white text-primary/70 hover:bg-primary/5"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-inset`}
                 aria-pressed={view === "split"}
                 aria-label="Liste og kort"
               >
@@ -455,7 +468,7 @@ export function SearchBar({
                   view === "map"
                     ? "bg-primary/15 text-primary"
                     : "bg-white text-primary/70 hover:bg-primary/5"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-inset`}
                 aria-pressed={view === "map"}
                 aria-label="Kun kort"
               >
@@ -482,7 +495,7 @@ export function SearchBar({
                     active
                       ? "bg-primary text-white border-primary shadow-sm"
                       : "bg-white text-primary/70 border-primary/15 hover:border-primary/30 hover:text-primary hover:shadow-sm"
-                  }`}
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2`}
                   aria-pressed={active}
                 >
                   <span className={active ? "text-white" : "text-primary/50"}>{icon}</span>
@@ -507,7 +520,7 @@ export function SearchBar({
                   const url = buildSoegUrl(region, query, view, next);
                   router.push(url, { scroll: false });
                 }}
-                className="w-8 bg-transparent text-center text-primary font-medium focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="w-8 bg-transparent text-center text-primary font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 rounded [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 aria-label="Minimum antal pladser"
               />
               <span className="text-primary/70 whitespace-nowrap">pladser</span>
@@ -517,7 +530,7 @@ export function SearchBar({
               <button
                 type="button"
                 onClick={clearAllFilters}
-                className="flex items-center gap-1 px-3 py-1.5 md:py-2 rounded-full text-[13px] md:text-sm font-medium text-primary/50 hover:text-primary hover:bg-primary/5 whitespace-nowrap shrink-0 transition-colors touch-manipulation"
+                className="flex items-center gap-1 px-3 py-1.5 md:py-2 rounded-full text-[13px] md:text-sm font-medium text-primary/60 hover:text-primary hover:bg-primary/5 whitespace-nowrap shrink-0 transition-colors touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2"
                 aria-label="Ryd alle filtre"
               >
                 <X size={14} />

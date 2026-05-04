@@ -1,29 +1,14 @@
-"use client";
-
 import { Fragment } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Calendar, Clock } from "lucide-react";
 import type { BlogCategory, BlogPost } from "@/data/blog";
-import { useInView } from "@/lib/useInView";
 import { slugifySegment } from "@/lib/slug";
-
-function AnimatedCard({ children, index }: { children: React.ReactNode; index: number }) {
-  const { ref, isInView } = useInView();
-  return (
-    <div
-      ref={ref}
-      className={isInView ? "animate-fade-in-up" : undefined}
-      style={{ animationDelay: `${index * 80}ms` }}
-    >
-      {children}
-    </div>
-  );
-}
+import { InViewReveal } from "@/components/InViewReveal";
 
 function BlogCard({ post, index }: { post: BlogPost; index: number }) {
   return (
-    <AnimatedCard index={index}>
+    <InViewReveal index={index}>
       <article className="group">
         <Link
           href={`/blog/${post.slug}`}
@@ -65,7 +50,7 @@ function BlogCard({ post, index }: { post: BlogPost; index: number }) {
           </div>
         </Link>
       </article>
-    </AnimatedCard>
+    </InViewReveal>
   );
 }
 

@@ -29,7 +29,7 @@ const navEntries: NavEntry[] = [
     items: [
       { label: "Søg shelters", href: "/soeg" },
       { label: "Regioner", href: "/danmark" },
-      { label: "Shelter by", href: "/by" },
+      { label: "Byer med shelters", href: "/by" },
       { label: "Shelter nær mig", href: "/shelter-naer-mig" },
       { label: "Områder", href: "/omraade" },
       { label: "Book shelter", href: "/shelter-booking" },
@@ -100,9 +100,12 @@ function DropdownMenu({
           isGroupActive
             ? "text-accent"
             : "text-primary/80 hover:text-accent"
-        }`}
+        } rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2`}
         onClick={() => setOpen(!open)}
+        aria-label={`${group.label} menu`}
+        aria-haspopup="menu"
         aria-expanded={open}
+        aria-controls={`nav-group-${group.label.toLowerCase().replace(/\s+/g, "-")}`}
       >
         {group.label}
         <ChevronDown
@@ -111,7 +114,10 @@ function DropdownMenu({
         />
       </button>
       {open && (
-        <div className="absolute left-0 top-full z-[100] mt-2 min-w-[180px] rounded-lg border border-primary/10 bg-white py-1 shadow-lg">
+        <div
+          id={`nav-group-${group.label.toLowerCase().replace(/\s+/g, "-")}`}
+          className="absolute left-0 top-full z-[100] mt-2 min-w-[180px] rounded-lg border border-primary/10 bg-white py-1 shadow-lg"
+        >
           {group.items.map((item) => {
             const isActive =
               pathname === item.href ||
@@ -125,7 +131,7 @@ function DropdownMenu({
                   isActive
                     ? "text-accent bg-accent/5"
                     : "text-primary/80 hover:text-accent hover:bg-primary/5"
-                }`}
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-inset`}
               >
                 {item.label}
               </Link>
@@ -222,7 +228,7 @@ export function Navbar() {
   );
 
   return (
-    <nav className="sticky top-0 z-50 w-full bg-white border-b border-primary/10 shadow-sm">
+    <nav aria-label="Primær navigation" className="sticky top-0 z-50 w-full bg-white border-b border-primary/10 shadow-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <Link
@@ -261,7 +267,7 @@ export function Navbar() {
             })}
             <button
               onClick={openModal}
-              className="hidden lg:flex items-center gap-1.5 bg-accent text-white text-sm font-semibold px-3.5 py-1.5 rounded-lg hover:bg-accent/85 transition-colors whitespace-nowrap"
+              className="hidden lg:flex items-center gap-1.5 bg-accent text-white text-sm font-semibold px-3.5 py-1.5 rounded-lg hover:bg-accent/85 transition-colors whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 focus-visible:ring-offset-2"
             >
               <span>💡</span>
               Mangler dit shelter?
@@ -276,10 +282,12 @@ export function Navbar() {
                   placeholder="Søg område eller by"
                   className="flex-1 min-w-0 py-2 pl-3 pr-2 text-sm bg-transparent border-0 focus:outline-none focus:ring-0 text-primary placeholder:text-primary/50"
                   aria-label="Søg efter område eller by"
+                  aria-autocomplete="list"
+                  aria-controls="navbar-search-suggestions"
                 />
                 <button
                   type="submit"
-                  className="flex items-center justify-center w-9 h-9 shrink-0 text-accent hover:bg-accent/10 rounded-r-md transition-colors"
+                  className="flex items-center justify-center w-9 h-9 shrink-0 text-accent hover:bg-accent/10 rounded-r-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-inset"
                   aria-label="Søg"
                 >
                   <Search size={18} />
@@ -287,7 +295,9 @@ export function Navbar() {
               </form>
               {suggestOpen && (
                 <ul
+                  id="navbar-search-suggestions"
                   role="listbox"
+                  aria-label="Søgeforslag"
                   className="absolute left-0 right-0 top-full z-[100] mt-1 py-1 bg-white border border-primary/10 rounded-lg shadow-lg max-h-60 overflow-auto"
                 >
                   {suggestLoading ? (
@@ -296,17 +306,24 @@ export function Navbar() {
                     suggestions.map((s) => (
                       <li
                         key={`${s.type}-${s.name}`}
-                        role="option"
                         onMouseDown={(e) => {
                           e.preventDefault();
                           pickSuggestion(s.name);
                         }}
-                        className="flex items-center justify-between px-3 py-2 text-sm text-primary hover:bg-primary/5 cursor-pointer"
+                        className="px-0"
                       >
-                        <span>{s.name}</span>
-                        <span className="text-xs text-primary/40 ml-2">
-                          {s.type === "område" ? "Område" : "By"}
-                        </span>
+                        <button
+                          type="button"
+                          onClick={() => pickSuggestion(s.name)}
+                          role="option"
+                          aria-selected={false}
+                          className="flex w-full items-center justify-between px-3 py-2 text-sm text-primary hover:bg-primary/5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-inset"
+                        >
+                          <span>{s.name}</span>
+                          <span className="text-xs text-primary/50 ml-2">
+                            {s.type === "område" ? "Område" : "By"}
+                          </span>
+                        </button>
                       </li>
                     ))
                   )}
@@ -316,14 +333,14 @@ export function Navbar() {
           </div>
           <div className="md:hidden flex items-center gap-1 -mr-2">
             <button
-              className="flex items-center justify-center w-11 h-11 text-primary touch-manipulation"
+              className="flex items-center justify-center w-11 h-11 text-primary touch-manipulation rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2"
               onClick={() => setMobileSearchOpen(true)}
               aria-label="Søg"
             >
               <Search size={22} />
             </button>
             <button
-              className="flex items-center justify-center w-11 h-11 text-primary touch-manipulation"
+              className="flex items-center justify-center w-11 h-11 text-primary touch-manipulation rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label={mobileMenuOpen ? "Luk menu" : "Åbn menu"}
               aria-expanded={mobileMenuOpen}
@@ -359,7 +376,7 @@ export function Navbar() {
                               isActive
                                 ? "text-accent bg-accent/10"
                                 : "text-primary/80 hover:text-accent hover:bg-primary/5 active:bg-primary/10"
-                            }`}
+                            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-inset`}
                           >
                             {item.label}
                           </Link>
@@ -380,7 +397,7 @@ export function Navbar() {
                       isActive
                         ? "text-accent bg-accent/10"
                         : "text-primary/80 hover:text-accent hover:bg-primary/5 active:bg-primary/10"
-                    }`}
+                    } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-inset`}
                   >
                     {entry.label}
                   </Link>
@@ -388,7 +405,7 @@ export function Navbar() {
               })}
               <button
                 onClick={() => { openModal(); setMobileMenuOpen(false); }}
-                className="block w-full text-left py-3 px-4 text-base font-medium rounded-lg transition-colors touch-manipulation -mx-2 text-accent hover:bg-accent/5 active:bg-accent/10"
+                className="block w-full text-left py-3 px-4 text-base font-medium rounded-lg transition-colors touch-manipulation -mx-2 text-accent hover:bg-accent/5 active:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-inset"
               >
                 💡 Mangler dit shelter?
               </button>
@@ -398,12 +415,12 @@ export function Navbar() {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Søg område eller by"
-                  className="flex-1 min-w-0 py-2.5 px-3 text-base rounded-lg border border-primary/15 bg-white text-primary placeholder:text-primary/50"
+                  className="flex-1 min-w-0 py-2.5 px-3 text-base rounded-lg border border-primary/15 bg-white text-primary placeholder:text-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:border-accent/50"
                   aria-label="Søg efter område eller by"
                 />
                 <button
                   type="submit"
-                  className="flex items-center justify-center w-12 rounded-lg bg-accent text-white shrink-0 touch-manipulation"
+                  className="flex items-center justify-center w-12 rounded-lg bg-accent text-white shrink-0 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 focus-visible:ring-offset-2"
                   aria-label="Søg"
                 >
                   <Search size={20} />

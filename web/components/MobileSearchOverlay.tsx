@@ -98,6 +98,11 @@ export function MobileSearchOverlay({ onClose }: MobileSearchOverlayProps) {
         <form
           onSubmit={handleSubmit}
           className="flex-1 flex items-center gap-2 rounded-xl border border-primary/15 bg-primary/[0.03] focus-within:border-accent/50 focus-within:ring-1 focus-within:ring-accent/30 px-3 py-2.5"
+          role="combobox"
+          aria-haspopup="listbox"
+          aria-expanded={suggestOpen}
+          aria-controls="mobile-search-suggestions"
+          aria-owns="mobile-search-suggestions"
         >
           <Search className="w-4 h-4 text-primary/40 shrink-0" aria-hidden />
           <input
@@ -108,12 +113,14 @@ export function MobileSearchOverlay({ onClose }: MobileSearchOverlayProps) {
             placeholder="Søg område, by eller shelter"
             className="flex-1 min-w-0 bg-transparent text-primary placeholder:text-primary/50 text-base focus:outline-none focus:ring-0 border-0"
             aria-label="Søg efter område eller by"
+            aria-autocomplete="list"
+            aria-controls="mobile-search-suggestions"
           />
           {query.length > 0 && (
             <button
               type="button"
               onClick={() => setQuery("")}
-              className="p-0.5 rounded text-primary/40 hover:text-primary"
+              className="p-0.5 rounded text-primary/60 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
               aria-label="Ryd søgefelt"
             >
               <X className="w-4 h-4" />
@@ -123,7 +130,7 @@ export function MobileSearchOverlay({ onClose }: MobileSearchOverlayProps) {
         <button
           type="button"
           onClick={onClose}
-          className="flex-shrink-0 text-primary/70 font-medium text-sm px-2 py-1 touch-manipulation"
+          className="flex-shrink-0 text-primary/80 font-medium text-sm px-2 py-1 touch-manipulation rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2"
         >
           Annuller
         </button>
@@ -134,7 +141,7 @@ export function MobileSearchOverlay({ onClose }: MobileSearchOverlayProps) {
         {loading && query.trim().length >= 2 ? (
           <div className="px-4 py-3 text-primary/60 text-sm">Henter forslag…</div>
         ) : (
-          <ul role="listbox" aria-label="Søgeforslag">
+          <ul id="mobile-search-suggestions" role="listbox" aria-label="Søgeforslag">
             {query.trim().length < 2 && suggestions.length > 0 && (
               <li className="px-4 pt-4 pb-1 text-xs font-semibold uppercase tracking-wider text-primary/30">
                 Forslag
@@ -145,16 +152,21 @@ export function MobileSearchOverlay({ onClose }: MobileSearchOverlayProps) {
               return (
                 <li
                   key={`${suggestion.type}-${suggestion.name}`}
-                  role="option"
-                  aria-selected={false}
-                  onClick={() => navigate(suggestion)}
-                  className="flex items-center gap-3 px-4 py-4 cursor-pointer hover:bg-primary/5 active:bg-primary/10 touch-manipulation border-b border-primary/5 last:border-0"
+                  className="border-b border-primary/5 last:border-0"
                 >
-                  <SuggestionIcon type={suggestion.type} />
-                  <span className="flex-1 text-primary text-base">{suggestion.name}</span>
-                  {label && (
-                    <span className="text-xs text-primary/35 flex-shrink-0">{label}</span>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => navigate(suggestion)}
+                    role="option"
+                    aria-selected={false}
+                    className="flex w-full items-center gap-3 px-4 py-4 hover:bg-primary/5 active:bg-primary/10 touch-manipulation text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-inset"
+                  >
+                    <SuggestionIcon type={suggestion.type} />
+                    <span className="flex-1 text-primary text-base">{suggestion.name}</span>
+                    {label && (
+                      <span className="text-xs text-primary/50 flex-shrink-0">{label}</span>
+                    )}
+                  </button>
                 </li>
               );
             })}

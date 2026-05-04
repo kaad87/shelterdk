@@ -74,8 +74,11 @@ export function ShareButtons({ title, url }: ShareButtonsProps) {
       <button
         ref={btnRef}
         onClick={handleClick}
-        className="inline-flex items-center gap-1.5 rounded-full border border-primary/10 bg-white px-3.5 py-2 text-xs font-medium text-primary/60 hover:text-primary hover:border-primary/20 hover:shadow-sm transition-all touch-manipulation"
+        className="inline-flex items-center gap-1.5 rounded-full border border-primary/10 bg-white px-3.5 py-2 text-xs font-medium text-primary/70 hover:text-primary hover:border-primary/20 hover:shadow-sm transition-all touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2"
         aria-label="Del dette shelter"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-controls="share-buttons-panel"
       >
         <Share2 size={13} />
         Del
@@ -83,6 +86,7 @@ export function ShareButtons({ title, url }: ShareButtonsProps) {
 
       {open && (
         <div
+          id="share-buttons-panel"
           ref={panelRef}
           className="absolute top-full right-0 mt-2 z-50 animate-pop-in"
         >
@@ -93,7 +97,7 @@ export function ShareButtons({ title, url }: ShareButtonsProps) {
                 copied
                   ? "bg-emerald-50 text-emerald-600"
                   : "text-primary/60 hover:bg-primary/5 hover:text-primary"
-              }`}
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50`}
             >
               {copied ? <Check size={13} /> : <Link2 size={13} />}
               {copied ? "Kopieret!" : "Kopiér link"}
@@ -106,7 +110,7 @@ export function ShareButtons({ title, url }: ShareButtonsProps) {
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => trackShare("facebook", "shelter")}
-              className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-primary/40 hover:bg-[#1877F2]/10 hover:text-[#1877F2] transition-colors"
+              className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-primary/60 hover:bg-[#1877F2]/10 hover:text-[#1877F2] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1877F2]/40"
               title="Facebook"
               aria-label="Del på Facebook"
             >
@@ -118,7 +122,7 @@ export function ShareButtons({ title, url }: ShareButtonsProps) {
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => trackShare("twitter", "shelter")}
-              className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-primary/40 hover:bg-primary/5 hover:text-primary transition-colors"
+              className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-primary/60 hover:bg-primary/5 hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
               title="X / Twitter"
               aria-label="Del på X"
             >

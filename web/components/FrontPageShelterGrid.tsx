@@ -1,5 +1,3 @@
-"use client";
-
 import { ShelterCard } from "@/components/ShelterCard";
 import type { Shelter } from "@/types/shelter";
 

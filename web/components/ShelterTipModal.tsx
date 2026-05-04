@@ -13,6 +13,7 @@ export function ShelterTipModal() {
   const [sourceInfo, setSourceInfo] = useState("");
   const [state, setState] = useState<State>("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const titleId = "shelter-tip-modal-title";
 
   if (!isOpen) return null;
 
@@ -61,7 +62,7 @@ export function ShelterTipModal() {
       onClick={handleClose}
       role="dialog"
       aria-modal="true"
-      aria-label="Tip om manglende shelter"
+      aria-labelledby={titleId}
     >
       <div
         className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl"
@@ -70,10 +71,10 @@ export function ShelterTipModal() {
         {/* Header */}
         <div className="flex items-center gap-3 bg-[#4a90d9] text-white px-5 py-4 rounded-t-2xl">
           <Lightbulb size={20} />
-          <span className="font-semibold">Tip om manglende shelter</span>
+          <h2 id={titleId} className="font-semibold">Tip om manglende shelter</h2>
           <button
             onClick={handleClose}
-            className="ml-auto rounded-full hover:bg-white/20 p-1 transition-colors"
+            className="ml-auto rounded-full hover:bg-white/20 p-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
             aria-label="Luk"
           >
             <X size={18} />
@@ -86,10 +87,10 @@ export function ShelterTipModal() {
               <CheckCircle size={48} className="text-green-500" />
               <p className="font-semibold text-primary text-lg">Tak — vi kigger på det!</p>
               <p className="text-sm text-primary/60">Dit tip er registreret og behandles inden for få dage.</p>
-              <button
-                onClick={handleClose}
-                className="mt-2 bg-[#4a90d9] text-white font-semibold px-5 py-2.5 rounded-xl hover:bg-[#3a7bc8] transition-colors"
-              >
+                <button
+                  onClick={handleClose}
+                  className="mt-2 bg-[#4a90d9] text-white font-semibold px-5 py-2.5 rounded-xl hover:bg-[#3a7bc8] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4a90d9]/50 focus-visible:ring-offset-2"
+                >
                 Luk
               </button>
             </div>
@@ -111,7 +112,7 @@ export function ShelterTipModal() {
                   placeholder='Fx "Shelter ved Silkeborg Sø"'
                   required
                   maxLength={200}
-                  className="w-full border border-primary/20 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4a90d9]/40"
+                  className="w-full border border-primary/20 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#4a90d9]/40 focus-visible:border-[#4a90d9]"
                 />
               </div>
 
@@ -127,7 +128,7 @@ export function ShelterTipModal() {
                   placeholder="Adresse, by eller postnr"
                   required
                   maxLength={200}
-                  className="w-full border border-primary/20 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4a90d9]/40"
+                  className="w-full border border-primary/20 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#4a90d9]/40 focus-visible:border-[#4a90d9]"
                 />
               </div>
 
@@ -143,7 +144,7 @@ export function ShelterTipModal() {
                   placeholder="Fx hvem der ejer den, link til kommunens hjemmeside..."
                   maxLength={500}
                   rows={3}
-                  className="w-full border border-primary/20 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4a90d9]/40 resize-none"
+                  className="w-full border border-primary/20 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#4a90d9]/40 focus-visible:border-[#4a90d9] resize-none"
                 />
                 <div className="text-right text-xs text-primary/40 mt-0.5">
                   {sourceInfo.length}/500
@@ -151,7 +152,7 @@ export function ShelterTipModal() {
               </div>
 
               {errorMsg && (
-                <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{errorMsg}</p>
+                <p role="alert" className="text-sm text-red-700 bg-red-50 rounded-lg px-3 py-2">{errorMsg}</p>
               )}
 
               {/* Buttons */}
@@ -159,7 +160,7 @@ export function ShelterTipModal() {
                 <button
                   type="submit"
                   disabled={state === "loading" || !shelterName.trim() || !locationText.trim()}
-                  className="flex-1 flex items-center justify-center gap-2 bg-[#4a90d9] text-white font-semibold px-4 py-2.5 rounded-xl hover:bg-[#3a7bc8] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="flex-1 flex items-center justify-center gap-2 bg-[#4a90d9] text-white font-semibold px-4 py-2.5 rounded-xl hover:bg-[#3a7bc8] disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4a90d9]/50 focus-visible:ring-offset-2"
                 >
                   {state === "loading" ? (
                     <><Loader2 size={15} className="animate-spin" /> Sender...</>
@@ -170,7 +171,7 @@ export function ShelterTipModal() {
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="border border-primary/20 text-primary/70 font-medium px-4 py-2.5 rounded-xl hover:bg-primary/5 transition-colors"
+                  className="border border-primary/20 text-primary/80 font-medium px-4 py-2.5 rounded-xl hover:bg-primary/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4a90d9]/40 focus-visible:ring-offset-2"
                 >
                   Annuller
                 </button>
