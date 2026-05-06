@@ -6,8 +6,11 @@ export default function TakPage() {
       <div className="text-center max-w-md p-8">
         <div className="text-6xl mb-4">🎉</div>
         <h1 className="text-2xl font-bold text-green-700 mb-3">Betaling modtaget!</h1>
-        <p className="text-primary/60 mb-6">
-          Tak for din betaling. Du modtager en bekræftelse på e-mail inden for få minutter.
+        <p className="text-primary/60 mb-3">
+          Din booking er bekræftet. Du modtager en bekræftelse på e-mail inden for få minutter.
+        </p>
+        <p className="text-sm text-primary/40 mb-6">
+          Skal ejeren aflyse, refunderes du automatisk inden for 5–10 hverdage.
         </p>
         <a
           href="/"

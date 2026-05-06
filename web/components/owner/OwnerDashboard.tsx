@@ -350,7 +350,11 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const todayIso = today();
-  const pending = bookings.filter((b) => b.status === "pending");
+  const isUpfront = shelter.payment_mode === "upfront";
+
+  // For upfront shelters: pending = guest hasn't paid yet (abandoned checkout).
+  // Only show pending for after_confirmation shelters — upfront auto-confirms on payment.
+  const pending = bookings.filter((b) => b.status === "pending" && !isUpfront);
   const upcoming = bookings.filter(
     (b) => b.status === "confirmed" && b.check_out > todayIso
   );
@@ -372,8 +376,6 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
     : [];
   const selectedBlocked = selectedDate ? (manualBlockedSet.has(selectedDate) || syncedBlockedSet.has(selectedDate)) : false;
   const selectedBlockedSync = selectedDate ? syncedBlockedSet.has(selectedDate) : false;
-
-  const isUpfront = shelter.payment_mode === "upfront";
 
   const embedCode = shelter.booking_mode === "iframe"
     ? `<iframe\n  src="https://shelterdk.dk/embed/book/${shelter.slug}"\n  width="100%"\n  height="700"\n  frameborder="0"\n  style="border-radius:8px;border:1px solid #e5e7eb;"\n  title="Book ${shelter.title}"\n></iframe>\n<p style="text-align:center;font-size:12px;color:#6b7280;margin-top:6px;">\n  <a href="https://shelterdk.dk" target="_blank" rel="noopener" title="Find og book shelters i hele Danmark">Shelter booking leveret af ShelterDK</a>\n</p>`

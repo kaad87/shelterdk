@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { constructWebhookEvent } from "@/lib/stripe";
 import { getPaymentBySessionId, markPaymentPaid } from "@/lib/payment-db";
-import { sendPaymentConfirmed, sendUpfrontPaymentReceived } from "@/lib/booking-email";
+import { sendPaymentConfirmed } from "@/lib/booking-email";
+import { updateBookingStatus } from "@/lib/booking-db";
 import { createAdminClient } from "@/utils/supabase/server-admin";
 import { sendGa4Event } from "@/lib/server-analytics";
 
@@ -57,30 +58,21 @@ export async function POST(req: NextRequest) {
         });
 
         if (shelter.payment_mode === "upfront") {
-          // Booking is still pending owner confirmation — notify owner
-          await sendUpfrontPaymentReceived({
-            ownerEmail: shelter.owner_email,
-            shelterTitle: shelter.title,
-            ownerToken: shelter.owner_token,
-            guestName: booking.guest_name,
-            guestEmail: booking.guest_email,
-            checkIn: booking.check_in,
-            checkOut: booking.check_out,
-            amountTotalDkk: payment.amount_total_dkk,
-          });
-        } else {
-          // after_confirmation: payment means booking is fully confirmed
-          await sendPaymentConfirmed({
-            guestEmail: booking.guest_email,
-            guestName: booking.guest_name,
-            ownerEmail: shelter.owner_email,
-            shelterTitle: shelter.title,
-            checkIn: booking.check_in,
-            checkOut: booking.check_out,
-            amountTotalDkk: payment.amount_total_dkk,
-            guestToken: booking.guest_token,
-          });
+          // Auto-confirm: payment = confirmed, no owner approval needed
+          await updateBookingStatus(payment.booking_id, "confirmed");
         }
+        // Send confirmation emails to guest + owner (same for both modes)
+        await sendPaymentConfirmed({
+          guestEmail: booking.guest_email,
+          guestName: booking.guest_name,
+          ownerEmail: shelter.owner_email,
+          ownerToken: shelter.owner_token,
+          shelterTitle: shelter.title,
+          checkIn: booking.check_in,
+          checkOut: booking.check_out,
+          amountTotalDkk: payment.amount_total_dkk,
+          guestToken: booking.guest_token,
+        });
       }
     } catch (err) {
       console.error("Webhook: confirmation email failed (non-fatal):", err);

@@ -118,7 +118,7 @@ export function BookingForm({
   const totalDkk = shelterTotalDkk + platformFee;
 
   const trustSignals = isUpfront
-    ? ["Sikker betaling via MobilePay eller kort", "Du betaler nu og ejeren bekræfter herefter", "Fuld refundering ved afvisning"]
+    ? ["Sikker betaling via MobilePay eller kort", "Booking bekræftes automatisk ved betaling", "Fuld refundering ved aflysning fra ejeren"]
     : ["Gratis at sende en forespørgsel", "Du betaler ingenting nu", "Ejer svarer typisk inden 24 timer"];
 
   return (
@@ -319,7 +319,7 @@ export function BookingForm({
               </button>
 
               <p className="text-[11px] text-primary/30 text-center leading-relaxed">
-                {isUpfront ? "Sikker betaling · fuld refundering ved afvisning" : "Gratis · uforpligtende · ingen betaling nu"}
+                {isUpfront ? "Sikker betaling · automatisk bekræftet · refundering ved aflysning" : "Gratis · uforpligtende · ingen betaling nu"}
               </p>
             </form>
           </div>

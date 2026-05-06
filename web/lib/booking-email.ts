@@ -349,6 +349,7 @@ export async function sendPaymentConfirmed(opts: {
   guestEmail: string;
   guestName: string;
   ownerEmail: string;
+  ownerToken?: string;
   shelterTitle: string;
   checkIn: string;
   checkOut: string;
@@ -388,23 +389,27 @@ export async function sendPaymentConfirmed(opts: {
     resend.emails.send({
       from: FROM_EMAIL,
       to: opts.ownerEmail,
-      subject: `Betaling modtaget: ${esc(opts.shelterTitle)}`,
+      subject: `Ny bekræftet booking: ${esc(opts.shelterTitle)}`,
       html: renderEmail({
-        title: "Betaling modtaget",
+        title: "Ny bekræftet booking",
         bodyHtml: `
-          <p style="font-size:13px;color:#333;line-height:1.65;margin:0 0 10px;"><strong>${esc(opts.guestName)}</strong> har betalt <strong>${opts.amountTotalDkk} kr</strong> for <strong>${esc(opts.shelterTitle)}</strong>.</p>
-          <div style="background:#f9f7f4;border-left:3px solid #c5a059;border-radius:0 6px 6px 0;padding:9px 13px;margin:12px 0;">
-            <p style="font-size:10px;color:#999;margin:0 0 2px;text-transform:uppercase;letter-spacing:0.5px;">Datoer</p>
+          <p style="font-size:13px;color:#333;line-height:1.65;margin:0 0 10px;"><strong>${esc(opts.guestName)}</strong> har betalt <strong>${opts.amountTotalDkk} kr</strong> og booket <strong>${esc(opts.shelterTitle)}</strong>.</p>
+          <div style="background:#f0fdf4;border-left:3px solid #16a34a;border-radius:0 6px 6px 0;padding:9px 13px;margin:12px 0;">
+            <p style="font-size:10px;color:#999;margin:0 0 2px;text-transform:uppercase;letter-spacing:0.5px;">Bekræftet ophold</p>
             <p style="font-size:13px;font-weight:600;color:#2C3E50;margin:0;">${esc(formatDate(opts.checkIn))} → ${esc(formatDate(opts.checkOut))}</p>
           </div>
+          <p style="font-size:12px;color:#999;margin:0 0 16px;">Bookingen er automatisk bekræftet. Hvis du skal aflyse, sker der automatisk fuld refundering til gæsten.</p>
+          ${opts.ownerToken ? `<a href="${SITE_URL}/owner/${esc(opts.ownerToken)}" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">Se dit dashboard</a>` : ""}
         `,
       }),
       text: renderEmailText({
-        title: "Betaling modtaget",
+        title: "Ny bekræftet booking",
         lines: [
-          `${opts.guestName} har betalt ${opts.amountTotalDkk} kr for ${opts.shelterTitle}.`,
+          `${opts.guestName} har betalt ${opts.amountTotalDkk} kr og booket ${opts.shelterTitle}.`,
           `Datoer: ${formatDate(opts.checkIn)} → ${formatDate(opts.checkOut)}`,
+          "Bookingen er automatisk bekræftet. Aflyser du, refunderes gæsten automatisk.",
         ],
+        ...(opts.ownerToken ? { url: `${SITE_URL}/owner/${opts.ownerToken}` } : {}),
       }),
     }),
   ]);

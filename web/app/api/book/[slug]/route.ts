@@ -3,6 +3,7 @@ import {
   getBookableShelterBySlug,
   createBooking,
   createActionTokens,
+  hasConfirmedOverlap,
 } from "@/lib/booking-db";
 import {
   sendBookingRequestToOwner,
@@ -68,6 +69,16 @@ export async function POST(
     return NextResponse.json({ error: "Ankomstdato kan ikke være i fortiden" }, { status: 400 });
 
   try {
+    // For upfront shelters: block if dates are already confirmed
+    if (shelter.payment_mode === "upfront") {
+      const conflict = await hasConfirmedOverlap(shelter.id, check_in, check_out, "");
+      if (conflict)
+        return NextResponse.json(
+          { error: "Disse datoer er desværre allerede optaget" },
+          { status: 409 }
+        );
+    }
+
     const booking = await createBooking({
       bookable_shelter_id: shelter.id,
       guest_name,
@@ -78,30 +89,33 @@ export async function POST(
       message: message || null,
     });
 
-    const { confirmToken, rejectToken } = await createActionTokens(booking.id);
-
-    await Promise.all([
-      sendBookingRequestToOwner({
-        ownerEmail: shelter.owner_email,
-        shelterTitle: shelter.title,
-        ownerToken: shelter.owner_token,
-        guestName: guest_name,
-        guestEmail: guest_email,
-        guestCount: guest_count,
-        checkIn: check_in,
-        checkOut: check_out,
-        message: message || null,
-        confirmToken,
-        rejectToken,
-      }),
-      sendBookingReceivedToGuest({
-        guestEmail: guest_email,
-        guestName: guest_name,
-        shelterTitle: shelter.title,
-        checkIn: check_in,
-        checkOut: check_out,
-      }),
-    ]);
+    // For after_confirmation: notify owner + send guest receipt immediately
+    // For upfront: skip — emails are sent by the Stripe webhook after payment
+    if (shelter.payment_mode !== "upfront") {
+      const { confirmToken, rejectToken } = await createActionTokens(booking.id);
+      await Promise.all([
+        sendBookingRequestToOwner({
+          ownerEmail: shelter.owner_email,
+          shelterTitle: shelter.title,
+          ownerToken: shelter.owner_token,
+          guestName: guest_name,
+          guestEmail: guest_email,
+          guestCount: guest_count,
+          checkIn: check_in,
+          checkOut: check_out,
+          message: message || null,
+          confirmToken,
+          rejectToken,
+        }),
+        sendBookingReceivedToGuest({
+          guestEmail: guest_email,
+          guestName: guest_name,
+          shelterTitle: shelter.title,
+          checkIn: check_in,
+          checkOut: check_out,
+        }),
+      ]);
+    }
 
     // For upfront shelters: create Stripe checkout session immediately
     let checkoutUrl: string | undefined;
