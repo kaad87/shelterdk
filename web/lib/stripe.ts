@@ -101,6 +101,7 @@ export async function createCheckoutSession(
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     payment_method_types: ["mobilepay", "card"],
+    locale: "da",
     line_items: lineItems,
     metadata: { booking_id: booking.id },
     success_url: `${SITE_URL}/booking/${booking.id}/tak`,
