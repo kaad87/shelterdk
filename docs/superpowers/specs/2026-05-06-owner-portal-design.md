@@ -74,6 +74,10 @@ Calls `supabase.auth.signInWithPassword({ email, password })`. Sets session cook
 ### `POST /api/ejer/signup`
 Calls `supabase.auth.signUp({ email, password })`. On success, updates `bookable_shelters SET auth_user_id = new_user_id WHERE owner_email = email AND auth_user_id IS NULL`. Returns `{ ok: true, sheltersLinked: number }`.
 
+**Email confirmation:** Supabase email confirmation must be **disabled** in the project's Auth settings (Authentication → Email → "Confirm email" toggle off). This allows immediate session creation on signup without an email round-trip. Given the small number of trusted owners, this is the correct tradeoff.
+
+**Co-owner edge case:** If two people sign up with the same `owner_email`, the second signup gets no shelters linked (the `auth_user_id IS NULL` guard prevents overwriting). This is acceptable — the admin can manually update `auth_user_id` if needed.
+
 ### `POST /api/ejer/logout`
 Calls `supabase.auth.signOut()`. Clears session cookie.
 
@@ -81,7 +85,7 @@ Calls `supabase.auth.signOut()`. Clears session cookie.
 Returns all `bookable_shelters` rows where `auth_user_id = auth.uid()`, plus booking count for each.
 
 ### `PATCH /api/ejer/shelter/[id]`
-Accepts `{ title?, description?, max_persons?, shelter_price_dkk? }`. Validates ownership, updates the row. Returns updated shelter.
+Accepts `{ title?, description?, max_persons?, shelter_price_dkk? }`. Validates ownership, updates the `bookable_shelters` row directly — all four fields (`title`, `description`, `max_persons`, `shelter_price_dkk`) live on `bookable_shelters`, not on `shelters`. Returns updated shelter.
 
 ### `POST /api/ejer/shelter/[id]/billeder`
 Accepts `FormData` with `file`. Validates ownership, validates file type/size (max 5 MB, JPEG/PNG/WebP). Uploads to `shelter-photos` bucket at path `owner/[shelter_id]/[uuid].[ext]`. Appends public URL to `shelters.user_image_urls[]` (via the linked `shelter_id`). Returns `{ ok: true, url }`.
