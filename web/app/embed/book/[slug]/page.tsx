@@ -17,6 +17,10 @@ export default async function EmbedBookPage({ params }: Props) {
           shelterTitle={shelter.title}
           maxPersons={shelter.max_persons}
           description={shelter.description}
+          paymentMode={shelter.payment_mode}
+          shelterPriceDkk={shelter.shelter_price_dkk ?? 0}
+          platformFeePct={shelter.platform_fee_pct}
+          platformFeeMinDkk={shelter.platform_fee_min_dkk}
         />
       </div>
     </div>

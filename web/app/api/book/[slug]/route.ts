@@ -4,6 +4,7 @@ import {
   createBooking,
   createActionTokens,
   hasConfirmedOverlap,
+  cancelPendingBooking,
 } from "@/lib/booking-db";
 import {
   sendBookingRequestToOwner,
@@ -141,7 +142,13 @@ export async function POST(
         checkoutUrl = url;
       } catch (err) {
         console.error("book route: upfront checkout error:", err);
-        // Non-fatal: booking is created; guest will need to contact support
+        await cancelPendingBooking(booking.id).catch((cancelErr) => {
+          console.error("book route: failed to cancel pending booking after checkout error:", cancelErr);
+        });
+        return NextResponse.json(
+          { error: "Kunne ikke starte betalingen. Prøv igen om et øjeblik." },
+          { status: 500 }
+        );
       }
     }
 

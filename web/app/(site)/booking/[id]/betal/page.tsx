@@ -84,7 +84,7 @@ export default async function BetalPage({ params }: Props) {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#F9FAFB]">
-      <div className="max-w-md w-full p-8 bg-white rounded-2xl shadow-sm">
+      <div className="max-w-md w-full p-5 sm:p-8 bg-white rounded-2xl shadow-sm">
         <h1 className="text-2xl font-bold text-primary mb-1">{shelter.title}</h1>
         <p className="text-primary/50 text-sm mb-6">
           {new Date(booking.check_in).toLocaleDateString("da-DK", { day: "numeric", month: "long" })}
@@ -114,7 +114,7 @@ export default async function BetalPage({ params }: Props) {
             href={checkoutUrl}
             className="block w-full text-center bg-[#c5a059] text-white font-semibold py-3 rounded-xl hover:bg-[#b38f48] transition-colors"
           >
-            Betal nu via MobilePay
+            Gå til betaling
           </a>
         ) : (
           <p className="text-center text-primary/50 text-sm">

@@ -215,6 +215,26 @@ export async function updateBookingStatus(
 }
 
 /**
+ * Cancel a pending booking before it has been confirmed.
+ * Used when payment setup fails or a checkout session expires before payment.
+ */
+export async function cancelPendingBooking(bookingId: string): Promise<boolean> {
+  const now = new Date().toISOString();
+  const { data, error } = await createAdminClient()
+    .from("shelter_bookings")
+    .update({
+      status: "cancelled",
+      cancelled_at: now,
+      updated_at: now,
+    })
+    .eq("id", bookingId)
+    .eq("status", "pending")
+    .select("id");
+  if (error) throw new Error("cancelPendingBooking: " + error.message);
+  return (data ?? []).length > 0;
+}
+
+/**
  * Checks if accepting a booking would cause a conflict with an already-confirmed booking.
  * Returns true if there IS a conflict (should NOT accept).
  */

@@ -3,6 +3,7 @@
  * Fetches distinct regions, municipalities, and shelters from Supabase.
  */
 
+import { unstable_cache } from "next/cache";
 import { createPublicClient } from "@/utils/supabase/server-public";
 import { slugifySegment } from "@/lib/slug";
 import { fetchAllShelterRows } from "@/lib/supabase-pagination";
@@ -41,9 +42,19 @@ const BY_LANDING_SEARCH_SYNONYM_KEYS: Partial<Record<(typeof PRIORITY_BY_CITY_NA
 
 const SHELTER_SELECT =
   "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, water, toilet, capacity, geofa_raw, display_score, created_at, updated_at, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
+const BY_PAGE_SHELTER_SELECT =
+  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, water, toilet, capacity, geofa_raw, display_score, created_at, updated_at, blur_data_url";
 
 const SHELTER_SELECT_DETAIL =
   "id, title, slug, seo_title, description, seo_description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, toilet, water, geofa_raw, area_slug, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
+
+const distinctByLandingPagesCache = new Map<number, Promise<{ place: string; count: number }[]>>();
+const byLandingDataCache = new Map<string, Promise<{
+  shelters: Shelter[];
+  placeCount: number;
+  municipalityCount: number;
+  usesMunicipalityExpansion: boolean;
+}>>();
 
 function buildByLandingMunicipalitySynonyms(placeName: string): string[] {
   const synonymKey = BY_LANDING_SEARCH_SYNONYM_KEYS[placeName as keyof typeof BY_LANDING_SEARCH_SYNONYM_KEYS];
@@ -51,46 +62,45 @@ function buildByLandingMunicipalitySynonyms(placeName: string): string[] {
   return (SEARCH_SYNONYMS[synonymKey] ?? []).map((synonym) => synonym.trim()).filter(Boolean);
 }
 
-function buildOrFiltersForTerms(column: "place" | "kommune", terms: string[]): string[] {
-  return terms.map((term) => `${column}.eq.${term}`);
-}
+const getAllSheltersForByPages = unstable_cache(
+  async (): Promise<Shelter[]> => {
+    try {
+      const rows = await fetchAllShelterRows<Shelter>(BY_PAGE_SHELTER_SELECT);
+      const shelters = (rows ?? []).slice();
+      shelters.sort(sortByImageAndScore);
+      return shelters;
+    } catch (error) {
+      console.error("Supabase error (all shelters for by pages):", error);
+      return [];
+    }
+  },
+  ["all-shelters-for-by-pages"],
+  { revalidate: 86400 }
+);
 
 async function getSheltersForByLanding(
   placeName: string,
   municipalitySynonyms: string[]
 ): Promise<Shelter[]> {
-  const normalizedMunicipalitySynonyms = [
-    ...new Set(municipalitySynonyms.map((term) => term.trim()).filter(Boolean)),
-  ];
-
-  const supabase = createPublicClient();
-  const orParts = [
-    `place.eq.${placeName}`,
-    `kommune.eq.${placeName}`,
-    ...buildOrFiltersForTerms("kommune", normalizedMunicipalitySynonyms),
-  ];
-
-  const { data, error } = await supabase
-    .from("shelters")
-    .select(SHELTER_SELECT)
-    .is("duplicate_of_shelter_id", null)
-    .or(orParts.join(","))
-    .order("display_score", { ascending: false, nullsFirst: false })
-    .order("title", { ascending: true });
-
-  if (error) {
-    console.error("Supabase error (shelters by landing terms):", error);
-    return [];
-  }
-
+  const normalizedMunicipalitySynonyms = new Set(
+    municipalitySynonyms.map((term) => term.trim()).filter(Boolean)
+  );
+  const allShelters = await getAllSheltersForByPages();
   const unique = new Map<string | number, Shelter>();
-  for (const shelter of (data as Shelter[]) ?? []) {
-    unique.set(shelter.id, shelter);
+
+  for (const shelter of allShelters) {
+    const place = (shelter.place || "").trim();
+    const kommune = (shelter.kommune || "").trim();
+    if (
+      place === placeName ||
+      kommune === placeName ||
+      normalizedMunicipalitySynonyms.has(kommune)
+    ) {
+      unique.set(shelter.id, shelter);
+    }
   }
 
-  const shelters = [...unique.values()];
-  shelters.sort(sortByImageAndScore);
-  return shelters;
+  return [...unique.values()].sort(sortByImageAndScore);
 }
 
 function sortByImageAndScore(a: Shelter, b: Shelter): number {
@@ -548,57 +558,41 @@ export function buildDistinctByLandingPages(
 export async function getDistinctByLandingPages(
   minCount = 1
 ): Promise<{ place: string; count: number }[]> {
-  let data: { id: string | number; place: string | null; kommune: string | null }[];
-  try {
-    data = await fetchAllShelterRows<{ id: string | number; place: string | null; kommune: string | null }>(
-      "id, place, kommune"
-    );
-  } catch (error) {
-    console.error("Supabase error (by landing pages):", error);
-    return [];
-  }
+  const cached = distinctByLandingPagesCache.get(minCount);
+  if (cached) return cached;
 
-  return buildDistinctByLandingPages(data, minCount);
+  const promise = (async () => {
+    let data: { id: string | number; place: string | null; kommune: string | null }[];
+    try {
+      data = await fetchAllShelterRows<{ id: string | number; place: string | null; kommune: string | null }>(
+        "id, place, kommune"
+      );
+    } catch (error) {
+      console.error("Supabase error (by landing pages):", error);
+      return [];
+    }
+
+    return buildDistinctByLandingPages(data, minCount);
+  })();
+
+  distinctByLandingPagesCache.set(minCount, promise);
+  return promise;
 }
 
 /** All shelters whose `place` matches the given value. */
 export async function getSheltersByPlace(place: string): Promise<Shelter[]> {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from("shelters")
-    .select(SHELTER_SELECT)
-    .is("duplicate_of_shelter_id", null)
-    .eq("place", place)
-    .order("display_score", { ascending: false, nullsFirst: false })
-    .order("title", { ascending: true });
-
-  if (error) {
-    console.error("Supabase error (shelters by place):", error);
-    return [];
-  }
-  const list = (data as Shelter[]) ?? [];
-  list.sort(sortByImageAndScore);
-  return list;
+  const allShelters = await getAllSheltersForByPages();
+  return allShelters
+    .filter((shelter) => (shelter.place || "").trim() === place)
+    .sort(sortByImageAndScore);
 }
 
 /** All shelters whose `kommune` matches the given value. */
 export async function getSheltersByMunicipalityName(kommune: string): Promise<Shelter[]> {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from("shelters")
-    .select(SHELTER_SELECT)
-    .is("duplicate_of_shelter_id", null)
-    .eq("kommune", kommune)
-    .order("display_score", { ascending: false, nullsFirst: false })
-    .order("title", { ascending: true });
-
-  if (error) {
-    console.error("Supabase error (shelters by municipality name):", error);
-    return [];
-  }
-  const list = (data as Shelter[]) ?? [];
-  list.sort(sortByImageAndScore);
-  return list;
+  const allShelters = await getAllSheltersForByPages();
+  return allShelters
+    .filter((shelter) => (shelter.kommune || "").trim() === kommune)
+    .sort(sortByImageAndScore);
 }
 
 /**
@@ -612,23 +606,31 @@ export async function getByLandingData(placeName: string): Promise<{
   municipalityCount: number;
   usesMunicipalityExpansion: boolean;
 }> {
-  const municipalitySynonyms = buildByLandingMunicipalitySynonyms(placeName);
+  const cached = byLandingDataCache.get(placeName);
+  if (cached) return cached;
 
-  const [placeShelters, municipalityShelters, effectiveShelters] = await Promise.all([
-    getSheltersByPlace(placeName),
-    getSheltersByMunicipalityName(placeName),
-    getSheltersForByLanding(placeName, municipalitySynonyms),
-  ]);
+  const promise = (async () => {
+    const municipalitySynonyms = buildByLandingMunicipalitySynonyms(placeName);
 
-  const usesMunicipalityExpansion =
-    municipalityShelters.length > placeShelters.length || municipalitySynonyms.length > 0;
+    const [placeShelters, municipalityShelters, effectiveShelters] = await Promise.all([
+      getSheltersByPlace(placeName),
+      getSheltersByMunicipalityName(placeName),
+      getSheltersForByLanding(placeName, municipalitySynonyms),
+    ]);
 
-  return {
-    shelters: usesMunicipalityExpansion ? effectiveShelters : placeShelters,
-    placeCount: placeShelters.length,
-    municipalityCount: municipalityShelters.length,
-    usesMunicipalityExpansion,
-  };
+    const usesMunicipalityExpansion =
+      municipalityShelters.length > placeShelters.length || municipalitySynonyms.length > 0;
+
+    return {
+      shelters: usesMunicipalityExpansion ? effectiveShelters : placeShelters,
+      placeCount: placeShelters.length,
+      municipalityCount: municipalityShelters.length,
+      usesMunicipalityExpansion,
+    };
+  })();
+
+  byLandingDataCache.set(placeName, promise);
+  return promise;
 }
 
 export function shouldRedirectMunicipalityToByPage(

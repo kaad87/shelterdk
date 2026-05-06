@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cache } from "react";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { ShelterListSchema } from "@/components/seo/ShelterListSchema";
 import { ChevronRight } from "lucide-react";
@@ -68,10 +69,10 @@ export async function generateStaticParams() {
   return places.map(({ place }) => ({ by_slug: slugifySegment(place) }));
 }
 
-async function resolvePlaceName(slug: string): Promise<string | null> {
+const resolvePlaceName = cache(async (slug: string): Promise<string | null> => {
   const places = await getDistinctByLandingPages(1);
   return segmentSlugToName(slug, places.map((p) => p.place));
-}
+});
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { by_slug } = await params;

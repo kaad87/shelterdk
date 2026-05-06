@@ -41,6 +41,7 @@ const mockResolveActionToken = vi.fn();
 const mockMarkTokenUsed = vi.fn();
 const mockUpdateBookingStatus = vi.fn();
 const mockHasConfirmedOverlap = vi.fn();
+const mockCancelPendingBooking = vi.fn();
 const mockSendBookingConfirmedToGuest = vi.fn();
 const mockSendBookingRejectedToGuest = vi.fn();
 const mockGetBookableShelterByOwnerToken = vi.fn();
@@ -58,6 +59,7 @@ vi.mock("@/lib/booking-db", () => ({
   markTokenUsed: mockMarkTokenUsed,
   updateBookingStatus: mockUpdateBookingStatus,
   hasConfirmedOverlap: mockHasConfirmedOverlap,
+  cancelPendingBooking: mockCancelPendingBooking,
   getBookableShelterByOwnerToken: mockGetBookableShelterByOwnerToken,
   getBookingByIdForShelter: mockGetBookingByIdForShelter,
   getBookingsForShelter: mockGetBookingsForShelter,
@@ -258,6 +260,35 @@ describe("POST /api/book/[slug]", () => {
         amountPlatformDkk: 25,
       })
     );
+  });
+
+  it("annullerer pending upfront-booking hvis checkout ikke kan oprettes", async () => {
+    mockGetBookableShelterBySlug.mockResolvedValue(
+      mockShelter({ payment_mode: "upfront", shelter_price_dkk: 100, platform_fee_pct: 5, platform_fee_min_dkk: 25 })
+    );
+    mockCreateBooking.mockResolvedValue(
+      mockBooking({ check_in: "2027-06-01", check_out: "2027-06-03" })
+    );
+    mockCancelPendingBooking.mockResolvedValue(true);
+
+    const stripe = await import("@/lib/stripe");
+    vi.mocked(stripe.createCheckoutSession).mockRejectedValueOnce(new Error("stripe down"));
+
+    const { POST } = await import("../book/[slug]/route");
+    const res = await POST(
+      new Request("http://localhost/api/book/test-shelter", {
+        method: "POST",
+        body: JSON.stringify(validBody),
+        headers: { "Content-Type": "application/json" },
+      }) as never,
+      { params: Promise.resolve({ slug: "test-shelter" }) }
+    );
+
+    expect(res.status).toBe(500);
+    expect(await res.json()).toMatchObject({
+      error: expect.stringContaining("betalingen"),
+    });
+    expect(mockCancelPendingBooking).toHaveBeenCalledWith("booking-uuid-1");
   });
 });
 

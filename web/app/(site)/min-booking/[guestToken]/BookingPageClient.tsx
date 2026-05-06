@@ -211,7 +211,7 @@ export function BookingPageClient({
         <div className="mt-4">
           <button
             onClick={() => setShowConfirm(true)}
-            className="text-sm text-red-600 underline hover:text-red-800"
+            className="text-sm text-red-600 border border-red-200 rounded-lg px-4 py-2.5 hover:bg-red-50 transition-colors min-h-[44px]"
           >
             Annullér booking
           </button>

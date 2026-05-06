@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { constructWebhookEvent } from "@/lib/stripe";
-import { getPaymentBySessionId, markPaymentPaid } from "@/lib/payment-db";
-import { sendPaymentConfirmed } from "@/lib/booking-email";
-import { updateBookingStatus } from "@/lib/booking-db";
+import { getPaymentBySessionId, markPaymentExpired, markPaymentPaid } from "@/lib/payment-db";
+import { sendBookingExpired, sendPaymentConfirmed } from "@/lib/booking-email";
+import { cancelPendingBooking, updateBookingStatus } from "@/lib/booking-db";
 import { createAdminClient } from "@/utils/supabase/server-admin";
 import { sendGa4Event } from "@/lib/server-analytics";
 
@@ -79,10 +79,40 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // checkout.session.expired is intentionally unhandled — nightly cron is authoritative.
-  // Known gap: between Stripe session expiry and the 02:00 UTC cron run, a booking
-  // may stay 'confirmed' with a 'pending' payment for up to ~24h. The /betal page
-  // detects this via expires_at and shows a "contact us" message. Acceptable for MVP.
+  if (event.type === "checkout.session.expired") {
+    const session = event.data.object as { id: string };
+
+    const payment = await getPaymentBySessionId(session.id);
+    if (!payment) return NextResponse.json({ ok: true });
+    if (payment.status !== "pending") return NextResponse.json({ ok: true });
+
+    await markPaymentExpired(payment.id);
+
+    const cancelled = await cancelPendingBooking(payment.booking_id);
+    if (!cancelled) return NextResponse.json({ ok: true });
+
+    try {
+      const { data: booking } = await createAdminClient()
+        .from("shelter_bookings")
+        .select("guest_email, guest_name, check_in, check_out, bookable_shelters!inner(owner_email, title)")
+        .eq("id", payment.booking_id)
+        .single();
+
+      if (booking) {
+        const shelter = (booking as any).bookable_shelters;
+        await sendBookingExpired({
+          guestEmail: booking.guest_email,
+          guestName: booking.guest_name,
+          ownerEmail: shelter.owner_email,
+          shelterTitle: shelter.title,
+          checkIn: booking.check_in,
+          checkOut: booking.check_out,
+        });
+      }
+    } catch (err) {
+      console.error("Webhook: expired-booking email failed (non-fatal):", err);
+    }
+  }
 
   return NextResponse.json({ ok: true });
 }

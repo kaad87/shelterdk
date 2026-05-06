@@ -62,6 +62,16 @@ export async function markPaymentPaid(paymentId: string): Promise<void> {
   if (error) throw new Error("markPaymentPaid: " + error.message);
 }
 
+/** Mark a payment as expired if it is still pending. */
+export async function markPaymentExpired(paymentId: string): Promise<void> {
+  const { error } = await createAdminClient()
+    .from("booking_payments")
+    .update({ status: "expired" })
+    .eq("id", paymentId)
+    .eq("status", "pending");
+  if (error) throw new Error("markPaymentExpired: " + error.message);
+}
+
 /**
  * Expire all pending payments past their expires_at.
  * Returns the booking IDs of expired payments so the caller can cancel those bookings.
