@@ -59,6 +59,18 @@ export async function getBookableShelterByShelterDbId(
   return data ?? null;
 }
 
+/** Find all bookable shelters linked to the same shelters.id (for multi-unit booking on one SEO page) */
+export async function listBookableSheltersByShelterDbId(
+  shelterId: string
+): Promise<BookableShelter[]> {
+  const { data } = await createAdminClient()
+    .from("bookable_shelters")
+    .select("*")
+    .eq("shelter_id", shelterId)
+    .order("title", { ascending: true });
+  return (data ?? []) as BookableShelter[];
+}
+
 // ─── Availability ────────────────────────────────────────────────────────────
 
 /**

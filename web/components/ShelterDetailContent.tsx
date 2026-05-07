@@ -63,6 +63,12 @@ interface ShelterDetailContentProps {
   mapUrl: string | null;
   googleMapsUrl: string | null;
   bookingUrl: string | null;
+  bookingUnits?: {
+    id: string;
+    title: string;
+    href: string;
+    maxPersons: number;
+  }[];
   /** Når bookbar men ingen bookingUrl: 'naturstyrelsen' = link til book.naturstyrelsen.dk. */
   bookingFallbackHint?: "naturstyrelsen" | null;
   isBookable: boolean;
@@ -105,6 +111,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
     mapUrl,
     googleMapsUrl,
     bookingUrl,
+    bookingUnits = [],
     bookingFallbackHint = null,
     isBookable,
     shelterFaqItems,
@@ -114,9 +121,60 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
     weatherForecast = null,
   } = props;
 
+  const hasMultipleBookingUnits = bookingUnits.length > 1;
+  const getBookingUnitLabel = (title: string) => {
+    const prefixes = [`${shelter.title} – `, `${shelter.title} - `];
+    for (const prefix of prefixes) {
+      if (title.startsWith(prefix)) return title.slice(prefix.length);
+    }
+    return title;
+  };
+
   const BookingCard = ({ className = "" }: { className?: string }) => (
     <div className={`rounded-2xl border border-primary/10 bg-white shadow-sm p-6 ${className}`}>
-      {bookingUrl ? (
+      {hasMultipleBookingUnits ? (
+        <>
+          <div className="mb-4">
+            <h2 className="font-serif text-lg font-bold text-primary">
+              Vælg shelter
+            </h2>
+            <p className="mt-1 text-sm text-primary/70">
+              Der er {bookingUnits.length} shelters på pladsen, og de bookes hver for sig.
+            </p>
+          </div>
+          <div className="space-y-2.5">
+            {bookingUnits.map((unit) => (
+              <Link
+                key={unit.id}
+                href={unit.href}
+                className="flex items-center justify-between gap-3 rounded-xl border border-primary/10 px-4 py-3 hover:border-accent/40 hover:bg-accent/5 transition-colors"
+              >
+                <span className="min-w-0">
+                  <span className="block font-semibold text-primary">{getBookingUnitLabel(unit.title)}</span>
+                  <span className="block text-xs text-primary/60">
+                    {unit.maxPersons} personer
+                  </span>
+                </span>
+                <span className="shrink-0 text-sm font-semibold text-accent">
+                  Book
+                </span>
+              </Link>
+            ))}
+          </div>
+        </>
+      ) : bookingUnits.length === 1 ? (
+        <>
+          <Link
+            href={bookingUnits[0].href}
+            className="flex items-center justify-center gap-2 w-full bg-accent text-white font-semibold px-6 py-4 rounded-xl hover:bg-accent/90 transition-colors"
+          >
+            Book dette shelter
+          </Link>
+          <p className="text-center text-primary/70 text-sm mt-3">
+            Booking håndteres direkte på ShelterDK
+          </p>
+        </>
+      ) : bookingUrl ? (
         <>
           <TrackedExternalLink
             href={bookingUrl}
@@ -266,6 +324,50 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                 </span>
               </div>
             </header>
+
+            {hasMultipleBookingUnits && (
+              <section
+                id="booking-enheder"
+                aria-labelledby="booking-units-heading"
+                className="mb-10 rounded-2xl border border-accent/20 bg-accent/[0.04] p-5"
+              >
+                <div className="mb-4">
+                  <h2
+                    id="booking-units-heading"
+                    className="font-serif text-xl font-bold text-primary"
+                  >
+                    Vælg shelter på pladsen
+                  </h2>
+                  <p className="mt-2 text-sm leading-relaxed text-primary/80">
+                    Shelterpladsen har {bookingUnits.length} separate shelters, som bookes hver for sig.
+                    Vælg den enhed, du vil reservere.
+                  </p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                  {bookingUnits.map((unit) => (
+                    <Link
+                      key={unit.id}
+                      href={unit.href}
+                      className="rounded-xl border border-primary/10 bg-white p-4 shadow-sm hover:border-accent/40 hover:shadow-md transition-all"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <h3 className="font-serif text-lg font-bold text-primary">
+                            {getBookingUnitLabel(unit.title)}
+                          </h3>
+                          <p className="mt-1 text-sm text-primary/65">
+                            {unit.maxPersons} personer
+                          </p>
+                        </div>
+                        <span className="shrink-0 rounded-full bg-accent/10 px-2.5 py-1 text-xs font-semibold text-accent">
+                          Book
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {features.length > 0 && (
               <section aria-labelledby="shelter-features-heading" className="mb-10">
@@ -584,7 +686,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
       </div>
 
       {/* Sticky mobile booking bar */}
-      {bookingUrl && (
+      {bookingUrl && !hasMultipleBookingUnits && (
         <div className="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-primary/10 p-3 lg:hidden" role="complementary" aria-label="Booking">
           <TrackedExternalLink
             href={bookingUrl}
