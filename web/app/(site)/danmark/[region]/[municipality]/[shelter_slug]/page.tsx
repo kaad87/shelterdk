@@ -46,6 +46,7 @@ import { ShelterSchema } from "@/components/seo/ShelterSchema";
 import { getRoutesForShelter } from "@/lib/shelter-routes";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { NearbySheltersWithinRadius } from "@/components/NearbySheltersWithinRadius";
+import { listBookableSheltersByShelterDbId } from "@/lib/booking-db";
 
 interface PageProps {
   params: Promise<{ region: string; municipality: string; shelter_slug: string }>;
@@ -152,10 +153,11 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
   }
 
   const areaSlug = (shelter as { area_slug?: string | null }).area_slug?.trim() || null;
-  const [municipalitiesResult, reviews, area] = await Promise.all([
+  const [municipalitiesResult, reviews, area, bookableShelters] = await Promise.all([
     regionName ? getMunicipalitiesInRegion(regionName) : Promise.resolve([]),
     getReviews(shelter.google_place_id ?? null),
     areaSlug ? getAreaBySlug(areaSlug) : Promise.resolve(null),
+    listBookableSheltersByShelterDbId(shelter.id).catch(() => []),
   ]);
   const embeddedPlaces = shelter.google_places;
   const embeddedRefs = Array.isArray(embeddedPlaces)
@@ -267,6 +269,14 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
       mapUrl={mapUrl}
       googleMapsUrl={googleMapsUrl}
       bookingUrl={bookingUrl}
+      bookingUnits={bookableShelters.map((unit) => ({
+        id: unit.id,
+        title: unit.title,
+        href: unit.booking_mode === "shelterdk"
+          ? `/book/${unit.slug}`
+          : `/embed/book/${unit.slug}`,
+        maxPersons: unit.max_persons,
+      }))}
       bookingFallbackHint={bookingFallbackHint}
       firewood={getFirewood(shelter)}
       facilityLinks={facilityLinks}
