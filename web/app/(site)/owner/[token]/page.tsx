@@ -29,7 +29,7 @@ export default async function OwnerPage({ params }: Props) {
           shelter={shelter}
           initialBookings={bookings}
           initialBlockedDates={blockedDates}
-          ownerToken={token}
+          apiBasePath={`/api/owner/${token}`}
         />
       </div>
     </div>

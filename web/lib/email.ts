@@ -131,3 +131,55 @@ export async function sendContactEmail(opts: {
     throw new Error("Kunne ikke sende email.");
   }
 }
+
+export async function sendOwnerPortalInviteEmail(opts: {
+  toEmail: string;
+  shelterTitle: string;
+  signupUrl: string;
+  loginUrl: string;
+}) {
+  const { toEmail, shelterTitle, signupUrl, loginUrl } = opts;
+
+  const { error } = await getResend().emails.send({
+    from: FROM_EMAIL,
+    to: toEmail,
+    subject: `Opret din ejerkonto for ${shelterTitle}`,
+    html: renderEmail({
+      title: "Inviteret til ShelterDK ejerportal",
+      preheader: `Du er inviteret til at administrere ${shelterTitle} i ShelterDK.`,
+      bodyHtml: `
+        <p style="font-size:13px;color:#333;line-height:1.65;margin:0 0 12px;">
+          Hej! Du er inviteret til at administrere <strong>${escapeHtml(shelterTitle)}</strong> i ShelterDKs ejerportal.
+        </p>
+        <p style="font-size:13px;color:#555;line-height:1.65;margin:0 0 16px;">
+          Opret din konto via knappen nedenfor med den email, som dette shelter er registreret på. Har du allerede en konto, kan du logge ind bagefter med samme email.
+        </p>
+        <div style="margin:18px 0;">
+          <a href="${signupUrl}" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:10px 18px;border-radius:6px;font-size:13px;font-weight:600;">
+            Opret ejerkonto
+          </a>
+        </div>
+        <p style="font-size:12px;color:#777;line-height:1.55;margin:0 0 8px;">
+          Har du allerede oprettet en konto? Brug dette login-link i stedet:
+        </p>
+        <p style="font-size:12px;line-height:1.55;margin:0;">
+          <a href="${loginUrl}" style="color:#c5a059;text-decoration:none;">${escapeHtml(loginUrl)}</a>
+        </p>
+      `,
+    }),
+    text: renderEmailText({
+      title: "Inviteret til ShelterDK ejerportal",
+      lines: [
+        `Du er inviteret til at administrere ${shelterTitle} i ShelterDKs ejerportal.`,
+        "Opret din konto med den email, som shelteret er registreret på.",
+        `Signup: ${signupUrl}`,
+        `Login: ${loginUrl}`,
+      ],
+    }),
+  });
+
+  if (error) {
+    console.error("Resend error:", error);
+    throw new Error("Kunne ikke sende invite-email.");
+  }
+}

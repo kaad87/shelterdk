@@ -1,11 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export function SignupForm() {
   const router = useRouter();
-  const [form, setForm] = useState({ email: "", password: "" });
+  const searchParams = useSearchParams();
+  const emailPrefill = searchParams.get("email") ?? "";
+  const claimPrefill = searchParams.get("claim") ?? "";
+  const [form, setForm] = useState({
+    email: emailPrefill,
+    password: "",
+    claim_token: claimPrefill,
+  });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -34,6 +42,8 @@ export function SignupForm() {
     }
   }
 
+  const loginHref = `/ejer/login?email=${encodeURIComponent(form.email || emailPrefill)}${claimPrefill ? `&next=${encodeURIComponent(`/ejer/claim?claim=${claimPrefill}`)}` : ""}`;
+
   return (
     <div className="max-w-sm mx-auto">
       <h1 className="font-serif text-2xl font-bold text-primary mb-1">Opret konto</h1>
@@ -60,6 +70,22 @@ export function SignupForm() {
             className="w-full rounded-xl border border-primary/15 bg-white px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent/35"
           />
         </div>
+        <div>
+          <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1.5">
+            Ejer-token eller bookinglink
+          </label>
+          <input
+            type="text"
+            required
+            value={form.claim_token}
+            onChange={(e) => setForm((f) => ({ ...f, claim_token: e.target.value }))}
+            placeholder="Indsæt token eller hele /owner/... linket"
+            className="w-full rounded-xl border border-primary/15 bg-white px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent/35"
+          />
+          <p className="text-xs text-primary/40 mt-1">
+            Brug linket fra din ejer-email for at bevise, at shelteret tilhører dig.
+          </p>
+        </div>
         {error && (
           <div className="rounded-xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-600">{error}</div>
         )}
@@ -71,7 +97,7 @@ export function SignupForm() {
         </button>
         <p className="text-center text-sm text-primary/50">
           Har du allerede en konto?{" "}
-          <a href="/ejer/login" className="text-accent hover:underline">Log ind</a>
+          <Link href={loginHref} className="text-accent hover:underline">Log ind</Link>
         </p>
       </form>
     </div>

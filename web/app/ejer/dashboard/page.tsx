@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { getSessionUser } from "@/utils/supabase/server-session";
 import { getSheltersByAuthUser } from "@/lib/owner-db";
 
@@ -50,16 +50,16 @@ export default async function EjerDashboardPage() {
               </div>
               <div className="flex gap-2 shrink-0">
                 <Link
+                  href={`/ejer/shelter/${shelter.id}/bookinger`}
+                  className="text-sm font-medium text-primary border border-primary/15 rounded-lg px-3 py-1.5 hover:bg-primary/5 transition-colors"
+                >
+                  Bookinger
+                </Link>
+                <Link
                   href={`/ejer/shelter/${shelter.id}/rediger`}
                   className="text-sm font-medium text-accent border border-accent/30 rounded-lg px-3 py-1.5 hover:bg-accent/5 transition-colors"
                 >
                   Rediger
-                </Link>
-                <Link
-                  href={`/owner/${shelter.owner_token}`}
-                  className="text-sm font-medium text-primary/60 border border-primary/15 rounded-lg px-3 py-1.5 hover:bg-primary/5 transition-colors"
-                >
-                  Bookinger
                 </Link>
               </div>
             </div>

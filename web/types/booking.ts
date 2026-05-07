@@ -20,6 +20,7 @@ export interface BookableShelter {
 }
 
 export type BookingStatus = "pending" | "confirmed" | "rejected" | "cancelled";
+export type BookingSource = "guest" | "owner_manual";
 
 export interface ShelterBooking {
   id: string;
@@ -36,6 +37,7 @@ export interface ShelterBooking {
   guest_token: string;
   cancelled_at: string | null;
   cancelled_by: "owner" | "guest" | "system" | null;
+  source: BookingSource;
 }
 
 export type BookingAction = "confirm" | "reject" | "cancel";

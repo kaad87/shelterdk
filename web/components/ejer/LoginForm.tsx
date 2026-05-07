@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [form, setForm] = useState({ email: searchParams.get("email") ?? "", password: "" });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -22,7 +23,16 @@ export function LoginForm() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Noget gik galt"); return; }
-      const next = searchParams.get("next") ?? "/ejer/dashboard";
+      const requestedNext = searchParams.get("next");
+      const claim = searchParams.get("claim");
+      const next =
+        requestedNext &&
+        requestedNext.startsWith("/ejer") &&
+        !requestedNext.startsWith("//")
+          ? requestedNext
+          : claim
+            ? `/ejer/claim?claim=${encodeURIComponent(claim)}`
+          : "/ejer/dashboard";
       router.push(next);
       router.refresh();
     } catch {
@@ -65,9 +75,14 @@ export function LoginForm() {
         >
           {loading ? "Logger ind…" : "Log ind"}
         </button>
+        <p className="text-center text-sm">
+          <Link href="/ejer/glemt-adgangskode" className="text-primary/50 hover:text-primary hover:underline">
+            Glemt adgangskode?
+          </Link>
+        </p>
         <p className="text-center text-sm text-primary/50">
           Ingen konto?{" "}
-          <a href="/ejer/signup" className="text-accent hover:underline">Opret her</a>
+          <Link href="/ejer/signup" className="text-accent hover:underline">Opret her</Link>
         </p>
       </form>
     </div>

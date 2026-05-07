@@ -31,12 +31,14 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isPublicEjerRoute =
     pathname.startsWith("/ejer/login") ||
-    pathname.startsWith("/ejer/signup");
+    pathname.startsWith("/ejer/signup") ||
+    pathname.startsWith("/ejer/glemt-adgangskode") ||
+    pathname.startsWith("/ejer/nulstil-adgangskode");
 
   if (pathname.startsWith("/ejer") && !isPublicEjerRoute && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/ejer/login";
-    url.searchParams.set("next", pathname);
+    url.searchParams.set("next", `${pathname}${request.nextUrl.search}`);
     return NextResponse.redirect(url);
   }
 

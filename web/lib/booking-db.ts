@@ -4,6 +4,7 @@ import type {
   ShelterBooking,
   BookingActionToken,
   BookingAction,
+  BookingSource,
 } from "@/types/booking";
 
 // ─── Pure helpers ─────────────────────────────────────────────────────────────
@@ -122,6 +123,8 @@ export async function createBooking(data: {
   check_in: string;
   check_out: string;
   message: string | null;
+  status?: "pending" | "confirmed";
+  source?: BookingSource;
 }): Promise<ShelterBooking> {
   const { data: booking, error } = await createAdminClient()
     .from("shelter_bookings")

@@ -61,7 +61,13 @@ export async function POST(
   }
 
   const url = shelterPhotoUrl(filePath);
-  await appendShelterPhoto(shelter.shelter_id, url);
+  try {
+    await appendShelterPhoto(shelter.shelter_id, url);
+  } catch (error) {
+    await createAdminClient().storage.from(BUCKET).remove([filePath]);
+    console.error("Owner photo append error:", error);
+    return NextResponse.json({ error: "Upload lykkedes ikke — prøv igen" }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true, url, path: filePath });
 }
@@ -99,8 +105,18 @@ export async function DELETE(
     return NextResponse.json({ error: "Ikke tilladt at slette dette billede" }, { status: 403 });
   }
 
-  await createAdminClient().storage.from(BUCKET).remove([path]);
-  await removeShelterPhoto(shelter.shelter_id, url);
+  const { error: removeError } = await createAdminClient().storage.from(BUCKET).remove([path]);
+  if (removeError) {
+    console.error("Owner photo storage delete error:", removeError);
+    return NextResponse.json({ error: "Kunne ikke slette billedet fra lageret" }, { status: 500 });
+  }
+
+  try {
+    await removeShelterPhoto(shelter.shelter_id, url);
+  } catch (error) {
+    console.error("Owner photo DB delete error:", error);
+    return NextResponse.json({ error: "Billedet blev fjernet fra lageret, men ikke fra databasen" }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true });
 }

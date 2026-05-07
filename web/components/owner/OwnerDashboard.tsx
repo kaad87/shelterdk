@@ -29,6 +29,12 @@ function isoFromDate(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
+function addDaysIso(iso: string, days: number) {
+  const d = new Date(`${iso}T12:00:00`);
+  d.setDate(d.getDate() + days);
+  return isoFromDate(d);
+}
+
 function nights(checkIn: string, checkOut: string) {
   return Math.round((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / 86_400_000);
 }
@@ -49,7 +55,8 @@ interface Props {
   shelter: BookableShelter;
   initialBookings: ShelterBooking[];
   initialBlockedDates: BlockedDateEntry[];
-  ownerToken: string;
+  apiBasePath: string;
+  calendarExportUrl?: string;
 }
 
 // ─── Mini calendar ───────────────────────────────────────────────────────────
@@ -59,6 +66,7 @@ interface CalEvent {
   checkOut: string;
   status: "pending" | "confirmed" | "rejected" | "cancelled";
   label: string;
+  source: ShelterBooking["source"];
 }
 
 function getDaysInMonth(year: number, month: number) {
@@ -267,7 +275,13 @@ function MiniCalendar({
 
 // ─── Main component ──────────────────────────────────────────────────────────
 
-export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, ownerToken }: Props) {
+export function OwnerDashboard({
+  shelter,
+  initialBookings,
+  initialBlockedDates,
+  apiBasePath,
+  calendarExportUrl,
+}: Props) {
   const [bookings, setBookings] = useState(initialBookings);
   const [blockedDates, setBlockedDates] = useState<BlockedDateEntry[]>(initialBlockedDates);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -277,6 +291,16 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
   const [blockMsg, setBlockMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [blockLoading, setBlockLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [manualForm, setManualForm] = useState({
+    guest_name: "",
+    guest_email: "",
+    guest_count: "1",
+    check_in: "",
+    check_out: "",
+    message: "",
+  });
+  const [manualSaving, setManualSaving] = useState(false);
+  const [manualMsg, setManualMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   // iCal integration state
   const [icalImportUrl, setIcalImportUrl] = useState(shelter.ical_import_url ?? "");
@@ -365,6 +389,7 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
     checkOut: b.check_out,
     status: b.status as "pending" | "confirmed",
     label: b.guest_name,
+    source: b.source,
   }));
 
   const manualBlockedSet = new Set(blockedDates.filter((d) => d.source === "manual").map((d) => d.date));
@@ -385,9 +410,11 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
     ? `https://shelterdk.dk/book/${shelter.slug}`
     : `https://shelterdk.dk/embed/book/${shelter.slug}`;
 
-  const icalExportUrl = typeof window !== "undefined"
-    ? `${window.location.origin}/api/owner/${ownerToken}/calendar.ics`
-    : `https://shelterdk.dk/api/owner/${ownerToken}/calendar.ics`;
+  const resolvedIcalExportUrl = calendarExportUrl ?? (
+    typeof window !== "undefined"
+      ? `${window.location.origin}${apiBasePath}/calendar.ics`
+      : `https://shelterdk.dk${apiBasePath}/calendar.ics`
+  );
 
   function timeAgo(iso: string): string {
     const diff = Date.now() - new Date(iso).getTime();
@@ -421,7 +448,7 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
     setMsgError(null);
     setMsgSaved(false);
     try {
-      const res = await fetch(`/api/owner/${ownerToken}/messages`, {
+      const res = await fetch(`${apiBasePath}/messages`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(msgTemplates),
@@ -473,31 +500,31 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
 
   const fetchPayments = useCallback(async () => {
     try {
-      const res = await fetch(`/api/owner/${ownerToken}/payments`);
+      const res = await fetch(`${apiBasePath}/payments`);
       if (res.ok) setPayments(await res.json());
     } catch {
       // silently fail
     }
-  }, [ownerToken]);
+  }, [apiBasePath]);
 
   useEffect(() => { fetchPayments(); }, [fetchPayments]);
 
   useEffect(() => {
-    fetch(`/api/owner/${ownerToken}/messages`)
+    fetch(`${apiBasePath}/messages`)
       .then((r) => r.json())
       .then((data: MsgTemplates) => {
         setMsgTemplates(data);
         setMsgOriginal(data);
       })
       .catch(() => {});
-  }, [ownerToken]);
+  }, [apiBasePath]);
 
   useEffect(() => {
-    fetch(`/api/owner/${ownerToken}/unread-counts`)
+    fetch(`${apiBasePath}/unread-counts`)
       .then((r) => r.json())
       .then((d) => setUnreadCounts(d.counts ?? {}))
       .catch(() => {});
-  }, [ownerToken]);
+  }, [apiBasePath]);
 
   useEffect(() => {
     if (openThreadId) {
@@ -512,20 +539,20 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
     setThreadError(null);
     if (threadMessages[bookingId]) return; // already loaded
     try {
-      const res = await fetch(`/api/owner/${ownerToken}/booking/${bookingId}/messages`);
+      const res = await fetch(`${apiBasePath}/booking/${bookingId}/messages`);
       const data = await res.json();
       setThreadMessages((prev) => ({ ...prev, [bookingId]: data.messages ?? [] }));
       // Clear unread badge for this booking
       setUnreadCounts((prev) => { const next = { ...prev }; delete next[bookingId]; return next; });
     } catch { /* silent */ }
-  }, [openThreadId, threadMessages, ownerToken]);
+  }, [openThreadId, threadMessages, apiBasePath]);
 
   const sendOwnerMessage = useCallback(async (bookingId: string) => {
     if (!threadBody.trim()) return;
     setThreadSending(true);
     setThreadError(null);
     try {
-      const res = await fetch(`/api/owner/${ownerToken}/booking/${bookingId}/messages`, {
+      const res = await fetch(`${apiBasePath}/booking/${bookingId}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ body: threadBody }),
@@ -542,14 +569,14 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
     } finally {
       setThreadSending(false);
     }
-  }, [ownerToken, threadBody]);
+  }, [apiBasePath, threadBody]);
 
   const handlePriceSave = async () => {
     setPriceSaving(true);
     setPriceMsg(null);
     try {
       const price = pricePerNight === "" ? null : Number(pricePerNight);
-      const res = await fetch(`/api/owner/${ownerToken}/settings`, {
+      const res = await fetch(`${apiBasePath}/settings`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ shelter_price_dkk: price }),
@@ -571,7 +598,7 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
     setIcalSaving(true);
     setIcalMsg(null);
     try {
-      const res = await fetch(`/api/owner/${ownerToken}/settings`, {
+      const res = await fetch(`${apiBasePath}/settings`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ical_import_url: icalImportUrl || null }),
@@ -595,7 +622,7 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
     setIcalSyncing(true);
     setIcalMsg(null);
     try {
-      const res = await fetch(`/api/owner/${ownerToken}/sync`, { method: "POST" });
+      const res = await fetch(`${apiBasePath}/sync`, { method: "POST" });
       const data = await res.json();
       if (!res.ok) {
         setIcalMsg({ ok: false, text: data.error ?? "Synk fejlede" });
@@ -613,7 +640,7 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
   const handleAction = async (bookingId: string, action: "confirm" | "reject") => {
     setActionError(null);
     setActingId(bookingId);
-    const res = await fetch(`/api/owner/${ownerToken}/action`, {
+    const res = await fetch(`${apiBasePath}/action`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ booking_id: bookingId, action }),
@@ -637,7 +664,7 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
   const handleResendPayment = async (bookingId: string) => {
     setResendingId(bookingId);
     setActionError(null);
-    const res = await fetch(`/api/owner/${ownerToken}/action`, {
+    const res = await fetch(`${apiBasePath}/action`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ booking_id: bookingId, action: "resend-payment" }),
@@ -653,7 +680,7 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
     setCancelingId(bookingId);
     setCancelError(null);
     try {
-      const res = await fetch(`/api/owner/${ownerToken}/action`, {
+      const res = await fetch(`${apiBasePath}/action`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ booking_id: bookingId, action: "cancel" }),
@@ -680,7 +707,7 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
         setCutoffMsg({ ok: false, text: "Ugyldig frist — angiv et helt tal ≥ 0" });
         return;
       }
-      const res = await fetch(`/api/owner/${ownerToken}/settings`, {
+      const res = await fetch(`${apiBasePath}/settings`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ cancellation_cutoff_hours: hours }),
@@ -702,7 +729,7 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
     e.preventDefault();
     setBlockMsg(null);
     setBlockLoading(true);
-    const res = await fetch(`/api/owner/${ownerToken}/block`, {
+    const res = await fetch(`${apiBasePath}/block`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ from: blockFrom, to: blockTo || blockFrom }),
@@ -728,6 +755,44 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
       setBlockTo("");
     } else {
       setBlockMsg({ ok: false, text: "Fejl — prøv igen" });
+    }
+  };
+
+  const handleManualBooking = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setManualMsg(null);
+    setManualSaving(true);
+    try {
+      const res = await fetch(`${apiBasePath}/manual`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...manualForm,
+          guest_count: Number(manualForm.guest_count),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setManualMsg({ ok: false, text: data.error ?? "Kunne ikke oprette manuel booking" });
+        return;
+      }
+      const booking = data.booking as ShelterBooking;
+      setBookings((prev) =>
+        [...prev, booking].sort((a, b) => a.check_in.localeCompare(b.check_in))
+      );
+      setManualForm({
+        guest_name: "",
+        guest_email: "",
+        guest_count: "1",
+        check_in: "",
+        check_out: "",
+        message: "",
+      });
+      setManualMsg({ ok: true, text: `Manuel booking oprettet for ${booking.guest_name}` });
+    } catch {
+      setManualMsg({ ok: false, text: "Noget gik galt — prøv igen" });
+    } finally {
+      setManualSaving(false);
     }
   };
 
@@ -993,6 +1058,11 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
                   }`}>
                     {ev.status === "confirmed" ? "Bekræftet" : "Afventer"}
                   </span>
+                  {ev.source === "owner_manual" && (
+                    <span className="ml-2 text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-primary/10 text-primary/70">
+                      Manuel
+                    </span>
+                  )}
                 </div>
               ))}
             </div>
@@ -1017,6 +1087,7 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
           <div className="space-y-2">
             {upcoming.map((b) => {
               const payment = payments.find((p) => p.booking_id === b.id);
+              const isManualBooking = b.source === "owner_manual";
               return (
                 <div key={b.id} className="rounded-xl border border-primary/8 bg-white shadow-sm px-4 py-3">
                   <div className="flex items-center gap-4">
@@ -1033,12 +1104,17 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
                     <p className="text-xs text-primary/50">{fmt(b.check_in)} → {fmt(b.check_out)} · {b.guest_count} pers. · {nights(b.check_in, b.check_out)} nætter</p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+                    {isManualBooking && (
+                      <span className="text-xs font-semibold text-primary/70 bg-primary/5 border border-primary/10 px-2.5 py-1 rounded-full">
+                        Manuel booking
+                      </span>
+                    )}
                     {payment?.status === "paid" && (
                       <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full">
                         {isUpfront ? "Forudbetalt ✓" : "Betalt ✓"}
                       </span>
                     )}
-                    {payment?.status === "pending" && (
+                    {!isManualBooking && payment?.status === "pending" && (
                       <>
                         <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-100 px-2.5 py-1 rounded-full">
                           Afventer betaling
@@ -1052,7 +1128,7 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
                         </button>
                       </>
                     )}
-                    {payment?.status === "expired" && (
+                    {!isManualBooking && payment?.status === "expired" && (
                       <span className="text-xs font-semibold text-red-600 bg-red-50 border border-red-100 px-2.5 py-1 rounded-full">
                         Udløbet
                       </span>
@@ -1075,21 +1151,23 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
                         Annullér
                       </button>
                     )}
-                    <button
-                      onClick={() => openThread(b.id)}
-                      className="relative text-xs font-medium text-primary/50 hover:text-primary/80 transition-colors flex items-center gap-1"
-                    >
-                      <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 2h10v8H8l-3 2V10H2V2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/></svg>
-                      Beskeder
-                      {(unreadCounts[b.id] ?? 0) > 0 && (
-                        <span className="w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">
-                          {unreadCounts[b.id]}
-                        </span>
-                      )}
-                    </button>
+                    {!isManualBooking && (
+                      <button
+                        onClick={() => openThread(b.id)}
+                        className="relative text-xs font-medium text-primary/50 hover:text-primary/80 transition-colors flex items-center gap-1"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 2h10v8H8l-3 2V10H2V2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/></svg>
+                        Beskeder
+                        {(unreadCounts[b.id] ?? 0) > 0 && (
+                          <span className="w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">
+                            {unreadCounts[b.id]}
+                          </span>
+                        )}
+                      </button>
+                    )}
                   </div>
                   </div>{/* end inner flex row */}
-                  {openThreadId === b.id && (
+                  {!isManualBooking && openThreadId === b.id && (
                     <BookingThreadPanel
                       bookingId={b.id}
                       messages={threadMessages[b.id] ?? null}
@@ -1171,6 +1249,111 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
         {blockMsg && (
           <div className={`mt-3 rounded-xl px-4 py-2.5 text-sm ${blockMsg.ok ? "bg-emerald-50 border border-emerald-100 text-emerald-700" : "bg-red-50 border border-red-100 text-red-600"}`}>
             {blockMsg.text}
+          </div>
+        )}
+      </section>
+
+      {/* ── Manual bookings ── */}
+      <section className="rounded-2xl border border-primary/8 bg-white shadow-sm px-5 py-5">
+        <h2 className="font-serif text-lg font-bold text-primary mb-1">Tilføj manuel booking</h2>
+        <p className="text-xs text-primary/40 mb-4">
+          Bruges til bookinger fra dit eget system, telefon eller email, så datoerne bliver optaget med det samme i ShelterDK.
+        </p>
+        <form onSubmit={handleManualBooking} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1.5">Navn *</label>
+            <input
+              required
+              value={manualForm.guest_name}
+              onChange={(e) => setManualForm((f) => ({ ...f, guest_name: e.target.value }))}
+              className="w-full rounded-xl border border-primary/15 px-3 py-2 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-accent/35 focus:border-accent/40 transition-all"
+              placeholder="Navn på gæst"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1.5">Email</label>
+            <input
+              type="email"
+              value={manualForm.guest_email}
+              onChange={(e) => setManualForm((f) => ({ ...f, guest_email: e.target.value }))}
+              className="w-full rounded-xl border border-primary/15 px-3 py-2 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-accent/35 focus:border-accent/40 transition-all"
+              placeholder="Valgfri"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1.5">Antal personer *</label>
+            <input
+              required
+              type="number"
+              min="1"
+              max={shelter.max_persons}
+              value={manualForm.guest_count}
+              onChange={(e) => setManualForm((f) => ({ ...f, guest_count: e.target.value }))}
+              className="w-full rounded-xl border border-primary/15 px-3 py-2 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-accent/35 focus:border-accent/40 transition-all"
+            />
+          </div>
+          <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1.5">Ankomst *</label>
+              <input
+                required
+                type="date"
+                value={manualForm.check_in}
+                onChange={(e) => {
+                  const nextCheckIn = e.target.value;
+                  setManualForm((f) => ({
+                    ...f,
+                    check_in: nextCheckIn,
+                    check_out:
+                      f.check_out && f.check_out > nextCheckIn
+                        ? f.check_out
+                        : nextCheckIn
+                          ? addDaysIso(nextCheckIn, 1)
+                          : f.check_out,
+                  }));
+                }}
+                className="w-full rounded-xl border border-primary/15 px-3 py-2 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-accent/35 focus:border-accent/40 transition-all"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1.5">Afrejse *</label>
+              <input
+                required
+                type="date"
+                min={manualForm.check_in ? addDaysIso(manualForm.check_in, 1) : undefined}
+                value={manualForm.check_out}
+                onChange={(e) => setManualForm((f) => ({ ...f, check_out: e.target.value }))}
+                className="w-full rounded-xl border border-primary/15 px-3 py-2 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-accent/35 focus:border-accent/40 transition-all"
+              />
+            </div>
+          </div>
+          <div className="sm:col-span-2">
+            <label className="block text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1.5">Note</label>
+            <textarea
+              rows={3}
+              maxLength={2000}
+              value={manualForm.message}
+              onChange={(e) => setManualForm((f) => ({ ...f, message: e.target.value }))}
+              className="w-full rounded-xl border border-primary/15 px-3 py-2 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-accent/35 focus:border-accent/40 transition-all resize-none"
+              placeholder="Valgfri intern note om bookingen"
+            />
+          </div>
+          <div className="sm:col-span-2 flex flex-wrap items-center gap-3">
+            <button
+              type="submit"
+              disabled={manualSaving || !manualForm.check_in || !manualForm.check_out}
+              className="rounded-xl bg-accent text-white px-5 py-2 text-sm font-semibold hover:bg-accent/90 disabled:opacity-40 transition-colors"
+            >
+              {manualSaving ? "Opretter…" : "Opret manuel booking"}
+            </button>
+            <p className="text-xs text-primary/35">
+              Bookingen oprettes direkte som bekræftet og sender ikke betalingslink eller beskedtråd.
+            </p>
+          </div>
+        </form>
+        {manualMsg && (
+          <div className={`mt-3 rounded-xl px-4 py-2.5 text-sm ${manualMsg.ok ? "bg-emerald-50 border border-emerald-100 text-emerald-700" : "bg-red-50 border border-red-100 text-red-600"}`}>
+            {manualMsg.text}
           </div>
         )}
       </section>
@@ -1266,10 +1449,10 @@ export function OwnerDashboard({ shelter, initialBookings, initialBlockedDates, 
           <p className="text-xs text-primary/40 mb-3">Abonnér én gang i Google Kalender, Apple Kalender eller ONE.com — nye bookinger synkroniserer automatisk.</p>
           <div className="flex items-center gap-2">
             <code className="text-xs text-primary/60 bg-primary/[0.03] border border-primary/10 rounded-lg px-3 py-2 flex-1 truncate">
-              {icalExportUrl}
+              {resolvedIcalExportUrl}
             </code>
             <button
-              onClick={() => { navigator.clipboard.writeText(icalExportUrl); setIcalCopied(true); setTimeout(() => setIcalCopied(false), 1500); }}
+              onClick={() => { navigator.clipboard.writeText(resolvedIcalExportUrl); setIcalCopied(true); setTimeout(() => setIcalCopied(false), 1500); }}
               className="shrink-0 rounded-lg bg-white border border-primary/15 shadow-sm px-3 py-2 text-xs font-medium text-primary hover:bg-primary/5 transition-colors"
             >
               {icalCopied ? "✓ Kopieret!" : "Kopiér URL"}

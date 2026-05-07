@@ -108,12 +108,13 @@ export async function getShelterPhotos(shelterDbId: string): Promise<string[]> {
 export async function appendShelterPhoto(
   shelterDbId: string,
   url: string
-): Promise<void> {
-  const existing = await getShelterPhotos(shelterDbId);
-  await createAdminClient()
-    .from("shelters")
-    .update({ user_image_urls: [...existing, url] })
-    .eq("id", shelterDbId);
+): Promise<string[]> {
+  const { data, error } = await createAdminClient().rpc("append_user_image_url", {
+    p_shelter_id: shelterDbId,
+    p_url: url,
+  });
+  if (error) throw new Error(`appendShelterPhoto: ${error.message}`);
+  return Array.isArray(data) ? (data as string[]) : [];
 }
 
 /**
@@ -122,12 +123,13 @@ export async function appendShelterPhoto(
 export async function removeShelterPhoto(
   shelterDbId: string,
   url: string
-): Promise<void> {
-  const existing = await getShelterPhotos(shelterDbId);
-  await createAdminClient()
-    .from("shelters")
-    .update({ user_image_urls: existing.filter((u) => u !== url) })
-    .eq("id", shelterDbId);
+): Promise<string[]> {
+  const { data, error } = await createAdminClient().rpc("remove_user_image_url", {
+    p_shelter_id: shelterDbId,
+    p_url: url,
+  });
+  if (error) throw new Error(`removeShelterPhoto: ${error.message}`);
+  return Array.isArray(data) ? (data as string[]) : [];
 }
 
 /**

@@ -6,6 +6,9 @@ const mockSignIn = vi.fn();
 const mockSignUp = vi.fn();
 const mockSignOut = vi.fn();
 const mockGetUser = vi.fn();
+const mockResetPasswordForEmail = vi.fn();
+const mockResolveOwnerClaim = vi.fn();
+const mockConsumeOwnerClaimToken = vi.fn();
 
 vi.mock("@/utils/supabase/server-session", () => ({
   createSessionClient: vi.fn().mockResolvedValue({
@@ -14,6 +17,7 @@ vi.mock("@/utils/supabase/server-session", () => ({
       signUp: mockSignUp,
       signOut: mockSignOut,
       getUser: mockGetUser,
+      resetPasswordForEmail: mockResetPasswordForEmail,
     },
   }),
   getSessionUser: vi.fn(),
@@ -21,8 +25,20 @@ vi.mock("@/utils/supabase/server-session", () => ({
 
 // ─── Mock admin client for signup shelter-linking ─────────────────────────────
 const mockFrom = vi.fn();
+const mockRpc = vi.fn();
+const mockStorageFrom = vi.fn();
 vi.mock("@/utils/supabase/server-admin", () => ({
-  createAdminClient: vi.fn(() => ({ from: mockFrom })),
+  createAdminClient: vi.fn(() => ({
+    from: mockFrom,
+    rpc: mockRpc,
+    storage: { from: mockStorageFrom },
+  })),
+}));
+
+vi.mock("@/lib/owner-claim", () => ({
+  normalizeClaimToken: (value: string) => value.trim(),
+  resolveOwnerClaim: mockResolveOwnerClaim,
+  consumeOwnerClaimToken: mockConsumeOwnerClaimToken,
 }));
 
 // ─── Login route ──────────────────────────────────────────────────────────────
@@ -80,33 +96,54 @@ describe("POST /api/ejer/signup", () => {
   beforeEach(() => { vi.clearAllMocks(); });
 
   it("returns 200 and links shelters on valid signup", async () => {
+    mockResolveOwnerClaim.mockResolvedValueOnce({
+      claim: { shelterId: "shelter-1", ownerEmail: "kim@test.dk", authUserId: null, claimTokenId: "claim-1" },
+      error: null,
+    });
+    mockFrom.mockImplementation((table: string) => {
+      if (table === "bookable_shelters") {
+        return {
+          update: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              is: vi.fn().mockReturnValue({
+                select: vi.fn().mockResolvedValue({ data: [{ id: "shelter-1" }], error: null }),
+              }),
+            }),
+          }),
+        };
+      }
+      throw new Error(`Unexpected table ${table}`);
+    });
+
     mockSignUp.mockResolvedValueOnce({
       data: { user: { id: "new-user-1", email: "kim@test.dk" }, session: {} },
       error: null,
-    });
-    mockFrom.mockReturnValue({
-      update: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          is: vi.fn().mockReturnValue({
-            select: vi.fn().mockResolvedValue({ data: [{ id: "shelter-1" }], error: null }),
-          }),
-        }),
-      }),
     });
 
     const { POST } = await import("../ejer/signup/route");
     const req = new NextRequest("http://localhost/api/ejer/signup", {
       method: "POST",
-      body: JSON.stringify({ email: "kim@test.dk", password: "secret123" }),
+      body: JSON.stringify({ email: "kim@test.dk", password: "secret123", claim_token: "owner-token-1" }),
       headers: { "Content-Type": "application/json" },
     });
     const res = await POST(req);
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.ok).toBe(true);
+    expect(mockConsumeOwnerClaimToken).toHaveBeenCalledWith("claim-1");
   });
 
   it("returns 409 if email already registered", async () => {
+    mockResolveOwnerClaim.mockResolvedValueOnce({
+      claim: { shelterId: "shelter-1", ownerEmail: "existing@test.dk", authUserId: null, claimTokenId: "claim-1" },
+      error: null,
+    });
+    mockFrom.mockImplementation((table: string) => {
+      if (table === "bookable_shelters") {
+        return {};
+      }
+      throw new Error(`Unexpected table ${table}`);
+    });
     mockSignUp.mockResolvedValueOnce({
       data: { user: null, session: null },
       error: { message: "User already registered" },
@@ -114,7 +151,37 @@ describe("POST /api/ejer/signup", () => {
     const { POST } = await import("../ejer/signup/route");
     const req = new NextRequest("http://localhost/api/ejer/signup", {
       method: "POST",
-      body: JSON.stringify({ email: "existing@test.dk", password: "secret123" }),
+      body: JSON.stringify({ email: "existing@test.dk", password: "secret123", claim_token: "owner-token-1" }),
+      headers: { "Content-Type": "application/json" },
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(409);
+  });
+
+  it("returns 403 when claim token does not match email", async () => {
+    mockResolveOwnerClaim.mockResolvedValueOnce({
+      claim: { shelterId: "shelter-1", ownerEmail: "another@test.dk", authUserId: null, claimTokenId: "claim-1" },
+      error: null,
+    });
+    const { POST } = await import("../ejer/signup/route");
+    const req = new NextRequest("http://localhost/api/ejer/signup", {
+      method: "POST",
+      body: JSON.stringify({ email: "kim@test.dk", password: "secret123", claim_token: "owner-token-1" }),
+      headers: { "Content-Type": "application/json" },
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(403);
+  });
+
+  it("returns 409 when claim already belongs to another account", async () => {
+    mockResolveOwnerClaim.mockResolvedValueOnce({
+      claim: { shelterId: "shelter-1", ownerEmail: "kim@test.dk", authUserId: "user-existing", claimTokenId: "claim-1" },
+      error: null,
+    });
+    const { POST } = await import("../ejer/signup/route");
+    const req = new NextRequest("http://localhost/api/ejer/signup", {
+      method: "POST",
+      body: JSON.stringify({ email: "kim@test.dk", password: "secret123", claim_token: "claim-token-1" }),
       headers: { "Content-Type": "application/json" },
     });
     const res = await POST(req);
@@ -125,7 +192,50 @@ describe("POST /api/ejer/signup", () => {
     const { POST } = await import("../ejer/signup/route");
     const req = new NextRequest("http://localhost/api/ejer/signup", {
       method: "POST",
-      body: JSON.stringify({ email: "kim@test.dk", password: "abc" }),
+      body: JSON.stringify({ email: "kim@test.dk", password: "abc", claim_token: "owner-token-1" }),
+      headers: { "Content-Type": "application/json" },
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+  });
+
+  it("returns 400 when claim token is missing", async () => {
+    const { POST } = await import("../ejer/signup/route");
+    const req = new NextRequest("http://localhost/api/ejer/signup", {
+      method: "POST",
+      body: JSON.stringify({ email: "kim@test.dk", password: "secret123" }),
+      headers: { "Content-Type": "application/json" },
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+  });
+});
+
+// ─── Password reset route ────────────────────────────────────────────────────
+describe("POST /api/ejer/password-reset", () => {
+  beforeEach(() => { vi.clearAllMocks(); });
+
+  it("sends reset email for valid address", async () => {
+    mockResetPasswordForEmail.mockResolvedValueOnce({ data: {}, error: null });
+    const { POST } = await import("../ejer/password-reset/route");
+    const req = new NextRequest("http://localhost/api/ejer/password-reset", {
+      method: "POST",
+      body: JSON.stringify({ email: "kim@test.dk" }),
+      headers: { "Content-Type": "application/json" },
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    expect(mockResetPasswordForEmail).toHaveBeenCalledWith(
+      "kim@test.dk",
+      { redirectTo: "http://localhost/ejer/nulstil-adgangskode" }
+    );
+  });
+
+  it("returns 400 when email is missing", async () => {
+    const { POST } = await import("../ejer/password-reset/route");
+    const req = new NextRequest("http://localhost/api/ejer/password-reset", {
+      method: "POST",
+      body: JSON.stringify({}),
       headers: { "Content-Type": "application/json" },
     });
     const res = await POST(req);
