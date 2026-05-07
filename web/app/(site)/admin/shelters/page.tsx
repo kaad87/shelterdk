@@ -303,7 +303,7 @@ function AdminSheltersContent() {
                   </div>
                   <CopyButton value={newUserResult.tempPassword} />
                 </div>
-                <p className="text-xs text-emerald-700">Send email + password til ejeren. De kan ændre password via "Glemt adgangskode" på login-siden.</p>
+                <p className="text-xs text-emerald-700">Send email + password til ejeren. De kan ændre password via &ldquo;Glemt adgangskode&rdquo; på login-siden.</p>
               </div>
             )}
             <button
