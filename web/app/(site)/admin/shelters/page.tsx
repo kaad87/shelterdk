@@ -55,6 +55,50 @@ function AdminSheltersContent() {
   const [shelters, setShelters] = useState<BookableShelter[]>([]);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(false);
+
+  // ─── Opret ejer-konto ────────────────────────────────────────────────────────
+  const [newUserEmail, setNewUserEmail] = useState("");
+  const [newUserShelterIds, setNewUserShelterIds] = useState<Set<string>>(new Set());
+  const [newUserShelterSearch, setNewUserShelterSearch] = useState("");
+  const [creatingUser, setCreatingUser] = useState(false);
+  const [newUserResult, setNewUserResult] = useState<{
+    tempPassword: string;
+    shelters: { id: string; title: string }[];
+  } | null>(null);
+  const [newUserError, setNewUserError] = useState<string | null>(null);
+
+  const toggleShelter = (id: string) =>
+    setNewUserShelterIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreatingUser(true);
+    setNewUserError(null);
+    setNewUserResult(null);
+    try {
+      const res = await fetch("/api/admin/ejer-users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders },
+        body: JSON.stringify({ email: newUserEmail, shelter_ids: [...newUserShelterIds] }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setNewUserError(data.error ?? "Noget gik galt"); return; }
+      setNewUserResult({ tempPassword: data.tempPassword, shelters: data.shelters });
+      setNewUserEmail("");
+      setNewUserShelterIds(new Set());
+      await load();
+    } catch {
+      setNewUserError("Noget gik galt — prøv igen");
+    } finally {
+      setCreatingUser(false);
+    }
+  };
+  // ─────────────────────────────────────────────────────────────────────────────
+
   const [form, setForm] = useState({
     slug: "", title: "", owner_email: "", max_persons: "6", description: "", booking_mode: "shelterdk" as "shelterdk" | "iframe" | "both", payment_mode: "after_confirmation" as "after_confirmation" | "upfront", shelter_price_dkk: "", platform_fee_pct: "5", platform_fee_min_dkk: "25",
   });
@@ -177,6 +221,99 @@ function AdminSheltersContent() {
             Typisk flow: sæt ejer-email, send invite og lad ejeren selv acceptere tilknytningen via signup eller login.
           </p>
         </div>
+
+        {/* Opret ejer-konto */}
+        <section className="rounded-2xl border border-accent/20 bg-accent/[0.03] p-6">
+          <h2 className="font-serif text-xl font-bold text-primary mb-1">Opret ejer-konto</h2>
+          <p className="text-sm text-primary/50 mb-5">
+            Opretter en ny login-konto og linker de valgte shelters til den. Du modtager et midlertidigt password som du sender til ejeren.
+          </p>
+          <form onSubmit={handleCreateUser} className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-primary mb-1">Email *</label>
+              <input
+                required type="email"
+                value={newUserEmail}
+                onChange={(e) => setNewUserEmail(e.target.value)}
+                placeholder="ejer@shelter.dk"
+                className="w-full rounded-lg border border-primary/20 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-primary mb-2">
+                Shelters der tilknyttes *
+                <span className="ml-2 text-xs font-normal text-primary/40">{newUserShelterIds.size} valgt</span>
+              </label>
+              <input
+                type="text"
+                value={newUserShelterSearch}
+                onChange={(e) => setNewUserShelterSearch(e.target.value)}
+                placeholder="Søg shelter…"
+                className="w-full rounded-lg border border-primary/20 px-3 py-2 text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-accent"
+              />
+              <div className="max-h-56 overflow-y-auto rounded-lg border border-primary/15 bg-white divide-y divide-primary/8">
+                {shelters
+                  .filter((s) =>
+                    newUserShelterSearch === "" ||
+                    s.title.toLowerCase().includes(newUserShelterSearch.toLowerCase()) ||
+                    s.owner_email.toLowerCase().includes(newUserShelterSearch.toLowerCase())
+                  )
+                  .map((s) => (
+                    <label
+                      key={s.id}
+                      className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-primary/[0.03] transition-colors"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={newUserShelterIds.has(s.id)}
+                        onChange={() => toggleShelter(s.id)}
+                        className="w-4 h-4 rounded accent-accent"
+                      />
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-primary truncate">{s.title}</p>
+                        <p className="text-xs text-primary/40 truncate">
+                          {s.owner_email}
+                          {s.auth_user_id && (
+                            <span className="ml-1.5 text-amber-600">· allerede knyttet</span>
+                          )}
+                        </p>
+                      </div>
+                    </label>
+                  ))}
+                {loading && (
+                  <p className="text-sm text-primary/40 px-4 py-3">Henter shelters…</p>
+                )}
+              </div>
+            </div>
+            {newUserError && (
+              <div className="rounded-lg bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-600">{newUserError}</div>
+            )}
+            {newUserResult && (
+              <div className="rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-4 space-y-3">
+                <p className="text-sm font-semibold text-emerald-800">
+                  ✓ Konto oprettet · {newUserResult.shelters.length} shelter{newUserResult.shelters.length !== 1 ? "s" : ""} tilknyttet
+                </p>
+                <div>
+                  <p className="text-xs text-emerald-700 mb-1">Shelters: {newUserResult.shelters.map((s) => s.title).join(", ")}</p>
+                </div>
+                <div className="flex items-center gap-3 bg-white rounded-lg border border-emerald-200 px-3 py-2.5">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-primary/50 mb-0.5">Midlertidigt password</p>
+                    <code className="text-sm font-mono font-semibold text-primary">{newUserResult.tempPassword}</code>
+                  </div>
+                  <CopyButton value={newUserResult.tempPassword} />
+                </div>
+                <p className="text-xs text-emerald-700">Send email + password til ejeren. De kan ændre password via "Glemt adgangskode" på login-siden.</p>
+              </div>
+            )}
+            <button
+              type="submit" disabled={creatingUser || newUserShelterIds.size === 0}
+              className="rounded-lg bg-accent text-white px-6 py-2.5 text-sm font-semibold hover:bg-accent/90 disabled:opacity-50 transition-colors"
+            >
+              {creatingUser ? "Opretter konto…" : "Opret konto og kopiér password"}
+            </button>
+          </form>
+        </section>
 
         {/* Create form */}
         <section className="rounded-2xl border border-primary/10 bg-white p-6">
