@@ -9,6 +9,7 @@ interface BookableShelter {
   title: string;
   owner_email: string;
   owner_token: string;
+  auth_user_id: string | null;
   max_persons: number;
   description: string | null;
   created_at: string;
@@ -59,6 +60,8 @@ function AdminSheltersContent() {
   });
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [ownerEmailDrafts, setOwnerEmailDrafts] = useState<Record<string, string>>({});
+  const [rowActionState, setRowActionState] = useState<Record<string, { loading: boolean; message: string | null; ok: boolean; signupUrl?: string | null; loginUrl?: string | null }>>({});
 
   const origin = typeof window !== "undefined" ? window.location.origin : "https://shelterdk.dk";
 
@@ -69,7 +72,13 @@ function AdminSheltersContent() {
     const res = await fetch(`/api/admin/shelters`, { headers: authHeaders });
     if (res.status === 401) { setAuthError(true); setLoading(false); return; }
     const data = await res.json();
-    setShelters(data.shelters ?? []);
+    const nextShelters = data.shelters ?? [];
+    setShelters(nextShelters);
+    setOwnerEmailDrafts(
+      Object.fromEntries(
+        nextShelters.map((s: BookableShelter) => [s.id, s.owner_email ?? ""])
+      )
+    );
     setLoading(false);
   }, [secret]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -104,6 +113,46 @@ function AdminSheltersContent() {
     load();
   };
 
+  const setRowStatus = (id: string, next: { loading: boolean; message: string | null; ok: boolean; signupUrl?: string | null; loginUrl?: string | null }) => {
+    setRowActionState((prev) => ({ ...prev, [id]: next }));
+  };
+
+  const handleRowAction = async (
+    id: string,
+    action: "update_owner_email" | "send_invite" | "link_existing_user" | "unlink_owner",
+    extra: Record<string, unknown> = {}
+  ) => {
+    setRowStatus(id, { loading: true, message: null, ok: false });
+    try {
+      const res = await fetch(`/api/admin/shelters`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...authHeaders },
+        body: JSON.stringify({ id, action, ...extra }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setRowStatus(id, { loading: false, message: data.error ?? "Noget gik galt", ok: false });
+        return;
+      }
+      const successMessage =
+        action === "send_invite"
+          ? "Invite sendt"
+          : action === "unlink_owner"
+              ? "Konto frakoblet"
+              : "Ejer-email gemt";
+      setRowStatus(id, {
+        loading: false,
+        message: successMessage,
+        ok: true,
+        signupUrl: data.signupUrl ?? null,
+        loginUrl: data.loginUrl ?? null,
+      });
+      await load();
+    } catch {
+      setRowStatus(id, { loading: false, message: "Noget gik galt", ok: false });
+    }
+  };
+
   if (authError) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -124,6 +173,9 @@ function AdminSheltersContent() {
         <div>
           <h1 className="font-serif text-3xl font-bold text-primary mb-1">Booking admin</h1>
           <p className="text-primary/50 text-sm">Opret og administrér bookable shelters</p>
+          <p className="text-primary/35 text-xs mt-1">
+            Typisk flow: sæt ejer-email, send invite og lad ejeren selv acceptere tilknytningen via signup eller login.
+          </p>
         </div>
 
         {/* Create form */}
@@ -301,7 +353,12 @@ function AdminSheltersContent() {
                   <div className="flex items-start justify-between gap-4 mb-3">
                     <div>
                       <p className="font-semibold text-primary">{s.title}</p>
-                      <p className="text-sm text-primary/50">{s.owner_email} · maks {s.max_persons} pers.</p>
+                      <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                        <p className="text-sm text-primary/50">{s.owner_email} · maks {s.max_persons} pers.</p>
+                        <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${s.auth_user_id ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-amber-200 bg-amber-50 text-amber-700"}`}>
+                          {s.auth_user_id ? "Knyttet til konto" : "Ikke knyttet endnu"}
+                        </span>
+                      </div>
                     </div>
                     <button
                       onClick={() => handleDelete(s.id, s.title)}
@@ -319,16 +376,66 @@ function AdminSheltersContent() {
                       <CopyButton value={`${origin}/embed/book/${s.slug}`} />
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-primary/40 w-28 shrink-0">Dashboard-link</span>
-                      <code className="text-xs text-primary/70 bg-primary/5 px-2 py-1 rounded flex-1 truncate">
-                        {origin}/owner/{s.owner_token}
-                      </code>
-                      <CopyButton value={`${origin}/owner/${s.owner_token}`} />
-                    </div>
-                    <div className="flex items-center gap-2">
                       <span className="text-xs text-primary/40 w-28 shrink-0">Embed-kode</span>
                       <CopyButton value={`<iframe src="${origin}/embed/book/${s.slug}" width="100%" height="700" frameborder="0" style="border-radius:8px;border:1px solid #e5e7eb;" title="Book ${s.title}"></iframe>\n<p style="text-align:center;font-size:12px;color:#6b7280;margin-top:6px;"><a href="https://shelterdk.dk" target="_blank" rel="noopener" title="Find og book shelters i hele Danmark">Shelter booking leveret af ShelterDK</a></p>`} />
                     </div>
+                  </div>
+                  <div className="mt-4 border-t border-primary/8 pt-4 space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_auto] gap-3 items-end">
+                      <div>
+                        <label className="block text-xs font-medium text-primary/50 mb-1">
+                          Ejer-email
+                        </label>
+                        <input
+                          type="email"
+                          value={ownerEmailDrafts[s.id] ?? s.owner_email}
+                          onChange={(e) =>
+                            setOwnerEmailDrafts((prev) => ({ ...prev, [s.id]: e.target.value }))
+                          }
+                          className="w-full rounded-lg border border-primary/20 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                        />
+                      </div>
+                      <button
+                        onClick={() => handleRowAction(s.id, "update_owner_email", { owner_email: ownerEmailDrafts[s.id] ?? s.owner_email })}
+                        disabled={rowActionState[s.id]?.loading}
+                        className="rounded-lg border border-primary/20 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/5 disabled:opacity-50"
+                      >
+                        Gem email
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => handleRowAction(s.id, "send_invite")}
+                        disabled={rowActionState[s.id]?.loading}
+                        className="rounded-lg bg-accent text-white px-4 py-2 text-sm font-medium hover:bg-accent/90 disabled:opacity-50"
+                      >
+                        Send invite
+                      </button>
+                      <button
+                        onClick={() => handleRowAction(s.id, "unlink_owner")}
+                        disabled={rowActionState[s.id]?.loading || !s.auth_user_id}
+                        className="rounded-lg border border-amber-200 bg-amber-50 text-amber-700 px-4 py-2 text-sm font-medium hover:bg-amber-100 disabled:opacity-50"
+                      >
+                        Frakobl konto
+                      </button>
+                    </div>
+                    {rowActionState[s.id]?.message && (
+                      <div className={`text-sm rounded-lg px-3 py-2 ${rowActionState[s.id]?.ok ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"}`}>
+                        <p>{rowActionState[s.id]?.message}</p>
+                        {rowActionState[s.id]?.ok && rowActionState[s.id]?.signupUrl && (
+                          <div className="mt-2 space-y-1 text-xs">
+                            <div className="flex items-center gap-2">
+                              <span className="text-primary/45">Signup-link</span>
+                              <CopyButton value={rowActionState[s.id]?.signupUrl ?? ""} />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-primary/45">Login-link</span>
+                              <CopyButton value={rowActionState[s.id]?.loginUrl ?? ""} />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

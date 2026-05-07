@@ -6,6 +6,7 @@ export interface BookableShelter {
   shelter_id: string | null;
   owner_email: string;
   owner_token: string;
+  auth_user_id: string | null;
   max_persons: number;
   booking_mode: "shelterdk" | "iframe" | "both";
   ical_import_url: string | null;
@@ -19,6 +20,7 @@ export interface BookableShelter {
 }
 
 export type BookingStatus = "pending" | "confirmed" | "rejected" | "cancelled";
+export type BookingSource = "guest" | "owner_manual";
 
 export interface ShelterBooking {
   id: string;
@@ -35,6 +37,7 @@ export interface ShelterBooking {
   guest_token: string;
   cancelled_at: string | null;
   cancelled_by: "owner" | "guest" | "system" | null;
+  source: BookingSource;
 }
 
 export type BookingAction = "confirm" | "reject" | "cancel";
