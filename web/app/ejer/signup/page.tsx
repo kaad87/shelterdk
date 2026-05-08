@@ -1,6 +1,10 @@
-import { redirect } from "next/navigation";
+import { Suspense } from "react";
+import { SignupForm } from "@/components/ejer/SignupForm";
 
-// Signup er admin-only — kontakt ShelterDK for at få oprettet en konto
 export default function SignupPage() {
-  redirect("/ejer/login");
+  return (
+    <Suspense>
+      <SignupForm />
+    </Suspense>
+  );
 }

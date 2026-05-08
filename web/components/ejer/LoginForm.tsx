@@ -7,9 +7,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const emailPrefill = searchParams.get("email") ?? "";
+  const claimPrefill = searchParams.get("claim") ?? "";
   const [form, setForm] = useState({ email: searchParams.get("email") ?? "", password: "" });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const signupHref = `/ejer/signup?email=${encodeURIComponent(form.email || emailPrefill)}${claimPrefill ? `&claim=${encodeURIComponent(claimPrefill)}` : ""}`;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -82,7 +85,7 @@ export function LoginForm() {
         </p>
         <p className="text-center text-sm text-primary/50">
           Ingen konto?{" "}
-          <Link href="/ejer/signup" className="text-accent hover:underline">Opret her</Link>
+          <Link href={signupHref} className="text-accent hover:underline">Opret her</Link>
         </p>
       </form>
     </div>
