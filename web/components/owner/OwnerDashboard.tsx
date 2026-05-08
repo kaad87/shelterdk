@@ -317,12 +317,6 @@ export function OwnerDashboard({
   const [payments, setPayments] = useState<PaymentInfo[]>([]);
   const [resendingId, setResendingId] = useState<string | null>(null);
 
-  // Price settings state
-  const [pricePerNight, setPricePerNight] = useState<string>(
-    shelter.shelter_price_dkk != null ? String(shelter.shelter_price_dkk) : ""
-  );
-  const [priceSaving, setPriceSaving] = useState(false);
-  const [priceMsg, setPriceMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [resendMsg, setResendMsg] = useState<{ bookingId: string; text: string } | null>(null);
 
   // Messages (auto-beskeder) state
@@ -572,29 +566,6 @@ export function OwnerDashboard({
       setThreadSending(false);
     }
   }, [apiBasePath, threadBody]);
-
-  const handlePriceSave = async () => {
-    setPriceSaving(true);
-    setPriceMsg(null);
-    try {
-      const price = pricePerNight === "" ? null : Number(pricePerNight);
-      const res = await fetch(`${apiBasePath}/settings`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ shelter_price_dkk: price }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setPriceMsg({ ok: false, text: data.error ?? "Fejl" });
-      } else {
-        setPriceMsg({ ok: true, text: "Pris gemt" });
-      }
-    } catch {
-      setPriceMsg({ ok: false, text: "Noget gik galt" });
-    } finally {
-      setPriceSaving(false);
-    }
-  };
 
   const handleIcalSave = async () => {
     setIcalSaving(true);
@@ -1364,7 +1335,7 @@ export function OwnerDashboard({
         <section className="rounded-2xl border border-accent/20 bg-accent/[0.03] shadow-sm px-5 py-5">
           <h2 className="font-serif text-lg font-bold text-primary mb-1">Fælles indstillinger</h2>
           <p className="text-sm text-primary/60">
-            Pris, aflysningspolitik og automatiske beskeder styres for hele pladsen samlet.
+            Beskrivelse, billeder, aflysningspolitik og automatiske beskeder styres for hele pladsen samlet.
           </p>
           <a
             href={sharedSettingsPath}
@@ -1377,47 +1348,6 @@ export function OwnerDashboard({
 
       {!sharedSettingsPath && (
       <>
-      {/* ── Priser ── */}
-      <section className="rounded-2xl border border-primary/8 bg-white shadow-sm px-5 py-5">
-        <h2 className="font-serif text-lg font-bold text-primary mb-1">Priser</h2>
-        <p className="text-xs text-primary/40 mb-4">
-          Angiv overnatningsprisen pr. nat. Gæsten betaler desuden et administrationsgebyr. Lad feltet være tomt for gratis ophold.
-        </p>
-        <div className="flex flex-wrap gap-3 items-end">
-          <div>
-            <label className="block text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1.5">
-              Pris pr. nat (kr)
-            </label>
-            <div className="relative">
-              <input
-                type="number"
-                min="0"
-                step="1"
-                value={pricePerNight}
-                onChange={(e) => setPricePerNight(e.target.value)}
-                placeholder="0 = gratis"
-                className="rounded-xl border border-primary/15 px-3 py-2 text-sm text-primary placeholder:text-primary/25 focus:outline-none focus:ring-2 focus:ring-accent/35 focus:border-accent/40 transition-all w-36"
-              />
-              {pricePerNight !== "" && (
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-primary/40 pointer-events-none">kr</span>
-              )}
-            </div>
-          </div>
-          <button
-            onClick={handlePriceSave}
-            disabled={priceSaving}
-            className="rounded-xl bg-accent text-white px-4 py-2 text-sm font-semibold hover:bg-accent/90 disabled:opacity-40 transition-colors"
-          >
-            {priceSaving ? "Gemmer…" : "Gem pris"}
-          </button>
-        </div>
-        {priceMsg && (
-          <div className={`mt-3 rounded-xl px-4 py-2.5 text-sm ${priceMsg.ok ? "bg-emerald-50 border border-emerald-100 text-emerald-700" : "bg-red-50 border border-red-100 text-red-600"}`}>
-            {priceMsg.text}
-          </div>
-        )}
-      </section>
-
       {/* ── Aflysningspolitik ── */}
       <section className="rounded-2xl border border-primary/8 bg-white shadow-sm px-5 py-5">
         <h2 className="font-serif text-lg font-bold text-primary mb-1">Aflysningspolitik</h2>
@@ -1549,6 +1479,7 @@ export function OwnerDashboard({
       )}
 
       {/* ── Automatiske beskeder ── */}
+      {!sharedSettingsPath && (
       <section className="rounded-2xl border border-primary/8 bg-white shadow-sm px-5 py-5 space-y-6">
         <div>
           <h2 className="font-serif text-lg font-bold text-primary mb-0.5">Automatiske beskeder</h2>
@@ -1786,6 +1717,7 @@ export function OwnerDashboard({
           </>
         )}
       </section>
+      )}
     </div>
   );
 }

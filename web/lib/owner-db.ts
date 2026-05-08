@@ -77,6 +77,30 @@ export async function getShelterGroupByDbShelterId(
   return (data ?? []) as BookableShelter[];
 }
 
+export async function getSharedShelterContent(
+  shelterDbId: string
+): Promise<{ title: string; description: string | null } | null> {
+  const { data } = await createAdminClient()
+    .from("shelters")
+    .select("title, description")
+    .eq("id", shelterDbId)
+    .single();
+  return data ?? null;
+}
+
+export async function updateSharedShelterContent(
+  shelterDbId: string,
+  fields: { description?: string | null }
+): Promise<{ title: string; description: string | null } | null> {
+  const { data } = await createAdminClient()
+    .from("shelters")
+    .update(fields)
+    .eq("id", shelterDbId)
+    .select("title, description")
+    .single();
+  return data ?? null;
+}
+
 // ─── Shelter update ──────────────────────────────────────────────────────────
 
 export interface OwnerShelterUpdate {

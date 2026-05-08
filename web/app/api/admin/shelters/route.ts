@@ -143,6 +143,48 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ ok: true, shelter: data });
   }
 
+  if (action === "update_payment_settings") {
+    const bodyWithSettings = body as {
+      payment_mode?: unknown;
+      shelter_price_dkk?: unknown;
+      platform_fee_pct?: unknown;
+      platform_fee_min_dkk?: unknown;
+    };
+
+    const paymentMode =
+      bodyWithSettings.payment_mode === "upfront" ? "upfront" : "after_confirmation";
+    const rawPrice = bodyWithSettings.shelter_price_dkk;
+    const shelterPriceDkk =
+      rawPrice === null || rawPrice === "" || rawPrice === undefined ? null : Number(rawPrice);
+    const feePct = Number(bodyWithSettings.platform_fee_pct);
+    const feeMinDkk = Number(bodyWithSettings.platform_fee_min_dkk);
+
+    if (shelterPriceDkk !== null && (Number.isNaN(shelterPriceDkk) || shelterPriceDkk < 0)) {
+      return NextResponse.json({ error: "Ugyldig pris" }, { status: 400 });
+    }
+    if (Number.isNaN(feePct) || feePct < 0 || feePct > 100) {
+      return NextResponse.json({ error: "Ugyldigt transaktionsgebyr" }, { status: 400 });
+    }
+    if (Number.isNaN(feeMinDkk) || feeMinDkk < 0) {
+      return NextResponse.json({ error: "Ugyldigt minimumsgebyr" }, { status: 400 });
+    }
+
+    const { data, error } = await admin
+      .from("bookable_shelters")
+      .update({
+        payment_mode: paymentMode,
+        shelter_price_dkk: shelterPriceDkk,
+        platform_fee_pct: feePct,
+        platform_fee_min_dkk: feeMinDkk,
+      })
+      .eq("id", id)
+      .select("*")
+      .single();
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json({ ok: true, shelter: data });
+  }
+
   if (action === "link_existing_user") {
     return NextResponse.json(
       { error: "Direkte linking er deaktiveret — brug invite-flowet, så ejeren selv accepterer tilknytningen" },

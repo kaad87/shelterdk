@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/utils/supabase/server-admin";
 import { getAuthenticatedOwnerGroupContext } from "@/lib/ejer-auth";
+import { updateSharedShelterContent } from "@/lib/owner-db";
 
 export const dynamic = "force-dynamic";
 
@@ -13,40 +14,8 @@ export async function PATCH(
   if (!context) return NextResponse.json({ error: "Uautoriseret" }, { status: 401 });
 
   const body = await req.json().catch(() => ({}));
-  const updates: Record<string, number | string | null> = {};
-
-  if ("shelter_price_dkk" in body) {
-    const raw = body.shelter_price_dkk;
-    const priceDkk = raw === null || raw === "" ? null : Number(raw);
-    if (priceDkk !== null && (isNaN(priceDkk) || priceDkk < 0)) {
-      return NextResponse.json({ error: "Ugyldig pris" }, { status: 400 });
-    }
-    updates.shelter_price_dkk = priceDkk;
-  }
-
-  if ("platform_fee_pct" in body) {
-    const feePct = Number(body.platform_fee_pct);
-    if (isNaN(feePct) || feePct < 0 || feePct > 100) {
-      return NextResponse.json({ error: "Ugyldigt procentgebyr" }, { status: 400 });
-    }
-    updates.platform_fee_pct = feePct;
-  }
-
-  if ("platform_fee_min_dkk" in body) {
-    const feeMinDkk = Number(body.platform_fee_min_dkk);
-    if (isNaN(feeMinDkk) || feeMinDkk < 0) {
-      return NextResponse.json({ error: "Ugyldigt minimumsgebyr" }, { status: 400 });
-    }
-    updates.platform_fee_min_dkk = feeMinDkk;
-  }
-
-  if ("payment_mode" in body) {
-    const paymentMode = body.payment_mode;
-    if (paymentMode !== "after_confirmation" && paymentMode !== "upfront") {
-      return NextResponse.json({ error: "Ugyldig betalingsmodel" }, { status: 400 });
-    }
-    updates.payment_mode = paymentMode;
-  }
+  let sharedDescription: string | undefined;
+  const updates: Record<string, number> = {};
 
   if ("cancellation_cutoff_hours" in body) {
     const cutoffHours = Number(body.cancellation_cutoff_hours);
@@ -56,17 +25,36 @@ export async function PATCH(
     updates.cancellation_cutoff_hours = cutoffHours;
   }
 
-  if (Object.keys(updates).length === 0) {
+  if ("shared_description" in body) {
+    const raw = typeof body.shared_description === "string" ? body.shared_description.trim() : "";
+    if (raw.length > 2000) {
+      return NextResponse.json({ error: "Beskrivelse må højst være 2000 tegn" }, { status: 400 });
+    }
+    sharedDescription = raw;
+  }
+
+  if (Object.keys(updates).length === 0 && sharedDescription === undefined) {
     return NextResponse.json({ error: "Ingen gyldige felter at gemme" }, { status: 400 });
   }
 
   const unitIds = context.shelters.map((s) => s.id);
-  const { error } = await createAdminClient()
-    .from("bookable_shelters")
-    .update(updates)
-    .in("id", unitIds);
+  if (Object.keys(updates).length > 0) {
+    const { error } = await createAdminClient()
+      .from("bookable_shelters")
+      .update(updates)
+      .in("id", unitIds);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  if (sharedDescription !== undefined) {
+    const updated = await updateSharedShelterContent(groupId, {
+      description: sharedDescription || null,
+    });
+    if (!updated) {
+      return NextResponse.json({ error: "Kunne ikke opdatere fælles beskrivelse" }, { status: 500 });
+    }
+  }
 
   return NextResponse.json({ ok: true, updatedCount: unitIds.length });
 }

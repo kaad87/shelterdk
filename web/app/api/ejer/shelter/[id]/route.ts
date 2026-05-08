@@ -47,15 +47,6 @@ export async function PATCH(
     update.max_persons = n;
   }
 
-  if ("shelter_price_dkk" in b) {
-    const raw = b.shelter_price_dkk;
-    const p = raw === null ? null : Number(raw);
-    if (p !== null && (isNaN(p) || p < 0 || p > 9999)) {
-      return NextResponse.json({ error: "Pris skal være 0–9999 kr" }, { status: 400 });
-    }
-    update.shelter_price_dkk = p;
-  }
-
   if (Object.keys(update).length === 0) {
     return NextResponse.json({ error: "Ingen felter at opdatere" }, { status: 400 });
   }

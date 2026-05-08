@@ -35,19 +35,21 @@ export function ShelterGroupSettingsForm({
   groupId,
   label,
   shelters,
+  sharedDescription,
+  photos: initialPhotos,
+  photoShelterUnitId,
+  shelterDbId,
 }: {
   groupId: string;
   label: string;
   shelters: BookableShelter[];
+  sharedDescription: string;
+  photos: string[];
+  photoShelterUnitId: string;
+  shelterDbId: string;
 }) {
-  const first = shelters[0];
-  const [pricePerNight, setPricePerNight] = useState<string>(
-    first.shelter_price_dkk != null ? String(first.shelter_price_dkk) : ""
-  );
-  const [feePct, setFeePct] = useState<string>(String(first.platform_fee_pct));
-  const [feeMinDkk, setFeeMinDkk] = useState<string>(String(first.platform_fee_min_dkk));
-  const [paymentMode, setPaymentMode] = useState<BookableShelter["payment_mode"]>(first.payment_mode);
-  const [cutoffHours, setCutoffHours] = useState<string>(String(first.cancellation_cutoff_hours));
+  const [description, setDescription] = useState(sharedDescription);
+  const [cutoffHours, setCutoffHours] = useState<string>(String(shelters[0].cancellation_cutoff_hours));
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [settingsMsg, setSettingsMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -55,6 +57,17 @@ export function ShelterGroupSettingsForm({
   const [msgSaving, setMsgSaving] = useState(false);
   const [msgSaved, setMsgSaved] = useState(false);
   const [msgError, setMsgError] = useState<string | null>(null);
+  const [photos, setPhotos] = useState<string[]>(initialPhotos);
+  const [contentSaving, setContentSaving] = useState(false);
+  const [contentMsg, setContentMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [unitCapacities, setUnitCapacities] = useState<Record<string, string>>(
+    Object.fromEntries(shelters.map((shelter) => [shelter.id, String(shelter.max_persons)]))
+  );
+  const [capacitySavingId, setCapacitySavingId] = useState<string | null>(null);
+  const [capacityMsg, setCapacityMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const confSubjRef = useRef<HTMLInputElement>(null);
   const confBodyRef = useRef<HTMLTextAreaElement>(null);
   const remSubjRef = useRef<HTMLInputElement>(null);
@@ -68,6 +81,77 @@ export function ShelterGroupSettingsForm({
       .catch(() => setMsgError("Kunne ikke hente beskedskabeloner"));
   }, [groupId]);
 
+  const saveSharedContent = async () => {
+    setContentSaving(true);
+    setContentMsg(null);
+    try {
+      const res = await fetch(`/api/ejer/plads/${groupId}/settings`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          shared_description: description,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setContentMsg({ ok: false, text: data.error ?? "Noget gik galt" });
+      } else {
+        setContentMsg({ ok: true, text: "Fælles beskrivelse gemt" });
+      }
+    } catch {
+      setContentMsg({ ok: false, text: "Noget gik galt" });
+    } finally {
+      setContentSaving(false);
+    }
+  };
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setUploadError(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch(`/api/ejer/shelter/${photoShelterUnitId}/billeder`, {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setUploadError(data.error ?? "Upload fejlede");
+        return;
+      }
+      setPhotos((prev) => [...prev, data.url]);
+    } catch {
+      setUploadError("Upload fejlede — prøv igen");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  async function handleDeletePhoto(url: string) {
+    if (!confirm("Slet dette billede?")) return;
+    try {
+      const res = await fetch(`/api/ejer/shelter/${photoShelterUnitId}/billeder`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setUploadError(data.error ?? "Sletning fejlede");
+        return;
+      }
+      setPhotos((prev) => prev.filter((u) => u !== url));
+    } catch {
+      setUploadError("Sletning fejlede — prøv igen");
+    }
+  }
+
+  const isOwnerPhoto = (url: string) => url.includes(`/owner/${shelterDbId}/`);
+
   const saveSharedSettings = async () => {
     setSettingsSaving(true);
     setSettingsMsg(null);
@@ -76,10 +160,6 @@ export function ShelterGroupSettingsForm({
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          shelter_price_dkk: pricePerNight === "" ? null : Number(pricePerNight),
-          platform_fee_pct: Number(feePct),
-          platform_fee_min_dkk: Number(feeMinDkk),
-          payment_mode: paymentMode,
           cancellation_cutoff_hours: Number(cutoffHours),
         }),
       });
@@ -150,6 +230,30 @@ export function ShelterGroupSettingsForm({
     });
   };
 
+  const saveUnitCapacity = async (shelterId: string) => {
+    setCapacitySavingId(shelterId);
+    setCapacityMsg(null);
+    try {
+      const res = await fetch(`/api/ejer/shelter/${shelterId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          max_persons: Number(unitCapacities[shelterId]),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setCapacityMsg({ ok: false, text: data.error ?? "Kunne ikke gemme kapacitet" });
+      } else {
+        setCapacityMsg({ ok: true, text: "Kapacitet gemt" });
+      }
+    } catch {
+      setCapacityMsg({ ok: false, text: "Kunne ikke gemme kapacitet" });
+    } finally {
+      setCapacitySavingId(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="rounded-2xl border border-primary/8 bg-white shadow-sm px-6 py-5">
@@ -162,62 +266,154 @@ export function ShelterGroupSettingsForm({
 
       <section className="rounded-2xl border border-primary/8 bg-white shadow-sm p-6 space-y-6">
         <div>
-          <h2 className="font-serif text-xl font-bold text-primary">Betaling & priser</h2>
+          <h2 className="font-serif text-xl font-bold text-primary">Offentlig shelterside</h2>
           <p className="text-sm text-primary/50 mt-1">
-            Pris, gebyr og betalingsmodel deles på tværs af alle enheder på pladsen.
+            Beskrivelsen og billederne her deles på tværs af hele pladsens ene offentlige shelterside.
           </p>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-2">
-          <div>
-            <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1.5">Pris pr. nat (kr)</label>
-            <input
-              type="number"
-              min={0}
-              value={pricePerNight}
-              onChange={(e) => setPricePerNight(e.target.value)}
-              className="w-full rounded-xl border border-primary/15 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent/35"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1.5">Betalingsmodel</label>
-            <select
-              value={paymentMode}
-              onChange={(e) => setPaymentMode(e.target.value as BookableShelter["payment_mode"])}
-              className="w-full rounded-xl border border-primary/15 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent/35"
-            >
-              <option value="after_confirmation">Betal efter accept</option>
-              <option value="upfront">Betal med det samme</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1.5">Transaktionsgebyr %</label>
-            <input
-              type="number"
-              min={0}
-              max={100}
-              step={0.5}
-              value={feePct}
-              onChange={(e) => setFeePct(e.target.value)}
-              className="w-full rounded-xl border border-primary/15 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent/35"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1.5">Minimumsgebyr (kr)</label>
-            <input
-              type="number"
-              min={0}
-              value={feeMinDkk}
-              onChange={(e) => setFeeMinDkk(e.target.value)}
-              className="w-full rounded-xl border border-primary/15 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent/35"
-            />
-          </div>
+        <div>
+          <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1.5">Fælles beskrivelse</label>
+          <textarea
+            rows={6}
+            maxLength={2000}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="w-full rounded-xl border border-primary/15 bg-white px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-accent/35"
+          />
+          <p className="text-xs text-primary/30 mt-1">{description.length}/2000</p>
         </div>
 
-        <div className="border-t border-primary/8 pt-5">
-          <h3 className="font-serif text-lg font-bold text-primary">Aflysningspolitik</h3>
+        <div>
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <div>
+              <h3 className="font-serif text-lg font-bold text-primary">Fælles billeder</h3>
+              <p className="text-sm text-primary/50 mt-1">
+                Disse billeder vises på den offentlige side for hele pladsen.
+              </p>
+            </div>
+          </div>
+
+          {photos.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+              {photos.map((url) => (
+                <div key={url} className="relative group aspect-video rounded-xl overflow-hidden bg-primary/5">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt="" className="w-full h-full object-cover" />
+                  {isOwnerPhoto(url) && (
+                    <button
+                      type="button"
+                      onClick={() => handleDeletePhoto(url)}
+                      className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/60 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                      title="Slet billede"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-primary/40 mb-4">Ingen billeder endnu.</p>
+          )}
+
+          <label className="flex flex-col items-center justify-center border-2 border-dashed border-primary/15 rounded-xl p-6 cursor-pointer hover:border-accent/40 hover:bg-accent/[0.02] transition-colors">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="sr-only"
+              onChange={handleFileChange}
+              disabled={uploading}
+            />
+            <span className="text-2xl mb-2">{uploading ? "⏳" : "📷"}</span>
+            <span className="text-sm font-medium text-primary/60">
+              {uploading ? "Uploader…" : "Klik for at tilføje billede"}
+            </span>
+            <span className="text-xs text-primary/30 mt-1">JPEG, PNG eller WebP · maks. 5 MB</span>
+          </label>
+          {uploadError && <p className="text-sm text-red-600 mt-2">{uploadError}</p>}
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={saveSharedContent}
+            disabled={contentSaving}
+            className="rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-white hover:bg-[#b8923f] disabled:opacity-50 transition-colors"
+          >
+            {contentSaving ? "Gemmer…" : "Gem fælles indhold"}
+          </button>
+          {contentMsg && (
+            <p className={`text-sm ${contentMsg.ok ? "text-emerald-700" : "text-red-600"}`}>{contentMsg.text}</p>
+          )}
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-primary/8 bg-white shadow-sm p-6 space-y-5">
+        <div>
+          <h2 className="font-serif text-xl font-bold text-primary">Shelter-enheder</h2>
           <p className="text-sm text-primary/50 mt-1">
-            Gælder for alle shelters på pladsen.
+            Her kan du justere kapaciteten for hver enkelt enhed. Bookinger og kalendere styres stadig separat pr. shelter.
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          {shelters.map((shelter) => (
+            <div
+              key={shelter.id}
+              className="rounded-xl border border-primary/8 bg-primary/[0.02] px-4 py-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"
+            >
+              <div className="min-w-0 flex-1">
+                <h3 className="text-sm font-semibold text-primary">{shelter.title}</h3>
+                <p className="text-xs text-primary/45 mt-0.5">Kapacitet og kalender er unikke for denne enhed.</p>
+              </div>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+                <div>
+                  <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1.5">
+                    Maks. personer
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={50}
+                    value={unitCapacities[shelter.id] ?? String(shelter.max_persons)}
+                    onChange={(e) =>
+                      setUnitCapacities((prev) => ({ ...prev, [shelter.id]: e.target.value }))
+                    }
+                    className="w-32 rounded-xl border border-primary/15 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent/35"
+                  />
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => saveUnitCapacity(shelter.id)}
+                    disabled={capacitySavingId === shelter.id}
+                    className="rounded-xl border border-primary/15 bg-white px-4 py-3 text-sm font-semibold text-primary hover:bg-primary/5 disabled:opacity-50 transition-colors"
+                  >
+                    {capacitySavingId === shelter.id ? "Gemmer…" : "Gem kapacitet"}
+                  </button>
+                  <Link
+                    href={`/ejer/shelter/${shelter.id}/bookinger`}
+                    className="rounded-xl border border-primary/15 bg-white px-4 py-3 text-sm font-semibold text-primary hover:bg-primary/5 transition-colors"
+                  >
+                    Bookinger
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        {capacityMsg && (
+          <p className={`text-sm ${capacityMsg.ok ? "text-emerald-700" : "text-red-600"}`}>{capacityMsg.text}</p>
+        )}
+      </section>
+
+      <section className="rounded-2xl border border-primary/8 bg-white shadow-sm p-6 space-y-6">
+        <div>
+          <h2 className="font-serif text-xl font-bold text-primary">Aflysningspolitik</h2>
+          <p className="text-sm text-primary/50 mt-1">
+            Gælder for alle shelters på pladsen. Pris, gebyr og betalingsopsætning styres af ShelterDK i admin.
           </p>
           <div className="mt-4 max-w-xs">
             <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1.5">Frist (timer)</label>
@@ -396,12 +592,6 @@ export function ShelterGroupSettingsForm({
                   className="text-sm font-medium text-primary border border-primary/15 rounded-lg px-3 py-1.5 hover:bg-primary/5 transition-colors"
                 >
                   Bookinger
-                </Link>
-                <Link
-                  href={`/ejer/shelter/${shelter.id}/rediger`}
-                  className="text-sm font-medium text-accent border border-accent/30 rounded-lg px-3 py-1.5 hover:bg-accent/5 transition-colors"
-                >
-                  Kalender & enhed
                 </Link>
               </div>
             </div>

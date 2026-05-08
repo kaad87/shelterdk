@@ -12,6 +12,10 @@ interface BookableShelter {
   auth_user_id: string | null;
   max_persons: number;
   description: string | null;
+  payment_mode: "after_confirmation" | "upfront";
+  shelter_price_dkk: number | null;
+  platform_fee_pct: number;
+  platform_fee_min_dkk: number;
   created_at: string;
 }
 
@@ -105,6 +109,12 @@ function AdminSheltersContent() {
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   const [ownerEmailDrafts, setOwnerEmailDrafts] = useState<Record<string, string>>({});
+  const [paymentDrafts, setPaymentDrafts] = useState<Record<string, {
+    payment_mode: "after_confirmation" | "upfront";
+    shelter_price_dkk: string;
+    platform_fee_pct: string;
+    platform_fee_min_dkk: string;
+  }>>({});
   const [rowActionState, setRowActionState] = useState<Record<string, { loading: boolean; message: string | null; ok: boolean; signupUrl?: string | null; loginUrl?: string | null }>>({});
 
   const origin = typeof window !== "undefined" ? window.location.origin : "https://shelterdk.dk";
@@ -121,6 +131,16 @@ function AdminSheltersContent() {
     setOwnerEmailDrafts(
       Object.fromEntries(
         nextShelters.map((s: BookableShelter) => [s.id, s.owner_email ?? ""])
+      )
+    );
+    setPaymentDrafts(
+      Object.fromEntries(
+        nextShelters.map((s: BookableShelter) => [s.id, {
+          payment_mode: s.payment_mode ?? "after_confirmation",
+          shelter_price_dkk: s.shelter_price_dkk != null ? String(s.shelter_price_dkk) : "",
+          platform_fee_pct: String(s.platform_fee_pct ?? 5),
+          platform_fee_min_dkk: String(s.platform_fee_min_dkk ?? 25),
+        }])
       )
     );
     setLoading(false);
@@ -163,7 +183,7 @@ function AdminSheltersContent() {
 
   const handleRowAction = async (
     id: string,
-    action: "update_owner_email" | "send_invite" | "link_existing_user" | "unlink_owner",
+    action: "update_owner_email" | "update_payment_settings" | "send_invite" | "link_existing_user" | "unlink_owner",
     extra: Record<string, unknown> = {}
   ) => {
     setRowStatus(id, { loading: true, message: null, ok: false });
@@ -181,6 +201,8 @@ function AdminSheltersContent() {
       const successMessage =
         action === "send_invite"
           ? "Invite sendt"
+          : action === "update_payment_settings"
+            ? "Betalingsindstillinger gemt"
           : action === "unlink_owner"
               ? "Konto frakoblet"
               : "Ejer-email gemt";
@@ -540,7 +562,124 @@ function AdminSheltersContent() {
                         Gem email
                       </button>
                     </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
+                      <div>
+                        <label className="block text-xs font-medium text-primary/50 mb-1">
+                          Betalingsmodel
+                        </label>
+                        <select
+                          value={paymentDrafts[s.id]?.payment_mode ?? "after_confirmation"}
+                          onChange={(e) =>
+                            setPaymentDrafts((prev) => ({
+                              ...prev,
+                              [s.id]: {
+                                ...(prev[s.id] ?? {
+                                  payment_mode: "after_confirmation",
+                                  shelter_price_dkk: "",
+                                  platform_fee_pct: "5",
+                                  platform_fee_min_dkk: "25",
+                                }),
+                                payment_mode: e.target.value as "after_confirmation" | "upfront",
+                              },
+                            }))
+                          }
+                          className="w-full rounded-lg border border-primary/20 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                        >
+                          <option value="after_confirmation">Betal efter accept</option>
+                          <option value="upfront">Betal med det samme</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-primary/50 mb-1">
+                          Pris pr. nat (kr)
+                        </label>
+                        <input
+                          type="number"
+                          min={0}
+                          value={paymentDrafts[s.id]?.shelter_price_dkk ?? ""}
+                          onChange={(e) =>
+                            setPaymentDrafts((prev) => ({
+                              ...prev,
+                              [s.id]: {
+                                ...(prev[s.id] ?? {
+                                  payment_mode: "after_confirmation",
+                                  shelter_price_dkk: "",
+                                  platform_fee_pct: "5",
+                                  platform_fee_min_dkk: "25",
+                                }),
+                                shelter_price_dkk: e.target.value,
+                              },
+                            }))
+                          }
+                          className="w-full rounded-lg border border-primary/20 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-primary/50 mb-1">
+                          Transaktionsgebyr %
+                        </label>
+                        <input
+                          type="number"
+                          min={0}
+                          max={100}
+                          step={0.5}
+                          value={paymentDrafts[s.id]?.platform_fee_pct ?? "5"}
+                          onChange={(e) =>
+                            setPaymentDrafts((prev) => ({
+                              ...prev,
+                              [s.id]: {
+                                ...(prev[s.id] ?? {
+                                  payment_mode: "after_confirmation",
+                                  shelter_price_dkk: "",
+                                  platform_fee_pct: "5",
+                                  platform_fee_min_dkk: "25",
+                                }),
+                                platform_fee_pct: e.target.value,
+                              },
+                            }))
+                          }
+                          className="w-full rounded-lg border border-primary/20 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-primary/50 mb-1">
+                          Minimumsgebyr (kr)
+                        </label>
+                        <input
+                          type="number"
+                          min={0}
+                          value={paymentDrafts[s.id]?.platform_fee_min_dkk ?? "25"}
+                          onChange={(e) =>
+                            setPaymentDrafts((prev) => ({
+                              ...prev,
+                              [s.id]: {
+                                ...(prev[s.id] ?? {
+                                  payment_mode: "after_confirmation",
+                                  shelter_price_dkk: "",
+                                  platform_fee_pct: "5",
+                                  platform_fee_min_dkk: "25",
+                                }),
+                                platform_fee_min_dkk: e.target.value,
+                              },
+                            }))
+                          }
+                          className="w-full rounded-lg border border-primary/20 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                        />
+                      </div>
+                    </div>
                     <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => handleRowAction(s.id, "update_payment_settings", paymentDrafts[s.id] ?? {
+                          payment_mode: "after_confirmation",
+                          shelter_price_dkk: "",
+                          platform_fee_pct: "5",
+                          platform_fee_min_dkk: "25",
+                        })}
+                        disabled={rowActionState[s.id]?.loading}
+                        className="rounded-lg border border-primary/20 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/5 disabled:opacity-50"
+                      >
+                        Gem betaling
+                      </button>
                       <button
                         onClick={() => handleRowAction(s.id, "send_invite")}
                         disabled={rowActionState[s.id]?.loading}

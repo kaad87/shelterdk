@@ -14,7 +14,6 @@ export function ShelterEditForm({ shelter, photos: initialPhotos, shelterDbId }:
     title: shelter.title ?? "",
     description: shelter.description ?? "",
     max_persons: shelter.max_persons,
-    shelter_price_dkk: shelter.shelter_price_dkk ?? 0,
   });
   const [photos, setPhotos] = useState<string[]>(initialPhotos);
   const [saving, setSaving] = useState(false);
@@ -72,14 +71,19 @@ export function ShelterEditForm({ shelter, photos: initialPhotos, shelterDbId }:
   async function handleDeletePhoto(url: string) {
     if (!confirm("Slet dette billede?")) return;
     try {
-      await fetch(`/api/ejer/shelter/${shelter.id}/billeder`, {
+      const res = await fetch(`/api/ejer/shelter/${shelter.id}/billeder`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setUploadError(data.error ?? "Sletning fejlede");
+        return;
+      }
       setPhotos((prev) => prev.filter((u) => u !== url));
     } catch {
-      // Best-effort
+      setUploadError("Sletning fejlede — prøv igen");
     }
   }
 
@@ -118,22 +122,13 @@ export function ShelterEditForm({ shelter, photos: initialPhotos, shelterDbId }:
           <p className="text-xs text-primary/30 mt-1">{form.description.length}/2000</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="max-w-xs">
           <div>
             <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1.5">Maks. personer</label>
             <input
               type="number" min={1} max={50} required
               value={form.max_persons}
               onChange={(e) => setForm((f) => ({ ...f, max_persons: Number(e.target.value) }))}
-              className="w-full rounded-xl border border-primary/15 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent/35"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1.5">Pris pr. nat (kr)</label>
-            <input
-              type="number" min={0} max={9999}
-              value={form.shelter_price_dkk}
-              onChange={(e) => setForm((f) => ({ ...f, shelter_price_dkk: Number(e.target.value) }))}
               className="w-full rounded-xl border border-primary/15 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent/35"
             />
           </div>

@@ -18,24 +18,6 @@ export async function PATCH(
 
   const body = await req.json().catch(() => ({}));
 
-  // Handle shelter price update
-  if ("shelter_price_dkk" in body) {
-    const raw = body.shelter_price_dkk;
-    const priceDkk = raw === null || raw === "" ? null : Number(raw);
-    if (priceDkk !== null && (isNaN(priceDkk) || priceDkk < 0)) {
-      return NextResponse.json({ error: "Ugyldig pris" }, { status: 400 });
-    }
-    const { error: priceError } = await createAdminClient()
-      .from("bookable_shelters")
-      .update({ shelter_price_dkk: priceDkk })
-      .eq("id", shelter.id);
-    if (priceError) return NextResponse.json({ error: priceError.message }, { status: 500 });
-
-    // If only price was sent (no iCal fields), return early
-    if (!("ical_import_url" in body) && !("cancellation_cutoff_hours" in body))
-      return NextResponse.json({ ok: true });
-  }
-
   // Handle cancellation cutoff update
   if ("cancellation_cutoff_hours" in body) {
     const raw = Number(body.cancellation_cutoff_hours);
