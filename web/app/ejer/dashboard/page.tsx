@@ -9,6 +9,11 @@ function stripUnitSuffix(title: string) {
   return title.replace(/\s+[–-]\s+Shelter\s+\d+$/i, "").trim();
 }
 
+function getUnitNumber(title: string): number {
+  const match = title.match(/Shelter\s+(\d+)$/i);
+  return match ? Number(match[1]) : Number.MAX_SAFE_INTEGER;
+}
+
 export default async function EjerDashboardPage() {
   const user = await getSessionUser();
   if (!user) redirect("/ejer/login");
@@ -36,8 +41,13 @@ export default async function EjerDashboardPage() {
   const shelterGroups = Array.from(groupedShelters.values()).map((group) => {
     const first = group.units[0];
     const isMultiUnit = group.units.length > 1 && Boolean(first.shelter_id);
+    const sortedUnits = [...group.units].sort((a, b) => {
+      const unitDiff = getUnitNumber(a.title) - getUnitNumber(b.title);
+      return unitDiff !== 0 ? unitDiff : a.title.localeCompare(b.title, "da");
+    });
     return {
       ...group,
+      units: sortedUnits,
       isMultiUnit,
       label: isMultiUnit ? stripUnitSuffix(first.title) : first.title,
     };
@@ -85,6 +95,12 @@ export default async function EjerDashboardPage() {
                       Offentlig shelterside og billeder deles, men bookinger styres separat for hver enhed.
                     </p>
                   </div>
+                  <Link
+                    href={`/ejer/plads/${group.key}/rediger`}
+                    className="text-sm font-medium text-accent border border-accent/30 rounded-lg px-3 py-1.5 hover:bg-accent/5 transition-colors shrink-0"
+                  >
+                    Rediger fælles indstillinger
+                  </Link>
                 </div>
 
                 <div className="mt-4 space-y-2">
@@ -112,7 +128,7 @@ export default async function EjerDashboardPage() {
                           href={`/ejer/shelter/${unit.id}/rediger`}
                           className="text-sm font-medium text-accent border border-accent/30 rounded-lg px-3 py-1.5 hover:bg-accent/5 transition-colors"
                         >
-                          Rediger enhed
+                          Kalender & enhed
                         </Link>
                       </div>
                     </div>

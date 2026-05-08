@@ -60,6 +60,23 @@ export async function getOwnerShelterById(
   return data ?? null;
 }
 
+/**
+ * Returns all bookable shelters in the same shelter group (same shelters.id FK)
+ * for the given auth user. Used for shared settings across multi-unit places.
+ */
+export async function getShelterGroupByDbShelterId(
+  shelterDbId: string,
+  authUserId: string
+): Promise<BookableShelter[]> {
+  const { data } = await createAdminClient()
+    .from("bookable_shelters")
+    .select("*")
+    .eq("auth_user_id", authUserId)
+    .eq("shelter_id", shelterDbId)
+    .order("title", { ascending: true });
+  return (data ?? []) as BookableShelter[];
+}
+
 // ─── Shelter update ──────────────────────────────────────────────────────────
 
 export interface OwnerShelterUpdate {
