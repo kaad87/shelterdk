@@ -128,7 +128,7 @@ export default async function EjerDashboardPage() {
                           href={`/ejer/shelter/${unit.id}/rediger`}
                           className="text-sm font-medium text-accent border border-accent/30 rounded-lg px-3 py-1.5 hover:bg-accent/5 transition-colors"
                         >
-                          Kalender & enhed
+                          Rediger enhed
                         </Link>
                       </div>
                     </div>

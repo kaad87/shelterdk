@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { getSessionUser } from "@/utils/supabase/server-session";
-import { getOwnerShelterById } from "@/lib/owner-db";
+import { getOwnerShelterById, getShelterGroupByDbShelterId } from "@/lib/owner-db";
 import { getBookingsForShelter, getBlockedDatesWithSource } from "@/lib/booking-db";
 import { OwnerDashboard } from "@/components/owner/OwnerDashboard";
 
@@ -18,10 +18,18 @@ export default async function EjerShelterBookingerPage({ params }: Props) {
   const shelter = await getOwnerShelterById(id, user.id);
   if (!shelter) notFound();
 
-  const [bookings, blockedDates] = await Promise.all([
+  const [bookings, blockedDates, groupShelters] = await Promise.all([
     getBookingsForShelter(shelter.id),
     getBlockedDatesWithSource(shelter.id),
+    shelter.shelter_id
+      ? getShelterGroupByDbShelterId(shelter.shelter_id, user.id)
+      : Promise.resolve([]),
   ]);
+
+  const sharedSettingsPath =
+    shelter.shelter_id && groupShelters.length > 1
+      ? `/ejer/plads/${shelter.shelter_id}/rediger`
+      : null;
 
   return (
     <div>
@@ -36,6 +44,7 @@ export default async function EjerShelterBookingerPage({ params }: Props) {
         initialBookings={bookings}
         initialBlockedDates={blockedDates}
         apiBasePath={`/api/ejer/shelter/${shelter.id}/bookinger`}
+        sharedSettingsPath={sharedSettingsPath}
       />
     </div>
   );

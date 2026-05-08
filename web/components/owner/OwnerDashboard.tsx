@@ -57,6 +57,7 @@ interface Props {
   initialBlockedDates: BlockedDateEntry[];
   apiBasePath: string;
   calendarExportUrl?: string;
+  sharedSettingsPath?: string | null;
 }
 
 // ─── Mini calendar ───────────────────────────────────────────────────────────
@@ -281,6 +282,7 @@ export function OwnerDashboard({
   initialBlockedDates,
   apiBasePath,
   calendarExportUrl,
+  sharedSettingsPath = null,
 }: Props) {
   const [bookings, setBookings] = useState(initialBookings);
   const [blockedDates, setBlockedDates] = useState<BlockedDateEntry[]>(initialBlockedDates);
@@ -321,6 +323,7 @@ export function OwnerDashboard({
   );
   const [priceSaving, setPriceSaving] = useState(false);
   const [priceMsg, setPriceMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [resendMsg, setResendMsg] = useState<{ bookingId: string; text: string } | null>(null);
 
   // Messages (auto-beskeder) state
   interface MsgTemplates {
@@ -376,7 +379,6 @@ export function OwnerDashboard({
   const todayIso = today();
   const isUpfront = shelter.payment_mode === "upfront";
 
-  // For upfront shelters: pending = guest hasn't paid yet (abandoned checkout).
   // Only show pending for after_confirmation shelters — upfront auto-confirms on payment.
   const pending = bookings.filter((b) => b.status === "pending" && !isUpfront);
   const upcoming = bookings.filter(
@@ -604,8 +606,12 @@ export function OwnerDashboard({
         body: JSON.stringify({ ical_import_url: icalImportUrl || null }),
       });
       const data = await res.json();
-      if (!res.ok || data.syncError) {
+      if (!res.ok) {
         setIcalMsg({ ok: false, text: data.syncError ?? data.error ?? "Fejl" });
+      } else if (data.syncError) {
+        setIcalSavedUrl(icalImportUrl);
+        setIcalLastSynced(data.lastSynced ?? null);
+        setIcalMsg({ ok: false, text: `${data.syncError} URL'en er gemt, men synk fejlede.` });
       } else {
         setIcalSavedUrl(icalImportUrl);
         setIcalLastSynced(data.lastSynced);
@@ -664,15 +670,18 @@ export function OwnerDashboard({
   const handleResendPayment = async (bookingId: string) => {
     setResendingId(bookingId);
     setActionError(null);
+    setResendMsg(null);
     const res = await fetch(`${apiBasePath}/action`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ booking_id: bookingId, action: "resend-payment" }),
     });
+    const data = await res.json().catch(() => ({}));
     setResendingId(null);
     if (!res.ok) {
-      const data = await res.json();
       setActionError(data.error ?? "Fejl ved gensendelse");
+    } else {
+      setResendMsg({ bookingId, text: "Betalingslink sendt igen" });
     }
   };
 
@@ -874,20 +883,18 @@ export function OwnerDashboard({
           )}
           <div className="space-y-3">
             {pending.map((b) => {
-              const pendingPayment = payments.find((p) => p.booking_id === b.id);
-              const hasPaidUpfront = isUpfront && pendingPayment?.status === "paid";
               return (
-              <div key={b.id} className={`rounded-2xl border-2 bg-white shadow-sm overflow-hidden ${hasPaidUpfront ? "border-emerald-300" : "border-amber-200"}`}>
+              <div key={b.id} className="rounded-2xl border-2 border-amber-200 bg-white shadow-sm overflow-hidden">
                 <div className="px-5 py-4">
                   <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
                     {/* Date range */}
-                    <div className={`grid grid-cols-2 divide-x rounded-xl border overflow-hidden w-full sm:w-auto sm:shrink-0 ${hasPaidUpfront ? "divide-emerald-100 border-emerald-200 bg-emerald-50" : "divide-amber-100 border-amber-200 bg-amber-50"}`}>
+                    <div className="grid grid-cols-2 divide-x divide-amber-100 rounded-xl border border-amber-200 bg-amber-50 overflow-hidden w-full sm:w-auto sm:shrink-0">
                       <div className="px-3 py-2 text-center">
-                        <p className={`text-[9px] font-bold uppercase tracking-widest ${hasPaidUpfront ? "text-emerald-600" : "text-amber-600"}`}>Ankomst</p>
+                        <p className="text-[9px] font-bold uppercase tracking-widest text-amber-600">Ankomst</p>
                         <p className="text-sm font-bold text-primary mt-0.5">{fmt(b.check_in)}</p>
                       </div>
                       <div className="px-3 py-2 text-center">
-                        <p className={`text-[9px] font-bold uppercase tracking-widest ${hasPaidUpfront ? "text-emerald-600" : "text-amber-600"}`}>Afrejse</p>
+                        <p className="text-[9px] font-bold uppercase tracking-widest text-amber-600">Afrejse</p>
                         <p className="text-sm font-bold text-primary mt-0.5">{fmt(b.check_out)}</p>
                       </div>
                     </div>
@@ -899,11 +906,6 @@ export function OwnerDashboard({
                         <span className="text-xs text-primary/50">{b.guest_count} person{b.guest_count !== 1 ? "er" : ""}</span>
                         <span className="text-xs text-primary/40">·</span>
                         <span className="text-xs text-primary/50">{nights(b.check_in, b.check_out)} nætter</span>
-                        {hasPaidUpfront && (
-                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-0.5">
-                            ⚡ Forudbetalt {pendingPayment!.amount_total_dkk} kr
-                          </span>
-                        )}
                       </div>
                       <p className="text-xs text-primary/50 mt-0.5">{b.guest_email}</p>
                       {b.message && (
@@ -911,15 +913,10 @@ export function OwnerDashboard({
                           &ldquo;{b.message}&rdquo;
                         </p>
                       )}
-                      {hasPaidUpfront && (
-                        <p className="mt-1.5 text-xs text-emerald-700 font-medium">
-                          Gæsten har betalt forud — bekræft eller afvis (afvisning refunderer automatisk).
-                        </p>
-                      )}
                     </div>
                   </div>
                 </div>
-                <div className={`flex border-t ${hasPaidUpfront ? "border-emerald-100" : "border-amber-100"}`}>
+                <div className="flex border-t border-amber-100">
                   <button
                     onClick={() => handleAction(b.id, "confirm")}
                     disabled={actingId === b.id}
@@ -939,7 +936,7 @@ export function OwnerDashboard({
                     className="flex-1 py-3 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40 flex items-center justify-center gap-1.5"
                   >
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
-                    {hasPaidUpfront ? "Afvis & refundér" : "Afvis"}
+                    Afvis
                   </button>
                   <div className="w-px bg-amber-100" />
                   <button
@@ -1204,8 +1201,13 @@ export function OwnerDashboard({
                         </button>
                       </div>
                     </div>
-                  )}
-                </div>
+                )}
+                {resendMsg?.bookingId === b.id && (
+                  <div className="mx-5 mb-4 rounded-xl bg-emerald-50 border border-emerald-100 px-4 py-2.5 text-sm text-emerald-700">
+                    {resendMsg.text}
+                  </div>
+                )}
+              </div>
               );
             })}
           </div>
@@ -1358,6 +1360,23 @@ export function OwnerDashboard({
         )}
       </section>
 
+      {sharedSettingsPath && (
+        <section className="rounded-2xl border border-accent/20 bg-accent/[0.03] shadow-sm px-5 py-5">
+          <h2 className="font-serif text-lg font-bold text-primary mb-1">Fælles indstillinger</h2>
+          <p className="text-sm text-primary/60">
+            Pris, aflysningspolitik og automatiske beskeder styres for hele pladsen samlet.
+          </p>
+          <a
+            href={sharedSettingsPath}
+            className="mt-4 inline-flex rounded-xl border border-accent/30 bg-white px-4 py-2 text-sm font-semibold text-accent hover:bg-accent/5 transition-colors"
+          >
+            Gå til fælles indstillinger
+          </a>
+        </section>
+      )}
+
+      {!sharedSettingsPath && (
+      <>
       {/* ── Priser ── */}
       <section className="rounded-2xl border border-primary/8 bg-white shadow-sm px-5 py-5">
         <h2 className="font-serif text-lg font-bold text-primary mb-1">Priser</h2>
@@ -1438,6 +1457,9 @@ export function OwnerDashboard({
           </div>
         )}
       </section>
+
+      </>
+      )}
 
       {/* ── Kalender-integration ── */}
       <section className="rounded-2xl border border-primary/8 bg-white shadow-sm px-5 py-5 space-y-6">
@@ -1764,7 +1786,6 @@ export function OwnerDashboard({
           </>
         )}
       </section>
-
     </div>
   );
 }
