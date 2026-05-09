@@ -1549,6 +1549,9 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
                   <label className="block text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1">
                     Pris pr. nat (kr) <span className="font-normal normal-case text-primary/30">— tom = gratis/aftales</span>
                   </label>
+                  <p className="text-[11px] text-primary/40 mb-1.5">
+                    Gæstens bruttopris pr. nat.
+                  </p>
                   <input
                     type="number" min={0} value={shelterForm.shelter_price_dkk}
                     onChange={(e) => setShelterForm((f) => ({ ...f, shelter_price_dkk: e.target.value }))}
@@ -1560,6 +1563,9 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
                   <label className="block text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1">
                     Transaktionsgebyr % <span className="font-normal normal-case text-primary/30">— standard 5%</span>
                   </label>
+                  <p className="text-[11px] text-primary/40 mb-1.5">
+                    Brutto-gebyr inkl. moms.
+                  </p>
                   <input
                     type="number" min={0} max={100} step={0.5} value={shelterForm.platform_fee_pct}
                     onChange={(e) => setShelterForm((f) => ({ ...f, platform_fee_pct: e.target.value }))}
@@ -1570,6 +1576,9 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
                   <label className="block text-xs font-semibold text-primary/50 uppercase tracking-wide mb-1">
                     Minimumsgebyr (kr) <span className="font-normal normal-case text-primary/30">— standard 25 kr</span>
                   </label>
+                  <p className="text-[11px] text-primary/40 mb-1.5">
+                    Brutto inkl. moms. 50 kr svarer til 40 kr netto.
+                  </p>
                   <input
                     type="number" min={0} value={shelterForm.platform_fee_min_dkk}
                     onChange={(e) => setShelterForm((f) => ({ ...f, platform_fee_min_dkk: e.target.value }))}

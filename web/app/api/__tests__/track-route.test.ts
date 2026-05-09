@@ -75,9 +75,9 @@ describe("POST /api/track", () => {
     process.env = env;
   });
 
-  it("returnerer 204 uden at sende GA4 når consent er accept", async () => {
+  it("returnerer 204 uden at sende GA4 når consent er marketing", async () => {
     const req = mockRequest({
-      cookie: "shelterdk_consent=accept; _ga=GA1.1.12345.67890",
+      cookie: "shelterdk_consent=marketing; _ga=GA1.1.12345.67890",
       body: { event: "outbound_click", params: { link_label: "Book" }, path: "/faq" },
     });
 
@@ -86,9 +86,9 @@ describe("POST /api/track", () => {
     expect(fetchCalls).toHaveLength(0);
   });
 
-  it("sender custom event til GA4 når consent er necessary", async () => {
+  it("sender custom event til GA4 når consent er analytics", async () => {
     const req = mockRequest({
-      cookie: "shelterdk_consent=necessary",
+      cookie: "shelterdk_consent=analytics",
       host: "shelterdk.dk",
       body: {
         event: "outbound_click",

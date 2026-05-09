@@ -9,21 +9,42 @@ function getStripe(): Stripe {
   return new Stripe(key);
 }
 
+const VAT_DIVISOR = 1.25;
+
 /**
- * Calculate fee breakdown. All amounts are whole DKK.
- * Formula: platformDkk = max(round(priceDkk × feePct / 100), feeMinDkk)
- *
- * Note: return type is intentionally richer than the spec's Promise<string>
- * because callers also need the sessionId to insert into booking_payments.
+ * Interpret platform fee amounts as gross DKK incl. VAT.
+ * Example: 50 kr gross => 40 kr net + 10 kr VAT.
+ */
+export function calculateVatIncludedBreakdown(grossDkk: number): {
+  grossDkk: number;
+  netDkk: number;
+  vatDkk: number;
+} {
+  const netDkk = Math.round((grossDkk / VAT_DIVISOR) * 100) / 100;
+  const vatDkk = Math.round((grossDkk - netDkk) * 100) / 100;
+  return { grossDkk, netDkk, vatDkk };
+}
+
+/**
+ * Calculate fee breakdown. All chargeable amounts are whole DKK shown to the guest.
+ * Formula: platformGrossDkk = max(round(priceDkk × feePct / 100), feeMinDkk)
+ * The resulting platform fee is treated as a gross amount incl. VAT.
  */
 export function calculateFee(
   priceDkk: number,
   feePct: number,
   feeMinDkk: number
-): { shelterDkk: number; platformDkk: number; totalDkk: number } {
+): {
+  shelterDkk: number;
+  platformDkk: number;
+  platformNetDkk: number;
+  platformVatDkk: number;
+  totalDkk: number;
+} {
   const shelterDkk = priceDkk;
   const platformDkk = Math.max(Math.round(priceDkk * feePct / 100), feeMinDkk);
-  return { shelterDkk, platformDkk, totalDkk: shelterDkk + platformDkk };
+  const { netDkk: platformNetDkk, vatDkk: platformVatDkk } = calculateVatIncludedBreakdown(platformDkk);
+  return { shelterDkk, platformDkk, platformNetDkk, platformVatDkk, totalDkk: shelterDkk + platformDkk };
 }
 
 export function calculateBookingNights(
@@ -44,16 +65,23 @@ export function calculateBookingAmounts(opts: {
   shelterPriceDkk: number | null;
   feePct: number;
   feeMinDkk: number;
-}): { nights: number; shelterDkk: number; platformDkk: number; totalDkk: number } {
+}): {
+  nights: number;
+  shelterDkk: number;
+  platformDkk: number;
+  platformNetDkk: number;
+  platformVatDkk: number;
+  totalDkk: number;
+} {
   const nights = calculateBookingNights(opts.checkIn, opts.checkOut);
   const shelterTotalDkk = (opts.shelterPriceDkk ?? 0) * nights;
-  const { shelterDkk, platformDkk, totalDkk } = calculateFee(
+  const { shelterDkk, platformDkk, platformNetDkk, platformVatDkk, totalDkk } = calculateFee(
     shelterTotalDkk,
     opts.feePct,
     opts.feeMinDkk
   );
 
-  return { nights, shelterDkk, platformDkk, totalDkk };
+  return { nights, shelterDkk, platformDkk, platformNetDkk, platformVatDkk, totalDkk };
 }
 
 /**
@@ -92,7 +120,7 @@ export async function createCheckoutSession(
   lineItems.push({
     price_data: {
       currency: "dkk",
-      product_data: { name: "Administrationsgebyr (ShelterDK)" },
+      product_data: { name: "Administrationsgebyr inkl. moms (ShelterDK)" },
       unit_amount: platformDkk * 100, // øre
     },
     quantity: 1,

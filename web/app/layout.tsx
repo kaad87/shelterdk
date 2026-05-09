@@ -1,9 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { DM_Sans, Playfair_Display } from "next/font/google";
-import { Suspense } from "react";
 import "./globals.css";
 import { CookieBanner } from "@/components/CookieBanner";
-import { CollectPageView } from "@/components/CollectPageView";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -73,15 +71,12 @@ export default function RootLayout({
         {/* Google Consent Mode v2 defaults — must run synchronously before any Google tag */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('consent','default',{'ad_storage':'denied','ad_user_data':'denied','ad_personalization':'denied','analytics_storage':'denied','wait_for_update':500});try{var c=localStorage.getItem('shelterdk_consent');if(c==='accept'){gtag('consent','update',{'ad_storage':'granted','ad_user_data':'granted','ad_personalization':'granted','analytics_storage':'granted'});}else if(c==='necessary'){gtag('consent','update',{'ad_storage':'denied','ad_user_data':'denied','ad_personalization':'denied','analytics_storage':'denied'});}}catch(e){}`,
+            __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('consent','default',{'ad_storage':'denied','ad_user_data':'denied','ad_personalization':'denied','analytics_storage':'denied','wait_for_update':500});try{var c=localStorage.getItem('shelterdk_consent');if(c==='accept'||c==='marketing'){gtag('consent','update',{'ad_storage':'granted','ad_user_data':'granted','ad_personalization':'granted','analytics_storage':'granted'});}else if(c==='analytics'){gtag('consent','update',{'ad_storage':'denied','ad_user_data':'denied','ad_personalization':'denied','analytics_storage':'granted'});}else if(c==='necessary'){gtag('consent','update',{'ad_storage':'denied','ad_user_data':'denied','ad_personalization':'denied','analytics_storage':'denied'});}}catch(e){}`,
           }}
         />
       </head>
       <body className="min-h-screen flex flex-col font-sans antialiased bg-background">
         <CookieBanner />
-        <Suspense fallback={null}>
-          <CollectPageView />
-        </Suspense>
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-accent focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg"

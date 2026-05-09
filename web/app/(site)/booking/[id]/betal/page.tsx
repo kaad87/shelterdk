@@ -38,7 +38,7 @@ export default async function BetalPage({ params }: Props) {
     );
   }
 
-  const { shelterDkk, platformDkk, totalDkk } = calculateBookingAmounts({
+  const { shelterDkk, platformDkk, platformVatDkk, totalDkk } = calculateBookingAmounts({
     checkIn: booking.check_in,
     checkOut: booking.check_out,
     shelterPriceDkk: shelter.shelter_price_dkk,
@@ -100,13 +100,16 @@ export default async function BetalPage({ params }: Props) {
             </div>
           )}
           <div className="flex justify-between text-sm">
-            <span className="text-primary/60">Administrationsgebyr</span>
+            <span className="text-primary/60">Administrationsgebyr inkl. moms</span>
             <span>{platformDkk} kr</span>
           </div>
           <div className="flex justify-between font-bold border-t pt-2 mt-2">
             <span>I alt</span>
             <span>{totalDkk} kr</span>
           </div>
+          <p className="text-xs text-primary/40 pt-1">
+            Heraf {platformVatDkk.toFixed(2).replace(".", ",")} kr moms.
+          </p>
         </div>
 
         {checkoutUrl ? (

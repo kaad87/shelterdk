@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { BookingCalendar } from "./BookingCalendar";
 import type { AvailabilityResponse } from "@/types/booking";
 
@@ -66,6 +67,7 @@ export function BookingForm({
   const [loadingAvailability, setLoadingAvailability] = useState(true);
   const [dateRange, setDateRange] = useState<{ checkIn: string; checkOut: string } | null>(null);
   const [form, setForm] = useState({ guest_name: "", guest_email: "", guest_count: 1, message: "" });
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -82,6 +84,7 @@ export function BookingForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!dateRange) { setError("Vælg ankomst- og afrejsedato"); return; }
+    if (!acceptedTerms) { setError("Du skal acceptere bookingvilkårene og læse privatlivspolitikken"); return; }
     setSubmitting(true);
     setError(null);
     try {
@@ -92,6 +95,7 @@ export function BookingForm({
           ...form,
           check_in: dateRange.checkIn,
           check_out: dateRange.checkOut,
+          accepted_terms: acceptedTerms,
         }),
       });
       const data = await res.json();
@@ -191,20 +195,23 @@ export function BookingForm({
                 <span className="text-xs text-primary/45">Varighed</span>
                 <span className="text-xs font-semibold text-primary">{nights} {nights === 1 ? "nat" : "nætter"}</span>
               </div>
-              {isUpfront && shelterPriceDkk > 0 && (
+              {isUpfront && (shelterTotalDkk > 0 || platformFee > 0) && (
                 <div className="border-t border-accent/10 px-3 py-3 space-y-1.5">
+                  {shelterTotalDkk > 0 && (
+                    <div className="flex justify-between gap-2 text-xs text-primary/60">
+                      <span className="min-w-0">Overnatning ({nights} {nights === 1 ? "nat" : "nætter"} × {shelterPriceDkk} kr)</span>
+                      <span className="shrink-0 tabular-nums">{shelterTotalDkk} kr</span>
+                    </div>
+                  )}
                   <div className="flex justify-between gap-2 text-xs text-primary/60">
-                    <span className="min-w-0">Overnatning ({nights} {nights === 1 ? "nat" : "nætter"} × {shelterPriceDkk} kr)</span>
-                    <span className="shrink-0 tabular-nums">{shelterTotalDkk} kr</span>
-                  </div>
-                  <div className="flex justify-between gap-2 text-xs text-primary/60">
-                    <span>Administrationsgebyr</span>
+                    <span>Administrationsgebyr inkl. moms</span>
                     <span className="shrink-0 tabular-nums">{platformFee} kr</span>
                   </div>
                   <div className="flex justify-between gap-2 text-xs font-bold text-primary border-t border-primary/10 pt-1.5">
                     <span>I alt</span>
                     <span className="shrink-0 tabular-nums">{totalDkk} kr</span>
                   </div>
+                  <p className="text-[11px] text-primary/35 pt-1">Gebyret er vist inkl. 25 % moms.</p>
                 </div>
               )}
             </div>
@@ -296,6 +303,27 @@ export function BookingForm({
                   {error}
                 </div>
               )}
+
+              <label className="flex items-start gap-3 rounded-xl border border-primary/10 bg-primary/[0.02] px-4 py-3 text-sm text-primary/70">
+                <input
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-primary/30 text-accent focus:ring-accent"
+                  required
+                />
+                <span className="leading-relaxed">
+                  Jeg accepterer{" "}
+                  <Link href="/vilkaar" target="_blank" rel="noopener noreferrer" className="text-accent underline hover:no-underline">
+                    bookingvilkårene
+                  </Link>{" "}
+                  og har læst{" "}
+                  <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="text-accent underline hover:no-underline">
+                    privatlivspolitikken
+                  </Link>
+                  . Mine bookingoplysninger deles med shelter-ejeren for at administrere opholdet.
+                </span>
+              </label>
 
               {/* CTA */}
               <button

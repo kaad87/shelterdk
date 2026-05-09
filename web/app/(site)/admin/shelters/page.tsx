@@ -439,6 +439,9 @@ function AdminSheltersContent() {
               <label className="block text-sm font-medium text-primary mb-1">
                 Pris pr. nat (kr) <span className="text-primary/40 font-normal">— tom = gratis/aftales</span>
               </label>
+              <p className="text-xs text-primary/45 mb-2">
+                Angives som den pris gæsten ser og betaler for overnatningen.
+              </p>
               <input
                 type="number" min={0} value={form.shelter_price_dkk}
                 onChange={(e) => setForm((f) => ({ ...f, shelter_price_dkk: e.target.value }))}
@@ -450,6 +453,9 @@ function AdminSheltersContent() {
               <label className="block text-sm font-medium text-primary mb-1">
                 Transaktionsgebyr % <span className="text-primary/40 font-normal">— standard 5%</span>
               </label>
+              <p className="text-xs text-primary/45 mb-2">
+                Beregnes som gæstens brutto-gebyr inkl. moms. ShelterDKs nettoandel bliver lavere efter moms.
+              </p>
               <input
                 type="number" min={0} max={100} step={0.5} value={form.platform_fee_pct}
                 onChange={(e) => setForm((f) => ({ ...f, platform_fee_pct: e.target.value }))}
@@ -460,6 +466,9 @@ function AdminSheltersContent() {
               <label className="block text-sm font-medium text-primary mb-1">
                 Minimumsgebyr (kr) <span className="text-primary/40 font-normal">— standard 25 kr</span>
               </label>
+              <p className="text-xs text-primary/45 mb-2">
+                Minimumsgebyret er også et brutto-beløb inkl. moms. Eksempel: 50 kr til gæsten svarer til 40 kr netto og 10 kr moms.
+              </p>
               <input
                 type="number" min={0} value={form.platform_fee_min_dkk}
                 onChange={(e) => setForm((f) => ({ ...f, platform_fee_min_dkk: e.target.value }))}
@@ -593,6 +602,9 @@ function AdminSheltersContent() {
                         <label className="block text-xs font-medium text-primary/50 mb-1">
                           Pris pr. nat (kr)
                         </label>
+                        <p className="text-[11px] text-primary/40 mb-1.5">
+                          Gæstens bruttopris pr. nat.
+                        </p>
                         <input
                           type="number"
                           min={0}
@@ -618,6 +630,9 @@ function AdminSheltersContent() {
                         <label className="block text-xs font-medium text-primary/50 mb-1">
                           Transaktionsgebyr %
                         </label>
+                        <p className="text-[11px] text-primary/40 mb-1.5">
+                          Brutto-gebyr inkl. moms.
+                        </p>
                         <input
                           type="number"
                           min={0}
@@ -645,6 +660,9 @@ function AdminSheltersContent() {
                         <label className="block text-xs font-medium text-primary/50 mb-1">
                           Minimumsgebyr (kr)
                         </label>
+                        <p className="text-[11px] text-primary/40 mb-1.5">
+                          Brutto inkl. moms. 50 kr svarer til 40 kr netto.
+                        </p>
                         <input
                           type="number"
                           min={0}

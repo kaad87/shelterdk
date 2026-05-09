@@ -59,9 +59,10 @@ describe("CookieBanner", () => {
     expect(screen.getByRole("dialog", { name: /cookievalg/i })).toBeInTheDocument();
   });
 
-  it("viser Acceptér alle og Kun nødvendige knapper", () => {
+  it("viser Acceptér alle, Kun statistik og Kun nødvendige knapper", () => {
     render(<CookieBanner />);
     expect(screen.getByRole("button", { name: /acceptér alle/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /kun statistik/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /kun nødvendige/i })).toBeInTheDocument();
   });
 
@@ -75,7 +76,14 @@ describe("CookieBanner", () => {
   it("gemmer accept og skjuler banner ved Acceptér alle", () => {
     render(<CookieBanner />);
     fireEvent.click(screen.getByRole("button", { name: /acceptér alle/i }));
-    expect(storage.getStore()[CONSENT_KEY]).toBe("accept");
+    expect(storage.getStore()[CONSENT_KEY]).toBe("marketing");
+    expect(screen.queryByRole("dialog", { name: /cookievalg/i })).not.toBeInTheDocument();
+  });
+
+  it("gemmer analytics ved Kun statistik", () => {
+    render(<CookieBanner />);
+    fireEvent.click(screen.getByRole("button", { name: /kun statistik/i }));
+    expect(storage.getStore()[CONSENT_KEY]).toBe("analytics");
     expect(screen.queryByRole("dialog", { name: /cookievalg/i })).not.toBeInTheDocument();
   });
 
@@ -91,19 +99,25 @@ describe("CookieBanner", () => {
     expect(screen.getByTestId("script-gtm")).toBeInTheDocument();
   });
 
-  it("viser StackAdapt kun ved accept", () => {
+  it("viser StackAdapt kun ved markedsføringssamtykke", () => {
     render(<CookieBanner />);
     expect(screen.queryByTestId("script-stackadapt-events")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /acceptér alle/i }));
     expect(screen.getByTestId("script-stackadapt-events")).toBeInTheDocument();
   });
 
-  it("viser AdSense kun ved accept", () => {
+  it("viser AdSense kun ved markedsføringssamtykke", () => {
     process.env.NEXT_PUBLIC_ADSENSE_PUB_ID = "pub-123";
     render(<CookieBanner />);
     expect(screen.queryByTestId("script-adsense")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /acceptér alle/i }));
     expect(screen.getByTestId("script-adsense")).toBeInTheDocument();
+  });
+
+  it("viser IKKE StackAdapt ved analytics", () => {
+    render(<CookieBanner />);
+    fireEvent.click(screen.getByRole("button", { name: /kun statistik/i }));
+    expect(screen.queryByTestId("script-stackadapt-events")).not.toBeInTheDocument();
   });
 
   it("viser IKKE StackAdapt ved necessary", () => {
@@ -112,11 +126,18 @@ describe("CookieBanner", () => {
     expect(screen.queryByTestId("script-stackadapt-events")).not.toBeInTheDocument();
   });
 
-  it("skjuler banner og viser StackAdapt når accept allerede er gemt", () => {
-    storage.setStore(CONSENT_KEY, "accept");
+  it("skjuler banner og viser StackAdapt når marketing allerede er gemt", () => {
+    storage.setStore(CONSENT_KEY, "marketing");
     render(<CookieBanner />);
     expect(screen.queryByRole("dialog", { name: /cookievalg/i })).not.toBeInTheDocument();
     expect(screen.getByTestId("script-stackadapt-events")).toBeInTheDocument();
+  });
+
+  it("skjuler banner når analytics allerede er gemt", () => {
+    storage.setStore(CONSENT_KEY, "analytics");
+    render(<CookieBanner />);
+    expect(screen.queryByRole("dialog", { name: /cookievalg/i })).not.toBeInTheDocument();
+    expect(screen.queryByTestId("script-stackadapt-events")).not.toBeInTheDocument();
   });
 
   it("skjuler banner når necessary allerede er gemt", () => {

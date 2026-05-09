@@ -46,6 +46,7 @@ export async function POST(
   const check_in = typeof b.check_in === "string" ? b.check_in.trim() : "";
   const check_out = typeof b.check_out === "string" ? b.check_out.trim() : "";
   const message = typeof b.message === "string" ? b.message.trim().slice(0, 500) : null;
+  const accepted_terms = b.accepted_terms === true;
 
   // Validation
   if (!guest_name || guest_name.length > 100)
@@ -68,6 +69,11 @@ export async function POST(
   const today = new Date().toISOString().slice(0, 10);
   if (check_in < today)
     return NextResponse.json({ error: "Ankomstdato kan ikke være i fortiden" }, { status: 400 });
+  if (!accepted_terms)
+    return NextResponse.json(
+      { error: "Du skal acceptere bookingvilkårene og læse privatlivspolitikken" },
+      { status: 400 }
+    );
 
   try {
     // For upfront shelters: block if dates are already confirmed

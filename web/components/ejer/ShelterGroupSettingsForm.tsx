@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { BookableShelter } from "@/types/booking";
+import type { Shelter } from "@shared/types/shelter";
+import { getPetsAllowed, getToilet, getWater } from "@shared/lib/shelter-detail";
 
 interface MsgTemplates {
   confirmation_enabled: boolean;
@@ -36,7 +38,9 @@ export function ShelterGroupSettingsForm({
   label,
   shelters,
   sharedDescription,
-  photos: initialPhotos,
+  shelterData,
+  basePublicPhotos,
+  ownerPhotos: initialOwnerPhotos,
   photoShelterUnitId,
   shelterDbId,
 }: {
@@ -44,7 +48,9 @@ export function ShelterGroupSettingsForm({
   label: string;
   shelters: BookableShelter[];
   sharedDescription: string;
-  photos: string[];
+  shelterData: Shelter | null;
+  basePublicPhotos: string[];
+  ownerPhotos: string[];
   photoShelterUnitId: string;
   shelterDbId: string;
 }) {
@@ -57,11 +63,29 @@ export function ShelterGroupSettingsForm({
   const [msgSaving, setMsgSaving] = useState(false);
   const [msgSaved, setMsgSaved] = useState(false);
   const [msgError, setMsgError] = useState<string | null>(null);
-  const [photos, setPhotos] = useState<string[]>(initialPhotos);
+  const [ownerPhotos, setOwnerPhotos] = useState<string[]>(initialOwnerPhotos);
   const [contentSaving, setContentSaving] = useState(false);
   const [contentMsg, setContentMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const raw = (shelterData?.geofa_raw ?? {}) as Record<string, unknown>;
+  const [facilities, setFacilities] = useState({
+    water: getWater(shelterData ?? ({ water: null, toilet: null, geofa_raw: null } as Shelter)) === true,
+    toiletEnabled: (() => {
+      const toilet = getToilet(shelterData ?? ({ water: null, toilet: null, geofa_raw: null } as Shelter));
+      return toilet === "flush" || toilet === "mulch";
+    })(),
+    toiletType: (() => {
+      const toilet = getToilet(shelterData ?? ({ water: null, toilet: null, geofa_raw: null } as Shelter));
+      return toilet === "mulch" ? "mulch" : "flush";
+    })() as "flush" | "mulch",
+    baalplads: String(raw.baalplads ?? "").toLowerCase().includes("ja"),
+    hund: getPetsAllowed(shelterData ?? ({ water: null, toilet: null, geofa_raw: null } as Shelter)) === true,
+    bord_baenk: String(raw.bord_baenk ?? "").toLowerCase().includes("ja"),
+    strand: String(raw.strand_naerhed ?? "").toLowerCase().includes("ja"),
+    bruser: String(raw.bruser_bad ?? "").toLowerCase().includes("ja"),
+    handicap: ["handicapegnet", "delvist handicapegnet"].includes(String(raw.handicap ?? "").toLowerCase()),
+  });
   const [unitCapacities, setUnitCapacities] = useState<Record<string, string>>(
     Object.fromEntries(shelters.map((shelter) => [shelter.id, String(shelter.max_persons)]))
   );
@@ -73,6 +97,7 @@ export function ShelterGroupSettingsForm({
   const remSubjRef = useRef<HTMLInputElement>(null);
   const remBodyRef = useRef<HTMLTextAreaElement>(null);
   const [activeMsgField, setActiveMsgField] = useState<MsgField | null>(null);
+  const publicPhotos = [...basePublicPhotos, ...ownerPhotos];
 
   useEffect(() => {
     fetch(`/api/ejer/plads/${groupId}/messages`)
@@ -90,13 +115,17 @@ export function ShelterGroupSettingsForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           shared_description: description,
+          user_image_urls: ownerPhotos,
+          facilities: facilities.toiletEnabled
+            ? { ...facilities, toilet: facilities.toiletType }
+            : { ...facilities, toilet: "none" },
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setContentMsg({ ok: false, text: data.error ?? "Noget gik galt" });
       } else {
-        setContentMsg({ ok: true, text: "Fælles beskrivelse gemt" });
+        setContentMsg({ ok: true, text: "Fælles indhold gemt" });
       }
     } catch {
       setContentMsg({ ok: false, text: "Noget gik galt" });
@@ -122,7 +151,7 @@ export function ShelterGroupSettingsForm({
         setUploadError(data.error ?? "Upload fejlede");
         return;
       }
-      setPhotos((prev) => [...prev, data.url]);
+      setOwnerPhotos((prev) => [...prev, data.url]);
     } catch {
       setUploadError("Upload fejlede — prøv igen");
     } finally {
@@ -144,10 +173,22 @@ export function ShelterGroupSettingsForm({
         setUploadError(data.error ?? "Sletning fejlede");
         return;
       }
-      setPhotos((prev) => prev.filter((u) => u !== url));
+      setOwnerPhotos((prev) => prev.filter((u) => u !== url));
     } catch {
       setUploadError("Sletning fejlede — prøv igen");
     }
+  }
+
+  function moveOwnerPhoto(url: string, direction: -1 | 1) {
+    setOwnerPhotos((prev) => {
+      const index = prev.indexOf(url);
+      if (index === -1) return prev;
+      const nextIndex = index + direction;
+      if (nextIndex < 0 || nextIndex >= prev.length) return prev;
+      const next = [...prev];
+      [next[index], next[nextIndex]] = [next[nextIndex], next[index]];
+      return next;
+    });
   }
 
   const isOwnerPhoto = (url: string) => url.includes(`/owner/${shelterDbId}/`);
@@ -294,27 +335,76 @@ export function ShelterGroupSettingsForm({
             </div>
           </div>
 
-          {photos.length > 0 ? (
+          {publicPhotos.length > 0 ? (
+            <div className="mb-6">
+              <p className="text-xs font-semibold text-primary/60 uppercase tracking-wide mb-2">Nuværende offentligt galleri</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {publicPhotos.map((url) => (
+                  <div key={`public-${url}`} className="relative group aspect-video rounded-xl overflow-hidden bg-primary/5">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={url} alt="" className="w-full h-full object-cover" />
+                    <span className="absolute left-1.5 top-1.5 rounded-full bg-black/60 px-2 py-1 text-[11px] font-medium text-white">
+                      {isOwnerPhoto(url) ? "Ejerfoto" : "Eksisterende"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-primary/40 mb-4">Ingen billeder på sheltersiden endnu.</p>
+          )}
+
+          <div className="mb-4">
+            <p className="text-xs font-semibold text-primary/60 uppercase tracking-wide mb-2">Ejer-uploadede billeder</p>
+            <p className="text-sm text-primary/45 mb-3">
+              Du kan ændre rækkefølgen på de billeder, du selv har uploadet. De vises efter eksisterende officielle billeder på sheltersiden.
+            </p>
+          </div>
+
+          {ownerPhotos.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
-              {photos.map((url) => (
+              {ownerPhotos.map((url, index) => (
                 <div key={url} className="relative group aspect-video rounded-xl overflow-hidden bg-primary/5">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={url} alt="" className="w-full h-full object-cover" />
-                  {isOwnerPhoto(url) && (
+                  <span className="absolute left-1.5 top-1.5 rounded-full bg-black/60 px-2 py-1 text-[11px] font-medium text-white">
+                    #{index + 1}
+                  </span>
+                  <div className="absolute inset-x-1.5 bottom-1.5 flex items-center justify-between gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                    <div className="flex gap-1">
+                      <button
+                        type="button"
+                        onClick={() => moveOwnerPhoto(url, -1)}
+                        disabled={index === 0}
+                        className="rounded-md bg-black/60 px-2 py-1 text-xs font-semibold text-white hover:bg-black/75 disabled:cursor-not-allowed disabled:opacity-40"
+                        title="Flyt tidligere"
+                      >
+                        ←
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => moveOwnerPhoto(url, 1)}
+                        disabled={index === ownerPhotos.length - 1}
+                        className="rounded-md bg-black/60 px-2 py-1 text-xs font-semibold text-white hover:bg-black/75 disabled:cursor-not-allowed disabled:opacity-40"
+                        title="Flyt senere"
+                      >
+                        →
+                      </button>
+                    </div>
                     <button
                       type="button"
                       onClick={() => handleDeletePhoto(url)}
-                      className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/60 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                      className="rounded-md bg-red-600/90 px-2 py-1 text-xs font-semibold text-white hover:bg-red-600"
                       title="Slet billede"
                     >
-                      ×
+                      Slet
                     </button>
-                  )}
+                  </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-primary/40 mb-4">Ingen billeder endnu.</p>
+            <p className="text-sm text-primary/40 mb-4">Ingen ejer-uploadede billeder endnu.</p>
           )}
 
           <label className="flex flex-col items-center justify-center border-2 border-dashed border-primary/15 rounded-xl p-6 cursor-pointer hover:border-accent/40 hover:bg-accent/[0.02] transition-colors">
@@ -333,6 +423,105 @@ export function ShelterGroupSettingsForm({
             <span className="text-xs text-primary/30 mt-1">JPEG, PNG eller WebP · maks. 5 MB</span>
           </label>
           {uploadError && <p className="text-sm text-red-600 mt-2">{uploadError}</p>}
+        </div>
+
+        <div className="rounded-xl border border-primary/8 bg-primary/[0.02] p-4 space-y-4">
+          <div>
+            <h3 className="font-serif text-lg font-bold text-primary">Fælles faciliteter</h3>
+            <p className="text-sm text-primary/50 mt-1">
+              De her valg styrer filterchips og fakta på den fælles shelterside.
+            </p>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="flex items-center gap-3 rounded-xl border border-primary/10 bg-white px-4 py-3 text-sm text-primary">
+              <input
+                type="checkbox"
+                checked={facilities.water}
+                onChange={(e) => setFacilities((prev) => ({ ...prev, water: e.target.checked }))}
+              />
+              Vand
+            </label>
+            <label className="flex items-center gap-3 rounded-xl border border-primary/10 bg-white px-4 py-3 text-sm text-primary">
+              <input
+                type="checkbox"
+                checked={facilities.baalplads}
+                onChange={(e) => setFacilities((prev) => ({ ...prev, baalplads: e.target.checked }))}
+              />
+              Bålplads
+            </label>
+            <label className="flex items-center gap-3 rounded-xl border border-primary/10 bg-white px-4 py-3 text-sm text-primary">
+              <input
+                type="checkbox"
+                checked={facilities.hund}
+                onChange={(e) => setFacilities((prev) => ({ ...prev, hund: e.target.checked }))}
+              />
+              Hund tilladt
+            </label>
+            <label className="flex items-center gap-3 rounded-xl border border-primary/10 bg-white px-4 py-3 text-sm text-primary">
+              <input
+                type="checkbox"
+                checked={facilities.bord_baenk}
+                onChange={(e) => setFacilities((prev) => ({ ...prev, bord_baenk: e.target.checked }))}
+              />
+              Bord/bænke
+            </label>
+            <label className="flex items-center gap-3 rounded-xl border border-primary/10 bg-white px-4 py-3 text-sm text-primary">
+              <input
+                type="checkbox"
+                checked={facilities.strand}
+                onChange={(e) => setFacilities((prev) => ({ ...prev, strand: e.target.checked }))}
+              />
+              Strand i nærheden
+            </label>
+            <label className="flex items-center gap-3 rounded-xl border border-primary/10 bg-white px-4 py-3 text-sm text-primary">
+              <input
+                type="checkbox"
+                checked={facilities.bruser}
+                onChange={(e) => setFacilities((prev) => ({ ...prev, bruser: e.target.checked }))}
+              />
+              Bruser/bad
+            </label>
+            <label className="flex items-center gap-3 rounded-xl border border-primary/10 bg-white px-4 py-3 text-sm text-primary">
+              <input
+                type="checkbox"
+                checked={facilities.handicap}
+                onChange={(e) => setFacilities((prev) => ({ ...prev, handicap: e.target.checked }))}
+              />
+              Handicapvenligt
+            </label>
+          </div>
+
+          <div className="rounded-xl border border-primary/10 bg-white px-4 py-4">
+            <label className="flex items-center gap-3 text-sm font-medium text-primary">
+              <input
+                type="checkbox"
+                checked={facilities.toiletEnabled}
+                onChange={(e) => setFacilities((prev) => ({ ...prev, toiletEnabled: e.target.checked }))}
+              />
+              Toilet på pladsen
+            </label>
+            {facilities.toiletEnabled && (
+              <div className="mt-3 max-w-xs">
+                <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1.5">
+                  Toilettype
+                </label>
+                <select
+                  value={facilities.toiletType}
+                  onChange={(e) =>
+                    setFacilities((prev) => ({
+                      ...prev,
+                      toiletType: e.target.value === "mulch" ? "mulch" : "flush",
+                    }))
+                  }
+                  className="w-full rounded-xl border border-primary/15 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent/35"
+                >
+                  <option value="flush">Vandskyllende toilet</option>
+                  <option value="mulch">Muldtoilet</option>
+                </select>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-3">

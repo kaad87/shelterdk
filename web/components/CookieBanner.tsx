@@ -17,7 +17,10 @@ function getStoredConsent(): ConsentChoice | null {
   if (typeof window === "undefined") return null;
   try {
     const v = localStorage.getItem(CONSENT_KEY);
-    if (v === "accept" || v === "necessary") return v;
+    if (v === "marketing") return "marketing";
+    if (v === "analytics") return "analytics";
+    if (v === "necessary") return "necessary";
+    if (v === "accept") return "marketing";
   } catch {
     // ignore
   }
@@ -34,19 +37,20 @@ function setConsentStorage(choice: ConsentChoice) {
   }
 }
 
-function updateGtagConsent(granted: boolean) {
+function updateGtagConsent(choice: ConsentChoice) {
   const w = window as unknown as {
     dataLayer: unknown[];
     gtag?: (...args: unknown[]) => void;
   };
   w.dataLayer = w.dataLayer || [];
-  const state = granted ? "granted" : "denied";
+  const analyticsState = choice === "analytics" || choice === "marketing" ? "granted" : "denied";
+  const adState = choice === "marketing" ? "granted" : "denied";
   if (typeof w.gtag === "function") {
     w.gtag("consent", "update", {
-      ad_storage: state,
-      ad_user_data: state,
-      ad_personalization: state,
-      analytics_storage: state,
+      ad_storage: adState,
+      ad_user_data: adState,
+      ad_personalization: adState,
+      analytics_storage: analyticsState,
     });
     return;
   }
@@ -54,10 +58,10 @@ function updateGtagConsent(granted: boolean) {
     "consent",
     "update",
     {
-      ad_storage: state,
-      ad_user_data: state,
-      ad_personalization: state,
-      analytics_storage: state,
+      ad_storage: adState,
+      ad_user_data: adState,
+      ad_personalization: adState,
+      analytics_storage: analyticsState,
     },
   ]);
 }
@@ -84,7 +88,7 @@ export function CookieBanner() {
   const handleChoice = (choice: ConsentChoice) => {
     setConsentStorage(choice);
     setConsent(choice);
-    updateGtagConsent(choice === "accept");
+    updateGtagConsent(choice);
   };
 
   const showBanner = mounted && consent === null;
@@ -104,8 +108,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         }}
       />
 
-      {/* AdSense — only loads after explicit accept to reduce consent risk */}
-      {consent === "accept" && process.env.NEXT_PUBLIC_ADSENSE_PUB_ID && (
+      {/* AdSense — only loads after explicit marketing consent */}
+      {consent === "marketing" && process.env.NEXT_PUBLIC_ADSENSE_PUB_ID && (
         <Script
           async
           id="adsense"
@@ -115,8 +119,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         />
       )}
 
-      {/* StackAdapt — no cookieless mode, only loads on explicit accept */}
-      {consent === "accept" && (
+      {/* StackAdapt — no cookieless mode, only loads on explicit marketing consent */}
+      {consent === "marketing" && (
         <Script id="stackadapt-events" strategy="afterInteractive">
           {`!function(s,a,e,v,n,t,z){if(s.saq)return;n=s.saq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!s._saq)s._saq=n;n.push=n;n.loaded=!0;n.version='1.0';n.queue=[];t=a.createElement(e);t.async=!0;t.src=v;z=a.getElementsByTagName(e)[0];z.parentNode.insertBefore(t,z)}(window,document,'script','https://tags.srv.stackadapt.com/events.js');saq('ts','2PGo6zJNYMlKgu4KYK8bjA');`}
         </Script>
@@ -131,9 +135,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           <div className="rounded-xl border border-primary/20 bg-white shadow-lg ring-1 ring-black/5">
             <div className="p-4 sm:p-5">
               <p className="text-sm text-primary leading-relaxed">
-                Vi bruger nødvendige cookies, og valgfrie teknologier fra Google og
-                StackAdapt til statistik og annoncering. Vælger du kun nødvendige,
-                bruger vi ingen statistik- eller annoncecookies.{" "}
+                Vi bruger nødvendige cookies for at få siden til at fungere. Derudover kan du vælge
+                statistikcookies fra Google eller også tillade markedsføringscookies fra Google og
+                StackAdapt.{" "}
                 <Link
                   href="/privacy"
                   className="text-accent underline hover:no-underline focus:outline-none focus:ring-2 focus:ring-accent rounded"
@@ -144,10 +148,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               <div className="mt-4 flex flex-wrap gap-3">
                 <button
                   type="button"
-                  onClick={() => handleChoice("accept")}
+                  onClick={() => handleChoice("marketing")}
                   className="rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors"
                 >
                   Acceptér alle
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleChoice("analytics")}
+                  className="rounded-lg border border-primary/30 bg-background px-4 py-2.5 text-sm font-medium text-primary hover:bg-primary/5 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors"
+                >
+                  Kun statistik
                 </button>
                 <button
                   type="button"

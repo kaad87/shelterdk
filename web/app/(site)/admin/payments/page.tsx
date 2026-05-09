@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { calculateVatIncludedBreakdown } from "@/lib/stripe";
 
 const STORAGE_KEY = "shelterdk-admin-secret";
 
@@ -71,25 +72,30 @@ export default function AdminPaymentsPage() {
           <table className="w-full text-sm">
             <thead className="border-b border-primary/10 bg-primary/[0.02]">
               <tr>
-                {["Shelter","Gæst","Datoer","Total","Gebyr","Status","Oprettet"].map((h) => (
+                {["Shelter","Gæst","Datoer","Total","Gebyr inkl. moms","Netto","Moms","Status","Oprettet"].map((h) => (
                   <th key={h} className="text-left px-4 py-3 text-primary/50 font-medium">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {payments.map((p) => (
-                <tr key={p.id} className="border-b border-primary/5 hover:bg-primary/[0.02]">
-                  <td className="px-4 py-3 font-medium">{p.shelter_title}</td>
-                  <td className="px-4 py-3 text-primary/70">{p.guest_name}</td>
-                  <td className="px-4 py-3 text-primary/50 text-xs">{p.check_in} – {p.check_out}</td>
-                  <td className="px-4 py-3 text-right">{p.amount_total_dkk} kr</td>
-                  <td className="px-4 py-3 text-right text-primary/60">{p.amount_platform_dkk} kr</td>
-                  <td className="px-4 py-3"><Badge status={p.status} /></td>
-                  <td className="px-4 py-3 text-primary/40 text-xs">{new Date(p.created_at).toLocaleDateString("da-DK")}</td>
-                </tr>
-              ))}
+              {payments.map((p) => {
+                const breakdown = calculateVatIncludedBreakdown(p.amount_platform_dkk ?? 0);
+                return (
+                  <tr key={p.id} className="border-b border-primary/5 hover:bg-primary/[0.02]">
+                    <td className="px-4 py-3 font-medium">{p.shelter_title}</td>
+                    <td className="px-4 py-3 text-primary/70">{p.guest_name}</td>
+                    <td className="px-4 py-3 text-primary/50 text-xs">{p.check_in} – {p.check_out}</td>
+                    <td className="px-4 py-3 text-right">{p.amount_total_dkk} kr</td>
+                    <td className="px-4 py-3 text-right text-primary/60">{breakdown.grossDkk} kr</td>
+                    <td className="px-4 py-3 text-right text-primary/60">{breakdown.netDkk.toFixed(2).replace(".", ",")} kr</td>
+                    <td className="px-4 py-3 text-right text-primary/60">{breakdown.vatDkk.toFixed(2).replace(".", ",")} kr</td>
+                    <td className="px-4 py-3"><Badge status={p.status} /></td>
+                    <td className="px-4 py-3 text-primary/40 text-xs">{new Date(p.created_at).toLocaleDateString("da-DK")}</td>
+                  </tr>
+                );
+              })}
               {payments.length === 0 && (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-primary/30">Ingen transaktioner endnu</td></tr>
+                <tr><td colSpan={9} className="px-4 py-8 text-center text-primary/30">Ingen transaktioner endnu</td></tr>
               )}
             </tbody>
           </table>

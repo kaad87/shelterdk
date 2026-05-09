@@ -1,4 +1,5 @@
 import { getResend, FROM_EMAIL, escapeHtml, renderEmail, renderEmailText } from "./email";
+import { calculateVatIncludedBreakdown } from "./stripe";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://shelterdk.dk";
 
@@ -305,6 +306,7 @@ export async function sendPaymentRequestToGuest(opts: {
   paymentUrl: string;
   guestToken: string;
 }) {
+  const { vatDkk } = calculateVatIncludedBreakdown(opts.amountPlatformDkk);
   const overnatningRow = opts.amountShelterDkk > 0
     ? `<tr><td style="font-size:12px;color:#666;padding:4px 0;">Overnatning</td><td style="font-size:12px;text-align:right;padding:4px 0;">${opts.amountShelterDkk} kr</td></tr>`
     : "";
@@ -323,9 +325,10 @@ export async function sendPaymentRequestToGuest(opts: {
         </div>
         <table style="width:100%;border-collapse:collapse;margin:12px 0;">
           ${overnatningRow}
-          <tr><td style="font-size:12px;color:#666;padding:4px 0;">Administrationsgebyr</td><td style="font-size:12px;text-align:right;padding:4px 0;">${opts.amountPlatformDkk} kr</td></tr>
+          <tr><td style="font-size:12px;color:#666;padding:4px 0;">Administrationsgebyr inkl. moms</td><td style="font-size:12px;text-align:right;padding:4px 0;">${opts.amountPlatformDkk} kr</td></tr>
           <tr style="border-top:1px solid #e5e1d8;"><td style="font-size:13px;font-weight:600;color:#2C3E50;padding:6px 0;">I alt</td><td style="font-size:13px;font-weight:600;text-align:right;padding:6px 0;">${opts.amountTotalDkk} kr</td></tr>
         </table>
+        <p style="font-size:12px;color:#999;margin:0 0 8px;">Heraf ${vatDkk.toFixed(2).replace(".", ",")} kr moms.</p>
         <p style="font-size:12px;color:#999;margin:0 0 16px;">Betalingslinket udløber om 24 timer.</p>
         <a href="${opts.paymentUrl}" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">Betal nu via MobilePay</a>
       `,
@@ -335,7 +338,8 @@ export async function sendPaymentRequestToGuest(opts: {
       lines: [
         `Hej ${opts.guestName}! Ejeren har bekræftet din booking af ${opts.shelterTitle}.`,
         `Datoer: ${formatDate(opts.checkIn)} → ${formatDate(opts.checkOut)}`,
-        `I alt: ${opts.amountTotalDkk} kr (heraf ${opts.amountPlatformDkk} kr administrationsgebyr).`,
+        `I alt: ${opts.amountTotalDkk} kr (heraf ${opts.amountPlatformDkk} kr administrationsgebyr inkl. moms).`,
+        `Momsandel i gebyret: ${vatDkk.toFixed(2).replace(".", ",")} kr.`,
         "Betalingslinket udløber om 24 timer.",
       ],
       url: opts.paymentUrl,

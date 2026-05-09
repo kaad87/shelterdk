@@ -30,7 +30,11 @@ function getCookieMap(headers: Headers): Map<string, string> {
 
 function getConsent(headers: Headers): ConsentChoice | null {
   const consent = getCookieMap(headers).get(CONSENT_COOKIE);
-  return consent === "accept" || consent === "necessary" ? consent : null;
+  if (consent === "marketing" || consent === "analytics" || consent === "necessary") {
+    return consent;
+  }
+  if (consent === "accept") return "marketing";
+  return null;
 }
 
 function getOrigin(headers: Headers): string {
@@ -115,7 +119,9 @@ export async function sendGa4Event({
   if (!measurementId || !apiSecret) return false;
 
   const consent = getConsent(headers);
-  if (skipIfConsentAccept && consent === "accept") return false;
+  const hasAnalyticsConsent = consent === "analytics" || consent === "marketing";
+  if (!hasAnalyticsConsent) return false;
+  if (skipIfConsentAccept && consent === "marketing") return false;
 
   const fallbackIdentity = buildFallbackIdentity(headers, identityKey);
   const clientId = extractGaClientId(headers) ?? fallbackIdentity.clientId;

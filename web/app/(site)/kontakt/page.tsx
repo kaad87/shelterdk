@@ -32,7 +32,7 @@ export default function KontaktPage() {
         <ContactForm />
 
         <p className="mt-10 text-primary/60 text-sm">
-          Vi er et lille hobbyprojekt, så det kan tage et par dage at svare.
+          Vi er et lille team, så det kan tage et par dage at svare.
           Tak for din besked.
         </p>
       </div>

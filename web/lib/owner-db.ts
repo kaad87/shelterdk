@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/utils/supabase/server-admin";
 import type { BookableShelter } from "@/types/booking";
+import type { Shelter } from "@shared/types/shelter";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const BUCKET = "shelter-photos";
@@ -79,26 +80,32 @@ export async function getShelterGroupByDbShelterId(
 
 export async function getSharedShelterContent(
   shelterDbId: string
-): Promise<{ title: string; description: string | null } | null> {
+): Promise<Shelter | null> {
   const { data } = await createAdminClient()
     .from("shelters")
-    .select("title, description")
+    .select("id, title, slug, description, image_url, image_urls, user_image_urls, water, toilet, geofa_raw")
     .eq("id", shelterDbId)
     .single();
-  return data ?? null;
+  return (data as Shelter | null) ?? null;
 }
 
 export async function updateSharedShelterContent(
   shelterDbId: string,
-  fields: { description?: string | null }
-): Promise<{ title: string; description: string | null } | null> {
+  fields: {
+    description?: string | null;
+    user_image_urls?: string[] | null;
+    water?: boolean | null;
+    toilet?: "flush" | "mulch" | "none" | "unknown" | null;
+    geofa_raw?: Record<string, unknown> | null;
+  }
+): Promise<Shelter | null> {
   const { data } = await createAdminClient()
     .from("shelters")
     .update(fields)
     .eq("id", shelterDbId)
-    .select("title, description")
+    .select("id, title, slug, description, image_url, image_urls, user_image_urls, water, toilet, geofa_raw")
     .single();
-  return data ?? null;
+  return (data as Shelter | null) ?? null;
 }
 
 // ─── Shelter update ──────────────────────────────────────────────────────────

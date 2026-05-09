@@ -162,6 +162,7 @@ describe("POST /api/book/[slug]", () => {
     guest_count: 2,
     check_in: "2027-06-01",
     check_out: "2027-06-03",
+    accepted_terms: true,
   };
 
   it("returnerer 404 for ukendt shelter", async () => {
@@ -204,6 +205,23 @@ describe("POST /api/book/[slug]", () => {
       { params: Promise.resolve({ slug: "test-shelter" }) }
     );
     expect(res.status).toBe(400);
+  });
+
+  it("returnerer 400 når bookingvilkår ikke er accepteret", async () => {
+    mockGetBookableShelterBySlug.mockResolvedValue(mockShelter());
+    const { POST } = await import("../book/[slug]/route");
+    const res = await POST(
+      new Request("http://localhost/api/book/test-shelter", {
+        method: "POST",
+        body: JSON.stringify({ ...validBody, accepted_terms: false }),
+        headers: { "Content-Type": "application/json" },
+      }) as never,
+      { params: Promise.resolve({ slug: "test-shelter" }) }
+    );
+    expect(res.status).toBe(400);
+    expect(await res.json()).toMatchObject({
+      error: expect.stringContaining("bookingvilkårene"),
+    });
   });
 
   it("opretter booking og returnerer 201 ved gyldigt input", async () => {
