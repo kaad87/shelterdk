@@ -4,6 +4,7 @@ import {
   cancelBooking,
   getBookableShelterByPk,
   isRefundEligible,
+  cancelPendingBooking,
 } from "@/lib/booking-db";
 import { getPaymentByBookingId } from "@/lib/payment-db";
 import {
@@ -25,7 +26,7 @@ export async function POST(
     return NextResponse.json({ error: "Booking ikke fundet" }, { status: 404 });
   }
 
-  if (booking.status !== "confirmed") {
+  if (!["pending", "confirmed"].includes(booking.status)) {
     return NextResponse.json(
       { error: "Booking kan ikke annulleres i nuværende status" },
       { status: 409 }
@@ -37,8 +38,11 @@ export async function POST(
     return NextResponse.json({ error: "Shelter ikke fundet" }, { status: 404 });
   }
 
-  // Race-condition safe: only cancels if still confirmed
-  const cancelled = await cancelBooking(booking.id, "guest");
+  const wasPending = booking.status === "pending";
+  // Race-condition safe: only cancels if booking is still in the expected state
+  const cancelled = wasPending
+    ? await cancelPendingBooking(booking.id)
+    : await cancelBooking(booking.id, "guest");
   if (!cancelled) {
     return NextResponse.json(
       { error: "Booking kan ikke annulleres i nuværende status" },
@@ -47,12 +51,16 @@ export async function POST(
   }
 
   // Determine refund eligibility + issue Stripe refund if applicable
-  const refundEligible = isRefundEligible(
+  const refundEligible = !wasPending && isRefundEligible(
     booking.check_in,
     shelter.cancellation_cutoff_hours
   );
   const payment = await getPaymentByBookingId(booking.id);
   let refunded = false;
+  let refundStatus: "refunded" | "manual_follow_up" | "not_refunded" = "not_refunded";
+  let notice = wasPending
+    ? "Din forespørgsel er trukket tilbage, og datoerne er frigivet."
+    : "Din booking er annulleret.";
 
   if (refundEligible && payment?.status === "paid") {
     try {
@@ -66,10 +74,14 @@ export async function POST(
       if (pi?.id) {
         await stripe.refunds.create({ payment_intent: pi.id });
         refunded = true;
+        refundStatus = "refunded";
+        notice = "Din booking er annulleret, og refunderingen er sat i gang.";
       }
     } catch (err) {
       console.error("guest cancel: Stripe refund error:", err);
       // Non-fatal — admin can issue manually
+      refundStatus = "manual_follow_up";
+      notice = "Din booking er annulleret. Vi følger manuelt op på refunderingen hurtigst muligt.";
     }
   }
 
@@ -82,7 +94,7 @@ export async function POST(
       shelterTitle: shelter.title,
       checkIn: booking.check_in,
       checkOut: booking.check_out,
-      refundEligible,
+      refundStatus,
       amountTotalDkk: payment?.status === "paid" ? amountTotalDkk : null,
     });
   } catch (err) {
@@ -102,18 +114,23 @@ export async function POST(
     console.error("guest cancel: owner email error:", err);
   }
 
-  await sendGa4Event({
-    headers: _req.headers,
-    eventName: "booking_cancelled",
-    referrer: _req.headers.get("referer") ?? undefined,
-    eventParams: {
-      booking_id: booking.id,
-      shelter_id: shelter.id,
-      payment_mode: shelter.payment_mode,
-      cancelled_by: "guest",
-      refunded,
-    },
-  });
+  try {
+    await sendGa4Event({
+      headers: _req.headers,
+      eventName: "booking_cancelled",
+      referrer: _req.headers.get("referer") ?? undefined,
+      eventParams: {
+        booking_id: booking.id,
+        shelter_id: shelter.id,
+        payment_mode: shelter.payment_mode,
+        booking_status_before_cancel: booking.status,
+        cancelled_by: "guest",
+        refunded,
+      },
+    });
+  } catch (err) {
+    console.error("guest cancel: non-fatal analytics error:", err);
+  }
 
-  return NextResponse.json({ ok: true, refunded });
+  return NextResponse.json({ ok: true, refunded, wasPending, notice });
 }

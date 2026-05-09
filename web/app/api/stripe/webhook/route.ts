@@ -57,22 +57,28 @@ export async function POST(req: NextRequest) {
           },
         });
 
+        let shouldSendConfirmation = true;
         if (shelter.payment_mode === "upfront") {
-          // Auto-confirm: payment = confirmed, no owner approval needed
-          await updateBookingStatus(payment.booking_id, "confirmed");
+          // Auto-confirm: payment = confirmed, no owner approval needed.
+          // If the booking is no longer pending, do not send a false guest confirmation.
+          shouldSendConfirmation = await updateBookingStatus(payment.booking_id, "confirmed");
+          if (!shouldSendConfirmation) {
+            console.error("Webhook: payment completed but booking was no longer pending", payment.booking_id);
+          }
         }
-        // Send confirmation emails to guest + owner (same for both modes)
-        await sendPaymentConfirmed({
-          guestEmail: booking.guest_email,
-          guestName: booking.guest_name,
-          ownerEmail: shelter.owner_email,
-          ownerToken: shelter.owner_token,
-          shelterTitle: shelter.title,
-          checkIn: booking.check_in,
-          checkOut: booking.check_out,
-          amountTotalDkk: payment.amount_total_dkk,
-          guestToken: booking.guest_token,
-        });
+        if (shouldSendConfirmation) {
+          await sendPaymentConfirmed({
+            guestEmail: booking.guest_email,
+            guestName: booking.guest_name,
+            ownerEmail: shelter.owner_email,
+            ownerToken: shelter.owner_token,
+            shelterTitle: shelter.title,
+            checkIn: booking.check_in,
+            checkOut: booking.check_out,
+            amountTotalDkk: payment.amount_total_dkk,
+            guestToken: booking.guest_token,
+          });
+        }
       }
     } catch (err) {
       console.error("Webhook: confirmation email failed (non-fatal):", err);

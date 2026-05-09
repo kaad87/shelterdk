@@ -13,24 +13,30 @@ export const metadata: Metadata = {
 
 interface Props {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ session_id?: string }>;
+  searchParams: Promise<{ session_id?: string; t?: string }>;
 }
 
 export default async function TakPage({ params, searchParams }: Props) {
   const { id } = await params;
-  const { session_id } = await searchParams;
+  const { session_id, t } = await searchParams;
 
   const { data: booking } = await createAdminClient()
     .from("shelter_bookings")
-    .select("id, status")
+    .select("id, status, guest_token")
     .eq("id", id)
     .maybeSingle();
 
   if (!booking) notFound();
+  if (t && booking.guest_token !== t) notFound();
 
   const payment = await getPaymentByBookingId(id);
   const sessionMatches = !session_id || payment?.stripe_checkout_session_id === session_id;
   const isConfirmed = booking.status === "confirmed" && payment?.status === "paid" && sessionMatches;
+  const paymentHref = `/booking/${id}/betal${t ? `?t=${encodeURIComponent(t)}` : ""}`;
+  const refreshParams = new URLSearchParams();
+  if (session_id) refreshParams.set("session_id", session_id);
+  if (t) refreshParams.set("t", t);
+  const refreshHref = `/booking/${id}/tak${refreshParams.size > 0 ? `?${refreshParams.toString()}` : ""}`;
 
   if (isConfirmed) {
     return (
@@ -71,13 +77,13 @@ export default async function TakPage({ params, searchParams }: Props) {
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
-            href={`/booking/${id}/betal`}
+            href={paymentHref}
             className="inline-block bg-[#c5a059] text-white font-semibold px-6 py-3 rounded-xl hover:bg-[#b38f48] transition-colors"
           >
             Gå til betalingssiden
           </Link>
           <Link
-            href={`/booking/${id}/tak${session_id ? `?session_id=${encodeURIComponent(session_id)}` : ""}`}
+            href={refreshHref}
             className="inline-block border border-primary/15 text-primary font-semibold px-6 py-3 rounded-xl hover:bg-primary/5 transition-colors"
           >
             Opdatér siden

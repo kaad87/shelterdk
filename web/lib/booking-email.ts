@@ -192,6 +192,7 @@ export async function sendBookingReceivedToGuest(opts: {
   shelterTitle: string;
   checkIn: string;
   checkOut: string;
+  guestToken: string;
 }) {
   const { error } = await getResend().emails.send({
     from: FROM_EMAIL,
@@ -206,7 +207,8 @@ export async function sendBookingReceivedToGuest(opts: {
           <p style="font-size:10px;color:#999;margin:0 0 2px;text-transform:uppercase;letter-spacing:0.5px;">Datoer</p>
           <p style="font-size:13px;font-weight:600;color:#2C3E50;margin:0;">${esc(formatDate(opts.checkIn))} → ${esc(formatDate(opts.checkOut))}</p>
         </div>
-        <p style="font-size:13px;color:#666;margin:0;line-height:1.5;">Ejeren vender tilbage hurtigst muligt.</p>
+        <p style="font-size:13px;color:#666;margin:0 0 16px;line-height:1.5;">Ejeren vender tilbage hurtigst muligt. Du kan allerede nu se din booking og trække forespørgslen tilbage, hvis du fortryder.</p>
+        <a href="${bookingLink(opts.guestToken)}" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">Se og administrér din booking</a>
       `,
     }),
     text: renderEmailText({
@@ -214,8 +216,9 @@ export async function sendBookingReceivedToGuest(opts: {
       lines: [
         `Hej ${opts.guestName}! Vi har modtaget din bookingforespørgsel til ${opts.shelterTitle}.`,
         `Datoer: ${formatDate(opts.checkIn)} → ${formatDate(opts.checkOut)}`,
-        "Ejeren vender tilbage hurtigst muligt.",
+        "Ejeren vender tilbage hurtigst muligt. Du kan allerede nu se din booking og trække forespørgslen tilbage, hvis du fortryder.",
       ],
+      url: bookingLink(opts.guestToken),
     }),
   });
   if (error) throw new Error("Email-fejl (gæst modtaget): " + JSON.stringify(error));
@@ -563,17 +566,21 @@ export async function sendGuestCancelledToGuest(opts: {
   shelterTitle: string;
   checkIn: string;
   checkOut: string;
-  refundEligible: boolean;
+  refundStatus: "refunded" | "manual_follow_up" | "not_refunded";
   amountTotalDkk: number | null;
 }) {
-  const refundHtml = opts.refundEligible && opts.amountTotalDkk
+  const refundHtml = opts.refundStatus === "refunded" && opts.amountTotalDkk
     ? `<p style="font-size:13px;color:#666;margin:0 0 16px;">Din betaling på <strong>${opts.amountTotalDkk} kr</strong> refunderes inden for 5–10 hverdage.</p>`
-    : opts.amountTotalDkk
+    : opts.refundStatus === "manual_follow_up" && opts.amountTotalDkk
+      ? `<p style="font-size:13px;color:#666;margin:0 0 16px;">Din betaling på <strong>${opts.amountTotalDkk} kr</strong> kunne ikke refunderes automatisk. Vi følger manuelt op hurtigst muligt.</p>`
+      : opts.amountTotalDkk
       ? `<p style="font-size:13px;color:#666;margin:0 0 16px;">Betalingen på <strong>${opts.amountTotalDkk} kr</strong> refunderes ikke, da annulleringen sker inden for aflysningsfristen.</p>`
       : "";
-  const refundText = opts.refundEligible && opts.amountTotalDkk
+  const refundText = opts.refundStatus === "refunded" && opts.amountTotalDkk
     ? `Din betaling på ${opts.amountTotalDkk} kr refunderes inden for 5–10 hverdage.`
-    : opts.amountTotalDkk
+    : opts.refundStatus === "manual_follow_up" && opts.amountTotalDkk
+      ? `Din betaling på ${opts.amountTotalDkk} kr kunne ikke refunderes automatisk. Vi følger manuelt op hurtigst muligt.`
+      : opts.amountTotalDkk
       ? `Betalingen på ${opts.amountTotalDkk} kr refunderes ikke (inden for aflysningsfrist).`
       : "";
 

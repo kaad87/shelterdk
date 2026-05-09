@@ -4,6 +4,7 @@ import {
   markTokenUsed,
   updateBookingStatus,
   hasConfirmedOverlap,
+  BookingConflictError,
 } from "@/lib/booking-db";
 import {
   sendBookingConfirmedToGuest,
@@ -56,10 +57,19 @@ export async function GET(
     }
   }
 
-  // Mark token used + update booking
-  await markTokenUsed(tokenRow.id);
   const newStatus = tokenRow.action === "confirm" ? "confirmed" : "rejected";
-  await updateBookingStatus(booking.id, newStatus);
+  try {
+    const updated = await updateBookingStatus(booking.id, newStatus);
+    if (!updated) {
+      return NextResponse.redirect(`${SITE_URL}/booking/svar/${token}?status=already_resolved`);
+    }
+    await markTokenUsed(tokenRow.id);
+  } catch (err) {
+    if (err instanceof BookingConflictError) {
+      return NextResponse.redirect(`${SITE_URL}/booking/svar/${token}?status=conflict`);
+    }
+    throw err;
+  }
 
   // Send email to guest
   try {
@@ -86,17 +96,21 @@ export async function GET(
     // Don't fail the action if email fails
   }
 
-  await sendGa4Event({
-    headers: req.headers,
-    eventName: newStatus === "confirmed" ? "booking_confirmed" : "booking_rejected",
-    referrer: req.headers.get("referer") ?? undefined,
-    eventParams: {
-      booking_id: booking.id,
-      shelter_id: shelter.id,
-      payment_mode: shelter.payment_mode,
-      confirmation_channel: "magic_link",
-    },
-  });
+  try {
+    await sendGa4Event({
+      headers: req.headers,
+      eventName: newStatus === "confirmed" ? "booking_confirmed" : "booking_rejected",
+      referrer: req.headers.get("referer") ?? undefined,
+      eventParams: {
+        booking_id: booking.id,
+        shelter_id: shelter.id,
+        payment_mode: shelter.payment_mode,
+        confirmation_channel: "magic_link",
+      },
+    });
+  } catch (err) {
+    console.error("booking action: non-fatal analytics error:", err);
+  }
 
   return NextResponse.redirect(`${SITE_URL}/booking/svar/${token}?status=${newStatus}`);
 }

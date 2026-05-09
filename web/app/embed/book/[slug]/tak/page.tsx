@@ -1,4 +1,9 @@
-export default function TakPage() {
+interface Props {
+  searchParams: Promise<{ guestToken?: string }>;
+}
+
+export default async function TakPage({ searchParams }: Props) {
+  const { guestToken } = await searchParams;
   return (
     <div className="min-h-screen bg-[#F9FAFB] flex items-center justify-center px-5 py-12">
       <div className="w-full max-w-md">
@@ -26,6 +31,14 @@ export default function TakPage() {
           <p className="text-sm text-primary/55 leading-relaxed">
             Ejeren har fået besked og vender tilbage hurtigst muligt. Du modtager en bekræftelse på email.
           </p>
+          {guestToken && (
+            <a
+              href={`/min-booking/${encodeURIComponent(guestToken)}`}
+              className="inline-block mt-5 bg-[#c5a059] text-white text-sm font-semibold px-5 py-3 rounded-xl hover:bg-[#b38f48] transition-colors"
+            >
+              Se og administrér din booking
+            </a>
+          )}
         </div>
 
         {/* What happens next */}
@@ -36,7 +49,9 @@ export default function TakPage() {
               {
                 n: "1",
                 title: "Du modtager en email",
-                text: "Vi har sendt en bekræftelse til din indbakke med dine bookingdetaljer.",
+                text: guestToken
+                  ? "Vi har sendt en bekræftelse til din indbakke. Hvis den ikke dukker op med det samme, kan du stadig bruge knappen ovenfor."
+                  : "Vi har sendt en bekræftelse til din indbakke med dine bookingdetaljer.",
               },
               {
                 n: "2",

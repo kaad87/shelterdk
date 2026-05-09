@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { blockDate, unblockDate } from "@/lib/booking-db";
+import { blockDate, unblockDate, hasConfirmedOverlap } from "@/lib/booking-db";
 import { getAuthenticatedOwnerContext } from "@/lib/ejer-auth";
 
 export const dynamic = "force-dynamic";
+const MAX_BLOCK_DAYS = 366;
+
+function addDays(isoDate: string, days: number): string {
+  const date = new Date(`${isoDate}T12:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
 
 export async function POST(
   req: NextRequest,
@@ -33,12 +40,32 @@ export async function POST(
     dates.push(cur.toISOString().slice(0, 10));
     cur.setDate(cur.getDate() + 1);
   }
+  if (dates.length > MAX_BLOCK_DAYS) {
+    return NextResponse.json(
+      { error: `Du kan højst blokere ${MAX_BLOCK_DAYS} dage ad gangen` },
+      { status: 400 }
+    );
+  }
 
-  await Promise.all(
-    dates.map((d) =>
-      unblock ? unblockDate(context.shelter.id, d) : blockDate(context.shelter.id, d, reason)
-    )
-  );
+  if (!unblock) {
+    const overlapsConfirmed = await hasConfirmedOverlap(
+      context.shelter.id,
+      from,
+      addDays(to, 1)
+    );
+    if (overlapsConfirmed) {
+      return NextResponse.json(
+        { error: "Kan ikke blokere datoer med en eksisterende bekræftet booking" },
+        { status: 409 }
+      );
+    }
+  }
+
+  for (const date of dates) {
+    await (unblock
+      ? unblockDate(context.shelter.id, date)
+      : blockDate(context.shelter.id, date, reason));
+  }
 
   return NextResponse.json({ ok: true, blocked: dates.length });
 }

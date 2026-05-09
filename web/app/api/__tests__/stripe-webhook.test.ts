@@ -67,6 +67,7 @@ vi.mock("@/utils/supabase/server-admin", () => ({
 describe("POST /api/stripe/webhook", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUpdateBookingStatus.mockResolvedValue(true);
   });
 
   it("auto-bekræfter upfront booking ved completed checkout", async () => {
@@ -136,5 +137,33 @@ describe("POST /api/stripe/webhook", () => {
         shelterTitle: "Test Shelter",
       })
     );
+  });
+
+  it("sender ikke falsk bekræftelse hvis booking ikke længere kan auto-bekræftes", async () => {
+    mockConstructWebhookEvent.mockReturnValue({
+      type: "checkout.session.completed",
+      data: { object: { id: "cs_test" } },
+    });
+    mockGetPaymentBySessionId.mockResolvedValue({
+      id: "payment-1",
+      booking_id: "booking-1",
+      status: "pending",
+      paid_at: null,
+      amount_total_dkk: 225,
+    });
+    mockUpdateBookingStatus.mockResolvedValue(false);
+
+    const { POST } = await import("../stripe/webhook/route");
+    const res = await POST(
+      new Request("http://localhost/api/stripe/webhook", {
+        method: "POST",
+        body: "{}",
+        headers: { "stripe-signature": "sig_test" },
+      }) as never
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockMarkPaymentPaid).toHaveBeenCalledWith("payment-1");
+    expect(mockSendPaymentConfirmed).not.toHaveBeenCalled();
   });
 });

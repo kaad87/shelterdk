@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { BookingCalendar } from "./BookingCalendar";
@@ -65,25 +65,40 @@ export function BookingForm({
   const router = useRouter();
   const [availability, setAvailability] = useState<Record<string, "pending" | "confirmed" | "blocked">>({});
   const [loadingAvailability, setLoadingAvailability] = useState(true);
+  const [availabilityError, setAvailabilityError] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<{ checkIn: string; checkOut: string } | null>(null);
   const [form, setForm] = useState({ guest_name: "", guest_email: "", guest_count: 1, message: "" });
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetch(`/api/book/${shelterSlug}/availability`)
-      .then((r) => r.json())
-      .then((data: AvailabilityResponse) => {
-        setAvailability(data.dates ?? {});
-        setLoadingAvailability(false);
-      })
-      .catch(() => setLoadingAvailability(false));
+  const loadAvailability = useCallback(async () => {
+    setLoadingAvailability(true);
+    setAvailabilityError(null);
+    try {
+      const res = await fetch(`/api/book/${shelterSlug}/availability`);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error((data as { error?: string }).error ?? "Kunne ikke hente kalenderen");
+      }
+      setAvailability((data as AvailabilityResponse).dates ?? {});
+    } catch {
+      setAvailability({});
+      setAvailabilityError("Kalenderen kunne ikke indlæses lige nu. Prøv igen, før du fortsætter.");
+      setDateRange(null);
+    } finally {
+      setLoadingAvailability(false);
+    }
   }, [shelterSlug]);
+
+  useEffect(() => {
+    void loadAvailability();
+  }, [loadAvailability]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!dateRange) { setError("Vælg ankomst- og afrejsedato"); return; }
+    if (availabilityError) { setError("Kalenderen skal indlæses korrekt, før du kan booke"); return; }
     if (!acceptedTerms) { setError("Du skal acceptere bookingvilkårene og læse privatlivspolitikken"); return; }
     setSubmitting(true);
     setError(null);
@@ -103,7 +118,10 @@ export function BookingForm({
       if (data.checkoutUrl) {
         window.location.href = data.checkoutUrl;
       } else {
-        router.push(successPath ?? `/embed/book/${shelterSlug}/tak`);
+        const target = successPath ?? `/embed/book/${shelterSlug}/tak`;
+        const params = new URLSearchParams();
+        if (data.guestToken) params.set("guestToken", data.guestToken);
+        router.push(params.size > 0 ? `${target}?${params.toString()}` : target);
       }
     } catch {
       setError("Noget gik galt. Tjek din forbindelse og prøv igen.");
@@ -152,6 +170,17 @@ export function BookingForm({
               <div className="flex flex-col items-center justify-center py-16 gap-3">
                 <div className="w-6 h-6 border-2 border-primary/15 border-t-accent rounded-full animate-spin" />
                 <span className="text-xs text-primary/35">Henter tilgængelighed…</span>
+              </div>
+            ) : availabilityError ? (
+              <div className="flex flex-col items-center justify-center py-12 gap-4 text-center">
+                <p className="max-w-sm text-sm text-red-600">{availabilityError}</p>
+                <button
+                  type="button"
+                  onClick={() => void loadAvailability()}
+                  className="rounded-xl border border-primary/15 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/5 transition-colors"
+                >
+                  Prøv igen
+                </button>
               </div>
             ) : (
               <BookingCalendar
@@ -328,7 +357,7 @@ export function BookingForm({
               {/* CTA */}
               <button
                 type="submit"
-                disabled={submitting || !dateRange}
+                disabled={submitting || !dateRange || loadingAvailability || Boolean(availabilityError)}
                 className="w-full rounded-xl py-3.5 text-sm font-semibold transition-all duration-200
                   bg-accent text-white shadow-sm
                   hover:bg-[#b8923f] hover:shadow-md active:scale-[0.98]

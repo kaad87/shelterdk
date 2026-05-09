@@ -32,6 +32,8 @@ interface Props {
   refundEligible: boolean;
   cancellationCutoffHours: number;
   guestToken: string;
+  paymentHref?: string | null;
+  paymentLabel?: string | null;
 }
 
 export function BookingPageClient({
@@ -40,11 +42,14 @@ export function BookingPageClient({
   refundEligible,
   cancellationCutoffHours,
   guestToken,
+  paymentHref,
+  paymentLabel,
 }: Props) {
   const [status, setStatus] = useState(booking.status);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [cancelNotice, setCancelNotice] = useState<string | null>(null);
 
   // ─── Messaging ───────────────────────────────────────────────────────────────
   const [messages, setMessages] = useState<BookingMessage[]>([]);
@@ -92,9 +97,14 @@ export function BookingPageClient({
     setError(null);
     try {
       const res = await fetch(`/api/booking/${guestToken}/cancel`, { method: "POST" });
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
         throw new Error(data.error ?? "Noget gik galt — prøv igen");
+      }
+      if (data.notice) {
+        setCancelNotice(data.notice);
+      } else if (data.wasPending) {
+        setCancelNotice("Din forespørgsel er trukket tilbage, og datoerne er frigivet.");
       }
       setStatus("cancelled");
       setShowConfirm(false);
@@ -135,6 +145,21 @@ export function BookingPageClient({
         <Row label="Antal personer" value={String(booking.guest_count)} />
         {booking.message && <Row label="Din besked" value={booking.message} />}
       </div>
+
+      {status === "confirmed" && paymentHref && (
+        <div className="mb-8 bg-[#fff8ee] border border-[#ead7b1] rounded-xl p-5">
+          <h2 className="text-base font-semibold text-[#2C3E50] mb-2">Din booking mangler betaling</h2>
+          <p className="text-sm text-gray-700 mb-4">
+            Din plads er bekræftet, men betalingen er ikke færdig endnu. Du kan fortsætte her.
+          </p>
+          <a
+            href={paymentHref}
+            className="inline-block bg-[#c5a059] text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-[#b8904a]"
+          >
+            {paymentLabel ?? "Gå til betaling"}
+          </a>
+        </div>
+      )}
 
       {/* Message thread — only for pending/confirmed bookings */}
       {canMessage && (
@@ -206,22 +231,26 @@ export function BookingPageClient({
         </div>
       )}
 
-      {/* Cancel section — only for confirmed bookings */}
-      {status === "confirmed" && !showConfirm && (
+      {/* Cancel section — pending requests can also be withdrawn by the guest */}
+      {(status === "pending" || status === "confirmed") && !showConfirm && (
         <div className="mt-4">
           <button
             onClick={() => setShowConfirm(true)}
             className="text-sm text-red-600 border border-red-200 rounded-lg px-4 py-2.5 hover:bg-red-50 transition-colors min-h-[44px]"
           >
-            Annullér booking
+            {status === "pending" ? "Træk forespørgsel tilbage" : "Annullér booking"}
           </button>
         </div>
       )}
 
-      {status === "confirmed" && showConfirm && (
+      {(status === "pending" || status === "confirmed") && showConfirm && (
         <div className="mt-6 bg-red-50 border border-red-200 rounded-xl p-5">
           <h2 className="font-semibold text-red-700 mb-2">Er du sikker?</h2>
-          {refundEligible ? (
+          {status === "pending" ? (
+            <p className="text-sm text-gray-700 mb-4">
+              Din forespørgsel bliver annulleret med det samme, og datoerne frigives til andre gæster.
+            </p>
+          ) : refundEligible ? (
             <p className="text-sm text-gray-700 mb-4">
               Du kan annullere og få fuld refundering, da der er mere end{" "}
               {cancellationCutoffHours} timer til ankomst.
@@ -241,7 +270,11 @@ export function BookingPageClient({
               disabled={loading}
               className="bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-red-700 disabled:opacity-50"
             >
-              {loading ? "Annullerer…" : "Ja, annullér booking"}
+              {loading
+                ? "Annullerer…"
+                : status === "pending"
+                  ? "Ja, træk forespørgslen tilbage"
+                  : "Ja, annullér booking"}
             </button>
             <button
               onClick={() => { setShowConfirm(false); setError(null); }}
@@ -256,7 +289,7 @@ export function BookingPageClient({
 
       {status === "cancelled" && (
         <div className="mt-6 bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm text-gray-600">
-          Din booking er annulleret.{" "}
+          {cancelNotice ? `${cancelNotice} ` : "Din booking er annulleret. "}
           <a href="/soeg" className="text-[#c5a059] underline">Find andre shelters</a>
         </div>
       )}

@@ -3,8 +3,9 @@ import {
   getBookableShelterBySlug,
   createBooking,
   createActionTokens,
-  hasConfirmedOverlap,
+  hasUnavailableOverlap,
   cancelPendingBooking,
+  BookingConflictError,
 } from "@/lib/booking-db";
 import {
   sendBookingRequestToOwner,
@@ -17,6 +18,7 @@ import {
 } from "@/lib/stripe";
 import { createBookingPayment } from "@/lib/payment-db";
 import { sendGa4Event } from "@/lib/server-analytics";
+import { BOOKING_WINDOW_DAYS } from "@/lib/booking-config";
 
 export const dynamic = "force-dynamic";
 
@@ -69,6 +71,15 @@ export async function POST(
   const today = new Date().toISOString().slice(0, 10);
   if (check_in < today)
     return NextResponse.json({ error: "Ankomstdato kan ikke være i fortiden" }, { status: 400 });
+  const latestAllowedCheckIn = new Date(Date.now() + BOOKING_WINDOW_DAYS * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10);
+  if (check_in > latestAllowedCheckIn || check_out > latestAllowedCheckIn) {
+    return NextResponse.json(
+      { error: `Du kan højst booke ${BOOKING_WINDOW_DAYS} dage frem.` },
+      { status: 400 }
+    );
+  }
   if (!accepted_terms)
     return NextResponse.json(
       { error: "Du skal acceptere bookingvilkårene og læse privatlivspolitikken" },
@@ -76,15 +87,15 @@ export async function POST(
     );
 
   try {
-    // For upfront shelters: block if dates are already confirmed
-    if (shelter.payment_mode === "upfront") {
-      const conflict = await hasConfirmedOverlap(shelter.id, check_in, check_out, "");
-      if (conflict)
-        return NextResponse.json(
-          { error: "Disse datoer er desværre allerede optaget" },
-          { status: 409 }
-        );
-    }
+    // Server-side guard: do not rely solely on client availability data.
+    const conflict = await hasUnavailableOverlap(shelter.id, check_in, check_out, {
+      includePending: true,
+    });
+    if (conflict)
+      return NextResponse.json(
+        { error: "Disse datoer er desværre ikke længere ledige" },
+        { status: 409 }
+      );
 
     const booking = await createBooking({
       bookable_shelter_id: shelter.id,
@@ -100,28 +111,33 @@ export async function POST(
     // For upfront: skip — emails are sent by the Stripe webhook after payment
     if (shelter.payment_mode !== "upfront") {
       const { confirmToken, rejectToken } = await createActionTokens(booking.id);
-      await Promise.all([
-        sendBookingRequestToOwner({
-          ownerEmail: shelter.owner_email,
-          shelterTitle: shelter.title,
-          ownerToken: shelter.owner_token,
-          guestName: guest_name,
-          guestEmail: guest_email,
-          guestCount: guest_count,
-          checkIn: check_in,
-          checkOut: check_out,
-          message: message || null,
-          confirmToken,
-          rejectToken,
-        }),
-        sendBookingReceivedToGuest({
-          guestEmail: guest_email,
-          guestName: guest_name,
-          shelterTitle: shelter.title,
-          checkIn: check_in,
-          checkOut: check_out,
-        }),
-      ]);
+      try {
+        await Promise.all([
+          sendBookingRequestToOwner({
+            ownerEmail: shelter.owner_email,
+            shelterTitle: shelter.title,
+            ownerToken: shelter.owner_token,
+            guestName: guest_name,
+            guestEmail: guest_email,
+            guestCount: guest_count,
+            checkIn: check_in,
+            checkOut: check_out,
+            message: message || null,
+            confirmToken,
+            rejectToken,
+          }),
+          sendBookingReceivedToGuest({
+            guestEmail: guest_email,
+            guestName: guest_name,
+            shelterTitle: shelter.title,
+            checkIn: check_in,
+            checkOut: check_out,
+            guestToken: booking.guest_token,
+          }),
+        ]);
+      } catch (err) {
+        console.error("book route: non-fatal booking email error:", err);
+      }
     }
 
     // For upfront shelters: create Stripe checkout session immediately
@@ -159,42 +175,56 @@ export async function POST(
     }
 
     const referrer = req.headers.get("referer") ?? undefined;
-    await sendGa4Event({
-      headers: req.headers,
-      eventName: "booking_request_submitted",
-      path: referrer,
-      referrer,
-      eventParams: {
-        shelter_slug: slug,
-        payment_mode: shelter.payment_mode,
-        guest_count,
-        nights: calculateBookingNights(check_in, check_out),
-        has_message: Boolean(message),
-        checkout_ready: Boolean(checkoutUrl),
-      },
-    });
-
-    if (checkoutUrl && amountTotalDkk !== undefined) {
+    try {
       await sendGa4Event({
         headers: req.headers,
-        eventName: "payment_started",
+        eventName: "booking_request_submitted",
         path: referrer,
         referrer,
         eventParams: {
-          booking_id: booking.id,
           shelter_slug: slug,
           payment_mode: shelter.payment_mode,
-          amount_total_dkk: amountTotalDkk,
-          payment_context: "upfront_booking",
+          guest_count,
+          nights: calculateBookingNights(check_in, check_out),
+          has_message: Boolean(message),
+          checkout_ready: Boolean(checkoutUrl),
         },
       });
+    } catch (err) {
+      console.error("book route: non-fatal analytics error:", err);
+    }
+
+    if (checkoutUrl && amountTotalDkk !== undefined) {
+      try {
+        await sendGa4Event({
+          headers: req.headers,
+          eventName: "payment_started",
+          path: referrer,
+          referrer,
+          eventParams: {
+            booking_id: booking.id,
+            shelter_slug: slug,
+            payment_mode: shelter.payment_mode,
+            amount_total_dkk: amountTotalDkk,
+            payment_context: "upfront_booking",
+          },
+        });
+      } catch (err) {
+        console.error("book route: non-fatal payment analytics error:", err);
+      }
     }
 
     return NextResponse.json(
-      { ok: true, bookingId: booking.id, checkoutUrl },
+      { ok: true, bookingId: booking.id, guestToken: booking.guest_token, checkoutUrl },
       { status: 201 }
     );
   } catch (err) {
+    if (err instanceof BookingConflictError) {
+      return NextResponse.json(
+        { error: "Disse datoer er desværre ikke længere ledige" },
+        { status: 409 }
+      );
+    }
     console.error("booking create error:", err);
     return NextResponse.json(
       { error: "Noget gik galt. Prøv igen." },

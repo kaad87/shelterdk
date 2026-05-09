@@ -4,6 +4,7 @@ import {
   updateBookingStatus,
   hasConfirmedOverlap,
   cancelBooking,
+  BookingConflictError,
 } from "@/lib/booking-db";
 import {
   sendBookingRejectedToGuest,
@@ -14,7 +15,11 @@ import {
   sendOwnerCancelledToGuest,
 } from "@/lib/booking-email";
 import { createCheckoutSession, calculateBookingAmounts } from "@/lib/stripe";
-import { createBookingPayment, getPaymentByBookingId } from "@/lib/payment-db";
+import {
+  createBookingPayment,
+  getPaymentByBookingId,
+  markPaymentExpiredBySessionId,
+} from "@/lib/payment-db";
 import { createAdminClient } from "@/utils/supabase/server-admin";
 import { sendGa4Event } from "@/lib/server-analytics";
 import { getAuthenticatedOwnerContext } from "@/lib/ejer-auth";
@@ -95,7 +100,10 @@ export async function POST(
     }
 
     if (shelter.payment_mode === "upfront") {
-      await updateBookingStatus(bookingId, "confirmed");
+      const updated = await updateBookingStatus(bookingId, "confirmed");
+      if (!updated) {
+        return NextResponse.json({ error: "Booking er allerede behandlet" }, { status: 409 });
+      }
       try {
         await sendBookingConfirmedToGuest({
           guestEmail: booking.guest_email,
@@ -127,51 +135,61 @@ export async function POST(
       return NextResponse.json({ ok: true, confirmationEmailSent });
     }
 
-    try {
-      const { url, sessionId } = await createCheckoutSession(booking, shelter);
-      const { shelterDkk, platformDkk, totalDkk } = calculateBookingAmounts({
-        checkIn: booking.check_in,
-        checkOut: booking.check_out,
-        shelterPriceDkk: shelter.shelter_price_dkk,
-        feePct: shelter.platform_fee_pct,
-        feeMinDkk: shelter.platform_fee_min_dkk,
-      });
-      await updateBookingStatus(bookingId, "confirmed");
-      await createBookingPayment({
-        bookingId,
-        stripeCheckoutSessionId: sessionId,
-        amountTotalDkk: totalDkk,
-        amountShelterDkk: shelterDkk,
-        amountPlatformDkk: platformDkk,
-      });
-      await sendPaymentRequestToGuest({
-        guestEmail: booking.guest_email,
-        guestName: booking.guest_name,
-        shelterTitle: shelter.title,
-        checkIn: booking.check_in,
-        checkOut: booking.check_out,
-        amountTotalDkk: totalDkk,
-        amountShelterDkk: shelterDkk,
-        amountPlatformDkk: platformDkk,
-        paymentUrl: url,
-        guestToken: booking.guest_token,
-      });
-      await sendGa4Event({
-        headers: req.headers,
-        eventName: "payment_started",
-        referrer: req.headers.get("referer") ?? undefined,
-        eventParams: {
-          booking_id: bookingId,
-          shelter_id: shelter.id,
-          payment_mode: shelter.payment_mode,
-          amount_total_dkk: totalDkk,
-          payment_context: "owner_confirm",
-        },
-      });
-    } catch (err) {
-      console.error("ejer confirm: payment setup error:", err);
-      return NextResponse.json(
-        { error: "Kunne ikke oprette betalingslink — prøv igen om et øjeblik" },
+      try {
+        const { url, sessionId } = await createCheckoutSession(booking, shelter);
+        const { shelterDkk, platformDkk, totalDkk } = calculateBookingAmounts({
+          checkIn: booking.check_in,
+          checkOut: booking.check_out,
+          shelterPriceDkk: shelter.shelter_price_dkk,
+          feePct: shelter.platform_fee_pct,
+          feeMinDkk: shelter.platform_fee_min_dkk,
+        });
+        await createBookingPayment({
+          bookingId,
+          stripeCheckoutSessionId: sessionId,
+          amountTotalDkk: totalDkk,
+          amountShelterDkk: shelterDkk,
+          amountPlatformDkk: platformDkk,
+        });
+        const updated = await updateBookingStatus(bookingId, "confirmed");
+        if (!updated) {
+          await markPaymentExpiredBySessionId(sessionId);
+          return NextResponse.json({ error: "Booking er allerede behandlet" }, { status: 409 });
+        }
+        await sendPaymentRequestToGuest({
+          guestEmail: booking.guest_email,
+          guestName: booking.guest_name,
+          shelterTitle: shelter.title,
+          checkIn: booking.check_in,
+          checkOut: booking.check_out,
+          amountTotalDkk: totalDkk,
+          amountShelterDkk: shelterDkk,
+          amountPlatformDkk: platformDkk,
+          paymentUrl: url,
+          guestToken: booking.guest_token,
+        });
+        await sendGa4Event({
+          headers: req.headers,
+          eventName: "payment_started",
+          referrer: req.headers.get("referer") ?? undefined,
+          eventParams: {
+            booking_id: bookingId,
+            shelter_id: shelter.id,
+            payment_mode: shelter.payment_mode,
+            amount_total_dkk: totalDkk,
+            payment_context: "owner_confirm",
+          },
+        });
+      } catch (err) {
+        if (err instanceof BookingConflictError) {
+          return NextResponse.json(
+            { error: "En anden aktiv booking overlapper disse datoer" },
+            { status: 409 }
+          );
+        }
+        console.error("ejer confirm: payment setup error:", err);
+        return NextResponse.json(
+          { error: "Kunne ikke oprette betalingslink — prøv igen om et øjeblik" },
         { status: 500 }
       );
     }
@@ -200,9 +218,13 @@ export async function POST(
       return NextResponse.json({ error: "Booking er allerede behandlet" }, { status: 409 });
     }
 
-    await updateBookingStatus(bookingId, "rejected");
+    const updated = await updateBookingStatus(bookingId, "rejected");
+    if (!updated) {
+      return NextResponse.json({ error: "Booking er allerede behandlet" }, { status: 409 });
+    }
 
     const payment = await getPaymentByBookingId(bookingId);
+    let refunded = false;
     if (shelter.payment_mode === "upfront" && payment?.status === "paid") {
       try {
         const { default: Stripe } = await import("stripe");
@@ -214,10 +236,14 @@ export async function POST(
         const pi = session.payment_intent as { id?: string };
         if (pi?.id) {
           await stripe.refunds.create({ payment_intent: pi.id });
+          refunded = true;
         }
       } catch (err) {
         console.error("ejer reject: Stripe refund error:", err);
       }
+    }
+
+    if (refunded && payment) {
       try {
         await sendRefundedToGuest({
           guestEmail: booking.guest_email,
@@ -252,7 +278,7 @@ export async function POST(
         booking_id: bookingId,
         shelter_id: shelter.id,
         payment_mode: shelter.payment_mode,
-        refunded: shelter.payment_mode === "upfront" && payment?.status === "paid",
+        refunded,
       },
     });
 

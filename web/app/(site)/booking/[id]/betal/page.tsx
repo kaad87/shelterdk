@@ -1,15 +1,19 @@
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/utils/supabase/server-admin";
-import { getPaymentByBookingId } from "@/lib/payment-db";
+import { getPaymentByBookingId, markPaymentExpired } from "@/lib/payment-db";
 import { createCheckoutSession, calculateBookingAmounts } from "@/lib/stripe";
 import { createBookingPayment } from "@/lib/payment-db";
 
 export const dynamic = "force-dynamic";
 
-interface Props { params: Promise<{ id: string }> }
+interface Props {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ t?: string }>;
+}
 
-export default async function BetalPage({ params }: Props) {
+export default async function BetalPage({ params, searchParams }: Props) {
   const { id } = await params;
+  const { t } = await searchParams;
 
   const { data: booking } = await createAdminClient()
     .from("shelter_bookings")
@@ -21,10 +25,14 @@ export default async function BetalPage({ params }: Props) {
     notFound();
   }
 
+  if (t && booking.guest_token !== t) {
+    notFound();
+  }
+
   const shelter = (booking as any).bookable_shelters;
   const payment = await getPaymentByBookingId(id);
 
-  if (payment?.status === "paid") {
+  if (payment?.status === "paid" && booking.status === "confirmed") {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center max-w-md p-8">
@@ -62,10 +70,12 @@ export default async function BetalPage({ params }: Props) {
           payment.stripe_checkout_session_id
         );
         checkoutUrl = session.url ?? null;
-      } else if (payment && payment.status === "pending" && new Date(payment.expires_at) <= new Date()) {
-        // Payment is pending but our expires_at has passed — show fallback
-        checkoutUrl = null;
       } else {
+        if (payment && payment.status === "pending" && new Date(payment.expires_at) <= new Date()) {
+          await markPaymentExpired(payment.id).catch((err) => {
+            console.error("betal page: could not mark expired payment:", err);
+          });
+        }
         // No active session — create a new one
         const { url, sessionId } = await createCheckoutSession(booking, shelter);
         await createBookingPayment({
@@ -121,9 +131,11 @@ export default async function BetalPage({ params }: Props) {
           </a>
         ) : (
           <p className="text-center text-primary/50 text-sm">
-            {booking.status === "pending"
+            {booking.status === "pending" && payment?.status === "paid"
+              ? "Din betaling er modtaget og afventer den endelige bekræftelse."
+              : booking.status === "pending"
               ? "Booking afventer bekræftelse fra ejeren."
-              : "Kontakt os for hjælp til din booking."}
+              : "Vi kunne ikke oprette et betalingslink lige nu. Prøv at genindlæse siden om et øjeblik."}
           </p>
         )}
       </div>

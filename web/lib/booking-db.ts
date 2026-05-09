@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/utils/supabase/server-admin";
+import { BOOKING_WINDOW_DAYS } from "@/lib/booking-config";
 import type {
   BookableShelter,
   ShelterBooking,
@@ -11,16 +12,81 @@ import type {
 
 /**
  * Returns true if a guest can get a full refund based on how far away check_in is.
- * check_in is a date string "YYYY-MM-DD" interpreted as midnight UTC.
+ * check_in is a date string "YYYY-MM-DD" interpreted as midnight in Denmark
+ * (Europe/Copenhagen), so refund cutoffs match the user-facing local date.
  * now defaults to current time — pass explicitly in tests for determinism.
  */
+function getZonedDateParts(date: Date, timeZone: string) {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    hour12: false,
+    hourCycle: "h23",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+  const parts = formatter.formatToParts(date);
+  const values = Object.fromEntries(
+    parts
+      .filter((part) => part.type !== "literal")
+      .map((part) => [part.type, part.value])
+  );
+
+  return {
+    year: Number(values.year),
+    month: Number(values.month),
+    day: Number(values.day),
+    hour: Number(values.hour),
+    minute: Number(values.minute),
+    second: Number(values.second),
+  };
+}
+
+function getTimeZoneMidnightUtc(checkIn: string, timeZone: string): Date {
+  const [year, month, day] = checkIn.split("-").map(Number);
+  let candidate = Date.UTC(year, month - 1, day, 0, 0, 0);
+
+  // Iterate a couple of times until the formatted local wall-clock matches
+  // the requested zoned midnight. This keeps us DST-safe without extra deps.
+  for (let i = 0; i < 4; i += 1) {
+    const parts = getZonedDateParts(new Date(candidate), timeZone);
+    const desiredWallClock = Date.UTC(year, month - 1, day, 0, 0, 0);
+    const actualWallClock = Date.UTC(
+      parts.year,
+      parts.month - 1,
+      parts.day,
+      parts.hour,
+      parts.minute,
+      parts.second
+    );
+    const delta = desiredWallClock - actualWallClock;
+    if (delta === 0) {
+      break;
+    }
+    candidate += delta;
+  }
+
+  return new Date(candidate);
+}
+
 export function isRefundEligible(
   checkIn: string,
   cutoffHours: number,
   now: Date = new Date()
 ): boolean {
-  const hoursUntilCheckIn = (new Date(checkIn).getTime() - now.getTime()) / 3_600_000;
+  const checkInStart = getTimeZoneMidnightUtc(checkIn, "Europe/Copenhagen");
+  const hoursUntilCheckIn = (checkInStart.getTime() - now.getTime()) / 3_600_000;
   return hoursUntilCheckIn > cutoffHours;
+}
+
+export class BookingConflictError extends Error {
+  constructor(message = "De valgte datoer er ikke længere ledige") {
+    super(message);
+    this.name = "BookingConflictError";
+  }
 }
 
 // ─── Shelter lookup ──────────────────────────────────────────────────────────
@@ -75,13 +141,13 @@ export async function listBookableSheltersByShelterDbId(
 
 /**
  * Returns all non-free dates for a shelter as a Record<isoDate, status>.
- * Only returns dates from today onwards (90 days window for performance).
+ * Only returns dates from today onwards (bounded booking window for performance).
  */
 export async function getUnavailableDates(
   bookableShelterDbId: string
 ): Promise<Record<string, "pending" | "confirmed" | "blocked">> {
   const today = new Date().toISOString().slice(0, 10);
-  const until = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
+  const until = new Date(Date.now() + BOOKING_WINDOW_DAYS * 24 * 60 * 60 * 1000)
     .toISOString()
     .slice(0, 10);
 
@@ -92,7 +158,7 @@ export async function getUnavailableDates(
       .eq("bookable_shelter_id", bookableShelterDbId)
       .in("status", ["pending", "confirmed"])
       .gte("check_out", today)
-      .lte("check_in", until), // cap at 90-day window
+      .lte("check_in", until), // cap at booking window
     createAdminClient()
       .from("shelter_blocked_dates")
       .select("blocked_date")
@@ -143,6 +209,9 @@ export async function createBooking(data: {
     .insert(data)
     .select()
     .single();
+  if (error?.code === "23P01") {
+    throw new BookingConflictError();
+  }
   if (error || !booking) throw new Error("Kunne ikke oprette booking: " + error?.message);
   return booking as ShelterBooking;
 }
@@ -182,51 +251,62 @@ export interface ActionTokenResult {
 export async function resolveActionToken(
   token: string
 ): Promise<ActionTokenResult | null> {
-  const { data: tokenRow } = await createAdminClient()
+  const { data: tokenRow, error } = await createAdminClient()
     .from("booking_action_tokens")
-    .select("*")
+    .select(`
+      *,
+      shelter_bookings!inner (
+        *,
+        bookable_shelters!inner (*)
+      )
+    `)
     .eq("token", token)
-    .single();
-  if (!tokenRow) return null;
+    .maybeSingle();
+  if (error) throw new Error("resolveActionToken: " + error.message);
+  if (!tokenRow?.shelter_bookings) return null;
 
-  const { data: booking } = await createAdminClient()
-    .from("shelter_bookings")
-    .select("*")
-    .eq("id", tokenRow.booking_id)
-    .single();
-  if (!booking) return null;
-
-  const { data: shelter } = await createAdminClient()
-    .from("bookable_shelters")
-    .select("*")
-    .eq("id", booking.bookable_shelter_id)
-    .single();
+  const booking = tokenRow.shelter_bookings as any;
+  const shelter = booking.bookable_shelters as any;
   if (!shelter) return null;
 
   return {
-    token: tokenRow as BookingActionToken,
+    token: {
+      id: tokenRow.id,
+      booking_id: tokenRow.booking_id,
+      action: tokenRow.action,
+      token: tokenRow.token,
+      expires_at: tokenRow.expires_at,
+      used_at: tokenRow.used_at,
+    } as BookingActionToken,
     booking: booking as ShelterBooking,
     shelter: shelter as BookableShelter,
   };
 }
 
 export async function markTokenUsed(tokenId: string): Promise<void> {
-  await createAdminClient()
+  const { error } = await createAdminClient()
     .from("booking_action_tokens")
     .update({ used_at: new Date().toISOString() })
     .eq("id", tokenId);
+  if (error) throw new Error("markTokenUsed: " + error.message);
 }
 
 export async function updateBookingStatus(
   bookingId: string,
   status: "confirmed" | "rejected"
-): Promise<void> {
+): Promise<boolean> {
   // Only update if still pending — prevents race conditions and double-processing
-  await createAdminClient()
+  const { data, error } = await createAdminClient()
     .from("shelter_bookings")
     .update({ status, updated_at: new Date().toISOString() })
     .eq("id", bookingId)
-    .eq("status", "pending");
+    .eq("status", "pending")
+    .select("id");
+  if (error?.code === "23P01") {
+    throw new BookingConflictError();
+  }
+  if (error) throw new Error("updateBookingStatus: " + error.message);
+  return (data ?? []).length > 0;
 }
 
 /**
@@ -240,6 +320,7 @@ export async function cancelPendingBooking(bookingId: string): Promise<boolean> 
     .update({
       status: "cancelled",
       cancelled_at: now,
+      cancelled_by: "system",
       updated_at: now,
     })
     .eq("id", bookingId)
@@ -257,17 +338,61 @@ export async function hasConfirmedOverlap(
   bookableShelterDbId: string,
   checkIn: string,
   checkOut: string,
-  excludeBookingId: string
+  excludeBookingId?: string | null
 ): Promise<boolean> {
-  const { data } = await createAdminClient()
+  let query = createAdminClient()
     .from("shelter_bookings")
     .select("id")
     .eq("bookable_shelter_id", bookableShelterDbId)
     .eq("status", "confirmed")
-    .neq("id", excludeBookingId)
     .lt("check_in", checkOut)
     .gt("check_out", checkIn);
+  if (excludeBookingId) {
+    query = query.neq("id", excludeBookingId);
+  }
+  const { data } = await query;
   return (data?.length ?? 0) > 0;
+}
+
+/**
+ * Returns true if the requested date range overlaps an existing booking
+ * (pending and/or confirmed) or a manually blocked date.
+ */
+export async function hasUnavailableOverlap(
+  bookableShelterDbId: string,
+  checkIn: string,
+  checkOut: string,
+  opts?: {
+    includePending?: boolean;
+    excludeBookingId?: string | null;
+  }
+): Promise<boolean> {
+  const includePending = opts?.includePending ?? true;
+  const statuses = includePending ? ["pending", "confirmed"] : ["confirmed"];
+
+  let bookingQuery = createAdminClient()
+      .from("shelter_bookings")
+      .select("id")
+      .eq("bookable_shelter_id", bookableShelterDbId)
+      .in("status", statuses)
+      .lt("check_in", checkOut)
+      .gt("check_out", checkIn);
+  if (opts?.excludeBookingId) {
+    bookingQuery = bookingQuery.neq("id", opts.excludeBookingId);
+  }
+
+  const [bookingOverlap, blockedOverlap] = await Promise.all([
+    bookingQuery,
+    createAdminClient()
+      .from("shelter_blocked_dates")
+      .select("blocked_date")
+      .eq("bookable_shelter_id", bookableShelterDbId)
+      .gte("blocked_date", checkIn)
+      .lt("blocked_date", checkOut)
+      .limit(1),
+  ]);
+
+  return (bookingOverlap.data?.length ?? 0) > 0 || (blockedOverlap.data?.length ?? 0) > 0;
 }
 
 // ─── Owner dashboard ─────────────────────────────────────────────────────────

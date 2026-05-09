@@ -132,8 +132,8 @@ export async function createCheckoutSession(
     locale: "da",
     line_items: lineItems,
     metadata: { booking_id: booking.id },
-    success_url: `${SITE_URL}/booking/${booking.id}/tak?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${SITE_URL}/booking/${booking.id}/betal`,
+    success_url: `${SITE_URL}/booking/${booking.id}/tak?t=${encodeURIComponent(booking.guest_token)}&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${SITE_URL}/booking/${booking.id}/betal?t=${encodeURIComponent(booking.guest_token)}`,
     expires_at: Math.floor(Date.now() / 1000) + 24 * 3600,
   });
 

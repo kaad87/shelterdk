@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { expireOldPayments } from "@/lib/payment-db";
 import { sendBookingExpired } from "@/lib/booking-email";
+import { cancelPendingBooking } from "@/lib/booking-db";
 import { createAdminClient } from "@/utils/supabase/server-admin";
 
 export const dynamic = "force-dynamic";
@@ -14,14 +15,16 @@ export async function GET(req: NextRequest) {
   const expiredBookingIds = await expireOldPayments();
 
   let cancelled = 0;
+  let skipped = 0;
   const errors: string[] = [];
 
-  for (const bookingId of expiredBookingIds) {
-    try {
-      await createAdminClient()
-        .from("shelter_bookings")
-        .update({ status: "cancelled" })
-        .eq("id", bookingId);
+  const results = await Promise.allSettled(
+    expiredBookingIds.map(async (bookingId) => {
+      const wasCancelled = await cancelPendingBooking(bookingId);
+      if (!wasCancelled) {
+        skipped += 1;
+        return;
+      }
 
       const { data: booking } = await createAdminClient()
         .from("shelter_bookings")
@@ -42,12 +45,17 @@ export async function GET(req: NextRequest) {
       }
 
       cancelled++;
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
+    })
+  );
+
+  results.forEach((result, index) => {
+    if (result.status === "rejected") {
+      const bookingId = expiredBookingIds[index];
+      const msg = result.reason instanceof Error ? result.reason.message : String(result.reason);
       console.error(`expire-payments: failed for booking ${bookingId}:`, msg);
       errors.push(`${bookingId}: ${msg}`);
     }
-  }
+  });
 
-  return NextResponse.json({ ok: true, cancelled, errors });
+  return NextResponse.json({ ok: true, cancelled, skipped, errors });
 }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { DayPicker, type DateRange } from "react-day-picker";
 import { da } from "react-day-picker/locale";
+import { BOOKING_WINDOW_DAYS } from "@/lib/booking-config";
 
 interface BookingCalendarProps {
   unavailableDates: Record<string, "pending" | "confirmed" | "blocked">;
@@ -22,6 +23,8 @@ export function BookingCalendar({ unavailableDates, onRangeSelect }: BookingCale
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const latestBookableDate = new Date(Date.now() + BOOKING_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+  latestBookableDate.setHours(0, 0, 0, 0);
 
   const handleSelect = (r: DateRange | undefined) => {
     setRange(r);
@@ -39,6 +42,7 @@ export function BookingCalendar({ unavailableDates, onRangeSelect }: BookingCale
         selected={range}
         onSelect={handleSelect}
         locale={da}
+        toDate={latestBookableDate}
         disabled={(d) => d < today || !!unavailableDates[toIso(d)]}
         modifiers={{
           confirmed: (d) => unavailableDates[toIso(d)] === "confirmed",
@@ -94,6 +98,9 @@ export function BookingCalendar({ unavailableDates, onRangeSelect }: BookingCale
           Optaget
         </span>
       </div>
+      <p className="mt-3 text-xs text-primary/35">
+        Du kan booke op til {BOOKING_WINDOW_DAYS} dage frem.
+      </p>
 
       <style>{`
         /* Range: connected highlight across cells */
