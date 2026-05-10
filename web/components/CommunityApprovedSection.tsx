@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { Shelter } from "@/types/shelter";
 import { FACILITY_FIELDS, type FacilityFieldKey, type TriStateValue } from "@/lib/community";
 
 type CommunityComment = {
@@ -15,7 +14,6 @@ type CommunityFacts = Partial<Record<FacilityFieldKey, TriStateValue>>;
 
 interface CommunityApprovedSectionProps {
   slug: string;
-  shelter: Shelter;
 }
 
 function formatFactValue(value: TriStateValue): string {
@@ -24,7 +22,7 @@ function formatFactValue(value: TriStateValue): string {
   return "Ved ikke";
 }
 
-export function CommunityApprovedSection({ slug, shelter }: CommunityApprovedSectionProps) {
+export function CommunityApprovedSection({ slug }: CommunityApprovedSectionProps) {
   const [comments, setComments] = useState<CommunityComment[]>([]);
   const [facts, setFacts] = useState<CommunityFacts>({});
   const [loading, setLoading] = useState(true);
@@ -59,11 +57,7 @@ export function CommunityApprovedSection({ slug, shelter }: CommunityApprovedSec
     [facts]
   );
 
-  const communityPhotos = Array.isArray(shelter.user_image_urls)
-    ? shelter.user_image_urls.filter((u) => typeof u === "string" && u.trim().length > 0)
-    : [];
-
-  if (!loading && factRows.length === 0 && comments.length === 0 && communityPhotos.length === 0) {
+  if (!loading && factRows.length === 0 && comments.length === 0) {
     return null;
   }
 
@@ -91,30 +85,6 @@ export function CommunityApprovedSection({ slug, shelter }: CommunityApprovedSec
                   >
                     {row.label}: <strong>{formatFactValue(row.value as TriStateValue)}</strong>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {communityPhotos.length > 0 && (
-            <div>
-              <h3 className="font-semibold text-primary mb-2">Godkendte community-billeder</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {communityPhotos.slice(0, 6).map((url) => (
-                  <a
-                    key={url}
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block overflow-hidden rounded-lg border border-primary/10 bg-white"
-                  >
-                    <img
-                      src={url}
-                      alt={`Community-billede af ${shelter.title || "shelter"}`}
-                      className="h-28 w-full object-cover"
-                      loading="lazy"
-                    />
-                  </a>
                 ))}
               </div>
             </div>

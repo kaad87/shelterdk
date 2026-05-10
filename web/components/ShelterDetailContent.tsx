@@ -398,7 +398,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
 
             <div className="mb-6">
               <CommunityContributionPanel slug={slug} />
-              <CommunityApprovedSection slug={slug} shelter={shelter} />
+              <CommunityApprovedSection slug={slug} />
             </div>
 
             {facilityLinks.length > 0 && (
