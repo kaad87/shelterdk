@@ -16,7 +16,9 @@ vi.mock("stripe", () => ({
 const mockConstructWebhookEvent = vi.fn();
 const mockGetPaymentBySessionId = vi.fn();
 const mockMarkPaymentPaid = vi.fn();
+const mockMarkPaymentFailed = vi.fn();
 const mockMarkPaymentExpired = vi.fn();
+const mockExpireSiblingPendingPayments = vi.fn();
 const mockSendPaymentConfirmed = vi.fn();
 const mockSendBookingExpired = vi.fn();
 const mockSendRefundedToGuest = vi.fn();
@@ -30,7 +32,9 @@ vi.mock("@/lib/stripe", () => ({
 vi.mock("@/lib/payment-db", () => ({
   getPaymentBySessionId: mockGetPaymentBySessionId,
   markPaymentPaid: mockMarkPaymentPaid,
+  markPaymentFailed: mockMarkPaymentFailed,
   markPaymentExpired: mockMarkPaymentExpired,
+  expireSiblingPendingPayments: mockExpireSiblingPendingPayments,
 }));
 
 vi.mock("@/lib/booking-email", () => ({
@@ -57,6 +61,7 @@ vi.mock("@/utils/supabase/server-admin", () => ({
             if (table === "shelter_bookings") {
               return {
                 data: {
+                  status: "pending",
                   guest_email: "guest@test.dk",
                   guest_name: "Lars",
                   guest_token: "guest-token-1",
@@ -83,6 +88,8 @@ describe("POST /api/stripe/webhook", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUpdateBookingStatus.mockResolvedValue(true);
+    mockExpireSiblingPendingPayments.mockResolvedValue(undefined);
+    mockMarkPaymentFailed.mockResolvedValue(undefined);
   });
 
   it("auto-bekræfter upfront booking ved completed checkout", async () => {
@@ -109,6 +116,7 @@ describe("POST /api/stripe/webhook", () => {
 
     expect(res.status).toBe(200);
     expect(mockMarkPaymentPaid).toHaveBeenCalledWith("payment-1");
+    expect(mockExpireSiblingPendingPayments).toHaveBeenCalledWith("booking-1", "payment-1");
     expect(mockUpdateBookingStatus).toHaveBeenCalledWith("booking-1", "confirmed");
     expect(mockSendPaymentConfirmed).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -179,6 +187,42 @@ describe("POST /api/stripe/webhook", () => {
 
     expect(res.status).toBe(200);
     expect(mockMarkPaymentPaid).toHaveBeenCalledWith("payment-1");
+    expect(mockMarkPaymentFailed).toHaveBeenCalledWith("payment-1");
+    expect(mockSendPaymentConfirmed).not.toHaveBeenCalled();
+    expect(mockSendRefundedToGuest).toHaveBeenCalledWith(
+      expect.objectContaining({
+        guestEmail: "guest@test.dk",
+        refundStatus: "refunded",
+        amountTotalDkk: 225,
+      })
+    );
+  });
+
+  it("refunderer et completed checkout fra et gammelt eller ugyldigt betalingslink", async () => {
+    mockConstructWebhookEvent.mockReturnValue({
+      type: "checkout.session.completed",
+      data: { object: { id: "cs_old" } },
+    });
+    mockGetPaymentBySessionId.mockResolvedValue({
+      id: "payment-old",
+      booking_id: "booking-1",
+      status: "expired",
+      paid_at: null,
+      amount_total_dkk: 225,
+    });
+
+    const { POST } = await import("../stripe/webhook/route");
+    const res = await POST(
+      new Request("http://localhost/api/stripe/webhook", {
+        method: "POST",
+        body: "{}",
+        headers: { "stripe-signature": "sig_test" },
+      }) as never
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockMarkPaymentPaid).not.toHaveBeenCalled();
+    expect(mockMarkPaymentFailed).toHaveBeenCalledWith("payment-old");
     expect(mockSendPaymentConfirmed).not.toHaveBeenCalled();
     expect(mockSendRefundedToGuest).toHaveBeenCalledWith(
       expect.objectContaining({

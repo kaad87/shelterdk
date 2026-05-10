@@ -91,7 +91,11 @@ export function calculateBookingAmounts(opts: {
  */
 export async function createCheckoutSession(
   booking: ShelterBooking,
-  shelter: BookableShelter
+  shelter: BookableShelter,
+  amountsOverride?: {
+    shelterDkk: number;
+    platformDkk: number;
+  }
 ): Promise<{ url: string; sessionId: string }> {
   const stripe = getStripe();
 
@@ -103,17 +107,19 @@ export async function createCheckoutSession(
     feePct: shelter.platform_fee_pct,
     feeMinDkk: shelter.platform_fee_min_dkk,
   });
+  const resolvedShelterDkk = amountsOverride?.shelterDkk ?? shelterDkk;
+  const resolvedPlatformDkk = amountsOverride?.platformDkk ?? platformDkk;
 
   const lineItems: any[] = [];
 
-  if (shelterDkk > 0) {
+  if (resolvedShelterDkk > 0) {
     lineItems.push({
       price_data: {
         currency: "dkk",
         product_data: { name: `Overnatning: ${shelter.title}` },
-        unit_amount: pricePerNightDkk * 100, // øre pr. nat
+        unit_amount: amountsOverride ? resolvedShelterDkk * 100 : pricePerNightDkk * 100,
       },
-      quantity: nights,
+      quantity: amountsOverride ? 1 : nights,
     });
   }
 
@@ -121,7 +127,7 @@ export async function createCheckoutSession(
     price_data: {
       currency: "dkk",
       product_data: { name: "Administrationsgebyr inkl. moms (ShelterDK)" },
-      unit_amount: platformDkk * 100, // øre
+      unit_amount: resolvedPlatformDkk * 100, // øre
     },
     quantity: 1,
   });
@@ -139,6 +145,27 @@ export async function createCheckoutSession(
 
   if (!session.url) throw new Error("Stripe session created but no URL returned");
   return { url: session.url, sessionId: session.id };
+}
+
+/**
+ * Expire an open Stripe Checkout Session.
+ * Non-open sessions cannot be expired and are ignored.
+ */
+export async function expireCheckoutSession(sessionId: string): Promise<void> {
+  const stripe = getStripe();
+  try {
+    await stripe.checkout.sessions.expire(sessionId);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (
+      message.includes("cannot be expired") ||
+      message.includes("already completed") ||
+      message.includes("already expired")
+    ) {
+      return;
+    }
+    throw err;
+  }
 }
 
 /**

@@ -1,7 +1,11 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getBookingByGuestToken, getBookableShelterByPk, isRefundEligible } from "@/lib/booking-db";
-import { getPaymentByBookingId } from "@/lib/payment-db";
+import {
+  getLatestPaidPayment,
+  getLatestPendingPayment,
+  listPaymentsByBookingId,
+} from "@/lib/payment-db";
 import { BookingPageClient } from "./BookingPageClient";
 
 interface Props { params: Promise<{ guestToken: string }> }
@@ -21,19 +25,21 @@ export default async function GuestBookingPage({ params }: Props) {
 
   const shelter = await getBookableShelterByPk(booking.bookable_shelter_id);
   if (!shelter) notFound();
-  const payment = await getPaymentByBookingId(booking.id);
+  const payments = await listPaymentsByBookingId(booking.id);
+  const paidPayment = getLatestPaidPayment(payments);
+  const pendingPayment = getLatestPendingPayment(payments);
 
   const refundEligible = booking.status === "confirmed"
     ? isRefundEligible(booking.check_in, shelter.cancellation_cutoff_hours)
     : false;
   const paymentHref =
-    booking.status === "confirmed" &&
+    ["pending", "confirmed"].includes(booking.status) &&
     booking.source !== "owner_manual" &&
     shelter.payment_mode === "upfront" &&
-    payment?.status !== "paid"
+    !paidPayment
       ? `/booking/${booking.id}/betal?t=${encodeURIComponent(guestToken)}`
       : null;
-  const paymentLabel = payment?.status === "pending" ? "Fortsæt betaling" : "Betal booking";
+  const paymentLabel = pendingPayment ? "Fortsæt betaling" : "Betal booking";
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">

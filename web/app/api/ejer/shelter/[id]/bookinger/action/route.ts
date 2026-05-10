@@ -14,10 +14,18 @@ import {
   sendBookingAutoMessage,
   sendOwnerCancelledToGuest,
 } from "@/lib/booking-email";
-import { createCheckoutSession, calculateBookingAmounts } from "@/lib/stripe";
+import {
+  createCheckoutSession,
+  calculateBookingAmounts,
+  expireCheckoutSession,
+} from "@/lib/stripe";
 import {
   createBookingPayment,
-  getPaymentByBookingId,
+  expireSiblingPendingPayments,
+  getLatestPendingPayment,
+  getLatestPaidPayment,
+  listPendingPaymentsByBookingId,
+  listPaymentsByBookingId,
   markPaymentExpiredBySessionId,
 } from "@/lib/payment-db";
 import { createAdminClient } from "@/utils/supabase/server-admin";
@@ -148,12 +156,15 @@ export async function POST(
           feePct: shelter.platform_fee_pct,
           feeMinDkk: shelter.platform_fee_min_dkk,
         });
-        await createBookingPayment({
+        const created = await createBookingPayment({
           bookingId,
           stripeCheckoutSessionId: sessionId,
           amountTotalDkk: totalDkk,
           amountShelterDkk: shelterDkk,
           amountPlatformDkk: platformDkk,
+        });
+        await expireSiblingPendingPayments(bookingId, created.id).catch((err) => {
+          console.error("ejer confirm: could not expire sibling pending payments:", err);
         });
         const updated = await updateBookingStatus(bookingId, "confirmed");
         if (!updated) {
@@ -242,7 +253,7 @@ export async function POST(
       return NextResponse.json({ error: "Booking er allerede behandlet" }, { status: 409 });
     }
 
-    const payment = await getPaymentByBookingId(bookingId);
+    const payment = getLatestPaidPayment(await listPaymentsByBookingId(bookingId));
     let refunded = false;
     if (shelter.payment_mode === "upfront" && payment?.status === "paid") {
       try {
@@ -316,8 +327,11 @@ export async function POST(
       return NextResponse.json({ error: "Booking er ikke bekræftet" }, { status: 409 });
     }
 
-    const existing = await getPaymentByBookingId(bookingId);
-    if (existing?.status === "paid") {
+    const payments = await listPaymentsByBookingId(bookingId);
+    const paidPayment = getLatestPaidPayment(payments);
+    const existing = getLatestPendingPayment(payments);
+    const latestQuotedPayment = payments[0] ?? null;
+    if (paidPayment) {
       return NextResponse.json({ error: "Betaling allerede gennemført" }, { status: 409 });
     }
 
@@ -359,21 +373,38 @@ export async function POST(
     }
 
     try {
-      const { url, sessionId } = await createCheckoutSession(booking, shelter);
-      const { shelterDkk, platformDkk, totalDkk } = calculateBookingAmounts({
+      const fallbackAmounts = calculateBookingAmounts({
         checkIn: booking.check_in,
         checkOut: booking.check_out,
         shelterPriceDkk: shelter.shelter_price_dkk,
         feePct: shelter.platform_fee_pct,
         feeMinDkk: shelter.platform_fee_min_dkk,
       });
-      await createBookingPayment({
+      const shelterDkk = latestQuotedPayment?.amount_shelter_dkk ?? fallbackAmounts.shelterDkk;
+      const platformDkk = latestQuotedPayment?.amount_platform_dkk ?? fallbackAmounts.platformDkk;
+      const totalDkk = latestQuotedPayment?.amount_total_dkk ?? fallbackAmounts.totalDkk;
+      const { url, sessionId } = await createCheckoutSession(booking, shelter, {
+        shelterDkk,
+        platformDkk,
+      });
+      const stalePayments = await listPendingPaymentsByBookingId(bookingId);
+      const created = await createBookingPayment({
         bookingId,
         stripeCheckoutSessionId: sessionId,
         amountTotalDkk: totalDkk,
         amountShelterDkk: shelterDkk,
         amountPlatformDkk: platformDkk,
       });
+      await expireSiblingPendingPayments(bookingId, created.id).catch((err) => {
+        console.error("ejer resend-payment: could not expire sibling pending payments:", err);
+      });
+      await Promise.all(
+        stalePayments.map((payment) =>
+          expireCheckoutSession(payment.stripe_checkout_session_id).catch((err) => {
+            console.error("ejer resend-payment: could not expire sibling Stripe session:", err);
+          })
+        )
+      );
       await sendPaymentRequestToGuest({
         guestEmail: booking.guest_email,
         guestName: booking.guest_name,
@@ -419,7 +450,19 @@ export async function POST(
       );
     }
 
-    const payment = await getPaymentByBookingId(bookingId);
+    const stalePayments = await listPendingPaymentsByBookingId(bookingId);
+    await expireSiblingPendingPayments(bookingId).catch((err) => {
+      console.error("ejer cancel: could not expire pending payment rows:", err);
+    });
+    await Promise.all(
+      stalePayments.map((payment) =>
+        expireCheckoutSession(payment.stripe_checkout_session_id).catch((err) => {
+          console.error("ejer cancel: could not expire Stripe session:", err);
+        })
+      )
+    );
+
+    const payment = getLatestPaidPayment(await listPaymentsByBookingId(bookingId));
     let refunded = false;
     let refundStatus: "refunded" | "manual_follow_up" | "not_refunded" = "not_refunded";
     if (booking.source !== "owner_manual" && payment?.status === "paid") {

@@ -16,6 +16,7 @@ vi.mock("stripe", () => ({
 
 vi.mock("@/lib/stripe", () => ({
   createCheckoutSession: vi.fn().mockResolvedValue({ url: "https://stripe.com/pay", sessionId: "cs_test" }),
+  expireCheckoutSession: vi.fn().mockResolvedValue(undefined),
   calculateFee: vi.fn().mockReturnValue({ shelterDkk: 100, platformDkk: 25, totalDkk: 125 }),
   calculateBookingAmounts: vi.fn().mockReturnValue({ nights: 2, shelterDkk: 200, platformDkk: 25, totalDkk: 225 }),
   calculateBookingNights: vi.fn().mockReturnValue(2),
@@ -23,11 +24,18 @@ vi.mock("@/lib/stripe", () => ({
 }));
 
 vi.mock("@/lib/payment-db", () => ({
-  createBookingPayment: vi.fn().mockResolvedValue(undefined),
+  createBookingPayment: vi.fn().mockResolvedValue({ id: "payment-new" }),
   getPaymentByBookingId: vi.fn().mockResolvedValue(null),
+  listPaymentsByBookingId: vi.fn().mockResolvedValue([]),
+  listPendingPaymentsByBookingId: vi.fn().mockResolvedValue([]),
+  getLatestPaidPayment: vi.fn((payments: Array<{ status: string }>) => payments.find((p) => p.status === "paid") ?? null),
+  getLatestPendingPayment: vi.fn((payments: Array<{ status: string }>) => payments.find((p) => p.status === "pending") ?? null),
+  expireSiblingPendingPayments: vi.fn().mockResolvedValue(undefined),
   getPaymentBySessionId: vi.fn().mockResolvedValue(null),
   markPaymentPaid: vi.fn().mockResolvedValue(undefined),
+  markPaymentFailed: vi.fn().mockResolvedValue(undefined),
   expireOldPayments: vi.fn().mockResolvedValue([]),
+  markPaymentExpired: vi.fn().mockResolvedValue(undefined),
 }));
 
 // ── Mocks ────────────────────────────────────────────────────────────────────

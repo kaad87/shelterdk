@@ -146,11 +146,13 @@ export function BookingPageClient({
         {booking.message && <Row label="Din besked" value={booking.message} />}
       </div>
 
-      {status === "confirmed" && paymentHref && (
+      {(status === "pending" || status === "confirmed") && paymentHref && (
         <div className="mb-8 bg-[#fff8ee] border border-[#ead7b1] rounded-xl p-5">
           <h2 className="text-base font-semibold text-[#2C3E50] mb-2">Din booking mangler betaling</h2>
           <p className="text-sm text-gray-700 mb-4">
-            Din plads er bekræftet, men betalingen er ikke færdig endnu. Du kan fortsætte her.
+            {status === "confirmed"
+              ? "Din plads er bekræftet, men betalingen er ikke færdig endnu. Du kan fortsætte her."
+              : "Din betaling er ikke færdig endnu. Du kan fortsætte her og vende tilbage til Stripe."}
           </p>
           <a
             href={paymentHref}

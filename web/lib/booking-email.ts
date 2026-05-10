@@ -310,6 +310,7 @@ export async function sendPaymentRequestToGuest(opts: {
   guestToken: string;
 }) {
   const { vatDkk } = calculateVatIncludedBreakdown(opts.amountPlatformDkk);
+  const bookingUrl = bookingLink(opts.guestToken);
   const overnatningRow = opts.amountShelterDkk > 0
     ? `<tr><td style="font-size:12px;color:#666;padding:4px 0;">Overnatning</td><td style="font-size:12px;text-align:right;padding:4px 0;">${opts.amountShelterDkk} kr</td></tr>`
     : "";
@@ -332,8 +333,9 @@ export async function sendPaymentRequestToGuest(opts: {
           <tr style="border-top:1px solid #e5e1d8;"><td style="font-size:13px;font-weight:600;color:#2C3E50;padding:6px 0;">I alt</td><td style="font-size:13px;font-weight:600;text-align:right;padding:6px 0;">${opts.amountTotalDkk} kr</td></tr>
         </table>
         <p style="font-size:12px;color:#999;margin:0 0 8px;">Heraf ${vatDkk.toFixed(2).replace(".", ",")} kr moms.</p>
-        <p style="font-size:12px;color:#999;margin:0 0 16px;">Betalingslinket udløber om 24 timer.</p>
+        <p style="font-size:12px;color:#999;margin:0 0 16px;">Betalingslinket udløber om 24 timer. Hvis du afbryder betalingen eller dit kort fejler, kan du altid fortsætte via din booking.</p>
         <a href="${opts.paymentUrl}" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">Betal nu via MobilePay</a>
+        <p style="font-size:12px;color:#999;margin:12px 0 0;">Du kan også åbne din booking her: <a href="${bookingUrl}" style="color:#c5a059;">${bookingUrl}</a></p>
       `,
     }),
     text: renderEmailText({
@@ -344,8 +346,9 @@ export async function sendPaymentRequestToGuest(opts: {
         `I alt: ${opts.amountTotalDkk} kr (heraf ${opts.amountPlatformDkk} kr administrationsgebyr inkl. moms).`,
         `Momsandel i gebyret: ${vatDkk.toFixed(2).replace(".", ",")} kr.`,
         "Betalingslinket udløber om 24 timer.",
+        "Hvis du afbryder betalingen eller dit kort fejler, kan du fortsætte via din booking.",
       ],
-      url: opts.paymentUrl,
+      url: bookingUrl,
     }),
   });
   if (error) throw new Error("Email-fejl (gæst betaling): " + JSON.stringify(error));

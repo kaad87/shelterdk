@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/utils/supabase/server-admin";
-import { getPaymentByBookingId } from "@/lib/payment-db";
+import {
+  getLatestPaidPayment,
+  getLatestPendingPayment,
+  listPaymentsByBookingId,
+} from "@/lib/payment-db";
 
 export const dynamic = "force-dynamic";
 
@@ -29,9 +33,11 @@ export default async function TakPage({ params, searchParams }: Props) {
   if (!booking) notFound();
   if (!t || booking.guest_token !== t) notFound();
 
-  const payment = await getPaymentByBookingId(id);
-  const sessionMatches = !session_id || payment?.stripe_checkout_session_id === session_id;
-  const isConfirmed = booking.status === "confirmed" && payment?.status === "paid" && sessionMatches;
+  const payments = await listPaymentsByBookingId(id);
+  const paidPayment = getLatestPaidPayment(payments);
+  const pendingPayment = getLatestPendingPayment(payments);
+  const sessionMatches = !session_id || paidPayment?.stripe_checkout_session_id === session_id;
+  const isConfirmed = booking.status === "confirmed" && !!paidPayment && sessionMatches;
   const paymentHref = `/booking/${id}/betal?t=${encodeURIComponent(t)}`;
   const refreshParams = new URLSearchParams();
   if (session_id) refreshParams.set("session_id", session_id);
@@ -61,7 +67,7 @@ export default async function TakPage({ params, searchParams }: Props) {
     );
   }
 
-  const isStillProcessing = payment?.status === "pending" || booking.status === "pending";
+  const isStillProcessing = !!pendingPayment || booking.status === "pending";
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#F9FAFB] px-5">
@@ -76,18 +82,28 @@ export default async function TakPage({ params, searchParams }: Props) {
             : "Vi kunne ikke se en gennemført betaling på denne booking. Hvis du stadig vil gennemføre bookingen, kan du gå tilbage til betalingssiden."}
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link
-            href={paymentHref}
-            className="inline-block bg-[#c5a059] text-white font-semibold px-6 py-3 rounded-xl hover:bg-[#b38f48] transition-colors"
-          >
-            Gå til betalingssiden
-          </Link>
+          {!isStillProcessing && (
+            <Link
+              href={paymentHref}
+              className="inline-block bg-[#c5a059] text-white font-semibold px-6 py-3 rounded-xl hover:bg-[#b38f48] transition-colors"
+            >
+              Gå til betalingssiden
+            </Link>
+          )}
           <Link
             href={refreshHref}
             className="inline-block border border-primary/15 text-primary font-semibold px-6 py-3 rounded-xl hover:bg-primary/5 transition-colors"
           >
             Opdatér siden
           </Link>
+          {isStillProcessing && (
+            <Link
+              href={`/min-booking/${encodeURIComponent(t)}`}
+              className="inline-block border border-primary/15 text-primary font-semibold px-6 py-3 rounded-xl hover:bg-primary/5 transition-colors"
+            >
+              Gå til min booking
+            </Link>
+          )}
         </div>
       </div>
     </div>

@@ -6,12 +6,18 @@ import {
   isRefundEligible,
   cancelPendingBooking,
 } from "@/lib/booking-db";
-import { getPaymentByBookingId } from "@/lib/payment-db";
+import {
+  expireSiblingPendingPayments,
+  getLatestPaidPayment,
+  listPendingPaymentsByBookingId,
+  listPaymentsByBookingId,
+} from "@/lib/payment-db";
 import {
   sendGuestCancelledToGuest,
   sendGuestCancelledToOwner,
 } from "@/lib/booking-email";
 import { sendGa4Event } from "@/lib/server-analytics";
+import { expireCheckoutSession } from "@/lib/stripe";
 
 export const dynamic = "force-dynamic";
 
@@ -50,12 +56,24 @@ export async function POST(
     );
   }
 
+  const stalePayments = await listPendingPaymentsByBookingId(booking.id);
+  await expireSiblingPendingPayments(booking.id).catch((err) => {
+    console.error("guest cancel: could not expire pending payment rows:", err);
+  });
+  await Promise.all(
+    stalePayments.map((payment) =>
+      expireCheckoutSession(payment.stripe_checkout_session_id).catch((err) => {
+        console.error("guest cancel: could not expire Stripe session:", err);
+      })
+    )
+  );
+
   // Determine refund eligibility + issue Stripe refund if applicable
   const refundEligible = !wasPending && isRefundEligible(
     booking.check_in,
     shelter.cancellation_cutoff_hours
   );
-  const payment = await getPaymentByBookingId(booking.id);
+  const payment = getLatestPaidPayment(await listPaymentsByBookingId(booking.id));
   let refunded = false;
   let refundStatus: "refunded" | "manual_follow_up" | "not_refunded" = "not_refunded";
   let notice = wasPending

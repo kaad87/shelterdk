@@ -55,6 +55,50 @@ export async function getPaymentByBookingId(
   return data ?? null;
 }
 
+/** List all payments for a booking, newest first. */
+export async function listPaymentsByBookingId(
+  bookingId: string
+): Promise<BookingPayment[]> {
+  const { data, error } = await createAdminClient()
+    .from("booking_payments")
+    .select("*")
+    .eq("booking_id", bookingId)
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as BookingPayment[];
+}
+
+/** List pending payments for a booking, newest first, optionally excluding one row. */
+export async function listPendingPaymentsByBookingId(
+  bookingId: string,
+  exceptPaymentId?: string | null
+): Promise<BookingPayment[]> {
+  let query = createAdminClient()
+    .from("booking_payments")
+    .select("*")
+    .eq("booking_id", bookingId)
+    .eq("status", "pending")
+    .order("created_at", { ascending: false });
+
+  if (exceptPaymentId) {
+    query = query.neq("id", exceptPaymentId);
+  }
+
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+  return (data ?? []) as BookingPayment[];
+}
+
+/** Prefer a completed payment over any newer pending/expired rows. */
+export function getLatestPaidPayment(payments: BookingPayment[]): BookingPayment | null {
+  return payments.find((payment) => payment.status === "paid") ?? null;
+}
+
+/** Return the newest pending payment row. */
+export function getLatestPendingPayment(payments: BookingPayment[]): BookingPayment | null {
+  return payments.find((payment) => payment.status === "pending") ?? null;
+}
+
 /** Mark a payment as paid — idempotent (only updates if paid_at is null) */
 export async function markPaymentPaid(paymentId: string): Promise<void> {
   const { error } = await createAdminClient()
@@ -63,6 +107,15 @@ export async function markPaymentPaid(paymentId: string): Promise<void> {
     .eq("id", paymentId)
     .is("paid_at", null);
   if (error) throw new Error("markPaymentPaid: " + error.message);
+}
+
+/** Mark a payment as failed/refunded-recovery-needed without erasing paid_at history. */
+export async function markPaymentFailed(paymentId: string): Promise<void> {
+  const { error } = await createAdminClient()
+    .from("booking_payments")
+    .update({ status: "failed" })
+    .eq("id", paymentId);
+  if (error) throw new Error("markPaymentFailed: " + error.message);
 }
 
 /** Mark a payment as expired if it is still pending. */
@@ -83,6 +136,25 @@ export async function markPaymentExpiredBySessionId(sessionId: string): Promise<
     .eq("stripe_checkout_session_id", sessionId)
     .eq("status", "pending");
   if (error) throw new Error("markPaymentExpiredBySessionId: " + error.message);
+}
+
+/** Expire any other pending payment rows for the same booking. */
+export async function expireSiblingPendingPayments(
+  bookingId: string,
+  exceptPaymentId?: string | null
+): Promise<void> {
+  let query = createAdminClient()
+    .from("booking_payments")
+    .update({ status: "expired" })
+    .eq("booking_id", bookingId)
+    .eq("status", "pending");
+
+  if (exceptPaymentId) {
+    query = query.neq("id", exceptPaymentId);
+  }
+
+  const { error } = await query;
+  if (error) throw new Error("expireSiblingPendingPayments: " + error.message);
 }
 
 /**

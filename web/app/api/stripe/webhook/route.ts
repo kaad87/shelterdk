@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { constructWebhookEvent } from "@/lib/stripe";
-import { getPaymentBySessionId, markPaymentExpired, markPaymentPaid } from "@/lib/payment-db";
+import {
+  expireSiblingPendingPayments,
+  getPaymentBySessionId,
+  markPaymentExpired,
+  markPaymentFailed,
+  markPaymentPaid,
+} from "@/lib/payment-db";
 import { sendBookingExpired, sendPaymentConfirmed, sendRefundedToGuest } from "@/lib/booking-email";
 import {
   BookingConflictError,
@@ -27,6 +33,16 @@ async function refundCheckoutSession(sessionId: string): Promise<boolean> {
     console.error("Webhook: refund after failed auto-confirm failed:", err);
     return false;
   }
+}
+
+function canAcceptCompletedPayment(params: {
+  paymentStatus: string;
+  bookingStatus: string;
+  paymentMode: "after_confirmation" | "upfront";
+}) {
+  if (params.paymentStatus !== "pending") return false;
+  if (params.paymentMode === "upfront") return params.bookingStatus === "pending";
+  return params.bookingStatus === "confirmed";
 }
 
 // IMPORTANT: Do NOT parse body as JSON — Stripe needs the raw bytes for signature verification
@@ -56,18 +72,60 @@ export async function POST(req: NextRequest) {
     // Idempotent: already processed
     if (payment.paid_at) return NextResponse.json({ ok: true });
 
-    await markPaymentPaid(payment.id);
-
-    // Send confirmation emails (non-critical — don't fail the webhook)
     try {
       const { data: booking } = await createAdminClient()
         .from("shelter_bookings")
-        .select("guest_email, guest_name, guest_token, check_in, check_out, bookable_shelters!inner(owner_email, owner_token, title, payment_mode)")
+        .select("status, guest_email, guest_name, guest_token, check_in, check_out, bookable_shelters!inner(owner_email, owner_token, title, payment_mode)")
         .eq("id", payment.booking_id)
         .single();
 
-      if (booking) {
-        const shelter = (booking as any).bookable_shelters;
+      if (!booking) {
+        console.error("Webhook: booking missing for payment", payment.id);
+        return NextResponse.json({ ok: true });
+      }
+
+      const shelter = (booking as any).bookable_shelters as {
+        owner_email: string;
+        owner_token: string;
+        title: string;
+        payment_mode: "after_confirmation" | "upfront";
+      };
+
+      if (
+        !canAcceptCompletedPayment({
+          paymentStatus: payment.status,
+          bookingStatus: booking.status,
+          paymentMode: shelter.payment_mode,
+        })
+      ) {
+        const refundStatus = (await refundCheckoutSession(session.id))
+          ? "refunded"
+          : "manual_follow_up";
+        await markPaymentFailed(payment.id).catch((err) => {
+          console.error("Webhook: could not mark invalid completed payment as failed:", err);
+        });
+        try {
+          await sendRefundedToGuest({
+            guestEmail: booking.guest_email,
+            guestName: booking.guest_name,
+            shelterTitle: shelter.title,
+            checkIn: booking.check_in,
+            checkOut: booking.check_out,
+            amountTotalDkk: payment.amount_total_dkk,
+            refundStatus,
+          });
+        } catch (err) {
+          console.error("Webhook: refund notice email failed (non-fatal):", err);
+        }
+        return NextResponse.json({ ok: true });
+      }
+
+      await markPaymentPaid(payment.id);
+      await expireSiblingPendingPayments(payment.booking_id, payment.id).catch((err) => {
+        console.error("Webhook: failed to expire sibling pending payments:", err);
+      });
+
+      try {
         await sendGa4Event({
           eventName: "payment_completed",
           identityKey: `payment:${payment.booking_id}`,
@@ -77,57 +135,61 @@ export async function POST(req: NextRequest) {
             amount_total_dkk: payment.amount_total_dkk,
           },
         });
+      } catch (err) {
+        console.error("Webhook: payment_completed analytics failed (non-fatal):", err);
+      }
 
-        let shouldSendConfirmation = true;
-        if (shelter.payment_mode === "upfront") {
-          // Auto-confirm: payment = confirmed, no owner approval needed.
-          // If the booking is no longer pending, do not send a false guest confirmation.
-          try {
-            shouldSendConfirmation = await updateBookingStatus(payment.booking_id, "confirmed");
-          } catch (err) {
-            if (err instanceof BookingConflictError) {
-              shouldSendConfirmation = false;
-            } else {
-              throw err;
-            }
-          }
-          if (!shouldSendConfirmation) {
-            console.error("Webhook: payment completed but booking was no longer pending", payment.booking_id);
-            const refundStatus = (await refundCheckoutSession(session.id))
-              ? "refunded"
-              : "manual_follow_up";
-            try {
-              await cancelPendingBooking(payment.booking_id);
-            } catch (err) {
-              console.error("Webhook: could not cancel stale pending booking after failed auto-confirm:", err);
-            }
-            await sendRefundedToGuest({
-              guestEmail: booking.guest_email,
-              guestName: booking.guest_name,
-              shelterTitle: shelter.title,
-              checkIn: booking.check_in,
-              checkOut: booking.check_out,
-              amountTotalDkk: payment.amount_total_dkk,
-              refundStatus,
-            });
+      let shouldSendConfirmation = true;
+      if (shelter.payment_mode === "upfront") {
+        // Auto-confirm: payment = confirmed, no owner approval needed.
+        try {
+          shouldSendConfirmation = await updateBookingStatus(payment.booking_id, "confirmed");
+        } catch (err) {
+          if (err instanceof BookingConflictError) {
+            shouldSendConfirmation = false;
+          } else {
+            throw err;
           }
         }
-        if (shouldSendConfirmation) {
-          await sendPaymentConfirmed({
+        if (!shouldSendConfirmation) {
+          console.error("Webhook: payment completed but booking was no longer pending", payment.booking_id);
+          const refundStatus = (await refundCheckoutSession(session.id))
+            ? "refunded"
+            : "manual_follow_up";
+          await markPaymentFailed(payment.id).catch((err) => {
+            console.error("Webhook: could not mark payment as failed after auto-confirm recovery:", err);
+          });
+          try {
+            await cancelPendingBooking(payment.booking_id);
+          } catch (err) {
+            console.error("Webhook: could not cancel stale pending booking after failed auto-confirm:", err);
+          }
+          await sendRefundedToGuest({
             guestEmail: booking.guest_email,
             guestName: booking.guest_name,
-            ownerEmail: shelter.owner_email,
-            ownerToken: shelter.owner_token,
             shelterTitle: shelter.title,
             checkIn: booking.check_in,
             checkOut: booking.check_out,
             amountTotalDkk: payment.amount_total_dkk,
-            guestToken: booking.guest_token,
+            refundStatus,
           });
         }
       }
+      if (shouldSendConfirmation) {
+        await sendPaymentConfirmed({
+          guestEmail: booking.guest_email,
+          guestName: booking.guest_name,
+          ownerEmail: shelter.owner_email,
+          ownerToken: shelter.owner_token,
+          shelterTitle: shelter.title,
+          checkIn: booking.check_in,
+          checkOut: booking.check_out,
+          amountTotalDkk: payment.amount_total_dkk,
+          guestToken: booking.guest_token,
+        });
+      }
     } catch (err) {
-      console.error("Webhook: confirmation email failed (non-fatal):", err);
+      console.error("Webhook: confirmation/payment processing failed (non-fatal):", err);
     }
   }
 
