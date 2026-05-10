@@ -4,6 +4,8 @@ import { getOwnerShelterById, getShelterGroupByDbShelterId } from "@/lib/owner-d
 import { getBookingsForShelter, getBlockedDatesWithSource } from "@/lib/booking-db";
 import { OwnerDashboard } from "@/components/owner/OwnerDashboard";
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://shelterdk.dk";
+
 export const dynamic = "force-dynamic";
 
 interface Props {
@@ -44,6 +46,7 @@ export default async function EjerShelterBookingerPage({ params }: Props) {
         initialBookings={bookings}
         initialBlockedDates={blockedDates}
         apiBasePath={`/api/ejer/shelter/${shelter.id}/bookinger`}
+        calendarExportUrl={`${SITE_URL}/api/owner/${shelter.owner_token}/calendar.ics`}
         sharedSettingsPath={sharedSettingsPath}
       />
     </div>

@@ -1,12 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
 import { constructWebhookEvent } from "@/lib/stripe";
 import { getPaymentBySessionId, markPaymentExpired, markPaymentPaid } from "@/lib/payment-db";
-import { sendBookingExpired, sendPaymentConfirmed } from "@/lib/booking-email";
-import { cancelPendingBooking, updateBookingStatus } from "@/lib/booking-db";
+import { sendBookingExpired, sendPaymentConfirmed, sendRefundedToGuest } from "@/lib/booking-email";
+import {
+  BookingConflictError,
+  cancelPendingBooking,
+  updateBookingStatus,
+} from "@/lib/booking-db";
 import { createAdminClient } from "@/utils/supabase/server-admin";
 import { sendGa4Event } from "@/lib/server-analytics";
 
 export const dynamic = "force-dynamic";
+
+async function refundCheckoutSession(sessionId: string): Promise<boolean> {
+  try {
+    const Stripe = (await import("stripe")).default;
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+    const session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ["payment_intent"],
+    });
+    const pi = session.payment_intent as { id?: string } | null;
+    if (!pi?.id) return false;
+    await stripe.refunds.create({ payment_intent: pi.id });
+    return true;
+  } catch (err) {
+    console.error("Webhook: refund after failed auto-confirm failed:", err);
+    return false;
+  }
+}
 
 // IMPORTANT: Do NOT parse body as JSON — Stripe needs the raw bytes for signature verification
 export async function POST(req: NextRequest) {
@@ -61,9 +82,34 @@ export async function POST(req: NextRequest) {
         if (shelter.payment_mode === "upfront") {
           // Auto-confirm: payment = confirmed, no owner approval needed.
           // If the booking is no longer pending, do not send a false guest confirmation.
-          shouldSendConfirmation = await updateBookingStatus(payment.booking_id, "confirmed");
+          try {
+            shouldSendConfirmation = await updateBookingStatus(payment.booking_id, "confirmed");
+          } catch (err) {
+            if (err instanceof BookingConflictError) {
+              shouldSendConfirmation = false;
+            } else {
+              throw err;
+            }
+          }
           if (!shouldSendConfirmation) {
             console.error("Webhook: payment completed but booking was no longer pending", payment.booking_id);
+            const refundStatus = (await refundCheckoutSession(session.id))
+              ? "refunded"
+              : "manual_follow_up";
+            try {
+              await cancelPendingBooking(payment.booking_id);
+            } catch (err) {
+              console.error("Webhook: could not cancel stale pending booking after failed auto-confirm:", err);
+            }
+            await sendRefundedToGuest({
+              guestEmail: booking.guest_email,
+              guestName: booking.guest_name,
+              shelterTitle: shelter.title,
+              checkIn: booking.check_in,
+              checkOut: booking.check_out,
+              amountTotalDkk: payment.amount_total_dkk,
+              refundStatus,
+            });
           }
         }
         if (shouldSendConfirmation) {
@@ -92,9 +138,14 @@ export async function POST(req: NextRequest) {
     if (!payment) return NextResponse.json({ ok: true });
     if (payment.status !== "pending") return NextResponse.json({ ok: true });
 
-    await markPaymentExpired(payment.id);
-
-    const cancelled = await cancelPendingBooking(payment.booking_id);
+    let cancelled = false;
+    try {
+      cancelled = await cancelPendingBooking(payment.booking_id);
+      await markPaymentExpired(payment.id);
+    } catch (err) {
+      console.error("Webhook: failed to expire pending booking after checkout.session.expired:", err);
+      return NextResponse.json({ error: "retry" }, { status: 500 });
+    }
     if (!cancelled) return NextResponse.json({ ok: true });
 
     try {

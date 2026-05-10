@@ -511,6 +511,21 @@ describe("POST /api/owner/[token]/block", () => {
     expect(mockBlockDate).not.toHaveBeenCalled();
   });
 
+  it("afviser ugyldige kalenderdatoer", async () => {
+    mockGetBookableShelterByOwnerToken.mockResolvedValue(mockShelter());
+    const { POST } = await import("../owner/[token]/block/route");
+    const res = await POST(
+      new Request("http://localhost", {
+        method: "POST",
+        body: JSON.stringify({ from: "2026-02-30", to: "2026-03-02" }),
+        headers: { "Content-Type": "application/json" },
+      }) as never,
+      { params: Promise.resolve({ token: "owner-token-1" }) }
+    );
+    expect(res.status).toBe(400);
+    expect(mockBlockDate).not.toHaveBeenCalled();
+  });
+
   it("afviser blokering oven i bekræftet booking", async () => {
     mockGetBookableShelterByOwnerToken.mockResolvedValue(mockShelter());
     mockHasConfirmedOverlap.mockResolvedValue(true);

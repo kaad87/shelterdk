@@ -1,11 +1,25 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("stripe", () => ({
+  default: class MockStripe {
+    checkout = {
+      sessions: {
+        retrieve: vi.fn().mockResolvedValue({ payment_intent: { id: "pi_test" } }),
+      },
+    };
+    refunds = {
+      create: vi.fn().mockResolvedValue({ id: "re_test" }),
+    };
+  },
+}));
+
 const mockConstructWebhookEvent = vi.fn();
 const mockGetPaymentBySessionId = vi.fn();
 const mockMarkPaymentPaid = vi.fn();
 const mockMarkPaymentExpired = vi.fn();
 const mockSendPaymentConfirmed = vi.fn();
 const mockSendBookingExpired = vi.fn();
+const mockSendRefundedToGuest = vi.fn();
 const mockUpdateBookingStatus = vi.fn();
 const mockCancelPendingBooking = vi.fn();
 
@@ -22,6 +36,7 @@ vi.mock("@/lib/payment-db", () => ({
 vi.mock("@/lib/booking-email", () => ({
   sendPaymentConfirmed: mockSendPaymentConfirmed,
   sendBookingExpired: mockSendBookingExpired,
+  sendRefundedToGuest: mockSendRefundedToGuest,
 }));
 
 vi.mock("@/lib/booking-db", () => ({
@@ -165,5 +180,12 @@ describe("POST /api/stripe/webhook", () => {
     expect(res.status).toBe(200);
     expect(mockMarkPaymentPaid).toHaveBeenCalledWith("payment-1");
     expect(mockSendPaymentConfirmed).not.toHaveBeenCalled();
+    expect(mockSendRefundedToGuest).toHaveBeenCalledWith(
+      expect.objectContaining({
+        guestEmail: "guest@test.dk",
+        refundStatus: "refunded",
+        amountTotalDkk: 225,
+      })
+    );
   });
 });

@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { getBookableShelterByOwnerToken, getBookingsForShelter, getBlockedDatesWithSource } from "@/lib/booking-db";
 import { OwnerDashboard } from "@/components/owner/OwnerDashboard";
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://shelterdk.dk";
+
 interface Props { params: Promise<{ token: string }> }
 
 export const metadata: Metadata = {
@@ -30,6 +32,7 @@ export default async function OwnerPage({ params }: Props) {
           initialBookings={bookings}
           initialBlockedDates={blockedDates}
           apiBasePath={`/api/owner/${token}`}
+          calendarExportUrl={`${SITE_URL}/api/owner/${token}/calendar.ics`}
         />
       </div>
     </div>

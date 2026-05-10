@@ -25,7 +25,7 @@ export default async function BetalPage({ params, searchParams }: Props) {
     notFound();
   }
 
-  if (t && booking.guest_token !== t) {
+  if (!t || booking.guest_token !== t) {
     notFound();
   }
 

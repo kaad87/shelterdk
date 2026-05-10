@@ -1,9 +1,9 @@
 import { parseIcal } from "@/lib/ical-parser";
 import {
-  deleteIcalSyncedDates,
   blockDatesFromSync,
   updateIcalLastSynced,
 } from "@/lib/booking-db";
+import { createAdminClient } from "@/utils/supabase/server-admin";
 
 /** Expand {start, end} ranges into individual YYYY-MM-DD strings. Skips past dates. */
 function expandDates(events: { start: string; end: string }[]): string[] {
@@ -54,17 +54,44 @@ export async function syncIcalForShelter(
   if (!text.includes("BEGIN:VCALENDAR")) {
     throw new Error("Response does not contain BEGIN:VCALENDAR — not a valid iCal feed");
   }
-  if (!text.includes("BEGIN:VEVENT")) {
-    // Empty calendar is technically valid, but log a warning before clearing all blocked dates
-    console.warn(`ical-sync: feed for shelter ${shelterId} has no VEVENT entries — will clear all synced dates`);
-  }
-
   const events = parseIcal(text);
   const dates = expandDates(events);
 
-  // Only mutate DB after successful fetch + parse
-  await deleteIcalSyncedDates(shelterId);
+  // Upsert desired dates first, then remove stale synced dates.
+  // This avoids wiping the whole sync-state if a later insert chunk fails.
   await blockDatesFromSync(shelterId, dates);
+
+  const supabase = createAdminClient();
+  const { data: existingRows, error: existingError } = await supabase
+    .from("shelter_blocked_dates")
+    .select("blocked_date")
+    .eq("bookable_shelter_id", shelterId)
+    .eq("source", "ical_sync");
+  if (existingError) {
+    throw new Error(`Kunne ikke læse eksisterende kalendersynk: ${existingError.message}`);
+  }
+
+  const desiredDates = new Set(dates);
+  const staleDates = (existingRows ?? [])
+    .map((row) => row.blocked_date as string)
+    .filter((date) => !desiredDates.has(date));
+
+  if (staleDates.length > 0) {
+    const chunkSize = 500;
+    for (let i = 0; i < staleDates.length; i += chunkSize) {
+      const chunk = staleDates.slice(i, i + chunkSize);
+      const { error } = await supabase
+        .from("shelter_blocked_dates")
+        .delete()
+        .eq("bookable_shelter_id", shelterId)
+        .eq("source", "ical_sync")
+        .in("blocked_date", chunk);
+      if (error) {
+        throw new Error(`Kunne ikke rydde gamle synk-datoer: ${error.message}`);
+      }
+    }
+  }
+
   await updateIcalLastSynced(shelterId);
 
   return { blockedCount: dates.length };

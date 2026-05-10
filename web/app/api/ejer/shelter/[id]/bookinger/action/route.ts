@@ -121,17 +121,21 @@ export async function POST(
         booking,
         shelter.title
       );
-      await sendGa4Event({
-        headers: req.headers,
-        eventName: "booking_confirmed",
-        referrer: req.headers.get("referer") ?? undefined,
-        eventParams: {
-          booking_id: bookingId,
-          shelter_id: shelter.id,
-          payment_mode: shelter.payment_mode,
-          confirmation_channel: "owner_portal",
-        },
-      });
+      try {
+        await sendGa4Event({
+          headers: req.headers,
+          eventName: "booking_confirmed",
+          referrer: req.headers.get("referer") ?? undefined,
+          eventParams: {
+            booking_id: bookingId,
+            shelter_id: shelter.id,
+            payment_mode: shelter.payment_mode,
+            confirmation_channel: "owner_portal",
+          },
+        });
+      } catch (err) {
+        console.error("ejer confirm (upfront): non-fatal analytics error:", err);
+      }
       return NextResponse.json({ ok: true, confirmationEmailSent });
     }
 
@@ -156,30 +160,63 @@ export async function POST(
           await markPaymentExpiredBySessionId(sessionId);
           return NextResponse.json({ error: "Booking er allerede behandlet" }, { status: 409 });
         }
-        await sendPaymentRequestToGuest({
-          guestEmail: booking.guest_email,
-          guestName: booking.guest_name,
-          shelterTitle: shelter.title,
-          checkIn: booking.check_in,
-          checkOut: booking.check_out,
-          amountTotalDkk: totalDkk,
-          amountShelterDkk: shelterDkk,
-          amountPlatformDkk: platformDkk,
-          paymentUrl: url,
-          guestToken: booking.guest_token,
-        });
-        await sendGa4Event({
-          headers: req.headers,
-          eventName: "payment_started",
-          referrer: req.headers.get("referer") ?? undefined,
-          eventParams: {
-            booking_id: bookingId,
-            shelter_id: shelter.id,
-            payment_mode: shelter.payment_mode,
-            amount_total_dkk: totalDkk,
-            payment_context: "owner_confirm",
-          },
-        });
+        let warning: string | null = null;
+        try {
+          await sendPaymentRequestToGuest({
+            guestEmail: booking.guest_email,
+            guestName: booking.guest_name,
+            shelterTitle: shelter.title,
+            checkIn: booking.check_in,
+            checkOut: booking.check_out,
+            amountTotalDkk: totalDkk,
+            amountShelterDkk: shelterDkk,
+            amountPlatformDkk: platformDkk,
+            paymentUrl: url,
+            guestToken: booking.guest_token,
+          });
+        } catch (err) {
+          console.error("ejer confirm: payment email error:", err);
+          warning =
+            "Betalingslinket blev oprettet, men e-mailen kunne ikke sendes automatisk. Brug 'Gensend betalingslink'.";
+        }
+        try {
+          await sendGa4Event({
+            headers: req.headers,
+            eventName: "payment_started",
+            referrer: req.headers.get("referer") ?? undefined,
+            eventParams: {
+              booking_id: bookingId,
+              shelter_id: shelter.id,
+              payment_mode: shelter.payment_mode,
+              amount_total_dkk: totalDkk,
+              payment_context: "owner_confirm",
+            },
+          });
+        } catch (err) {
+          console.error("ejer confirm: non-fatal analytics error:", err);
+        }
+
+        const confirmationEmailSent = await sendAutoMessageIfEnabled(
+          shelter.id,
+          booking,
+          shelter.title
+        );
+        try {
+          await sendGa4Event({
+            headers: req.headers,
+            eventName: "booking_confirmed",
+            referrer: req.headers.get("referer") ?? undefined,
+            eventParams: {
+              booking_id: bookingId,
+              shelter_id: shelter.id,
+              payment_mode: shelter.payment_mode,
+              confirmation_channel: "owner_portal",
+            },
+          });
+        } catch (err) {
+          console.error("ejer confirm: non-fatal confirmation analytics error:", err);
+        }
+        return NextResponse.json({ ok: true, confirmationEmailSent, warning });
       } catch (err) {
         if (err instanceof BookingConflictError) {
           return NextResponse.json(
@@ -193,24 +230,6 @@ export async function POST(
         { status: 500 }
       );
     }
-
-    const confirmationEmailSent = await sendAutoMessageIfEnabled(
-      shelter.id,
-      booking,
-      shelter.title
-    );
-    await sendGa4Event({
-      headers: req.headers,
-      eventName: "booking_confirmed",
-      referrer: req.headers.get("referer") ?? undefined,
-      eventParams: {
-        booking_id: bookingId,
-        shelter_id: shelter.id,
-        payment_mode: shelter.payment_mode,
-        confirmation_channel: "owner_portal",
-      },
-    });
-    return NextResponse.json({ ok: true, confirmationEmailSent });
   }
 
   if (action === "reject") {
@@ -270,17 +289,21 @@ export async function POST(
       }
     }
 
-    await sendGa4Event({
-      headers: req.headers,
-      eventName: "booking_rejected",
-      referrer: req.headers.get("referer") ?? undefined,
-      eventParams: {
-        booking_id: bookingId,
-        shelter_id: shelter.id,
-        payment_mode: shelter.payment_mode,
-        refunded,
-      },
-    });
+    try {
+      await sendGa4Event({
+        headers: req.headers,
+        eventName: "booking_rejected",
+        referrer: req.headers.get("referer") ?? undefined,
+        eventParams: {
+          booking_id: bookingId,
+          shelter_id: shelter.id,
+          payment_mode: shelter.payment_mode,
+          refunded,
+        },
+      });
+    } catch (err) {
+      console.error("ejer reject: non-fatal analytics error:", err);
+    }
 
     return NextResponse.json({ ok: true });
   }
@@ -398,6 +421,7 @@ export async function POST(
 
     const payment = await getPaymentByBookingId(bookingId);
     let refunded = false;
+    let refundStatus: "refunded" | "manual_follow_up" | "not_refunded" = "not_refunded";
     if (booking.source !== "owner_manual" && payment?.status === "paid") {
       try {
         const { default: Stripe } = await import("stripe");
@@ -410,9 +434,11 @@ export async function POST(
         if (pi?.id) {
           await stripe.refunds.create({ payment_intent: pi.id });
           refunded = true;
+          refundStatus = "refunded";
         }
       } catch (err) {
         console.error("ejer cancel: Stripe refund error:", err);
+        refundStatus = "manual_follow_up";
       }
     }
 
@@ -424,6 +450,7 @@ export async function POST(
           shelterTitle: shelter.title,
           checkIn: booking.check_in,
           checkOut: booking.check_out,
+          refundStatus,
           amountTotalDkk: payment?.status === "paid" ? payment.amount_total_dkk : null,
         });
       } catch (err) {
@@ -431,18 +458,22 @@ export async function POST(
       }
     }
 
-    await sendGa4Event({
-      headers: req.headers,
-      eventName: "booking_cancelled",
-      referrer: req.headers.get("referer") ?? undefined,
-      eventParams: {
-        booking_id: bookingId,
-        shelter_id: shelter.id,
-        payment_mode: shelter.payment_mode,
-        cancelled_by: "owner",
-        refunded,
-      },
-    });
+    try {
+      await sendGa4Event({
+        headers: req.headers,
+        eventName: "booking_cancelled",
+        referrer: req.headers.get("referer") ?? undefined,
+        eventParams: {
+          booking_id: bookingId,
+          shelter_id: shelter.id,
+          payment_mode: shelter.payment_mode,
+          cancelled_by: "owner",
+          refunded,
+        },
+      });
+    } catch (err) {
+      console.error("ejer cancel: non-fatal analytics error:", err);
+    }
 
     return NextResponse.json({ ok: true, refunded });
   }

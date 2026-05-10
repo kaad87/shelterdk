@@ -15,6 +15,51 @@ const DEFAULTS = {
     "Hej {gæst_navn},\n\nBare en reminder — du ankommer til {shelter_navn} i morgen ({ankomst_dato}).\n\nVi ses!",
 };
 
+function serializeTemplate(row: {
+  confirmation_enabled: boolean;
+  confirmation_subject: string;
+  confirmation_body: string;
+  reminder_enabled: boolean;
+  reminder_subject: string;
+  reminder_body: string;
+}) {
+  return JSON.stringify([
+    row.confirmation_enabled,
+    row.confirmation_subject,
+    row.confirmation_body,
+    row.reminder_enabled,
+    row.reminder_subject,
+    row.reminder_body,
+  ]);
+}
+
+function deserializeTemplate(serialized: string) {
+  const [
+    confirmation_enabled,
+    confirmation_subject,
+    confirmation_body,
+    reminder_enabled,
+    reminder_subject,
+    reminder_body,
+  ] = JSON.parse(serialized) as [
+    boolean,
+    string,
+    string,
+    boolean,
+    string,
+    string,
+  ];
+
+  return {
+    confirmation_enabled,
+    confirmation_subject,
+    confirmation_body,
+    reminder_enabled,
+    reminder_subject,
+    reminder_body,
+  };
+}
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ groupId: string }> }
@@ -31,18 +76,43 @@ export async function GET(
     )
     .in("shelter_id", unitIds);
 
-  const preferred = data?.find((row) => row.shelter_id === context.shelters[0].id) ?? data?.[0] ?? null;
+  const byShelterId = new Map((data ?? []).map((row) => [row.shelter_id, row]));
+  const serializedTemplates = context.shelters.map((shelter) =>
+    serializeTemplate(
+      byShelterId.get(shelter.id)
+        ? {
+            confirmation_enabled: !!byShelterId.get(shelter.id)?.confirmation_enabled,
+            confirmation_subject: String(byShelterId.get(shelter.id)?.confirmation_subject ?? ""),
+            confirmation_body: String(byShelterId.get(shelter.id)?.confirmation_body ?? ""),
+            reminder_enabled: !!byShelterId.get(shelter.id)?.reminder_enabled,
+            reminder_subject: String(byShelterId.get(shelter.id)?.reminder_subject ?? ""),
+            reminder_body: String(byShelterId.get(shelter.id)?.reminder_body ?? ""),
+          }
+        : DEFAULTS
+    )
+  );
+  const distinctTemplates = new Set(serializedTemplates);
+  const frequency = new Map<string, number>();
+  for (const serialized of serializedTemplates) {
+    frequency.set(serialized, (frequency.get(serialized) ?? 0) + 1);
+  }
+  const preferredSerialized =
+    serializedTemplates.reduce((best, current) => {
+      if (!best) return current;
+      return (frequency.get(current) ?? 0) > (frequency.get(best) ?? 0) ? current : best;
+    }, serializedTemplates[0]) ?? serializeTemplate(DEFAULTS);
+  const preferred = deserializeTemplate(preferredSerialized);
+
   return NextResponse.json(
-    preferred
-      ? {
-          confirmation_enabled: preferred.confirmation_enabled,
-          confirmation_subject: preferred.confirmation_subject,
-          confirmation_body: preferred.confirmation_body,
-          reminder_enabled: preferred.reminder_enabled,
-          reminder_subject: preferred.reminder_subject,
-          reminder_body: preferred.reminder_body,
-        }
-      : DEFAULTS
+    {
+      confirmation_enabled: preferred.confirmation_enabled,
+      confirmation_subject: preferred.confirmation_subject,
+      confirmation_body: preferred.confirmation_body,
+      reminder_enabled: preferred.reminder_enabled,
+      reminder_subject: preferred.reminder_subject,
+      reminder_body: preferred.reminder_body,
+      hasDivergentTemplates: distinctTemplates.size > 1,
+    }
   );
 }
 
@@ -62,6 +132,7 @@ export async function PATCH(
     reminder_enabled,
     reminder_subject,
     reminder_body,
+    force_replace_all,
   } = body as Record<string, unknown>;
 
   if (confirmation_enabled) {
@@ -91,6 +162,42 @@ export async function PATCH(
   }
   if (String(reminder_body ?? "").length > 2000) {
     return NextResponse.json({ error: "Påmindelse: besked må max være 2000 tegn" }, { status: 400 });
+  }
+
+  const { data: existingData } = await createAdminClient()
+    .from("booking_message_templates")
+    .select(
+      "shelter_id,confirmation_enabled,confirmation_subject,confirmation_body,reminder_enabled,reminder_subject,reminder_body"
+    )
+    .in("shelter_id", context.shelters.map((shelter) => shelter.id));
+
+  const existingByShelterId = new Map((existingData ?? []).map((row) => [row.shelter_id, row]));
+  const distinctExistingTemplates = new Set(
+    context.shelters.map((shelter) =>
+      serializeTemplate(
+        existingByShelterId.get(shelter.id)
+          ? {
+              confirmation_enabled: !!existingByShelterId.get(shelter.id)?.confirmation_enabled,
+              confirmation_subject: String(existingByShelterId.get(shelter.id)?.confirmation_subject ?? ""),
+              confirmation_body: String(existingByShelterId.get(shelter.id)?.confirmation_body ?? ""),
+              reminder_enabled: !!existingByShelterId.get(shelter.id)?.reminder_enabled,
+              reminder_subject: String(existingByShelterId.get(shelter.id)?.reminder_subject ?? ""),
+              reminder_body: String(existingByShelterId.get(shelter.id)?.reminder_body ?? ""),
+            }
+          : DEFAULTS
+      )
+    )
+  );
+
+  if (distinctExistingTemplates.size > 1 && force_replace_all !== true) {
+    return NextResponse.json(
+      {
+        error:
+          "Skabelonerne er ikke ens på tværs af shelters endnu. Gem igen for at erstatte alle med den viste fælles version.",
+        code: "templates_diverge",
+      },
+      { status: 409 }
+    );
   }
 
   const unitRows = context.shelters.map((shelter) => ({

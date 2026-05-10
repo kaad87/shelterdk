@@ -195,9 +195,9 @@ function DayCell({
   return (
     <button
       type="button"
-      onClick={() => !isPast && onSelect(iso)}
+      onClick={() => onSelect(iso)}
       className={`relative flex flex-col items-center justify-start rounded-lg p-1 transition-colors text-xs leading-none
-        ${isPast ? "opacity-30 cursor-default" : "hover:bg-primary/5 cursor-pointer"}
+        ${isPast ? "opacity-60 cursor-pointer hover:bg-primary/5" : "hover:bg-primary/5 cursor-pointer"}
         ${selected ? "ring-2 ring-accent" : ""}
         ${isToday ? "font-bold text-accent" : "text-primary/70"}
         ${blocked && !isPast ? "bg-primary/[0.05]" : ""}
@@ -286,7 +286,7 @@ export function OwnerDashboard({
 }: Props) {
   const [bookings, setBookings] = useState(initialBookings);
   const [blockedDates, setBlockedDates] = useState<BlockedDateEntry[]>(initialBlockedDates);
-  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<{ bookingId: string; text: string } | null>(null);
   const [actingId, setActingId] = useState<string | null>(null);
   const [blockFrom, setBlockFrom] = useState("");
   const [blockTo, setBlockTo] = useState("");
@@ -373,8 +373,7 @@ export function OwnerDashboard({
   const todayIso = today();
   const isUpfront = shelter.payment_mode === "upfront";
 
-  // Only show pending for after_confirmation shelters — upfront auto-confirms on payment.
-  const pending = bookings.filter((b) => b.status === "pending" && !isUpfront);
+  const pending = bookings.filter((b) => b.status === "pending");
   const upcoming = bookings.filter(
     (b) => b.status === "confirmed" && b.check_out > todayIso
   );
@@ -411,6 +410,7 @@ export function OwnerDashboard({
       ? `${window.location.origin}${apiBasePath}/calendar.ics`
       : `https://shelterdk.dk${apiBasePath}/calendar.ics`
   );
+  const pendingLegendLabel = isUpfront ? "Afventer betaling" : "Afventer svar";
 
   function timeAgo(iso: string): string {
     const diff = Date.now() - new Date(iso).getTime();
@@ -533,14 +533,18 @@ export function OwnerDashboard({
     setOpenThreadId(bookingId);
     setThreadBody("");
     setThreadError(null);
-    if (threadMessages[bookingId]) return; // already loaded
     try {
       const res = await fetch(`${apiBasePath}/booking/${bookingId}/messages`);
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error ?? "Kunne ikke hente beskeder");
+      }
       setThreadMessages((prev) => ({ ...prev, [bookingId]: data.messages ?? [] }));
       // Clear unread badge for this booking
       setUnreadCounts((prev) => { const next = { ...prev }; delete next[bookingId]; return next; });
-    } catch { /* silent */ }
+    } catch (err) {
+      setThreadError(err instanceof Error ? err.message : "Kunne ikke hente beskeder");
+    }
   }, [openThreadId, threadMessages, apiBasePath]);
 
   const sendOwnerMessage = useCallback(async (bookingId: string) => {
@@ -617,24 +621,29 @@ export function OwnerDashboard({
   const handleAction = async (bookingId: string, action: "confirm" | "reject") => {
     setActionError(null);
     setActingId(bookingId);
-    const res = await fetch(`${apiBasePath}/action`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ booking_id: bookingId, action }),
-    });
-    const data = await res.json();
-    setActingId(null);
-    if (!res.ok) { setActionError(data.error ?? "Fejl"); return; }
-    setBookings((prev) =>
-      prev.map((b) =>
-        b.id === bookingId
-          ? { ...b, status: action === "confirm" ? "confirmed" : "rejected" }
-          : b
-      )
-    );
-    if (action === "confirm") fetchPayments();
-    if (action === "confirm" && data.confirmationEmailSent) {
-      setConfirmedWithEmail((prev) => new Set([...prev, bookingId]));
+    try {
+      const res = await fetch(`${apiBasePath}/action`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ booking_id: bookingId, action }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { setActionError({ bookingId, text: data.error ?? "Fejl" }); return; }
+      setBookings((prev) =>
+        prev.map((b) =>
+          b.id === bookingId
+            ? { ...b, status: action === "confirm" ? "confirmed" : "rejected" }
+            : b
+        )
+      );
+      if (action === "confirm") fetchPayments();
+      if (action === "confirm" && data.confirmationEmailSent) {
+        setConfirmedWithEmail((prev) => new Set([...prev, bookingId]));
+      }
+    } catch {
+      setActionError({ bookingId, text: "Noget gik galt" });
+    } finally {
+      setActingId(null);
     }
   };
 
@@ -642,17 +651,22 @@ export function OwnerDashboard({
     setResendingId(bookingId);
     setActionError(null);
     setResendMsg(null);
-    const res = await fetch(`${apiBasePath}/action`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ booking_id: bookingId, action: "resend-payment" }),
-    });
-    const data = await res.json().catch(() => ({}));
-    setResendingId(null);
-    if (!res.ok) {
-      setActionError(data.error ?? "Fejl ved gensendelse");
-    } else {
-      setResendMsg({ bookingId, text: "Betalingslink sendt igen" });
+    try {
+      const res = await fetch(`${apiBasePath}/action`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ booking_id: bookingId, action: "resend-payment" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setActionError({ bookingId, text: data.error ?? "Fejl ved gensendelse" });
+      } else {
+        setResendMsg({ bookingId, text: "Betalingslink sendt igen" });
+      }
+    } catch {
+      setActionError({ bookingId, text: "Noget gik galt ved gensendelse" });
+    } finally {
+      setResendingId(null);
     }
   };
 
@@ -734,7 +748,7 @@ export function OwnerDashboard({
       setBlockFrom("");
       setBlockTo("");
     } else {
-      setBlockMsg({ ok: false, text: "Fejl — prøv igen" });
+      setBlockMsg({ ok: false, text: data.error ?? "Fejl — prøv igen" });
     }
   };
 
@@ -808,7 +822,7 @@ export function OwnerDashboard({
             {pending.length > 0 && (
               <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-2.5 text-center min-w-[80px]">
                 <p className="text-2xl font-bold text-amber-700 leading-none">{pending.length}</p>
-                <p className="text-[10px] font-semibold text-amber-600 uppercase tracking-wide mt-0.5">Afventer</p>
+                <p className="text-[10px] font-semibold text-amber-600 uppercase tracking-wide mt-0.5">{pendingLegendLabel}</p>
               </div>
             )}
             <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-2.5 text-center min-w-[80px]">
@@ -842,18 +856,14 @@ export function OwnerDashboard({
       {pending.length > 0 && (
         <section>
           <div className="flex items-center gap-2 mb-3">
-            <h2 className="font-serif text-lg font-bold text-primary">Afventer svar</h2>
+            <h2 className="font-serif text-lg font-bold text-primary">{pendingLegendLabel}</h2>
             <span className="rounded-full bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-0.5">
               {pending.length}
             </span>
           </div>
-          {actionError && (
-            <div className="mb-3 rounded-xl bg-red-50 border border-red-100 px-4 py-2.5 text-sm text-red-600">
-              {actionError}
-            </div>
-          )}
           <div className="space-y-3">
             {pending.map((b) => {
+              const showOwnerDecision = !isUpfront;
               return (
               <div key={b.id} className="rounded-2xl border-2 border-amber-200 bg-white shadow-sm overflow-hidden">
                 <div className="px-5 py-4">
@@ -888,28 +898,36 @@ export function OwnerDashboard({
                   </div>
                 </div>
                 <div className="flex border-t border-amber-100">
-                  <button
-                    onClick={() => handleAction(b.id, "confirm")}
-                    disabled={actingId === b.id}
-                    className="flex-1 py-3 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 transition-colors disabled:opacity-40 flex items-center justify-center gap-1.5"
-                  >
-                    {actingId === b.id ? (
-                      <span className="w-4 h-4 border-2 border-emerald-300 border-t-emerald-600 rounded-full animate-spin" />
-                    ) : (
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7l3 3L11.5 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                    )}
-                    Acceptér
-                  </button>
-                  <div className="w-px bg-amber-100" />
-                  <button
-                    onClick={() => handleAction(b.id, "reject")}
-                    disabled={actingId === b.id}
-                    className="flex-1 py-3 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40 flex items-center justify-center gap-1.5"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
-                    Afvis
-                  </button>
-                  <div className="w-px bg-amber-100" />
+                  {showOwnerDecision ? (
+                    <>
+                      <button
+                        onClick={() => handleAction(b.id, "confirm")}
+                        disabled={actingId === b.id}
+                        className="flex-1 py-3 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 transition-colors disabled:opacity-40 flex items-center justify-center gap-1.5"
+                      >
+                        {actingId === b.id ? (
+                          <span className="w-4 h-4 border-2 border-emerald-300 border-t-emerald-600 rounded-full animate-spin" />
+                        ) : (
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7l3 3L11.5 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                        )}
+                        Acceptér
+                      </button>
+                      <div className="w-px bg-amber-100" />
+                      <button
+                        onClick={() => handleAction(b.id, "reject")}
+                        disabled={actingId === b.id}
+                        className="flex-1 py-3 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40 flex items-center justify-center gap-1.5"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+                        Afvis
+                      </button>
+                      <div className="w-px bg-amber-100" />
+                    </>
+                  ) : (
+                    <div className="flex-1 px-4 py-3 text-sm text-amber-800 bg-amber-50/60">
+                      Gæsten har endnu ikke gennemført betalingen. Datoerne er reserveret midlertidigt.
+                    </div>
+                  )}
                   <button
                     onClick={() => openThread(b.id)}
                     className="relative px-4 py-3 text-sm font-semibold text-primary/60 hover:bg-primary/5 transition-colors flex items-center gap-1.5"
@@ -935,6 +953,11 @@ export function OwnerDashboard({
                     onSend={() => sendOwnerMessage(b.id)}
                   />
                 )}
+                {actionError?.bookingId === b.id && (
+                  <div className="border-t border-red-100 bg-red-50 px-4 py-2 text-sm text-red-600">
+                    {actionError.text}
+                  </div>
+                )}
               </div>
               );
             })}
@@ -951,7 +974,7 @@ export function OwnerDashboard({
             <div className="hidden sm:flex items-center gap-3">
               {[
                 { color: "bg-emerald-500", label: "Bekræftet" },
-                { color: "bg-amber-400", label: "Afventer" },
+                { color: "bg-amber-400", label: pendingLegendLabel },
                 { color: "bg-primary/20", label: "Blokeret" },
                 { color: "bg-primary/40", label: "Synket" },
               ].map(({ color, label }) => (
@@ -1024,7 +1047,7 @@ export function OwnerDashboard({
                   <span className={`ml-2 text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full ${
                     ev.status === "confirmed" ? "bg-emerald-100" : "bg-amber-100"
                   }`}>
-                    {ev.status === "confirmed" ? "Bekræftet" : "Afventer"}
+                    {ev.status === "confirmed" ? "Bekræftet" : pendingLegendLabel}
                   </span>
                   {ev.source === "owner_manual" && (
                     <span className="ml-2 text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-primary/10 text-primary/70">
@@ -1146,6 +1169,11 @@ export function OwnerDashboard({
                       onBodyChange={setThreadBody}
                       onSend={() => sendOwnerMessage(b.id)}
                     />
+                  )}
+                  {actionError?.bookingId === b.id && (
+                    <div className="mt-2 rounded-xl bg-red-50 border border-red-100 px-3 py-2 text-sm text-red-600">
+                      {actionError.text}
+                    </div>
                   )}
                   {cancelConfirmId === b.id && (
                     <div className="mt-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3 w-full">

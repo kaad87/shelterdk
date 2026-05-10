@@ -11,6 +11,13 @@ function addDays(isoDate: string, days: number): string {
   return date.toISOString().slice(0, 10);
 }
 
+function parseIsoDateExact(value: string): Date | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+  const date = new Date(`${value}T12:00:00Z`);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toISOString().slice(0, 10) === value ? date : null;
+}
+
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -25,8 +32,9 @@ export async function POST(
   const unblock: boolean = body.unblock === true;
   const reason: string | null = body.reason ?? null;
 
-  const dateRe = /^\d{4}-\d{2}-\d{2}$/;
-  if (!dateRe.test(from) || !dateRe.test(to)) {
+  const fromDate = parseIsoDateExact(from);
+  const toDate = parseIsoDateExact(to);
+  if (!fromDate || !toDate) {
     return NextResponse.json({ error: "Ugyldig dato" }, { status: 400 });
   }
   if (to < from) {
@@ -34,8 +42,8 @@ export async function POST(
   }
 
   const dates: string[] = [];
-  const cur = new Date(from);
-  const end = new Date(to);
+  const cur = new Date(fromDate);
+  const end = new Date(toDate);
   while (cur <= end) {
     dates.push(cur.toISOString().slice(0, 10));
     cur.setDate(cur.getDate() + 1);

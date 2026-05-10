@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { expireOldPayments } from "@/lib/payment-db";
+import { listExpiredPendingPayments, markPaymentExpired } from "@/lib/payment-db";
 import { sendBookingExpired } from "@/lib/booking-email";
 import { cancelPendingBooking } from "@/lib/booking-db";
 import { createAdminClient } from "@/utils/supabase/server-admin";
@@ -12,15 +12,16 @@ export async function GET(req: NextRequest) {
   if (!secret || provided !== secret)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const expiredBookingIds = await expireOldPayments();
+  const expiredPayments = await listExpiredPendingPayments();
 
   let cancelled = 0;
   let skipped = 0;
   const errors: string[] = [];
 
   const results = await Promise.allSettled(
-    expiredBookingIds.map(async (bookingId) => {
+    expiredPayments.map(async ({ id: paymentId, booking_id: bookingId }) => {
       const wasCancelled = await cancelPendingBooking(bookingId);
+      await markPaymentExpired(paymentId);
       if (!wasCancelled) {
         skipped += 1;
         return;
@@ -50,7 +51,7 @@ export async function GET(req: NextRequest) {
 
   results.forEach((result, index) => {
     if (result.status === "rejected") {
-      const bookingId = expiredBookingIds[index];
+      const bookingId = expiredPayments[index]?.booking_id;
       const msg = result.reason instanceof Error ? result.reason.message : String(result.reason);
       console.error(`expire-payments: failed for booking ${bookingId}:`, msg);
       errors.push(`${bookingId}: ${msg}`);

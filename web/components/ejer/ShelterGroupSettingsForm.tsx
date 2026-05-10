@@ -15,6 +15,10 @@ interface MsgTemplates {
   reminder_body: string;
 }
 
+interface MsgTemplatesResponse extends MsgTemplates {
+  hasDivergentTemplates?: boolean;
+}
+
 type MsgField = "conf_subj" | "conf_body" | "rem_subj" | "rem_body";
 
 function previewMsg(template: string, shelterName: string): string {
@@ -63,6 +67,8 @@ export function ShelterGroupSettingsForm({
   const [msgSaving, setMsgSaving] = useState(false);
   const [msgSaved, setMsgSaved] = useState(false);
   const [msgError, setMsgError] = useState<string | null>(null);
+  const [msgDivergent, setMsgDivergent] = useState(false);
+  const [msgForceConfirm, setMsgForceConfirm] = useState(false);
   const [ownerPhotos, setOwnerPhotos] = useState<string[]>(initialOwnerPhotos);
   const [contentSaving, setContentSaving] = useState(false);
   const [contentMsg, setContentMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -102,7 +108,17 @@ export function ShelterGroupSettingsForm({
   useEffect(() => {
     fetch(`/api/ejer/plads/${groupId}/messages`)
       .then((r) => r.json())
-      .then((data: MsgTemplates) => setMsgTemplates(data))
+      .then((data: MsgTemplatesResponse) => {
+        setMsgTemplates({
+          confirmation_enabled: data.confirmation_enabled,
+          confirmation_subject: data.confirmation_subject,
+          confirmation_body: data.confirmation_body,
+          reminder_enabled: data.reminder_enabled,
+          reminder_subject: data.reminder_subject,
+          reminder_body: data.reminder_body,
+        });
+        setMsgDivergent(!!data.hasDivergentTemplates);
+      })
       .catch(() => setMsgError("Kunne ikke hente beskedskabeloner"));
   }, [groupId]);
 
@@ -226,12 +242,18 @@ export function ShelterGroupSettingsForm({
       const res = await fetch(`/api/ejer/plads/${groupId}/messages`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(msgTemplates),
+        body: JSON.stringify({ ...msgTemplates, force_replace_all: msgForceConfirm }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
+        if (data.code === "templates_diverge") {
+          setMsgDivergent(true);
+          setMsgForceConfirm(true);
+        }
         setMsgError(data.error ?? "Noget gik galt");
       } else {
+        setMsgDivergent(false);
+        setMsgForceConfirm(false);
         setMsgSaved(true);
         setTimeout(() => setMsgSaved(false), 3000);
       }
@@ -639,6 +661,13 @@ export function ShelterGroupSettingsForm({
           </p>
         </div>
 
+        {msgDivergent ? (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            Beskedskabelonerne er ikke ens på tværs af shelters endnu. Hvis du gemmer herfra, erstatter du dem alle
+            med den viste fælles version.
+          </div>
+        ) : null}
+
         {msgTemplates ? (
           <>
             <div className="flex flex-wrap gap-2">
@@ -749,7 +778,7 @@ export function ShelterGroupSettingsForm({
                 disabled={msgSaving}
                 className="rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-white hover:bg-[#b8923f] disabled:opacity-50 transition-colors"
               >
-                {msgSaving ? "Gemmer…" : "Gem beskeder"}
+                {msgSaving ? "Gemmer…" : msgForceConfirm ? "Erstat alle beskeder" : "Gem beskeder"}
               </button>
               {msgSaved && <p className="text-sm text-emerald-700">Beskeder gemt på tværs af gruppen</p>}
               {msgError && <p className="text-sm text-red-600">{msgError}</p>}

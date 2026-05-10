@@ -474,26 +474,45 @@ export async function sendRefundedToGuest(opts: {
   checkIn: string;
   checkOut: string;
   amountTotalDkk: number;
+  refundStatus?: "refunded" | "manual_follow_up";
 }) {
+  const refundStatus = opts.refundStatus ?? "refunded";
+  const refundHtml =
+    refundStatus === "refunded"
+      ? `<p style="font-size:13px;color:#666;margin:0 0 16px;">Din betaling på <strong>${opts.amountTotalDkk} kr</strong> refunderes inden for 5–10 hverdage.</p>`
+      : `<p style="font-size:13px;color:#666;margin:0 0 16px;">Din betaling på <strong>${opts.amountTotalDkk} kr</strong> kunne ikke refunderes automatisk. Vi følger manuelt op hurtigst muligt.</p>`;
+  const refundText =
+    refundStatus === "refunded"
+      ? `Din betaling på ${opts.amountTotalDkk} kr refunderes inden for 5–10 hverdage.`
+      : `Din betaling på ${opts.amountTotalDkk} kr kunne ikke refunderes automatisk. Vi følger manuelt op hurtigst muligt.`;
+  const title =
+    refundStatus === "refunded"
+      ? "Booking afvist — refundering på vej"
+      : "Booking afvist — manuel refundering følger";
+  const subject =
+    refundStatus === "refunded"
+      ? `Din booking af ${esc(opts.shelterTitle)} er afvist — refundering på vej`
+      : `Din booking af ${esc(opts.shelterTitle)} er afvist — vi følger manuelt op`;
+
   const { error } = await getResend().emails.send({
     from: FROM_EMAIL,
     to: opts.guestEmail,
-    subject: `Din booking af ${esc(opts.shelterTitle)} er afvist — refundering på vej`,
+    subject,
     html: renderEmail({
-      title: "Booking afvist — refundering på vej",
+      title,
       bodyHtml: `
         <p style="font-size:13px;color:#333;line-height:1.65;margin:0 0 10px;">Hej <strong>${esc(opts.guestName)}</strong>,</p>
         <p style="font-size:13px;color:#666;line-height:1.65;margin:0 0 10px;">Desværre kunne ejeren ikke imødekomme din forudbetaling til <strong>${esc(opts.shelterTitle)}</strong> (${esc(formatDate(opts.checkIn))}–${esc(formatDate(opts.checkOut))}).</p>
-        <p style="font-size:13px;color:#666;margin:0 0 16px;">Din betaling på <strong>${opts.amountTotalDkk} kr</strong> refunderes inden for 5–10 hverdage.</p>
+        ${refundHtml}
         <a href="https://shelterdk.dk/soeg" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">Find andre shelters</a>
       `,
     }),
     text: renderEmailText({
-      title: "Booking afvist — refundering på vej",
+      title,
       lines: [
         `Hej ${opts.guestName},`,
         `Desværre kunne ejeren ikke imødekomme din forudbetaling til ${opts.shelterTitle} (${formatDate(opts.checkIn)}–${formatDate(opts.checkOut)}).`,
-        `Din betaling på ${opts.amountTotalDkk} kr refunderes inden for 5–10 hverdage.`,
+        refundText,
       ],
       url: "https://shelterdk.dk/soeg",
     }),
@@ -651,14 +670,19 @@ export async function sendOwnerCancelledToGuest(opts: {
   shelterTitle: string;
   checkIn: string;
   checkOut: string;
+  refundStatus: "refunded" | "manual_follow_up" | "not_refunded";
   amountTotalDkk: number | null;
 }) {
-  const refundHtml = opts.amountTotalDkk
+  const refundHtml = opts.refundStatus === "refunded" && opts.amountTotalDkk
     ? `<p style="font-size:13px;color:#666;margin:0 0 16px;">Din betaling på <strong>${opts.amountTotalDkk} kr</strong> refunderes fuldt ud inden for 5–10 hverdage.</p>`
-    : "";
-  const refundText = opts.amountTotalDkk
+    : opts.refundStatus === "manual_follow_up" && opts.amountTotalDkk
+      ? `<p style="font-size:13px;color:#666;margin:0 0 16px;">Din betaling på <strong>${opts.amountTotalDkk} kr</strong> kunne ikke refunderes automatisk. Vi følger manuelt op hurtigst muligt.</p>`
+      : "";
+  const refundText = opts.refundStatus === "refunded" && opts.amountTotalDkk
     ? `Din betaling på ${opts.amountTotalDkk} kr refunderes fuldt ud inden for 5–10 hverdage.`
-    : "";
+    : opts.refundStatus === "manual_follow_up" && opts.amountTotalDkk
+      ? `Din betaling på ${opts.amountTotalDkk} kr kunne ikke refunderes automatisk. Vi følger manuelt op hurtigst muligt.`
+      : "";
 
   const { error } = await getResend().emails.send({
     from: FROM_EMAIL,

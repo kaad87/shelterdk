@@ -27,12 +27,12 @@ export default async function TakPage({ params, searchParams }: Props) {
     .maybeSingle();
 
   if (!booking) notFound();
-  if (t && booking.guest_token !== t) notFound();
+  if (!t || booking.guest_token !== t) notFound();
 
   const payment = await getPaymentByBookingId(id);
   const sessionMatches = !session_id || payment?.stripe_checkout_session_id === session_id;
   const isConfirmed = booking.status === "confirmed" && payment?.status === "paid" && sessionMatches;
-  const paymentHref = `/booking/${id}/betal${t ? `?t=${encodeURIComponent(t)}` : ""}`;
+  const paymentHref = `/booking/${id}/betal?t=${encodeURIComponent(t)}`;
   const refreshParams = new URLSearchParams();
   if (session_id) refreshParams.set("session_id", session_id);
   if (t) refreshParams.set("t", t);

@@ -24,7 +24,7 @@ function vevent(uid: string, summary: string, dtstart: string, dtend: string): s
     `DTSTART;VALUE=DATE:${isoToIcal(dtstart)}`,
     `DTEND;VALUE=DATE:${isoToIcal(dtend)}`,
     "END:VEVENT",
-  ].join("\n");
+  ].join("\r\n");
 }
 
 export function generateIcal(
@@ -52,5 +52,5 @@ export function generateIcal(
   }
 
   lines.push("END:VCALENDAR");
-  return lines.join("\n");
+  return lines.join("\r\n");
 }

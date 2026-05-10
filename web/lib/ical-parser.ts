@@ -3,6 +3,8 @@ export interface IcalEvent {
   end: string;   // "YYYY-MM-DD"
 }
 
+const MAX_ICAL_EVENT_DAYS = 3650; // allow long seasonal closures, still guard malformed feeds
+
 /** RFC 5545 §3.1 — unfold continuation lines before any parsing. */
 export function unfoldIcal(raw: string): string {
   return raw.replace(/\r\n[ \t]/g, "").replace(/\r\n/g, "\n");
@@ -57,10 +59,11 @@ export function parseIcal(raw: string): IcalEvent[] {
 
     if (cancelled || !start || !end) continue;
 
-    // Guard against runaway events (> 365 days)
+    // Guard against runaway events while still allowing legitimate long closures.
     const startMs = new Date(start).getTime();
     const endMs = new Date(end).getTime();
-    if (endMs - startMs > 365 * 24 * 60 * 60 * 1000) continue;
+    if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs) continue;
+    if (endMs - startMs > MAX_ICAL_EVENT_DAYS * 24 * 60 * 60 * 1000) continue;
 
     events.push({ start, end });
   }

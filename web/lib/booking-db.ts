@@ -544,11 +544,12 @@ export async function updateIcalLastSynced(
 export async function deleteIcalSyncedDates(
   bookableShelterDbId: string
 ): Promise<void> {
-  await createAdminClient()
+  const { error } = await createAdminClient()
     .from("shelter_blocked_dates")
     .delete()
     .eq("bookable_shelter_id", bookableShelterDbId)
     .eq("source", "ical_sync");
+  if (error) throw new Error(`deleteIcalSyncedDates: ${error.message}`);
 }
 
 export async function blockDatesFromSync(
@@ -556,13 +557,19 @@ export async function blockDatesFromSync(
   dates: string[]
 ): Promise<void> {
   if (dates.length === 0) return;
-  await createAdminClient()
-    .from("shelter_blocked_dates")
-    .upsert(
-      dates.map((d) => ({
-        bookable_shelter_id: bookableShelterDbId,
-        blocked_date: d,
-        source: "ical_sync",
-      }))
-    );
+  const supabase = createAdminClient();
+  const chunkSize = 500;
+  for (let i = 0; i < dates.length; i += chunkSize) {
+    const chunk = dates.slice(i, i + chunkSize);
+    const { error } = await supabase
+      .from("shelter_blocked_dates")
+      .upsert(
+        chunk.map((d) => ({
+          bookable_shelter_id: bookableShelterDbId,
+          blocked_date: d,
+          source: "ical_sync",
+        }))
+      );
+    if (error) throw new Error(`blockDatesFromSync: ${error.message}`);
+  }
 }

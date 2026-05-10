@@ -28,6 +28,7 @@ describe("generateIcal", () => {
     expect(out).toContain("BEGIN:VCALENDAR");
     expect(out).toContain("END:VCALENDAR");
     expect(out).toContain("PRODID:-//ShelterDK//Booking//DA");
+    expect(out).toContain("\r\nEND:VCALENDAR");
   });
 
   it("includes confirmed booking with guest name", () => {
