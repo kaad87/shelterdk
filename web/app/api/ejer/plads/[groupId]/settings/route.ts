@@ -43,8 +43,8 @@ export async function PATCH(
 
   if ("shared_description" in body) {
     const raw = typeof body.shared_description === "string" ? body.shared_description.trim() : "";
-    if (raw.length > 2000) {
-      return NextResponse.json({ error: "Beskrivelse må højst være 2000 tegn" }, { status: 400 });
+    if (raw.length > 4000) {
+      return NextResponse.json({ error: "Beskrivelse må højst være 4000 tegn" }, { status: 400 });
     }
     sharedDescription = raw;
   }

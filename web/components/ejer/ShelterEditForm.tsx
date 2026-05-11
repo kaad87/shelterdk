@@ -140,12 +140,12 @@ export function ShelterEditForm({ shelter, sharedContent, shelterDbId }: Props) 
         <div>
           <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1.5">Beskrivelse</label>
           <textarea
-            maxLength={2000} rows={5}
+            maxLength={4000} rows={5}
             value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
             className="w-full rounded-xl border border-primary/15 px-3.5 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-accent/35"
           />
-          <p className="text-xs text-primary/30 mt-1">{form.description.length}/2000</p>
+          <p className="text-xs text-primary/30 mt-1">{form.description.length}/4000</p>
         </div>
 
         <div className="max-w-xs">

@@ -340,12 +340,12 @@ export function ShelterGroupSettingsForm({
           <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1.5">Fælles beskrivelse</label>
           <textarea
             rows={6}
-            maxLength={2000}
+            maxLength={4000}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="w-full rounded-xl border border-primary/15 bg-white px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-accent/35"
           />
-          <p className="text-xs text-primary/30 mt-1">{description.length}/2000</p>
+          <p className="text-xs text-primary/30 mt-1">{description.length}/4000</p>
         </div>
 
         <div>
