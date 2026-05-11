@@ -43,7 +43,7 @@ A shelter may have at most **MAX_PHOTOS = 20** photos total. The frontend disabl
 
 | File | Change |
 |------|--------|
-| `migrations/YYYYMMDD_photo_order.sql` | Add `photo_order text[]` column to `shelters` |
+| `migrations/YYYYMMDD_photo_order.sql` | Add `photo_order text[]` column to `shelters`; add RPC `remove_photo_from_shelter(shelter_id uuid, url text)` |
 | `shared/types/shelter.ts` | Add `photo_order?: string[] \| null` to shelter type |
 | `shared/lib/shelter-detail.ts` | Update `getPhotoUrls()` with prune-then-append merge + `SKIP_FIRST_IMAGES`; add new `getOrderedPhotoItems()` export (no SKIP slice, returns `PhotoItem[]`) |
 | `lib/owner-db.ts` | Add `photo_order` to `getSharedShelterContent()` select; extend `updateSharedShelterContent()` fields type with `photo_order?: string[] \| null` |
@@ -107,7 +107,7 @@ Extend the existing `updateSharedShelterContent()` fields type to include `photo
 
 ### `app/api/ejer/shelter/[id]/billeder/route.ts`
 
-**DELETE handler (atomic):** After validating `isOwnerPhotoPath`, remove the URL from `user_image_urls` **and** from `photo_order` in a single `UPDATE` statement (using Postgres array operators or an RPC that handles both columns atomically). The existing two-step approach (remove from `user_image_urls`, then separately update `photo_order`) risks `photo_order` retaining stale entries on partial failure.
+**DELETE handler (atomic):** After validating `isOwnerPhotoPath`, remove the URL from both `user_image_urls` and `photo_order` atomically via a new Supabase RPC `remove_photo_from_shelter(shelter_id, url)` that executes a single `UPDATE shelters SET user_image_urls = array_remove(user_image_urls, $url), photo_order = array_remove(photo_order, $url) WHERE id = $shelter_id`. The existing two-step approach (separate `remove_user_image_url` RPC, then a second update) risks `photo_order` retaining stale entries on partial failure. The Supabase JS v2 client cannot express this atomically via chained query builder calls — an RPC is required.
 
 **POST handler:** No change — newly uploaded URL is returned to the client; the frontend appends it to local state and persists on next "Gem billeder" save.
 
@@ -131,7 +131,7 @@ Extend the existing `updateSharedShelterContent()` fields type to include `photo
 
 ### `ShelterEditForm.tsx`
 
-Same treatment. Currently this form does not receive official photos (`image_url`, `image_urls`, `geofa_raw`) as props. Since `getOrderedPhotoItems()` needs those fields, the server page must pass the full shelter object (or at minimum those fields plus `user_image_urls`, `photo_order`, `slug`, `geofa_raw`) already fetched via `getSharedShelterContent()`. The `getSharedShelterContent()` select must also include `geofa_raw` if not already present.
+Same treatment. Currently `ShelterEditForm` receives a `BookableShelter` prop (from `bookable_shelters` table) which has no `image_url`, `image_urls`, `geofa_raw`, or `photo_order`. The server page already calls `getSharedShelterContent(shelterDbId)` to fetch that data; it should pass the result as a second prop `sharedContent: SharedShelterContent` (the return type of `getSharedShelterContent()`). `ShelterEditForm` calls `getOrderedPhotoItems(sharedContent)` to build the initial `photos` state. No changes to `BookableShelter` type needed.
 
 ---
 
