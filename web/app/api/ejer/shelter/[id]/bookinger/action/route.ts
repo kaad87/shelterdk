@@ -16,8 +16,8 @@ import {
 } from "@/lib/booking-email";
 import {
   createCheckoutSession,
-  calculateBookingAmounts,
   expireCheckoutSession,
+  resolveBookingAmounts,
 } from "@/lib/stripe";
 import {
   createBookingPayment,
@@ -30,13 +30,14 @@ import {
 } from "@/lib/payment-db";
 import { createAdminClient } from "@/utils/supabase/server-admin";
 import { sendGa4Event } from "@/lib/server-analytics";
+import { recordBookingMonitorError, recordBookingMonitorEvent } from "@/lib/booking-monitor";
 import { getAuthenticatedOwnerContext } from "@/lib/ejer-auth";
 
 export const dynamic = "force-dynamic";
 
 async function sendAutoMessageIfEnabled(
   bookableShelterDbId: string,
-  booking: { guest_email: string; guest_name: string; check_in: string; check_out: string; guest_count: number },
+  booking: { id?: string; guest_email: string; guest_name: string; check_in: string; check_out: string; guest_count: number },
   shelterTitle: string
 ): Promise<boolean> {
   try {
@@ -60,6 +61,8 @@ async function sendAutoMessageIfEnabled(
         checkOut: booking.check_out,
         guestCount: booking.guest_count,
       },
+      bookingId: booking.id,
+      shelterId: bookableShelterDbId,
     });
 
     return true;
@@ -108,6 +111,13 @@ export async function POST(
     }
 
     if (shelter.payment_mode === "upfront") {
+      const paidPayment = getLatestPaidPayment(await listPaymentsByBookingId(bookingId));
+      if (!paidPayment) {
+        return NextResponse.json(
+          { error: "Betalingen er ikke gennemført endnu" },
+          { status: 409 }
+        );
+      }
       const updated = await updateBookingStatus(bookingId, "confirmed");
       if (!updated) {
         return NextResponse.json({ error: "Booking er allerede behandlet" }, { status: 409 });
@@ -120,15 +130,12 @@ export async function POST(
           checkIn: booking.check_in,
           checkOut: booking.check_out,
           guestToken: booking.guest_token,
+          bookingId,
+          shelterId: shelter.id,
         });
       } catch (err) {
         console.error("ejer confirm (upfront): confirmation email error:", err);
       }
-      const confirmationEmailSent = await sendAutoMessageIfEnabled(
-        shelter.id,
-        booking,
-        shelter.title
-      );
       try {
         await sendGa4Event({
           headers: req.headers,
@@ -144,17 +151,15 @@ export async function POST(
       } catch (err) {
         console.error("ejer confirm (upfront): non-fatal analytics error:", err);
       }
-      return NextResponse.json({ ok: true, confirmationEmailSent });
+      return NextResponse.json({ ok: true, confirmationEmailSent: false });
     }
 
       try {
-        const { url, sessionId } = await createCheckoutSession(booking, shelter);
-        const { shelterDkk, platformDkk, totalDkk } = calculateBookingAmounts({
-          checkIn: booking.check_in,
-          checkOut: booking.check_out,
-          shelterPriceDkk: shelter.shelter_price_dkk,
-          feePct: shelter.platform_fee_pct,
-          feeMinDkk: shelter.platform_fee_min_dkk,
+        const stalePayments = await listPendingPaymentsByBookingId(bookingId);
+        const { shelterDkk, platformDkk, totalDkk } = resolveBookingAmounts(booking, shelter);
+        const { url, sessionId } = await createCheckoutSession(booking, shelter, {
+          shelterDkk,
+          platformDkk,
         });
         const created = await createBookingPayment({
           bookingId,
@@ -166,9 +171,21 @@ export async function POST(
         await expireSiblingPendingPayments(bookingId, created.id).catch((err) => {
           console.error("ejer confirm: could not expire sibling pending payments:", err);
         });
+        await Promise.all(
+          stalePayments.map((payment) =>
+            expireCheckoutSession(payment.stripe_checkout_session_id).catch((err) => {
+              console.error("ejer confirm: could not expire sibling Stripe session:", err);
+            })
+          )
+        );
         const updated = await updateBookingStatus(bookingId, "confirmed");
         if (!updated) {
-          await markPaymentExpiredBySessionId(sessionId);
+          await markPaymentExpiredBySessionId(sessionId).catch((err) => {
+            console.error("ejer confirm: could not expire payment row after 409:", err);
+          });
+          await expireCheckoutSession(sessionId).catch((err) => {
+            console.error("ejer confirm: could not expire Stripe session after 409:", err);
+          });
           return NextResponse.json({ error: "Booking er allerede behandlet" }, { status: 409 });
         }
         let warning: string | null = null;
@@ -184,6 +201,9 @@ export async function POST(
             amountPlatformDkk: platformDkk,
             paymentUrl: url,
             guestToken: booking.guest_token,
+            bookingId,
+            shelterId: shelter.id,
+            paymentId: created.id,
           });
         } catch (err) {
           console.error("ejer confirm: payment email error:", err);
@@ -236,6 +256,15 @@ export async function POST(
           );
         }
         console.error("ejer confirm: payment setup error:", err);
+        await recordBookingMonitorError({
+          source: "api/ejer/shelter/[id]/bookinger/action",
+          eventType: "owner_confirm_payment_setup_failed",
+          message: "Ejer-confirm kunne ikke oprette betalingslink",
+          bookingId,
+          shelterId: shelter.id,
+          notify: true,
+          error: err,
+        });
         return NextResponse.json(
           { error: "Kunne ikke oprette betalingslink — prøv igen om et øjeblik" },
         { status: 500 }
@@ -255,6 +284,8 @@ export async function POST(
 
     const payment = getLatestPaidPayment(await listPaymentsByBookingId(bookingId));
     let refunded = false;
+    let refundStatus: "refunded" | "manual_follow_up" | "not_refunded" = "not_refunded";
+    let manualFollowUpReason: string | null = null;
     if (shelter.payment_mode === "upfront" && payment?.status === "paid") {
       try {
         const { default: Stripe } = await import("stripe");
@@ -267,9 +298,15 @@ export async function POST(
         if (pi?.id) {
           await stripe.refunds.create({ payment_intent: pi.id });
           refunded = true;
+          refundStatus = "refunded";
+        } else {
+          refundStatus = "manual_follow_up";
+          manualFollowUpReason = "Stripe checkout-session manglede payment_intent.id";
         }
       } catch (err) {
         console.error("ejer reject: Stripe refund error:", err);
+        refundStatus = "manual_follow_up";
+        manualFollowUpReason = err instanceof Error ? err.message : String(err);
       }
     }
 
@@ -282,9 +319,40 @@ export async function POST(
           checkIn: booking.check_in,
           checkOut: booking.check_out,
           amountTotalDkk: payment.amount_total_dkk,
+          bookingId,
+          shelterId: shelter.id,
+          paymentId: payment.id,
         });
       } catch (err) {
         console.error("ejer reject: refund email error:", err);
+      }
+    } else if (refundStatus === "manual_follow_up" && payment) {
+      await recordBookingMonitorEvent({
+        severity: "error",
+        source: "api/ejer/shelter/[id]/bookinger/action",
+        eventType: "owner_reject_refund_manual_follow_up",
+        message: "Afvist booking kræver manuel refund-opfølgning",
+        bookingId,
+        shelterId: shelter.id,
+        paymentId: payment.id,
+        notify: true,
+        metadata: { amountTotalDkk: payment.amount_total_dkk, reason: manualFollowUpReason },
+      });
+      try {
+        await sendOwnerCancelledToGuest({
+          guestEmail: booking.guest_email,
+          guestName: booking.guest_name,
+          shelterTitle: shelter.title,
+          checkIn: booking.check_in,
+          checkOut: booking.check_out,
+          refundStatus,
+          amountTotalDkk: payment.amount_total_dkk,
+          bookingId,
+          shelterId: shelter.id,
+          paymentId: payment.id,
+        });
+      } catch (err) {
+        console.error("ejer reject: manual follow-up email error:", err);
       }
     } else {
       try {
@@ -294,6 +362,8 @@ export async function POST(
           shelterTitle: shelter.title,
           checkIn: booking.check_in,
           checkOut: booking.check_out,
+          bookingId,
+          shelterId: shelter.id,
         });
       } catch (err) {
         console.error("ejer reject email error:", err);
@@ -322,6 +392,12 @@ export async function POST(
   if (action === "resend-payment") {
     if (booking.source === "owner_manual") {
       return NextResponse.json({ error: "Manuelle bookinger har ingen betalingslink" }, { status: 409 });
+    }
+    if (shelter.payment_mode !== "after_confirmation") {
+      return NextResponse.json(
+        { error: "Betalingslink kan kun gensendes for bookinger, der betales efter godkendelse" },
+        { status: 409 }
+      );
     }
     if (booking.status !== "confirmed") {
       return NextResponse.json({ error: "Booking er ikke bekræftet" }, { status: 409 });
@@ -352,6 +428,9 @@ export async function POST(
             amountPlatformDkk: existing.amount_platform_dkk,
             paymentUrl: session.url,
             guestToken: booking.guest_token,
+            bookingId,
+            shelterId: shelter.id,
+            paymentId: existing.id,
           });
           await sendGa4Event({
             headers: req.headers,
@@ -373,13 +452,7 @@ export async function POST(
     }
 
     try {
-      const fallbackAmounts = calculateBookingAmounts({
-        checkIn: booking.check_in,
-        checkOut: booking.check_out,
-        shelterPriceDkk: shelter.shelter_price_dkk,
-        feePct: shelter.platform_fee_pct,
-        feeMinDkk: shelter.platform_fee_min_dkk,
-      });
+      const fallbackAmounts = resolveBookingAmounts(booking, shelter);
       const shelterDkk = latestQuotedPayment?.amount_shelter_dkk ?? fallbackAmounts.shelterDkk;
       const platformDkk = latestQuotedPayment?.amount_platform_dkk ?? fallbackAmounts.platformDkk;
       const totalDkk = latestQuotedPayment?.amount_total_dkk ?? fallbackAmounts.totalDkk;
@@ -416,6 +489,9 @@ export async function POST(
         amountPlatformDkk: platformDkk,
         paymentUrl: url,
         guestToken: booking.guest_token,
+        bookingId,
+        shelterId: shelter.id,
+        paymentId: created.id,
       });
       await sendGa4Event({
         headers: req.headers,
@@ -465,6 +541,7 @@ export async function POST(
     const payment = getLatestPaidPayment(await listPaymentsByBookingId(bookingId));
     let refunded = false;
     let refundStatus: "refunded" | "manual_follow_up" | "not_refunded" = "not_refunded";
+    let manualFollowUpReason: string | null = null;
     if (booking.source !== "owner_manual" && payment?.status === "paid") {
       try {
         const { default: Stripe } = await import("stripe");
@@ -478,11 +555,29 @@ export async function POST(
           await stripe.refunds.create({ payment_intent: pi.id });
           refunded = true;
           refundStatus = "refunded";
+        } else {
+          refundStatus = "manual_follow_up";
+          manualFollowUpReason = "Stripe checkout-session manglede payment_intent.id";
         }
       } catch (err) {
         console.error("ejer cancel: Stripe refund error:", err);
         refundStatus = "manual_follow_up";
+        manualFollowUpReason = err instanceof Error ? err.message : String(err);
       }
+    }
+
+    if (refundStatus === "manual_follow_up" && payment) {
+      await recordBookingMonitorEvent({
+        severity: "error",
+        source: "api/ejer/shelter/[id]/bookinger/action",
+        eventType: "owner_cancel_refund_manual_follow_up",
+        message: "Owner-annullering kræver manuel refund-opfølgning",
+        bookingId,
+        shelterId: shelter.id,
+        paymentId: payment.id,
+        notify: true,
+        metadata: { amountTotalDkk: payment.amount_total_dkk, reason: manualFollowUpReason },
+      });
     }
 
     if (booking.source !== "owner_manual") {
@@ -495,6 +590,9 @@ export async function POST(
           checkOut: booking.check_out,
           refundStatus,
           amountTotalDkk: payment?.status === "paid" ? payment.amount_total_dkk : null,
+          bookingId,
+          shelterId: shelter.id,
+          paymentId: payment?.id ?? undefined,
         });
       } catch (err) {
         console.error("ejer cancel: guest email error:", err);

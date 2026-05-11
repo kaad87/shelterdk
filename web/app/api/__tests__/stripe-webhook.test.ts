@@ -22,11 +22,17 @@ const mockExpireSiblingPendingPayments = vi.fn();
 const mockSendPaymentConfirmed = vi.fn();
 const mockSendBookingExpired = vi.fn();
 const mockSendRefundedToGuest = vi.fn();
+const mockSendBookingAutoMessage = vi.fn();
 const mockUpdateBookingStatus = vi.fn();
 const mockCancelPendingBooking = vi.fn();
+const mockCancelBooking = vi.fn();
 
 vi.mock("@/lib/stripe", () => ({
   constructWebhookEvent: mockConstructWebhookEvent,
+  getCheckoutSession: vi.fn().mockResolvedValue({
+    status: "complete",
+    payment_intent: { id: "pi_test" },
+  }),
 }));
 
 vi.mock("@/lib/payment-db", () => ({
@@ -41,11 +47,13 @@ vi.mock("@/lib/booking-email", () => ({
   sendPaymentConfirmed: mockSendPaymentConfirmed,
   sendBookingExpired: mockSendBookingExpired,
   sendRefundedToGuest: mockSendRefundedToGuest,
+  sendBookingAutoMessage: mockSendBookingAutoMessage,
 }));
 
 vi.mock("@/lib/booking-db", () => ({
   updateBookingStatus: mockUpdateBookingStatus,
   cancelPendingBooking: mockCancelPendingBooking,
+  cancelBooking: mockCancelBooking,
 }));
 
 vi.mock("@/lib/server-analytics", () => ({
@@ -65,9 +73,11 @@ vi.mock("@/utils/supabase/server-admin", () => ({
                   guest_email: "guest@test.dk",
                   guest_name: "Lars",
                   guest_token: "guest-token-1",
+                  guest_count: 3,
                   check_in: "2027-06-01",
                   check_out: "2027-06-03",
                   bookable_shelters: {
+                    id: "shelter-uuid-1",
                     owner_email: "owner@test.dk",
                     owner_token: "owner-token-1",
                     title: "Test Shelter",
@@ -90,6 +100,7 @@ describe("POST /api/stripe/webhook", () => {
     mockUpdateBookingStatus.mockResolvedValue(true);
     mockExpireSiblingPendingPayments.mockResolvedValue(undefined);
     mockMarkPaymentFailed.mockResolvedValue(undefined);
+    mockCancelBooking.mockResolvedValue(true);
   });
 
   it("auto-bekræfter upfront booking ved completed checkout", async () => {
@@ -186,7 +197,7 @@ describe("POST /api/stripe/webhook", () => {
     );
 
     expect(res.status).toBe(200);
-    expect(mockMarkPaymentPaid).toHaveBeenCalledWith("payment-1");
+    expect(mockMarkPaymentPaid).not.toHaveBeenCalled();
     expect(mockMarkPaymentFailed).toHaveBeenCalledWith("payment-1");
     expect(mockSendPaymentConfirmed).not.toHaveBeenCalled();
     expect(mockSendRefundedToGuest).toHaveBeenCalledWith(

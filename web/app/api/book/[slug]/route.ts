@@ -10,6 +10,7 @@ import {
 import {
   sendBookingRequestToOwner,
   sendBookingReceivedToGuest,
+  sendUpfrontPaymentLinkToGuest,
 } from "@/lib/booking-email";
 import {
   createCheckoutSession,
@@ -19,6 +20,7 @@ import {
 import { createBookingPayment } from "@/lib/payment-db";
 import { sendGa4Event } from "@/lib/server-analytics";
 import { BOOKING_WINDOW_DAYS } from "@/lib/booking-config";
+import { recordBookingMonitorError, recordBookingMonitorEvent } from "@/lib/booking-monitor";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +33,13 @@ export async function POST(
   const { slug } = await params;
   const shelter = await getBookableShelterBySlug(slug);
   if (!shelter) {
+    await recordBookingMonitorEvent({
+      severity: "warning",
+      source: "api/book/[slug]",
+      eventType: "shelter_not_found",
+      message: "Bookingforsøg mod ukendt shelter-slug",
+      metadata: { slug },
+    });
     return NextResponse.json({ error: "Shelter ikke fundet" }, { status: 404 });
   }
 
@@ -87,6 +96,14 @@ export async function POST(
     );
 
   try {
+    const quotedAmounts = calculateBookingAmounts({
+      checkIn: check_in,
+      checkOut: check_out,
+      shelterPriceDkk: shelter.shelter_price_dkk,
+      feePct: shelter.platform_fee_pct,
+      feeMinDkk: shelter.platform_fee_min_dkk,
+    });
+
     // Server-side guard: do not rely solely on client availability data.
     const conflict = await hasUnavailableOverlap(shelter.id, check_in, check_out, {
       includePending: true,
@@ -105,6 +122,9 @@ export async function POST(
       check_in,
       check_out,
       message: message || null,
+      quoted_shelter_dkk: quotedAmounts.shelterDkk,
+      quoted_platform_dkk: quotedAmounts.platformDkk,
+      quoted_total_dkk: quotedAmounts.totalDkk,
     });
 
     // For after_confirmation: notify owner + send guest receipt immediately
@@ -125,6 +145,8 @@ export async function POST(
             message: message || null,
             confirmToken,
             rejectToken,
+            bookingId: booking.id,
+            shelterId: shelter.id,
           }),
           sendBookingReceivedToGuest({
             guestEmail: guest_email,
@@ -133,6 +155,8 @@ export async function POST(
             checkIn: check_in,
             checkOut: check_out,
             guestToken: booking.guest_token,
+            bookingId: booking.id,
+            shelterId: shelter.id,
           }),
         ]);
       } catch (err) {
@@ -146,24 +170,49 @@ export async function POST(
     if (shelter.payment_mode === "upfront") {
       try {
         const { url, sessionId } = await createCheckoutSession(booking, shelter);
-        const { shelterDkk, platformDkk, totalDkk } = calculateBookingAmounts({
-          checkIn: booking.check_in,
-          checkOut: booking.check_out,
-          shelterPriceDkk: shelter.shelter_price_dkk,
-          feePct: shelter.platform_fee_pct,
-          feeMinDkk: shelter.platform_fee_min_dkk,
-        });
-        amountTotalDkk = totalDkk;
-        await createBookingPayment({
+        amountTotalDkk = quotedAmounts.totalDkk;
+        const createdPayment = await createBookingPayment({
           bookingId: booking.id,
           stripeCheckoutSessionId: sessionId,
-          amountTotalDkk: totalDkk,
-          amountShelterDkk: shelterDkk,
-          amountPlatformDkk: platformDkk,
+          amountTotalDkk: quotedAmounts.totalDkk,
+          amountShelterDkk: quotedAmounts.shelterDkk,
+          amountPlatformDkk: quotedAmounts.platformDkk,
         });
         checkoutUrl = url;
+        try {
+          await sendUpfrontPaymentLinkToGuest({
+            guestEmail: guest_email,
+            guestName: guest_name,
+            shelterTitle: shelter.title,
+            checkIn: check_in,
+            checkOut: check_out,
+            amountTotalDkk: quotedAmounts.totalDkk,
+            amountShelterDkk: quotedAmounts.shelterDkk,
+            amountPlatformDkk: quotedAmounts.platformDkk,
+            paymentUrl: url,
+            guestToken: booking.guest_token,
+            bookingId: booking.id,
+            shelterId: shelter.id,
+            paymentId: createdPayment.id,
+          });
+        } catch (err) {
+          console.error("book route: upfront recovery email error:", err);
+        }
       } catch (err) {
         console.error("book route: upfront checkout error:", err);
+        await recordBookingMonitorError({
+          source: "api/book/[slug]",
+          eventType: "upfront_checkout_failed",
+          message: "Upfront checkout kunne ikke oprettes",
+          bookingId: booking.id,
+          shelterId: shelter.id,
+          notify: true,
+          error: err,
+          metadata: {
+            slug,
+            paymentMode: shelter.payment_mode,
+          },
+        });
         await cancelPendingBooking(booking.id).catch((cancelErr) => {
           console.error("book route: failed to cancel pending booking after checkout error:", cancelErr);
         });
@@ -220,12 +269,29 @@ export async function POST(
     );
   } catch (err) {
     if (err instanceof BookingConflictError) {
+      await recordBookingMonitorEvent({
+        severity: "warning",
+        source: "api/book/[slug]",
+        eventType: "booking_conflict",
+        message: "Bookingforsøg blev afvist pga. overlap",
+        shelterId: shelter.id,
+        metadata: { slug, check_in, check_out },
+      });
       return NextResponse.json(
         { error: "Disse datoer er desværre ikke længere ledige" },
         { status: 409 }
       );
     }
     console.error("booking create error:", err);
+    await recordBookingMonitorError({
+      source: "api/book/[slug]",
+      eventType: "booking_create_failed",
+      message: "Bookingoprettelse fejlede",
+      shelterId: shelter.id,
+      notify: true,
+      error: err,
+      metadata: { slug, check_in, check_out, guest_count },
+    });
     return NextResponse.json(
       { error: "Noget gik galt. Prøv igen." },
       { status: 500 }

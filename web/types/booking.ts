@@ -38,6 +38,9 @@ export interface ShelterBooking {
   cancelled_at: string | null;
   cancelled_by: "owner" | "guest" | "system" | null;
   source: BookingSource;
+  quoted_shelter_dkk: number | null;
+  quoted_platform_dkk: number | null;
+  quoted_total_dkk: number | null;
 }
 
 export type BookingAction = "confirm" | "reject" | "cancel";

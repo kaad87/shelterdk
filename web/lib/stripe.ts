@@ -84,6 +84,49 @@ export function calculateBookingAmounts(opts: {
   return { nights, shelterDkk, platformDkk, platformNetDkk, platformVatDkk, totalDkk };
 }
 
+export function resolveBookingAmounts(
+  booking: Pick<ShelterBooking, "check_in" | "check_out" | "quoted_shelter_dkk" | "quoted_platform_dkk" | "quoted_total_dkk">,
+  shelter: Pick<BookableShelter, "shelter_price_dkk" | "platform_fee_pct" | "platform_fee_min_dkk">
+): {
+  nights: number;
+  shelterDkk: number;
+  platformDkk: number;
+  platformNetDkk: number;
+  platformVatDkk: number;
+  totalDkk: number;
+  isSnapshot: boolean;
+} {
+  if (
+    typeof booking.quoted_shelter_dkk === "number" &&
+    typeof booking.quoted_platform_dkk === "number" &&
+    typeof booking.quoted_total_dkk === "number"
+  ) {
+    const { netDkk: platformNetDkk, vatDkk: platformVatDkk } = calculateVatIncludedBreakdown(
+      booking.quoted_platform_dkk
+    );
+    return {
+      nights: calculateBookingNights(booking.check_in, booking.check_out),
+      shelterDkk: booking.quoted_shelter_dkk,
+      platformDkk: booking.quoted_platform_dkk,
+      platformNetDkk,
+      platformVatDkk,
+      totalDkk: booking.quoted_total_dkk,
+      isSnapshot: true,
+    };
+  }
+
+  return {
+    ...calculateBookingAmounts({
+      checkIn: booking.check_in,
+      checkOut: booking.check_out,
+      shelterPriceDkk: shelter.shelter_price_dkk,
+      feePct: shelter.platform_fee_pct,
+      feeMinDkk: shelter.platform_fee_min_dkk,
+    }),
+    isSnapshot: false,
+  };
+}
+
 /**
  * Create a Stripe Checkout Session for a booking.
  * Returns { url, sessionId } — url to redirect guest, sessionId to store in DB.
@@ -100,15 +143,11 @@ export async function createCheckoutSession(
   const stripe = getStripe();
 
   const pricePerNightDkk = shelter.shelter_price_dkk ?? 0;
-  const { nights, shelterDkk, platformDkk } = calculateBookingAmounts({
-    checkIn: booking.check_in,
-    checkOut: booking.check_out,
-    shelterPriceDkk: shelter.shelter_price_dkk,
-    feePct: shelter.platform_fee_pct,
-    feeMinDkk: shelter.platform_fee_min_dkk,
-  });
+  const { nights, shelterDkk, platformDkk, isSnapshot } = resolveBookingAmounts(booking, shelter);
   const resolvedShelterDkk = amountsOverride?.shelterDkk ?? shelterDkk;
   const resolvedPlatformDkk = amountsOverride?.platformDkk ?? platformDkk;
+  const useSnapshotPricing =
+    Boolean(amountsOverride) || isSnapshot;
 
   const lineItems: any[] = [];
 
@@ -117,9 +156,9 @@ export async function createCheckoutSession(
       price_data: {
         currency: "dkk",
         product_data: { name: `Overnatning: ${shelter.title}` },
-        unit_amount: amountsOverride ? resolvedShelterDkk * 100 : pricePerNightDkk * 100,
+        unit_amount: useSnapshotPricing ? resolvedShelterDkk * 100 : pricePerNightDkk * 100,
       },
-      quantity: amountsOverride ? 1 : nights,
+      quantity: useSnapshotPricing ? 1 : nights,
     });
   }
 
@@ -145,6 +184,12 @@ export async function createCheckoutSession(
 
   if (!session.url) throw new Error("Stripe session created but no URL returned");
   return { url: session.url, sessionId: session.id };
+}
+
+export async function getCheckoutSession(sessionId: string): Promise<Stripe.Checkout.Session> {
+  return getStripe().checkout.sessions.retrieve(sessionId, {
+    expand: ["payment_intent"],
+  });
 }
 
 /**

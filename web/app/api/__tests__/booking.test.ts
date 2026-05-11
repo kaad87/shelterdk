@@ -1,24 +1,36 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // ── Stripe mocks (stripe package not installed in test env) ──────────────────
+const mockStripeSessionRetrieve = vi.fn().mockResolvedValue({
+  url: "https://stripe.com/pay",
+  payment_intent: { id: "pi_test" },
+});
+const mockStripeSessionCreate = vi.fn().mockResolvedValue({
+  id: "cs_test",
+  url: "https://stripe.com/pay",
+});
+const mockStripeRefundCreate = vi.fn().mockResolvedValue({ id: "re_test" });
+
 vi.mock("stripe", () => ({
   default: class MockStripe {
     checkout = {
       sessions: {
-        retrieve: vi.fn().mockResolvedValue({ url: "https://stripe.com/pay", payment_intent: { id: "pi_test" } }),
-        create: vi.fn().mockResolvedValue({ id: "cs_test", url: "https://stripe.com/pay" }),
+        retrieve: mockStripeSessionRetrieve,
+        create: mockStripeSessionCreate,
       },
     };
-    refunds = { create: vi.fn().mockResolvedValue({ id: "re_test" }) };
+    refunds = { create: mockStripeRefundCreate };
     webhooks = { constructEvent: vi.fn() };
   },
 }));
 
 vi.mock("@/lib/stripe", () => ({
   createCheckoutSession: vi.fn().mockResolvedValue({ url: "https://stripe.com/pay", sessionId: "cs_test" }),
+  getCheckoutSession: vi.fn().mockResolvedValue({ status: "complete", payment_intent: { id: "pi_test" } }),
   expireCheckoutSession: vi.fn().mockResolvedValue(undefined),
   calculateFee: vi.fn().mockReturnValue({ shelterDkk: 100, platformDkk: 25, totalDkk: 125 }),
   calculateBookingAmounts: vi.fn().mockReturnValue({ nights: 2, shelterDkk: 200, platformDkk: 25, totalDkk: 225 }),
+  resolveBookingAmounts: vi.fn().mockReturnValue({ nights: 2, shelterDkk: 200, platformDkk: 25, totalDkk: 225, platformNetDkk: 20, platformVatDkk: 5, isSnapshot: false }),
   calculateBookingNights: vi.fn().mockReturnValue(2),
   constructWebhookEvent: vi.fn(),
 }));
@@ -36,6 +48,7 @@ vi.mock("@/lib/payment-db", () => ({
   markPaymentFailed: vi.fn().mockResolvedValue(undefined),
   expireOldPayments: vi.fn().mockResolvedValue([]),
   markPaymentExpired: vi.fn().mockResolvedValue(undefined),
+  markPaymentExpiredBySessionId: vi.fn().mockResolvedValue(undefined),
 }));
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
@@ -51,8 +64,13 @@ const mockUpdateBookingStatus = vi.fn();
 const mockHasConfirmedOverlap = vi.fn();
 const mockHasUnavailableOverlap = vi.fn();
 const mockCancelPendingBooking = vi.fn();
+const mockCancelBooking = vi.fn();
 const mockSendBookingConfirmedToGuest = vi.fn();
 const mockSendBookingRejectedToGuest = vi.fn();
+const mockSendOwnerCancelledToGuest = vi.fn();
+const mockSendPaymentRequestToGuest = vi.fn();
+const mockSendBookingAutoMessage = vi.fn();
+const mockSendUpfrontPaymentLinkToGuest = vi.fn();
 const mockGetBookableShelterByOwnerToken = vi.fn();
 const mockGetBookingByIdForShelter = vi.fn();
 const mockGetBookingsForShelter = vi.fn();
@@ -72,6 +90,7 @@ vi.mock("@/lib/booking-db", () => ({
   hasConfirmedOverlap: mockHasConfirmedOverlap,
   hasUnavailableOverlap: mockHasUnavailableOverlap,
   cancelPendingBooking: mockCancelPendingBooking,
+  cancelBooking: mockCancelBooking,
   getBookableShelterByOwnerToken: mockGetBookableShelterByOwnerToken,
   getBookingByIdForShelter: mockGetBookingByIdForShelter,
   getBookingsForShelter: mockGetBookingsForShelter,
@@ -95,11 +114,14 @@ vi.mock("@/lib/booking-email", () => ({
   sendBookingReceivedToGuest: mockSendBookingReceivedToGuest,
   sendBookingConfirmedToGuest: mockSendBookingConfirmedToGuest,
   sendBookingRejectedToGuest: mockSendBookingRejectedToGuest,
-  sendPaymentRequestToGuest: vi.fn().mockResolvedValue(undefined),
+  sendOwnerCancelledToGuest: mockSendOwnerCancelledToGuest,
+  sendPaymentRequestToGuest: mockSendPaymentRequestToGuest,
   sendRefundedToGuest: vi.fn().mockResolvedValue(undefined),
   sendUpfrontPaymentReceived: vi.fn().mockResolvedValue(undefined),
   sendPaymentConfirmed: vi.fn().mockResolvedValue(undefined),
   sendBookingExpired: vi.fn().mockResolvedValue(undefined),
+  sendBookingAutoMessage: mockSendBookingAutoMessage,
+  sendUpfrontPaymentLinkToGuest: mockSendUpfrontPaymentLinkToGuest,
 }));
 
 vi.mock("@/lib/server-analytics", () => ({
@@ -108,6 +130,15 @@ vi.mock("@/lib/server-analytics", () => ({
 
 beforeEach(async () => {
   vi.clearAllMocks();
+  mockStripeSessionRetrieve.mockResolvedValue({
+    url: "https://stripe.com/pay",
+    payment_intent: { id: "pi_test" },
+  });
+  mockStripeSessionCreate.mockResolvedValue({
+    id: "cs_test",
+    url: "https://stripe.com/pay",
+  });
+  mockStripeRefundCreate.mockResolvedValue({ id: "re_test" });
   mockHasUnavailableOverlap.mockResolvedValue(false);
   mockHasConfirmedOverlap.mockResolvedValue(false);
   mockSendGa4Event.mockResolvedValue(undefined);
@@ -448,6 +479,39 @@ describe("GET /api/booking/action/[token]", () => {
     expect(res.headers.get("location")).toContain("confirmed");
     expect(mockUpdateBookingStatus).toHaveBeenCalledWith("booking-uuid-1", "confirmed");
   });
+
+  it("opretter betalingslink ved magic-link confirm for after_confirmation", async () => {
+    mockResolveActionToken.mockResolvedValue({
+      token: { id: "t1", action: "confirm", used_at: null, expires_at: "2099-01-01T00:00:00Z" },
+      booking: mockBooking({ status: "pending" }),
+      shelter: mockShelter({
+        payment_mode: "after_confirmation",
+        shelter_price_dkk: 100,
+        platform_fee_pct: 5,
+        platform_fee_min_dkk: 25,
+      }),
+    });
+    mockHasConfirmedOverlap.mockResolvedValue(false);
+    mockMarkTokenUsed.mockResolvedValue(true);
+    mockUpdateBookingStatus.mockResolvedValue(true);
+
+    const { GET } = await import("../booking/action/[token]/route");
+    const res = await GET(
+      new Request("http://localhost") as never,
+      { params: Promise.resolve({ token: "confirm-token" }) }
+    );
+
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toContain("confirmed");
+    expect(mockSendPaymentRequestToGuest).toHaveBeenCalledWith(
+      expect.objectContaining({
+        guestEmail: "lars@test.dk",
+        guestToken: "guest-token-1",
+      })
+    );
+    expect(mockSendBookingConfirmedToGuest).not.toHaveBeenCalled();
+    expect(mockUpdateBookingStatus).toHaveBeenCalledWith("booking-uuid-1", "confirmed");
+  });
 });
 
 // ── GET /api/owner/[token]/bookings ───────────────────────────────────────────
@@ -591,6 +655,25 @@ describe("POST /api/owner/[token]/action", () => {
     expect(mockUpdateBookingStatus).toHaveBeenCalledWith("booking-uuid-1", "confirmed");
   });
 
+  it("bekræfter ikke upfront-booking manuelt før betalingen er gennemført", async () => {
+    mockGetBookableShelterByOwnerToken.mockResolvedValue(
+      mockShelter({ payment_mode: "upfront" })
+    );
+    mockGetBookingByIdForShelter.mockResolvedValue(mockBooking({ status: "pending" }));
+    const { POST } = await import("../owner/[token]/action/route");
+    const res = await POST(
+      new Request("http://localhost", {
+        method: "POST",
+        body: JSON.stringify({ booking_id: "booking-uuid-1", action: "confirm" }),
+        headers: { "Content-Type": "application/json" },
+      }) as never,
+      { params: Promise.resolve({ token: "owner-token-1" }) }
+    );
+
+    expect(res.status).toBe(409);
+    expect(mockUpdateBookingStatus).not.toHaveBeenCalled();
+  });
+
   it("bekræfter ikke after_confirmation-booking hvis payment-record ikke kan oprettes", async () => {
     mockGetBookableShelterByOwnerToken.mockResolvedValue(
       mockShelter({
@@ -637,6 +720,74 @@ describe("POST /api/owner/[token]/action", () => {
 
     expect(res.status).toBe(409);
     expect(mockSendBookingRejectedToGuest).not.toHaveBeenCalled();
+  });
+
+  it("markerer refund som manuel opfoelgning ved reject hvis payment intent mangler", async () => {
+    mockGetBookableShelterByOwnerToken.mockResolvedValue(
+      mockShelter({ payment_mode: "upfront" })
+    );
+    mockGetBookingByIdForShelter.mockResolvedValue(mockBooking({ status: "pending" }));
+    mockUpdateBookingStatus.mockResolvedValue(true);
+
+    const paymentDb = await import("@/lib/payment-db");
+    vi.mocked(paymentDb.listPaymentsByBookingId).mockResolvedValueOnce([
+      {
+        id: "payment-1",
+        booking_id: "booking-uuid-1",
+        stripe_checkout_session_id: "cs_paid",
+        amount_total_dkk: 125,
+        amount_shelter_dkk: 100,
+        amount_platform_dkk: 25,
+        status: "paid",
+      },
+    ] as never);
+
+    mockStripeSessionRetrieve.mockResolvedValueOnce({
+      url: "https://stripe.com/pay",
+      payment_intent: {},
+    } as never);
+
+    const { POST } = await import("../owner/[token]/action/route");
+    const res = await POST(
+      new Request("http://localhost", {
+        method: "POST",
+        body: JSON.stringify({ booking_id: "booking-uuid-1", action: "reject" }),
+        headers: { "Content-Type": "application/json" },
+      }) as never,
+      { params: Promise.resolve({ token: "owner-token-1" }) }
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockSendOwnerCancelledToGuest).toHaveBeenCalledWith(
+      expect.objectContaining({
+        guestEmail: "lars@test.dk",
+        refundStatus: "manual_follow_up",
+        amountTotalDkk: 125,
+      })
+    );
+    expect(mockSendBookingRejectedToGuest).not.toHaveBeenCalled();
+  });
+
+  it("gensender ikke betalingslink for upfront-shelters", async () => {
+    mockGetBookableShelterByOwnerToken.mockResolvedValue(
+      mockShelter({ payment_mode: "upfront" })
+    );
+    mockGetBookingByIdForShelter.mockResolvedValue(
+      mockBooking({ status: "confirmed" })
+    );
+
+    const { POST } = await import("../owner/[token]/action/route");
+    const res = await POST(
+      new Request("http://localhost", {
+        method: "POST",
+        body: JSON.stringify({ booking_id: "booking-uuid-1", action: "resend-payment" }),
+        headers: { "Content-Type": "application/json" },
+      }) as never,
+      { params: Promise.resolve({ token: "owner-token-1" }) }
+    );
+
+    expect(res.status).toBe(409);
+    expect(mockSendPaymentRequestToGuest).not.toHaveBeenCalled();
   });
 });
 

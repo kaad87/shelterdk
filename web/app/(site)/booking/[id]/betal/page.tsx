@@ -12,27 +12,30 @@ import {
 import {
   createCheckoutSession,
   calculateVatIncludedBreakdown,
-  calculateBookingAmounts,
+  resolveBookingAmounts,
   expireCheckoutSession,
 } from "@/lib/stripe";
+import { reconcileCompletedCheckoutSession } from "@/lib/payment-reconcile";
 
 export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ t?: string }>;
+  searchParams: Promise<{ t?: string; session_id?: string }>;
 }
 
 export default async function BetalPage({ params, searchParams }: Props) {
   const { id } = await params;
-  const { t } = await searchParams;
+  const { t, session_id } = await searchParams;
 
-  const { data: booking } = await createAdminClient()
-    .from("shelter_bookings")
-    .select("*, bookable_shelters!inner(*)")
-    .eq("id", id)
-    .single();
+  const loadBooking = async () =>
+    createAdminClient()
+      .from("shelter_bookings")
+      .select("*, bookable_shelters!inner(*)")
+      .eq("id", id)
+      .single();
 
+  let { data: booking } = await loadBooking();
   if (!booking || booking.status === "cancelled" || booking.status === "rejected") {
     notFound();
   }
@@ -41,10 +44,19 @@ export default async function BetalPage({ params, searchParams }: Props) {
     notFound();
   }
 
-  const shelter = (booking as any).bookable_shelters;
-  const payments = await listPaymentsByBookingId(id);
+  if (session_id) {
+    try {
+      await reconcileCompletedCheckoutSession(session_id, "page/booking/[id]/betal");
+      ({ data: booking } = await loadBooking());
+    } catch (err) {
+      console.error("betal page: could not reconcile session from query:", err);
+    }
+  }
+
+  let shelter = (booking as any).bookable_shelters;
+  let payments = await listPaymentsByBookingId(id);
   const paidPayment = getLatestPaidPayment(payments);
-  const pendingPayment = getLatestPendingPayment(payments);
+  let pendingPayment = getLatestPendingPayment(payments);
   const latestQuotedPayment = payments[0] ?? null;
 
   if (paidPayment && booking.status === "confirmed") {
@@ -61,13 +73,7 @@ export default async function BetalPage({ params, searchParams }: Props) {
     );
   }
 
-  const fallbackAmounts = calculateBookingAmounts({
-    checkIn: booking.check_in,
-    checkOut: booking.check_out,
-    shelterPriceDkk: shelter.shelter_price_dkk,
-    feePct: shelter.platform_fee_pct ?? 5,
-    feeMinDkk: shelter.platform_fee_min_dkk ?? 25,
-  });
+  const fallbackAmounts = resolveBookingAmounts(booking, shelter);
   const shelterDkk = latestQuotedPayment?.amount_shelter_dkk ?? fallbackAmounts.shelterDkk;
   const platformDkk = latestQuotedPayment?.amount_platform_dkk ?? fallbackAmounts.platformDkk;
   const totalDkk = latestQuotedPayment?.amount_total_dkk ?? fallbackAmounts.totalDkk;
@@ -91,18 +97,44 @@ export default async function BetalPage({ params, searchParams }: Props) {
         new Date(pendingPayment.expires_at) > new Date();
 
       if (hasActivePendingPayment) {
+        if (!pendingPayment) {
+          throw new Error("Pending betaling mangler trods aktiv betalingsstatus");
+        }
+        const currentPendingPayment = pendingPayment;
         // Reuse existing Stripe session — avoid creating orphaned sessions on every load
         const Stripe = (await import("stripe")).default;
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
         const session = await stripe.checkout.sessions.retrieve(
-          pendingPayment.stripe_checkout_session_id
+          currentPendingPayment.stripe_checkout_session_id
         );
         if (session.status === "open" && session.url) {
           checkoutUrl = session.url;
         } else if (session.status === "complete") {
+          await reconcileCompletedCheckoutSession(
+            currentPendingPayment.stripe_checkout_session_id,
+            "page/booking/[id]/betal"
+          );
+          ({ data: booking } = await loadBooking());
+          shelter = (booking as any).bookable_shelters;
+          payments = await listPaymentsByBookingId(id);
+          pendingPayment = getLatestPendingPayment(payments);
+          const reconciledPaidPayment = getLatestPaidPayment(payments);
+          if (reconciledPaidPayment && booking.status === "confirmed") {
+            return (
+              <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center max-w-md p-8">
+                  <div className="text-4xl mb-4">✓</div>
+                  <h1 className="text-2xl font-bold text-green-700 mb-2">Betaling gennemført</h1>
+                  <p className="text-primary/60">
+                    Din betaling er registreret. Du modtager en bekræftelse på e-mail.
+                  </p>
+                </div>
+              </div>
+            );
+          }
           isAwaitingWebhook = true;
         } else {
-          await markPaymentExpired(pendingPayment.id).catch((err) => {
+          await markPaymentExpired(currentPendingPayment.id).catch((err) => {
             console.error("betal page: could not mark stale payment as expired:", err);
           });
         }

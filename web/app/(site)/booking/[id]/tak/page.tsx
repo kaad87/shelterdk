@@ -7,6 +7,7 @@ import {
   getLatestPendingPayment,
   listPaymentsByBookingId,
 } from "@/lib/payment-db";
+import { reconcileCompletedCheckoutSession } from "@/lib/payment-reconcile";
 
 export const dynamic = "force-dynamic";
 
@@ -24,14 +25,27 @@ export default async function TakPage({ params, searchParams }: Props) {
   const { id } = await params;
   const { session_id, t } = await searchParams;
 
-  const { data: booking } = await createAdminClient()
-    .from("shelter_bookings")
-    .select("id, status, guest_token")
-    .eq("id", id)
-    .maybeSingle();
+  const loadBooking = async () =>
+    createAdminClient()
+      .from("shelter_bookings")
+      .select("id, status, guest_token")
+      .eq("id", id)
+      .maybeSingle();
 
+  let { data: booking } = await loadBooking();
   if (!booking) notFound();
   if (!t || booking.guest_token !== t) notFound();
+
+  if (session_id) {
+    try {
+      await reconcileCompletedCheckoutSession(session_id, "page/booking/[id]/tak");
+      ({ data: booking } = await loadBooking());
+    } catch (err) {
+      console.error("tak page: could not reconcile session:", err);
+    }
+  }
+
+  if (!booking) notFound();
 
   const payments = await listPaymentsByBookingId(id);
   const paidPayment = getLatestPaidPayment(payments);
@@ -78,7 +92,7 @@ export default async function TakPage({ params, searchParams }: Props) {
         </h1>
         <p className="text-primary/60 mb-5 leading-relaxed">
           {isStillProcessing
-            ? "Stripe har sendt dig tilbage, men vi venter stadig på den endelige betalingsbekræftelse. Opdatér siden om et øjeblik, eller gå til betalingssiden igen."
+            ? "Stripe har sendt dig tilbage, men vi venter stadig på den endelige betalingsbekræftelse. Opdatér siden om et øjeblik, eller gå til din booking."
             : "Vi kunne ikke se en gennemført betaling på denne booking. Hvis du stadig vil gennemføre bookingen, kan du gå tilbage til betalingssiden."}
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">

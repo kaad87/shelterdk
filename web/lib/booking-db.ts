@@ -203,6 +203,9 @@ export async function createBooking(data: {
   message: string | null;
   status?: "pending" | "confirmed";
   source?: BookingSource;
+  quoted_shelter_dkk?: number | null;
+  quoted_platform_dkk?: number | null;
+  quoted_total_dkk?: number | null;
 }): Promise<ShelterBooking> {
   const { data: booking, error } = await createAdminClient()
     .from("shelter_bookings")
@@ -441,7 +444,7 @@ export async function getBookingByGuestToken(
  */
 export async function cancelBooking(
   bookingId: string,
-  cancelledBy: "owner" | "guest"
+  cancelledBy: "owner" | "guest" | "system"
 ): Promise<boolean> {
   const now = new Date().toISOString();
   const { data, error } = await createAdminClient()
