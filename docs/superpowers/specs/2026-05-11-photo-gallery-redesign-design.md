@@ -11,17 +11,21 @@ Replace the split "officielle billeder / ejer-uploadede billeder" UI in the ejer
 Add `photo_order text[]` (nullable, default null) to the `shelters` table.
 Add `photo_order?: string[] | null` to the shelter type in `shared/types/shelter.ts`.
 
-**Display order resolution in `getPhotoUrls()`:**
-1. Build the canonical source set: `[image_url, ...image_urls, ...user_image_urls]` (deduplicated, nulls removed).
+**Canonical source set:** The full set of URLs a shelter can ever display is built by running the same deduplication/filtering logic that already exists in `getPhotoUrls()` — reading `image_url`, `image_urls`, `user_image_urls`, and `geofa_raw` photo keys (`foto_link`, `foto_link1`–`foto_link3`, `geofafoto`, `geofafoto1`–`geofafoto3`), filtering invalid/excluded URLs. This canonical set is the authority for all merge, prune, and allowlist logic below.
+
+**Display order resolution — updated `getPhotoUrls()`:**
+1. Build the canonical source set as described above (same logic as today).
 2. If `photo_order` is non-null and non-empty:
    a. Use it as the base order.
    b. **Prune** any entries no longer present in the source set (handles GeoFA-removed photos and deleted owner photos).
    c. **Append** any source URLs not already in the pruned order (handles newly GeoFA-synced photos).
 3. If `photo_order` is null or empty, fall back to the canonical source set from step 1.
+4. Apply `SKIP_FIRST_IMAGES` slicing at the end (same as today) — unchanged behaviour for public display.
 
 This is backward-compatible: existing shelters without `photo_order` work identically to today.
 
-**Interaction with `SKIP_FIRST_IMAGES`:** `getPhotoUrls()` returns the full ordered list. Any consumer that currently applies `SKIP_FIRST_IMAGES` slicing continues to do so on the returned list — no change needed. The gallery in the ejer dashboard displays all URLs returned by `getPhotoUrls()` for the purposes of showing what guests will see.
+**Ejer dashboard — `getOrderedPhotoItems(shelter): PhotoItem[]`:**
+A new exported helper alongside `getPhotoUrls()` that runs steps 1–3 of the merge above **without** the `SKIP_FIRST_IMAGES` slice and returns `PhotoItem[]` (attaching `isDeletable` via `isOwnerPhotoPath()`). This gives the gallery editor the full unsliced list while leaving `getPhotoUrls()` — and all its existing callers — unchanged. Both `ShelterGroupSettingsForm` and `ShelterEditForm` call this helper to initialise their `photos` state.
 
 **Migration:** For all shelters with non-empty `user_image_urls`, compute and write the initial `photo_order` as `[image_url, ...image_urls, ...user_image_urls]` (filtering null/empty, deduplicating), preserving the existing display order.
 
@@ -41,7 +45,7 @@ A shelter may have at most **MAX_PHOTOS = 20** photos total. The frontend disabl
 |------|--------|
 | `migrations/YYYYMMDD_photo_order.sql` | Add `photo_order text[]` column to `shelters` |
 | `shared/types/shelter.ts` | Add `photo_order?: string[] \| null` to shelter type |
-| `shared/lib/shelter-detail.ts` | Update `getPhotoUrls()` with prune-then-append merge logic |
+| `shared/lib/shelter-detail.ts` | Update `getPhotoUrls()` with prune-then-append merge + `SKIP_FIRST_IMAGES`; add new `getOrderedPhotoItems()` export (no SKIP slice, returns `PhotoItem[]`) |
 | `lib/owner-db.ts` | Add `photo_order` to `getSharedShelterContent()` select; extend `updateSharedShelterContent()` fields type with `photo_order?: string[] \| null` |
 | `app/api/ejer/plads/[groupId]/settings/route.ts` | Accept `photo_order` in PATCH body; validate allowlist |
 | `app/api/ejer/shelter/[id]/bookinger/settings/route.ts` | Accept `photo_order` in PATCH body; validate allowlist |
@@ -99,7 +103,7 @@ Extend the existing `updateSharedShelterContent()` fields type to include `photo
 **Validation (both routes):**
 1. Confirm `photo_order` is an array of strings (if present).
 2. Confirm `photo_order.length ≤ MAX_PHOTOS`.
-3. **Server-side URL allowlist:** Fetch the shelter's current `image_url`, `image_urls`, and `user_image_urls` from the database. Build the allowset = all non-null values from those three fields. Every URL in `photo_order` must be present in the allowset. Return HTTP 400 for any URL that fails this check. This prevents an owner from injecting URLs from other shelters or arbitrary external sources.
+3. **Server-side URL allowlist:** Fetch the shelter's current `image_url`, `image_urls`, `user_image_urls`, and `geofa_raw` from the database. Build the allowset by running the same canonical source-set logic as `getPhotoUrls()` (including `geofa_raw` PHOTO_KEYS). Every URL in `photo_order` must be present in the allowset. Return HTTP 400 for any URL that fails this check. This prevents an owner from injecting URLs from other shelters or arbitrary external sources.
 
 ### `app/api/ejer/shelter/[id]/billeder/route.ts`
 
@@ -121,21 +125,21 @@ Extend the existing `updateSharedShelterContent()` fields type to include `photo
 - `fileInputRef` and inline `handleFileChange` (moved to `PhotoGallery`).
 
 **Add:**
-- `photos: PhotoItem[]` state, initialised from `photo_order` if set, else from merge of official photos (isDeletable: false) + owner photos (isDeletable: true). Use the same merge logic as `getPhotoUrls()` so the editor reflects what guests see.
+- `photos: PhotoItem[]` state, initialised by calling `getOrderedPhotoItems(shelter)` (the new helper) — this reflects the full ordered list including `geofa_raw` photos, without the `SKIP_FIRST_IMAGES` slice, matching what guests see before slicing.
 - `<PhotoGallery photos={photos} onReorder={setPhotos} onDelete={handleDeletePhoto} onUpload={handleUpload} uploading={uploading} uploadError={uploadError} />`.
 - "Gem billeder"-knap that saves `photos.map(p => p.url)` as `photo_order` via the settings PATCH endpoint.
 
 ### `ShelterEditForm.tsx`
 
-Same treatment. Currently this form does not receive official photos (`image_url`, `image_urls`) as props — the server page only passes `user_image_urls`. The server page (`app/(site)/ejer/shelter/[id]/...`) must be updated to also pass `image_url` and `image_urls` (already fetched via `getSharedShelterContent()`) so the form can build the initial `PhotoItem[]` list correctly. The `photo_order` value is passed from the server page via `getSharedShelterContent()`.
+Same treatment. Currently this form does not receive official photos (`image_url`, `image_urls`, `geofa_raw`) as props. Since `getOrderedPhotoItems()` needs those fields, the server page must pass the full shelter object (or at minimum those fields plus `user_image_urls`, `photo_order`, `slug`, `geofa_raw`) already fetched via `getSharedShelterContent()`. The `getSharedShelterContent()` select must also include `geofa_raw` if not already present.
 
 ---
 
 ## Migration script
 
 A one-time script `scripts/backfill-photo-order.ts`:
-- Fetches all shelters where `user_image_urls` is non-empty and `photo_order` is null.
-- For each: computes `[image_url, ...image_urls, ...user_image_urls]` (filtering null/empty entries, deduplicating) and writes to `photo_order`. The singular `image_url` is included so the initial order matches what `getPhotoUrls()` would produce.
+- Fetches all shelters where `user_image_urls` is non-empty and `photo_order` is null; selects `id, image_url, image_urls, user_image_urls, geofa_raw`.
+- For each: runs the canonical source-set logic (same as `getPhotoUrls()` — including `geofa_raw` photo keys, filtering/deduplication) to produce the initial `photo_order`. This ensures the backfilled order matches exactly what `getPhotoUrls()` would display.
 - Run once after deploying the migration.
 
 ---
