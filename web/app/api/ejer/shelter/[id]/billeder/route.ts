@@ -4,7 +4,6 @@ import { createAdminClient } from "@/utils/supabase/server-admin";
 import {
   getOwnerShelterById,
   appendShelterPhoto,
-  removeShelterPhoto,
   shelterPhotoUrl,
   extractPhotoPath,
   isOwnerPhotoPath,
@@ -111,11 +110,16 @@ export async function DELETE(
     return NextResponse.json({ error: "Kunne ikke slette billedet fra lageret" }, { status: 500 });
   }
 
-  try {
-    await removeShelterPhoto(shelter.shelter_id, url);
-  } catch (error) {
-    console.error("Owner photo DB delete error:", error);
-    return NextResponse.json({ error: "Billedet blev fjernet fra lageret, men ikke fra databasen" }, { status: 500 });
+  const { error: dbError } = await createAdminClient().rpc("remove_photo_from_shelter", {
+    p_shelter_id: shelter.shelter_id,
+    p_url: url,
+  });
+  if (dbError) {
+    console.error("Owner photo DB delete error:", dbError);
+    return NextResponse.json(
+      { error: "Billedet blev fjernet fra lageret, men ikke fra databasen" },
+      { status: 500 }
+    );
   }
 
   return NextResponse.json({ ok: true });
