@@ -74,6 +74,14 @@
     "typescript": "^5",
     "vitest": "^4.0.18"
   },
+  "overrides": {
+    "@dnd-kit/core": {
+      "@types/react": "$@types/react"
+    },
+    "@dnd-kit/sortable": {
+      "@types/react": "$@types/react"
+    }
+  },
   "lint-staged": {
     "*.{ts,tsx}": [
       "eslint --fix"
