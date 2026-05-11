@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
 
       let wasCancelled = false;
       if (booking?.status === "pending") {
-        wasCancelled = await cancelPendingBooking(bookingId);
+        wasCancelled = await cancelPendingBooking(bookingId, "system");
       } else if (booking?.status === "confirmed") {
         const shelter = (booking as any).bookable_shelters;
         if (shelter?.payment_mode === "after_confirmation") {

@@ -20,7 +20,10 @@ import {
 import {
   createBookingPayment,
   expireSiblingPendingPayments,
+  getLatestPaidPayment,
+  listPaymentsByBookingId,
   listPendingPaymentsByBookingId,
+  markPaymentLinkSent,
   markPaymentExpiredBySessionId,
 } from "@/lib/payment-db";
 import { sendGa4Event } from "@/lib/server-analytics";
@@ -79,6 +82,8 @@ export async function GET(
   }
 
   const { token: tokenRow, booking, shelter } = result;
+  const bookingTotalDkk = booking.quoted_total_dkk ?? 0;
+  let shouldSendZeroPriceAutoMessage = false;
 
   // Already used
   if (tokenRow.used_at) {
@@ -110,7 +115,20 @@ export async function GET(
 
   const newStatus = tokenRow.action === "confirm" ? "confirmed" : "rejected";
   try {
-    if (tokenRow.action === "confirm" && shelter.payment_mode === "after_confirmation") {
+    if (tokenRow.action === "confirm") {
+      const payments = await listPaymentsByBookingId(booking.id);
+      const paidPayment = getLatestPaidPayment(payments);
+      const originallyUpfront = payments.length > 0;
+      const requiresPostConfirmationPayment =
+        bookingTotalDkk > 0 && !originallyUpfront;
+
+      if (!requiresPostConfirmationPayment && originallyUpfront && !paidPayment && bookingTotalDkk > 0) {
+        return NextResponse.redirect(`${SITE_URL}/booking/svar/${token}?status=already_resolved`);
+      }
+
+      shouldSendZeroPriceAutoMessage = !requiresPostConfirmationPayment && !originallyUpfront && bookingTotalDkk <= 0;
+
+      if (requiresPostConfirmationPayment) {
       const { shelterDkk, platformDkk, totalDkk } = resolveBookingAmounts(booking, shelter);
       const { url, sessionId } = await createCheckoutSession(booking, shelter, {
         shelterDkk,
@@ -163,10 +181,12 @@ export async function GET(
           shelterId: shelter.id,
           paymentId: created.id,
         });
+        await markPaymentLinkSent(created.id).catch((err) => {
+          console.error("magic confirm: could not mark payment link as sent:", err);
+        });
       } catch (err) {
         console.error("magic confirm payment email error:", err);
       }
-      await sendAutoMessageIfEnabled(booking.bookable_shelter_id, booking, shelter.title);
       try {
         await sendGa4Event({
           headers: req.headers,
@@ -197,8 +217,9 @@ export async function GET(
         });
         } catch (err) {
           console.error("booking action: non-fatal analytics error:", err);
-        }
+      }
       return NextResponse.redirect(`${SITE_URL}/booking/svar/${token}?status=confirmed_payment_required`);
+      }
     }
 
     const updated = await updateBookingStatus(booking.id, newStatus);
@@ -206,6 +227,9 @@ export async function GET(
       return NextResponse.redirect(`${SITE_URL}/booking/svar/${token}?status=already_resolved`);
     }
     await markTokenUsed(tokenRow.id);
+    if (tokenRow.action === "confirm" && shouldSendZeroPriceAutoMessage) {
+      await sendAutoMessageIfEnabled(booking.bookable_shelter_id, booking, shelter.title);
+    }
   } catch (err) {
     if (err instanceof BookingConflictError) {
       await recordBookingMonitorEvent({

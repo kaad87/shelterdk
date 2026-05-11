@@ -26,6 +26,7 @@ import {
   getLatestPaidPayment,
   listPendingPaymentsByBookingId,
   listPaymentsByBookingId,
+  markPaymentLinkSent,
   markPaymentExpiredBySessionId,
 } from "@/lib/payment-db";
 import { createAdminClient } from "@/utils/supabase/server-admin";
@@ -110,9 +111,15 @@ export async function POST(
       );
     }
 
-    if (shelter.payment_mode === "upfront") {
-      const paidPayment = getLatestPaidPayment(await listPaymentsByBookingId(bookingId));
-      if (!paidPayment) {
+    const payments = await listPaymentsByBookingId(bookingId);
+    const paidPayment = getLatestPaidPayment(payments);
+    const originallyUpfront = payments.length > 0;
+    const bookingTotalDkk = booking.quoted_total_dkk ?? 0;
+    const requiresPostConfirmationPayment =
+      bookingTotalDkk > 0 && !originallyUpfront;
+
+    if (!requiresPostConfirmationPayment) {
+      if (bookingTotalDkk > 0 && !paidPayment) {
         return NextResponse.json(
           { error: "Betalingen er ikke gennemført endnu" },
           { status: 409 }
@@ -151,7 +158,11 @@ export async function POST(
       } catch (err) {
         console.error("ejer confirm (upfront): non-fatal analytics error:", err);
       }
-      return NextResponse.json({ ok: true, confirmationEmailSent: false });
+      const confirmationEmailSent =
+        !originallyUpfront && bookingTotalDkk <= 0
+          ? await sendAutoMessageIfEnabled(shelter.id, booking, shelter.title)
+          : false;
+      return NextResponse.json({ ok: true, confirmationEmailSent });
     }
 
       try {
@@ -205,6 +216,9 @@ export async function POST(
             shelterId: shelter.id,
             paymentId: created.id,
           });
+          await markPaymentLinkSent(created.id).catch((err) => {
+            console.error("ejer confirm: could not mark payment link as sent:", err);
+          });
         } catch (err) {
           console.error("ejer confirm: payment email error:", err);
           warning =
@@ -226,12 +240,6 @@ export async function POST(
         } catch (err) {
           console.error("ejer confirm: non-fatal analytics error:", err);
         }
-
-        const confirmationEmailSent = await sendAutoMessageIfEnabled(
-          shelter.id,
-          booking,
-          shelter.title
-        );
         try {
           await sendGa4Event({
             headers: req.headers,
@@ -247,7 +255,7 @@ export async function POST(
         } catch (err) {
           console.error("ejer confirm: non-fatal confirmation analytics error:", err);
         }
-        return NextResponse.json({ ok: true, confirmationEmailSent, warning });
+        return NextResponse.json({ ok: true, confirmationEmailSent: false, warning });
       } catch (err) {
         if (err instanceof BookingConflictError) {
           return NextResponse.json(
@@ -432,6 +440,9 @@ export async function POST(
             shelterId: shelter.id,
             paymentId: existing.id,
           });
+          await markPaymentLinkSent(existing.id).catch((err) => {
+            console.error("ejer resend-payment: could not mark existing payment link as sent:", err);
+          });
           await sendGa4Event({
             headers: req.headers,
             eventName: "payment_started",
@@ -492,6 +503,9 @@ export async function POST(
         bookingId,
         shelterId: shelter.id,
         paymentId: created.id,
+      });
+      await markPaymentLinkSent(created.id).catch((err) => {
+        console.error("ejer resend-payment: could not mark payment link as sent:", err);
       });
       await sendGa4Event({
         headers: req.headers,

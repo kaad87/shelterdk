@@ -18,13 +18,20 @@ export async function createBookingPayment(opts: {
       amount_total_dkk: opts.amountTotalDkk,
       amount_shelter_dkk: opts.amountShelterDkk,
       amount_platform_dkk: opts.amountPlatformDkk,
-      payment_link_sent_at: new Date().toISOString(),
       expires_at: expiresAt,
     })
     .select("id")
     .single();
   if (error) throw new Error("createBookingPayment: " + error.message);
   return data;
+}
+
+export async function markPaymentLinkSent(paymentId: string): Promise<void> {
+  const { error } = await createAdminClient()
+    .from("booking_payments")
+    .update({ payment_link_sent_at: new Date().toISOString() })
+    .eq("id", paymentId);
+  if (error) throw new Error("markPaymentLinkSent: " + error.message);
 }
 
 /** Look up payment by Stripe session ID — used in webhook handler */
@@ -114,7 +121,8 @@ export async function markPaymentFailed(paymentId: string): Promise<void> {
   const { error } = await createAdminClient()
     .from("booking_payments")
     .update({ status: "failed" })
-    .eq("id", paymentId);
+    .eq("id", paymentId)
+    .neq("status", "paid");
   if (error) throw new Error("markPaymentFailed: " + error.message);
 }
 
@@ -171,7 +179,7 @@ export async function listExpiredPendingPayments(): Promise<
     .select("id, booking_id")
     .eq("status", "pending")
     .lt("expires_at", now)
-    ;
+    .limit(100);
   if (error) throw new Error("listExpiredPendingPayments: " + error.message);
   return (data ?? []) as Array<{ id: string; booking_id: string }>;
 }

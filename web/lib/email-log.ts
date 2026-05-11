@@ -1,7 +1,7 @@
 import { createAdminClient } from "@/utils/supabase/server-admin";
 
 export type EmailLogStatus = "sent" | "failed";
-export type EmailLogCategory = "booking" | "owner_portal" | "monitor";
+export type EmailLogCategory = "booking" | "owner_portal" | "monitor" | "contact";
 
 export interface EmailLogInput {
   category?: EmailLogCategory;

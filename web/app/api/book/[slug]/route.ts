@@ -17,7 +17,7 @@ import {
   calculateBookingAmounts,
   calculateBookingNights,
 } from "@/lib/stripe";
-import { createBookingPayment } from "@/lib/payment-db";
+import { createBookingPayment, markPaymentLinkSent } from "@/lib/payment-db";
 import { sendGa4Event } from "@/lib/server-analytics";
 import { BOOKING_WINDOW_DAYS } from "@/lib/booking-config";
 import { recordBookingMonitorError, recordBookingMonitorEvent } from "@/lib/booking-monitor";
@@ -83,7 +83,7 @@ export async function POST(
   const latestAllowedCheckIn = new Date(Date.now() + BOOKING_WINDOW_DAYS * 24 * 60 * 60 * 1000)
     .toISOString()
     .slice(0, 10);
-  if (check_in > latestAllowedCheckIn || check_out > latestAllowedCheckIn) {
+  if (check_in > latestAllowedCheckIn) {
     return NextResponse.json(
       { error: `Du kan højst booke ${BOOKING_WINDOW_DAYS} dage frem.` },
       { status: 400 }
@@ -195,6 +195,9 @@ export async function POST(
             shelterId: shelter.id,
             paymentId: createdPayment.id,
           });
+          await markPaymentLinkSent(createdPayment.id).catch((err) => {
+            console.error("book route: could not mark upfront payment link as sent:", err);
+          });
         } catch (err) {
           console.error("book route: upfront recovery email error:", err);
         }
@@ -213,7 +216,7 @@ export async function POST(
             paymentMode: shelter.payment_mode,
           },
         });
-        await cancelPendingBooking(booking.id).catch((cancelErr) => {
+        await cancelPendingBooking(booking.id, "system").catch((cancelErr) => {
           console.error("book route: failed to cancel pending booking after checkout error:", cancelErr);
         });
         return NextResponse.json(

@@ -8,7 +8,7 @@ const messages: Record<string, { emoji: string; title: string; body: string }> =
   confirmed: {
     emoji: "✓",
     title: "Booking bekræftet",
-    body: "Du har bekræftet bookingen. Gæsten modtager en bekræftelsesemail.",
+    body: "Du har bekræftet bookingen. Gæsten modtager besked om næste skridt.",
   },
   confirmed_payment_required: {
     emoji: "✓",

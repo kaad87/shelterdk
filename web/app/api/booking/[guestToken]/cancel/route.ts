@@ -48,7 +48,7 @@ export async function POST(
   const wasPending = booking.status === "pending";
   // Race-condition safe: only cancels if booking is still in the expected state
   const cancelled = wasPending
-    ? await cancelPendingBooking(booking.id)
+    ? await cancelPendingBooking(booking.id, "guest")
     : await cancelBooking(booking.id, "guest");
   if (!cancelled) {
     return NextResponse.json(

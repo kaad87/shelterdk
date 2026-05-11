@@ -159,7 +159,7 @@ export async function reconcileCompletedCheckoutSession(
         await markPaymentFailed(payment.id).catch((err) => {
           console.error("payment reconcile: could not mark failed after upfront conflict:", err);
         });
-        await cancelPendingBooking(payment.booking_id).catch((err) => {
+        await cancelPendingBooking(payment.booking_id, "system").catch((err) => {
           console.error("payment reconcile: could not cancel stale upfront booking:", err);
         });
         try {
@@ -221,7 +221,7 @@ export async function reconcileCompletedCheckoutSession(
     await markPaymentFailed(payment.id).catch((err) => {
       console.error("payment reconcile: could not mark failed after invalid after_confirmation state:", err);
     });
-    await cancelPendingBooking(payment.booking_id).catch((err) => {
+    await cancelPendingBooking(payment.booking_id, "system").catch((err) => {
       console.error("payment reconcile: could not cancel stale after_confirmation booking:", err);
     });
     try {

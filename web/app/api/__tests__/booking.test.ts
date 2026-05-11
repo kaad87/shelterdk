@@ -37,6 +37,7 @@ vi.mock("@/lib/stripe", () => ({
 
 vi.mock("@/lib/payment-db", () => ({
   createBookingPayment: vi.fn().mockResolvedValue({ id: "payment-new" }),
+  markPaymentLinkSent: vi.fn().mockResolvedValue(undefined),
   getPaymentByBookingId: vi.fn().mockResolvedValue(null),
   listPaymentsByBookingId: vi.fn().mockResolvedValue([]),
   listPendingPaymentsByBookingId: vi.fn().mockResolvedValue([]),
@@ -77,6 +78,8 @@ const mockGetBookingsForShelter = vi.fn();
 const mockBlockDate = vi.fn();
 const mockUnblockDate = vi.fn();
 const mockSendGa4Event = vi.fn();
+const mockRecordBookingMonitorEvent = vi.fn();
+const mockRecordBookingMonitorError = vi.fn();
 
 vi.mock("@/lib/booking-db", () => ({
   BookingConflictError: class BookingConflictError extends Error {},
@@ -128,6 +131,11 @@ vi.mock("@/lib/server-analytics", () => ({
   sendGa4Event: mockSendGa4Event,
 }));
 
+vi.mock("@/lib/booking-monitor", () => ({
+  recordBookingMonitorEvent: mockRecordBookingMonitorEvent,
+  recordBookingMonitorError: mockRecordBookingMonitorError,
+}));
+
 beforeEach(async () => {
   vi.clearAllMocks();
   mockStripeSessionRetrieve.mockResolvedValue({
@@ -158,6 +166,7 @@ function mockShelter(overrides = {}) {
     owner_email: "ejer@test.dk",
     owner_token: "owner-token-1",
     max_persons: 6,
+    payment_mode: "after_confirmation",
     ...overrides,
   };
 }
@@ -174,6 +183,9 @@ function mockBooking(overrides = {}) {
     message: null,
     status: "pending",
     guest_token: "guest-token-1",
+    quoted_shelter_dkk: 0,
+    quoted_platform_dkk: 0,
+    quoted_total_dkk: 0,
     created_at: "2026-04-24T00:00:00Z",
     updated_at: "2026-04-24T00:00:00Z",
     ...overrides,
@@ -305,6 +317,40 @@ describe("POST /api/book/[slug]", () => {
     });
   });
 
+  it("tillader sidste mulige check-in selv hvis check-out ligger dagen efter", async () => {
+    mockGetBookableShelterBySlug.mockResolvedValue(mockShelter());
+    mockCreateBooking.mockResolvedValue(
+      mockBooking({
+        check_in: "2027-05-10",
+        check_out: "2027-05-12",
+      })
+    );
+    mockCreateActionTokens.mockResolvedValue({ confirmToken: "ct", rejectToken: "rt" });
+    mockSendBookingRequestToOwner.mockResolvedValue(undefined);
+    mockSendBookingReceivedToGuest.mockResolvedValue(undefined);
+
+    const checkIn = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+    const checkOut = new Date(checkIn);
+    checkOut.setDate(checkOut.getDate() + 1);
+    const toIsoDate = (d: Date) => d.toISOString().slice(0, 10);
+
+    const { POST } = await import("../book/[slug]/route");
+    const res = await POST(
+      new Request("http://localhost/api/book/test-shelter", {
+        method: "POST",
+        body: JSON.stringify({
+          ...validBody,
+          check_in: toIsoDate(checkIn),
+          check_out: toIsoDate(checkOut),
+        }),
+        headers: { "Content-Type": "application/json" },
+      }) as never,
+      { params: Promise.resolve({ slug: "test-shelter" }) }
+    );
+
+    expect(res.status).toBe(201);
+  });
+
   it("opretter booking og returnerer 201 ved gyldigt input", async () => {
     mockGetBookableShelterBySlug.mockResolvedValue(mockShelter());
     mockCreateBooking.mockResolvedValue(mockBooking({ check_in: "2027-04-01", check_out: "2027-04-03" }));
@@ -428,7 +474,7 @@ describe("POST /api/book/[slug]", () => {
     expect(await res.json()).toMatchObject({
       error: expect.stringContaining("betalingen"),
     });
-    expect(mockCancelPendingBooking).toHaveBeenCalledWith("booking-uuid-1");
+    expect(mockCancelPendingBooking).toHaveBeenCalledWith("booking-uuid-1", "system");
   });
 });
 
@@ -483,7 +529,12 @@ describe("GET /api/booking/action/[token]", () => {
   it("opretter betalingslink ved magic-link confirm for after_confirmation", async () => {
     mockResolveActionToken.mockResolvedValue({
       token: { id: "t1", action: "confirm", used_at: null, expires_at: "2099-01-01T00:00:00Z" },
-      booking: mockBooking({ status: "pending" }),
+      booking: mockBooking({
+        status: "pending",
+        quoted_shelter_dkk: 200,
+        quoted_platform_dkk: 25,
+        quoted_total_dkk: 225,
+      }),
       shelter: mockShelter({
         payment_mode: "after_confirmation",
         shelter_price_dkk: 100,
@@ -502,7 +553,7 @@ describe("GET /api/booking/action/[token]", () => {
     );
 
     expect(res.status).toBe(307);
-    expect(res.headers.get("location")).toContain("confirmed");
+    expect(res.headers.get("location")).toContain("confirmed_payment_required");
     expect(mockSendPaymentRequestToGuest).toHaveBeenCalledWith(
       expect.objectContaining({
         guestEmail: "lars@test.dk",
@@ -659,7 +710,26 @@ describe("POST /api/owner/[token]/action", () => {
     mockGetBookableShelterByOwnerToken.mockResolvedValue(
       mockShelter({ payment_mode: "upfront" })
     );
-    mockGetBookingByIdForShelter.mockResolvedValue(mockBooking({ status: "pending" }));
+    mockGetBookingByIdForShelter.mockResolvedValue(
+      mockBooking({
+        status: "pending",
+        quoted_shelter_dkk: 200,
+        quoted_platform_dkk: 25,
+        quoted_total_dkk: 225,
+      })
+    );
+    const paymentDb = await import("@/lib/payment-db");
+    vi.mocked(paymentDb.listPaymentsByBookingId).mockResolvedValueOnce([
+      {
+        id: "payment-pending",
+        booking_id: "booking-uuid-1",
+        stripe_checkout_session_id: "cs_pending",
+        amount_total_dkk: 225,
+        amount_shelter_dkk: 200,
+        amount_platform_dkk: 25,
+        status: "pending",
+      },
+    ] as never);
     const { POST } = await import("../owner/[token]/action/route");
     const res = await POST(
       new Request("http://localhost", {
@@ -683,7 +753,14 @@ describe("POST /api/owner/[token]/action", () => {
         platform_fee_min_dkk: 25,
       })
     );
-    mockGetBookingByIdForShelter.mockResolvedValue(mockBooking({ status: "pending" }));
+    mockGetBookingByIdForShelter.mockResolvedValue(
+      mockBooking({
+        status: "pending",
+        quoted_shelter_dkk: 200,
+        quoted_platform_dkk: 25,
+        quoted_total_dkk: 225,
+      })
+    );
     mockHasConfirmedOverlap.mockResolvedValue(false);
     const paymentDb = await import("@/lib/payment-db");
     vi.mocked(paymentDb.createBookingPayment).mockRejectedValueOnce(new Error("db down"));
@@ -700,6 +777,40 @@ describe("POST /api/owner/[token]/action", () => {
 
     expect(res.status).toBe(500);
     expect(mockUpdateBookingStatus).not.toHaveBeenCalled();
+  });
+
+  it("sender ikke auto-besked ved after_confirmation-confirm før betalingen er gennemført", async () => {
+    mockGetBookableShelterByOwnerToken.mockResolvedValue(
+      mockShelter({
+        payment_mode: "after_confirmation",
+        shelter_price_dkk: 100,
+        platform_fee_pct: 5,
+        platform_fee_min_dkk: 25,
+      })
+    );
+    mockGetBookingByIdForShelter.mockResolvedValue(
+      mockBooking({
+        status: "pending",
+        quoted_shelter_dkk: 200,
+        quoted_platform_dkk: 25,
+        quoted_total_dkk: 225,
+      })
+    );
+    mockHasConfirmedOverlap.mockResolvedValue(false);
+
+    const { POST } = await import("../owner/[token]/action/route");
+    const res = await POST(
+      new Request("http://localhost", {
+        method: "POST",
+        body: JSON.stringify({ booking_id: "booking-uuid-1", action: "confirm" }),
+        headers: { "Content-Type": "application/json" },
+      }) as never,
+      { params: Promise.resolve({ token: "owner-token-1" }) }
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockSendPaymentRequestToGuest).toHaveBeenCalled();
+    expect(mockSendBookingAutoMessage).not.toHaveBeenCalled();
   });
 
   it("sender ikke afvisningsmail to gange hvis reject taber race", async () => {
@@ -814,5 +925,37 @@ describe("GET /api/booking/action/[token] analytics edge case", () => {
 
     expect(res.status).toBe(307);
     expect(res.headers.get("location")).toContain("confirmed");
+  });
+
+  it("sender stadig betalingslink ved magic-link confirm, selv hvis shelterets payment_mode er ændret siden bookingtidspunktet", async () => {
+    mockResolveActionToken.mockResolvedValue({
+      token: { id: "t1", action: "confirm", used_at: null, expires_at: "2099-01-01T00:00:00Z" },
+      booking: mockBooking({
+        status: "pending",
+        quoted_shelter_dkk: 200,
+        quoted_platform_dkk: 25,
+        quoted_total_dkk: 225,
+      }),
+      shelter: mockShelter({
+        payment_mode: "upfront",
+        shelter_price_dkk: 100,
+        platform_fee_pct: 5,
+        platform_fee_min_dkk: 25,
+      }),
+    });
+    mockHasConfirmedOverlap.mockResolvedValue(false);
+    mockMarkTokenUsed.mockResolvedValue(true);
+    mockUpdateBookingStatus.mockResolvedValue(true);
+
+    const { GET } = await import("../booking/action/[token]/route");
+    const res = await GET(
+      new Request("http://localhost") as never,
+      { params: Promise.resolve({ token: "confirm-token" }) }
+    );
+
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toContain("confirmed_payment_required");
+    expect(mockSendPaymentRequestToGuest).toHaveBeenCalled();
+    expect(mockSendBookingAutoMessage).not.toHaveBeenCalled();
   });
 });

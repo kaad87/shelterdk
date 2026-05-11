@@ -26,6 +26,8 @@ const mockSendBookingAutoMessage = vi.fn();
 const mockUpdateBookingStatus = vi.fn();
 const mockCancelPendingBooking = vi.fn();
 const mockCancelBooking = vi.fn();
+const mockRecordBookingMonitorEvent = vi.fn();
+const mockRecordBookingMonitorError = vi.fn();
 
 vi.mock("@/lib/stripe", () => ({
   constructWebhookEvent: mockConstructWebhookEvent,
@@ -58,6 +60,11 @@ vi.mock("@/lib/booking-db", () => ({
 
 vi.mock("@/lib/server-analytics", () => ({
   sendGa4Event: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("@/lib/booking-monitor", () => ({
+  recordBookingMonitorEvent: mockRecordBookingMonitorEvent,
+  recordBookingMonitorError: mockRecordBookingMonitorError,
 }));
 
 vi.mock("@/utils/supabase/server-admin", () => ({
@@ -163,7 +170,7 @@ describe("POST /api/stripe/webhook", () => {
 
     expect(res.status).toBe(200);
     expect(mockMarkPaymentExpired).toHaveBeenCalledWith("payment-2");
-    expect(mockCancelPendingBooking).toHaveBeenCalledWith("booking-2");
+    expect(mockCancelPendingBooking).toHaveBeenCalledWith("booking-2", "system");
     expect(mockSendBookingExpired).toHaveBeenCalledWith(
       expect.objectContaining({
         guestEmail: "guest@test.dk",

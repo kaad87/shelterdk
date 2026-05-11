@@ -6,7 +6,7 @@ import Link from "next/link";
 const STORAGE_KEY = "shelterdk-admin-secret";
 
 type EmailLogStatus = "sent" | "failed" | "all";
-type EmailLogCategory = "booking" | "owner_portal" | "monitor" | "all";
+type EmailLogCategory = "booking" | "owner_portal" | "monitor" | "contact" | "all";
 
 type EmailLogRow = {
   id: string;
@@ -38,6 +38,8 @@ function categoryBadge(category: Exclude<EmailLogCategory, "all">) {
       return "bg-sky-100 text-sky-700";
     case "monitor":
       return "bg-violet-100 text-violet-700";
+    case "contact":
+      return "bg-rose-100 text-rose-700";
     default:
       return "bg-amber-100 text-amber-700";
   }
@@ -125,7 +127,7 @@ export default function AdminEmailLogPage() {
         <div>
           <h1 className="text-2xl font-bold text-primary">Email-log</h1>
           <p className="text-sm text-primary/60">
-            Historik over bookingmails, ejerportal-mails og andre systemmails.
+            Historik over bookingmails, ejerportal-mails, kontaktmails og andre systemmails.
           </p>
         </div>
         <button
@@ -172,6 +174,7 @@ export default function AdminEmailLogPage() {
             <option value="booking">Booking</option>
             <option value="owner_portal">Ejerportal</option>
             <option value="monitor">Monitor</option>
+            <option value="contact">Kontakt</option>
           </select>
         </label>
       </div>

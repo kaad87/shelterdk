@@ -94,11 +94,13 @@ export class BookingConflictError extends Error {
 export async function getBookableShelterBySlug(
   slug: string
 ): Promise<BookableShelter | null> {
-  const { data } = await createAdminClient()
+  const { data, error } = await createAdminClient()
     .from("bookable_shelters")
     .select("*")
     .eq("slug", slug)
     .single();
+  if (error?.code === "PGRST116") return null;
+  if (error) throw new Error("getBookableShelterBySlug: " + error.message);
   return data ?? null;
 }
 
@@ -185,7 +187,9 @@ export async function getUnavailableDates(
   }
 
   for (const d of blockedResult.data ?? []) {
-    result[d.blocked_date] = "blocked";
+    if (result[d.blocked_date] !== "confirmed") {
+      result[d.blocked_date] = "blocked";
+    }
   }
 
   return result;
@@ -316,14 +320,17 @@ export async function updateBookingStatus(
  * Cancel a pending booking before it has been confirmed.
  * Used when payment setup fails or a checkout session expires before payment.
  */
-export async function cancelPendingBooking(bookingId: string): Promise<boolean> {
+export async function cancelPendingBooking(
+  bookingId: string,
+  cancelledBy: "guest" | "owner" | "system" = "system"
+): Promise<boolean> {
   const now = new Date().toISOString();
   const { data, error } = await createAdminClient()
     .from("shelter_bookings")
     .update({
       status: "cancelled",
       cancelled_at: now,
-      cancelled_by: "system",
+      cancelled_by: cancelledBy,
       updated_at: now,
     })
     .eq("id", bookingId)

@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
       const paymentMode = shelter?.payment_mode as "after_confirmation" | "upfront" | undefined;
 
       if (bookingStatus === "pending") {
-        cancelled = await cancelPendingBooking(payment.booking_id);
+        cancelled = await cancelPendingBooking(payment.booking_id, "system");
       } else if (bookingStatus === "confirmed" && paymentMode === "after_confirmation") {
         cancelled = await cancelBooking(payment.booking_id, "system");
       }

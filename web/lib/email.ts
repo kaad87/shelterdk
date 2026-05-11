@@ -209,7 +209,7 @@ export async function sendContactEmail(opts: {
       ],
     }),
     context: {
-      category: "owner_portal",
+      category: "contact",
       emailType: "turvenner_contact",
       metadata: {
         senderName,
