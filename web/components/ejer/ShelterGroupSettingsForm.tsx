@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { BookableShelter } from "@/types/booking";
 import type { Shelter } from "@shared/types/shelter";
-import { getPetsAllowed, getToilet, getWater } from "@shared/lib/shelter-detail";
+import { getPetsAllowed, getToilet, getWater, getOrderedPhotoItems } from "@shared/lib/shelter-detail";
+import { PhotoGallery } from "@/components/ejer/PhotoGallery";
+import type { PhotoItem } from "@shared/types/shelter";
 
 interface MsgTemplates {
   confirmation_enabled: boolean;
@@ -43,8 +45,6 @@ export function ShelterGroupSettingsForm({
   shelters,
   sharedDescription,
   shelterData,
-  basePublicPhotos,
-  ownerPhotos: initialOwnerPhotos,
   photoShelterUnitId,
   shelterDbId,
 }: {
@@ -53,8 +53,6 @@ export function ShelterGroupSettingsForm({
   shelters: BookableShelter[];
   sharedDescription: string;
   shelterData: Shelter | null;
-  basePublicPhotos: string[];
-  ownerPhotos: string[];
   photoShelterUnitId: string;
   shelterDbId: string;
 }) {
@@ -69,7 +67,10 @@ export function ShelterGroupSettingsForm({
   const [msgError, setMsgError] = useState<string | null>(null);
   const [msgDivergent, setMsgDivergent] = useState(false);
   const [msgForceConfirm, setMsgForceConfirm] = useState(false);
-  const [ownerPhotos, setOwnerPhotos] = useState<string[]>(initialOwnerPhotos);
+  const [photos, setPhotos] = useState<PhotoItem[]>(
+    shelterData ? getOrderedPhotoItems(shelterData, shelterDbId) : []
+  );
+  const [photoSaveMsg, setPhotoSaveMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [contentSaving, setContentSaving] = useState(false);
   const [contentMsg, setContentMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -97,14 +98,11 @@ export function ShelterGroupSettingsForm({
   );
   const [capacitySavingId, setCapacitySavingId] = useState<string | null>(null);
   const [capacityMsg, setCapacityMsg] = useState<{ ok: boolean; text: string } | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const confSubjRef = useRef<HTMLInputElement>(null);
   const confBodyRef = useRef<HTMLTextAreaElement>(null);
   const remSubjRef = useRef<HTMLInputElement>(null);
   const remBodyRef = useRef<HTMLTextAreaElement>(null);
   const [activeMsgField, setActiveMsgField] = useState<MsgField | null>(null);
-  const publicPhotos = [...basePublicPhotos, ...ownerPhotos];
-
   useEffect(() => {
     fetch(`/api/ejer/plads/${groupId}/messages`)
       .then((r) => r.json())
@@ -131,7 +129,6 @@ export function ShelterGroupSettingsForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           shared_description: description,
-          user_image_urls: ownerPhotos,
           facilities: facilities.toiletEnabled
             ? { ...facilities, toilet: facilities.toiletType }
             : { ...facilities, toilet: "none" },
@@ -150,9 +147,7 @@ export function ShelterGroupSettingsForm({
     }
   };
 
-  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  async function handleUpload(file: File) {
     setUploading(true);
     setUploadError(null);
     try {
@@ -163,21 +158,19 @@ export function ShelterGroupSettingsForm({
         body: formData,
       });
       const data = await res.json();
-      if (!res.ok) {
-        setUploadError(data.error ?? "Upload fejlede");
-        return;
-      }
-      setOwnerPhotos((prev) => [...prev, data.url]);
+      if (!res.ok) { setUploadError(data.error ?? "Upload fejlede"); return; }
+      setPhotos((prev) => [...prev, { url: data.url as string, isDeletable: true }]);
     } catch {
       setUploadError("Upload fejlede — prøv igen");
     } finally {
       setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   }
 
   async function handleDeletePhoto(url: string) {
     if (!confirm("Slet dette billede?")) return;
+    const prev = photos;
+    setPhotos((p) => p.filter((item) => item.url !== url));
     try {
       const res = await fetch(`/api/ejer/shelter/${photoShelterUnitId}/billeder`, {
         method: "DELETE",
@@ -187,27 +180,35 @@ export function ShelterGroupSettingsForm({
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         setUploadError(data.error ?? "Sletning fejlede");
-        return;
+        setPhotos(prev); // restore on failure
       }
-      setOwnerPhotos((prev) => prev.filter((u) => u !== url));
     } catch {
       setUploadError("Sletning fejlede — prøv igen");
+      setPhotos(prev);
     }
   }
 
-  function moveOwnerPhoto(url: string, direction: -1 | 1) {
-    setOwnerPhotos((prev) => {
-      const index = prev.indexOf(url);
-      if (index === -1) return prev;
-      const nextIndex = index + direction;
-      if (nextIndex < 0 || nextIndex >= prev.length) return prev;
-      const next = [...prev];
-      [next[index], next[nextIndex]] = [next[nextIndex], next[index]];
-      return next;
-    });
+  async function handleSavePhotoOrder() {
+    setContentSaving(true);
+    setPhotoSaveMsg(null);
+    try {
+      const res = await fetch(`/api/ejer/plads/${groupId}/settings`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ photo_order: photos.map((p) => p.url) }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setPhotoSaveMsg({ ok: false, text: data.error ?? "Noget gik galt" });
+      } else {
+        setPhotoSaveMsg({ ok: true, text: "Billedrækkefølge gemt" });
+      }
+    } catch {
+      setPhotoSaveMsg({ ok: false, text: "Noget gik galt" });
+    } finally {
+      setContentSaving(false);
+    }
   }
-
-  const isOwnerPhoto = (url: string) => url.includes(`/owner/${shelterDbId}/`);
 
   const saveSharedSettings = async () => {
     setSettingsSaving(true);
@@ -339,112 +340,46 @@ export function ShelterGroupSettingsForm({
           <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1.5">Fælles beskrivelse</label>
           <textarea
             rows={6}
-            maxLength={2000}
+            maxLength={4000}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="w-full rounded-xl border border-primary/15 bg-white px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-accent/35"
           />
-          <p className="text-xs text-primary/30 mt-1">{description.length}/2000</p>
+          <p className="text-xs text-primary/30 mt-1">{description.length}/4000</p>
         </div>
 
         <div>
-          <div className="flex items-center justify-between gap-3 mb-3">
+          <div className="flex items-start justify-between gap-3 mb-3">
             <div>
               <h3 className="font-serif text-lg font-bold text-primary">Fælles billeder</h3>
               <p className="text-sm text-primary/50 mt-1">
-                Disse billeder vises på den offentlige side for hele pladsen.
+                Træk billederne for at ændre rækkefølgen. Officielle billeder (fra kommunen/GeoFA) kan ikke slettes.
               </p>
             </div>
           </div>
-
-          {publicPhotos.length > 0 ? (
-            <div className="mb-6">
-              <p className="text-xs font-semibold text-primary/60 uppercase tracking-wide mb-2">Nuværende offentligt galleri</p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {publicPhotos.map((url) => (
-                  <div key={`public-${url}`} className="relative group aspect-video rounded-xl overflow-hidden bg-primary/5">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={url} alt="" className="w-full h-full object-cover" />
-                    <span className="absolute left-1.5 top-1.5 rounded-full bg-black/60 px-2 py-1 text-[11px] font-medium text-white">
-                      {isOwnerPhoto(url) ? "Ejerfoto" : "Eksisterende"}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <p className="text-sm text-primary/40 mb-4">Ingen billeder på sheltersiden endnu.</p>
-          )}
-
-          <div className="mb-4">
-            <p className="text-xs font-semibold text-primary/60 uppercase tracking-wide mb-2">Ejer-uploadede billeder</p>
-            <p className="text-sm text-primary/45 mb-3">
-              Du kan ændre rækkefølgen på de billeder, du selv har uploadet. De vises efter eksisterende officielle billeder på sheltersiden.
-            </p>
+          <PhotoGallery
+            photos={photos}
+            uploading={uploading}
+            uploadError={uploadError}
+            onReorder={setPhotos}
+            onDelete={handleDeletePhoto}
+            onUpload={handleUpload}
+          />
+          <div className="flex items-center gap-3 mt-4">
+            <button
+              type="button"
+              onClick={handleSavePhotoOrder}
+              disabled={contentSaving}
+              className="rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-white hover:bg-[#b8923f] disabled:opacity-50 transition-colors"
+            >
+              {contentSaving ? "Gemmer…" : "Gem billeder"}
+            </button>
+            {photoSaveMsg && (
+              <p className={`text-sm ${photoSaveMsg.ok ? "text-emerald-700" : "text-red-600"}`}>
+                {photoSaveMsg.text}
+              </p>
+            )}
           </div>
-
-          {ownerPhotos.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
-              {ownerPhotos.map((url, index) => (
-                <div key={url} className="relative group aspect-video rounded-xl overflow-hidden bg-primary/5">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={url} alt="" className="w-full h-full object-cover" />
-                  <span className="absolute left-1.5 top-1.5 rounded-full bg-black/60 px-2 py-1 text-[11px] font-medium text-white">
-                    #{index + 1}
-                  </span>
-                  <div className="absolute inset-x-1.5 bottom-1.5 flex items-center justify-between gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                    <div className="flex gap-1">
-                      <button
-                        type="button"
-                        onClick={() => moveOwnerPhoto(url, -1)}
-                        disabled={index === 0}
-                        className="rounded-md bg-black/60 px-2 py-1 text-xs font-semibold text-white hover:bg-black/75 disabled:cursor-not-allowed disabled:opacity-40"
-                        title="Flyt tidligere"
-                      >
-                        ←
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => moveOwnerPhoto(url, 1)}
-                        disabled={index === ownerPhotos.length - 1}
-                        className="rounded-md bg-black/60 px-2 py-1 text-xs font-semibold text-white hover:bg-black/75 disabled:cursor-not-allowed disabled:opacity-40"
-                        title="Flyt senere"
-                      >
-                        →
-                      </button>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleDeletePhoto(url)}
-                      className="rounded-md bg-red-600/90 px-2 py-1 text-xs font-semibold text-white hover:bg-red-600"
-                      title="Slet billede"
-                    >
-                      Slet
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-primary/40 mb-4">Ingen ejer-uploadede billeder endnu.</p>
-          )}
-
-          <label className="flex flex-col items-center justify-center border-2 border-dashed border-primary/15 rounded-xl p-6 cursor-pointer hover:border-accent/40 hover:bg-accent/[0.02] transition-colors">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              className="sr-only"
-              onChange={handleFileChange}
-              disabled={uploading}
-            />
-            <span className="text-2xl mb-2">{uploading ? "⏳" : "📷"}</span>
-            <span className="text-sm font-medium text-primary/60">
-              {uploading ? "Uploader…" : "Klik for at tilføje billede"}
-            </span>
-            <span className="text-xs text-primary/30 mt-1">JPEG, PNG eller WebP · maks. 5 MB</span>
-          </label>
-          {uploadError && <p className="text-sm text-red-600 mt-2">{uploadError}</p>}
         </div>
 
         <div className="rounded-xl border border-primary/8 bg-primary/[0.02] p-4 space-y-4">

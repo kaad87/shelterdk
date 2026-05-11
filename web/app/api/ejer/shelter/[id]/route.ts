@@ -33,8 +33,8 @@ export async function PATCH(
 
   if ("description" in b) {
     const d = typeof b.description === "string" ? b.description.trim() : "";
-    if (d.length > 2000) {
-      return NextResponse.json({ error: "Beskrivelse må højst være 2000 tegn" }, { status: 400 });
+    if (d.length > 4000) {
+      return NextResponse.json({ error: "Beskrivelse må højst være 4000 tegn" }, { status: 400 });
     }
     update.description = d;
   }

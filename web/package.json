@@ -27,6 +27,9 @@
     "generate:favicon": "node scripts/generate-favicon.js"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@supabase/ssr": "^0.5.0",
     "@supabase/supabase-js": "^2.39.0",
     "@vercel/og": "^0.11.1",
@@ -70,6 +73,14 @@
     "tsx": "^4.21.0",
     "typescript": "^5",
     "vitest": "^4.0.18"
+  },
+  "overrides": {
+    "@dnd-kit/core": {
+      "@types/react": "$@types/react"
+    },
+    "@dnd-kit/sortable": {
+      "@types/react": "$@types/react"
+    }
   },
   "lint-staged": {
     "*.{ts,tsx}": [

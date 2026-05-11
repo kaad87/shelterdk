@@ -1,3 +1,9 @@
+/** A photo item for the gallery editor — URL plus whether the owner can delete it. */
+export interface PhotoItem {
+  url: string;
+  isDeletable: boolean;
+}
+
 export interface Shelter {
   id: string;
   title: string;
@@ -46,4 +52,6 @@ export interface Shelter {
   seo_title?: string | null;
   /** Base64-encoded tiny blur preview of first image (LQIP). */
   blur_data_url?: string | null;
+  /** Custom display order for all photos. null = use default order. */
+  photo_order?: string[] | null;
 }

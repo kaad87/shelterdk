@@ -1,4 +1,4 @@
-import type { Shelter } from "../types/shelter";
+import type { Shelter, PhotoItem } from "../types/shelter";
 
 const RAW = (s: Shelter) => (s.geofa_raw || {}) as Record<string, unknown>;
 
@@ -474,8 +474,15 @@ function isExcludedImageUrl(url: string): boolean {
   return EXCLUDED_IMAGE_PATTERNS.some((p) => lower.includes(p));
 }
 
-/** Saml alle billed-URL'er fra image_url, image_urls (jsonb) og geofa_raw. Dedupe, filtrer cookiebot/1.gif, A.P. Møller Fonden og ugyldige URL'er. */
-export function getPhotoUrls(shelter: Shelter): string[] {
+/** Maximum photos a shelter can have in its gallery. */
+export const MAX_PHOTOS = 20;
+
+/**
+ * Builds the canonical set of all valid photo URLs from all sources:
+ * image_url, image_urls, user_image_urls, and geofa_raw GEOFA_PHOTO_KEYS.
+ * Deduplicates and filters invalid/excluded URLs. Returns in default source order.
+ */
+function buildCanonicalSet(shelter: Shelter): string[] {
   const seen = new Set<string>();
   const out: string[] = [];
   const add = (url: string | null | undefined) => {
@@ -488,17 +495,50 @@ export function getPhotoUrls(shelter: Shelter): string[] {
   };
   if (isValidImageUrl(shelter.image_url)) add(shelter.image_url);
   const urls = shelter.image_urls;
-  if (Array.isArray(urls)) {
-    for (const url of urls) add(url);
-  }
+  if (Array.isArray(urls)) for (const url of urls) add(url);
   const userUrls = shelter.user_image_urls;
-  if (Array.isArray(userUrls)) {
-    for (const url of userUrls) add(url);
-  }
+  if (Array.isArray(userUrls)) for (const url of userUrls) add(url);
   const raw = RAW(shelter);
   for (const k of GEOFA_PHOTO_KEYS) add(raw[k] as string | undefined);
-  const skip = shelter.slug ? SKIP_FIRST_IMAGES[shelter.slug] : 0;
-  return skip > 0 ? out.slice(skip) : out;
+  return out;
+}
+
+/**
+ * Applies photo_order to a canonical set:
+ * 1. Prune photo_order entries absent from canonical set (stale URLs).
+ * 2. Append any canonical URLs not yet in the pruned order.
+ * Falls back to canonical set if photo_order is null/empty.
+ */
+function applyPhotoOrder(photoOrder: string[] | null | undefined, canonical: string[]): string[] {
+  if (!Array.isArray(photoOrder) || photoOrder.length === 0) return canonical;
+  const canonicalSet = new Set(canonical);
+  const pruned = photoOrder.filter(url => canonicalSet.has(url));
+  const prunedSet = new Set(pruned);
+  const appended = canonical.filter(url => !prunedSet.has(url));
+  return [...pruned, ...appended];
+}
+
+/** Saml alle billed-URL'er fra alle kilder. Respekterer photo_order når sat. Dedupe, filtrer og anvend SKIP_FIRST_IMAGES. */
+export function getPhotoUrls(shelter: Shelter): string[] {
+  const canonical = buildCanonicalSet(shelter);
+  const ordered = applyPhotoOrder(shelter.photo_order, canonical);
+  const skip = shelter.slug ? (SKIP_FIRST_IMAGES[shelter.slug] ?? 0) : 0;
+  return skip > 0 ? ordered.slice(skip) : ordered;
+}
+
+/**
+ * Returns all photos as PhotoItem[] for the gallery editor.
+ * Does NOT apply SKIP_FIRST_IMAGES — shows the full unsliced list so owners
+ * can reorder all photos including ones that would be skipped on the public page.
+ * isDeletable is true iff the URL is an owner-uploaded photo for this shelter.
+ */
+export function getOrderedPhotoItems(shelter: Shelter, shelterDbId: string): PhotoItem[] {
+  const canonical = buildCanonicalSet(shelter);
+  const ordered = applyPhotoOrder(shelter.photo_order, canonical);
+  return ordered.map(url => ({
+    url,
+    isDeletable: url.includes(`/owner/${shelterDbId}/`),
+  }));
 }
 
 /** Er URL'en fra Google (lh3.googleusercontent.com)? */

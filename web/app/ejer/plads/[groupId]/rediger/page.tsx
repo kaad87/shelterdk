@@ -2,7 +2,6 @@ import { notFound, redirect } from "next/navigation";
 import { getSessionUser } from "@/utils/supabase/server-session";
 import { getShelterGroupByDbShelterId, getSharedShelterContent } from "@/lib/owner-db";
 import { ShelterGroupSettingsForm } from "@/components/ejer/ShelterGroupSettingsForm";
-import { getPhotoUrls } from "@shared/lib/shelter-detail";
 
 export const dynamic = "force-dynamic";
 
@@ -22,11 +21,6 @@ export default async function EjerShelterGroupEditPage({
   const shelters = await getShelterGroupByDbShelterId(groupId, user.id);
   if (shelters.length < 2) notFound();
   const sharedContent = await getSharedShelterContent(groupId);
-  const ownerPhotos = Array.isArray(sharedContent?.user_image_urls)
-    ? sharedContent.user_image_urls
-    : [];
-  const publicPhotoUrls = sharedContent ? getPhotoUrls(sharedContent) : [];
-  const basePublicPhotos = publicPhotoUrls.filter((url) => !ownerPhotos.includes(url));
 
   return (
     <ShelterGroupSettingsForm
@@ -35,8 +29,6 @@ export default async function EjerShelterGroupEditPage({
       shelters={shelters}
       sharedDescription={sharedContent?.description ?? ""}
       shelterData={sharedContent}
-      basePublicPhotos={basePublicPhotos}
-      ownerPhotos={ownerPhotos}
       photoShelterUnitId={shelters[0].id}
       shelterDbId={groupId}
     />

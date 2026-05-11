@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/utils/supabase/server-admin";
 import { getAuthenticatedOwnerGroupContext } from "@/lib/ejer-auth";
 import { extractPhotoPath, isOwnerPhotoPath, updateSharedShelterContent } from "@/lib/owner-db";
+import { MAX_PHOTOS } from "@shared/lib/shelter-detail";
+
+const GEOFA_PHOTO_KEYS = [
+  "foto_link", "foto_link1", "foto_link2", "foto_link3",
+  "geofafoto", "geofafoto1", "geofafoto2", "geofafoto3",
+] as const;
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +28,7 @@ export async function PATCH(
         water?: boolean | null;
         toilet?: "flush" | "mulch" | "none" | "unknown" | null;
         geofa_raw?: Record<string, unknown> | null;
+        photo_order?: string[] | null;
       }
     | undefined;
   const updates: Record<string, number> = {};
@@ -36,8 +43,8 @@ export async function PATCH(
 
   if ("shared_description" in body) {
     const raw = typeof body.shared_description === "string" ? body.shared_description.trim() : "";
-    if (raw.length > 2000) {
-      return NextResponse.json({ error: "Beskrivelse må højst være 2000 tegn" }, { status: 400 });
+    if (raw.length > 4000) {
+      return NextResponse.json({ error: "Beskrivelse må højst være 4000 tegn" }, { status: 400 });
     }
     sharedDescription = raw;
   }
@@ -107,6 +114,52 @@ export async function PATCH(
     sharedShelterFields = {
       ...(sharedShelterFields ?? {}),
       user_image_urls: userImageUrls,
+    };
+  }
+
+  if ("photo_order" in body) {
+    const rawPhotoOrder = body.photo_order;
+    if (
+      !Array.isArray(rawPhotoOrder) ||
+      !(rawPhotoOrder as unknown[]).every((v) => typeof v === "string")
+    ) {
+      return NextResponse.json({ error: "Ugyldig billedrækkefølge" }, { status: 400 });
+    }
+    const photoOrder = rawPhotoOrder as string[];
+    if (photoOrder.length > MAX_PHOTOS) {
+      return NextResponse.json({ error: `Maks. ${MAX_PHOTOS} billeder tilladt` }, { status: 422 });
+    }
+
+    // Server-side URL allowlist: only allow URLs that belong to this shelter
+    const { data: shelterData } = await createAdminClient()
+      .from("shelters")
+      .select("image_url, image_urls, user_image_urls, geofa_raw")
+      .eq("id", groupId)
+      .single();
+
+    const allowset = new Set<string>();
+    if (shelterData) {
+      if (shelterData.image_url) allowset.add(shelterData.image_url as string);
+      const imgUrls = shelterData.image_urls as string[] | null;
+      if (Array.isArray(imgUrls)) imgUrls.forEach(u => allowset.add(u));
+      const userUrls = shelterData.user_image_urls as string[] | null;
+      const userUrlsArr: string[] = Array.isArray(userUrls) ? userUrls : [];
+      userUrlsArr.forEach(u => allowset.add(u));
+      const raw = (shelterData.geofa_raw as Record<string, unknown> | null) ?? {};
+      for (const k of GEOFA_PHOTO_KEYS) {
+        const v = raw[k];
+        if (typeof v === "string" && v.trim()) allowset.add(v.trim());
+      }
+    }
+
+    const invalidUrl = photoOrder.find(url => !allowset.has(url));
+    if (invalidUrl) {
+      return NextResponse.json({ error: "Ukendt billed-URL i rækkefølgen" }, { status: 400 });
+    }
+
+    sharedShelterFields = {
+      ...(sharedShelterFields ?? {}),
+      photo_order: photoOrder,
     };
   }
 
