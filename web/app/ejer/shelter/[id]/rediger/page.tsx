@@ -1,6 +1,6 @@
 import { redirect, notFound } from "next/navigation";
 import { getSessionUser } from "@/utils/supabase/server-session";
-import { getOwnerShelterById, getShelterPhotos } from "@/lib/owner-db";
+import { getOwnerShelterById, getSharedShelterContent } from "@/lib/owner-db";
 import { ShelterEditForm } from "@/components/ejer/ShelterEditForm";
 
 export const dynamic = "force-dynamic";
@@ -15,14 +15,14 @@ export default async function RedigerPage({ params }: Props) {
   const shelter = await getOwnerShelterById(id, user.id);
   if (!shelter) notFound();
 
-  const photos = shelter.shelter_id
-    ? await getShelterPhotos(shelter.shelter_id)
-    : [];
+  const sharedContent = shelter.shelter_id
+    ? await getSharedShelterContent(shelter.shelter_id)
+    : null;
 
   return (
     <ShelterEditForm
       shelter={shelter}
-      photos={photos}
+      sharedContent={sharedContent}
       shelterDbId={shelter.shelter_id ?? ""}
     />
   );
