@@ -83,7 +83,7 @@ export async function getSharedShelterContent(
 ): Promise<Shelter | null> {
   const { data } = await createAdminClient()
     .from("shelters")
-    .select("id, title, slug, description, image_url, image_urls, user_image_urls, water, toilet, geofa_raw")
+    .select("id, title, slug, description, image_url, image_urls, user_image_urls, water, toilet, geofa_raw, photo_order")
     .eq("id", shelterDbId)
     .single();
   return (data as Shelter | null) ?? null;
@@ -97,13 +97,14 @@ export async function updateSharedShelterContent(
     water?: boolean | null;
     toilet?: "flush" | "mulch" | "none" | "unknown" | null;
     geofa_raw?: Record<string, unknown> | null;
+    photo_order?: string[] | null;
   }
 ): Promise<Shelter | null> {
   const { data } = await createAdminClient()
     .from("shelters")
     .update(fields)
     .eq("id", shelterDbId)
-    .select("id, title, slug, description, image_url, image_urls, user_image_urls, water, toilet, geofa_raw")
+    .select("id, title, slug, description, image_url, image_urls, user_image_urls, water, toilet, geofa_raw, photo_order")
     .single();
   return (data as Shelter | null) ?? null;
 }
