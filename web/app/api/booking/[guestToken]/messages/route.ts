@@ -64,6 +64,8 @@ export async function POST(req: NextRequest, { params }: Ctx) {
         ownerToken: shelter.owner_token,
         guestName: booking.guest_name,
         messageBody: json.body as string,
+        bookingId: booking.id,
+        shelterId: shelter.id,
       });
     }
   } catch (err) {

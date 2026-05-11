@@ -66,6 +66,8 @@ export async function POST(req: NextRequest, { params }: Ctx) {
       shelterTitle: context.shelter.title,
       guestToken: booking.guest_token,
       messageBody: json.body as string,
+      bookingId: booking.id,
+      shelterId: context.shelter.id,
     });
   } catch (err) {
     console.error("ejer owner message: guest email error:", err);

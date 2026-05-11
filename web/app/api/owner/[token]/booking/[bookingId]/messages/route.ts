@@ -87,6 +87,8 @@ export async function POST(req: NextRequest, { params }: Ctx) {
       shelterTitle: shelter.title,
       guestToken: booking.guest_token,
       messageBody: json.body as string,
+      bookingId: booking.id,
+      shelterId: shelter.id,
     });
   } catch (err) {
     console.error("owner message: guest email error:", err);

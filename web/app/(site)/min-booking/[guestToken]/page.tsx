@@ -33,13 +33,23 @@ export default async function GuestBookingPage({ params }: Props) {
     ? isRefundEligible(booking.check_in, shelter.cancellation_cutoff_hours)
     : false;
   const paymentHref =
-    ["pending", "confirmed"].includes(booking.status) &&
     booking.source !== "owner_manual" &&
-    shelter.payment_mode === "upfront" &&
-    !paidPayment
+    !paidPayment &&
+    (
+      (shelter.payment_mode === "upfront" &&
+        ["pending", "confirmed"].includes(booking.status)) ||
+      (shelter.payment_mode === "after_confirmation" &&
+        booking.status === "confirmed" &&
+        !!pendingPayment)
+    )
       ? `/booking/${booking.id}/betal?t=${encodeURIComponent(guestToken)}`
       : null;
-  const paymentLabel = pendingPayment ? "Fortsæt betaling" : "Betal booking";
+  const paymentLabel =
+    shelter.payment_mode === "after_confirmation"
+      ? "Betal booking"
+      : pendingPayment
+      ? "Fortsæt betaling"
+      : "Betal booking";
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">

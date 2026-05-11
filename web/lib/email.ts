@@ -1,5 +1,6 @@
 // lib/email.ts
 import { Resend } from "resend";
+import { recordEmailLog, type EmailLogCategory } from "./email-log";
 
 export const FROM_EMAIL = "ShelterDK <hej@shelterdk.dk>";
 
@@ -14,6 +15,91 @@ export function escapeHtml(str: string): string {
 
 export function getResend() {
   return new Resend(process.env.RESEND_API_KEY);
+}
+
+export interface SendLoggedEmailContext {
+  category?: EmailLogCategory;
+  emailType: string;
+  bookingId?: string | null;
+  paymentId?: string | null;
+  shelterId?: string | null;
+  metadata?: Record<string, unknown>;
+}
+
+export async function sendLoggedEmail(opts: {
+  to: string | string[];
+  subject: string;
+  html: string;
+  text: string;
+  replyTo?: string;
+  context: SendLoggedEmailContext;
+}) {
+  const recipients = Array.isArray(opts.to) ? opts.to : [opts.to];
+  const previewText = opts.text.slice(0, 500);
+  const sharedContext = {
+    category: opts.context.category ?? "booking",
+    emailType: opts.context.emailType,
+    provider: "resend",
+    subject: opts.subject,
+    previewText,
+    bookingId: opts.context.bookingId,
+    paymentId: opts.context.paymentId,
+    shelterId: opts.context.shelterId,
+    metadata: opts.context.metadata,
+  } as const;
+  let failureLogged = false;
+  try {
+    const result = await getResend().emails.send({
+      from: FROM_EMAIL,
+      to: recipients,
+      ...(opts.replyTo ? { replyTo: opts.replyTo } : {}),
+      subject: opts.subject,
+      html: opts.html,
+      text: opts.text,
+    });
+
+    if (result.error) {
+      failureLogged = true;
+      void Promise.allSettled(
+        recipients.map((toEmail) =>
+          recordEmailLog({
+            ...sharedContext,
+            status: "failed",
+            toEmail,
+            errorMessage: JSON.stringify(result.error),
+          })
+        )
+      );
+      throw new Error(JSON.stringify(result.error));
+    }
+
+    void Promise.allSettled(
+      recipients.map((toEmail) =>
+        recordEmailLog({
+          ...sharedContext,
+          status: "sent",
+          providerMessageId: (result.data as { id?: string } | null)?.id ?? null,
+          toEmail,
+        })
+      )
+    );
+
+    return result;
+  } catch (err) {
+    if (!failureLogged) {
+      void Promise.allSettled(
+        recipients.map((toEmail) =>
+          recordEmailLog({
+            ...sharedContext,
+            status: "failed",
+            toEmail,
+            errorMessage: err instanceof Error ? err.message : String(err),
+          })
+        )
+      );
+    }
+    throw err;
+  }
 }
 
 // ─── Email template helpers ───────────────────────────────────────────────────
@@ -97,9 +183,7 @@ export async function sendContactEmail(opts: {
   postTitle: string;
 }) {
   const { toEmail, toName, senderName, senderEmail, message, postTitle } = opts;
-
-  const { error } = await getResend().emails.send({
-    from: FROM_EMAIL,
+  await sendLoggedEmail({
     to: toEmail,
     replyTo: senderEmail,
     subject: `Ny besked om dit opslag: ${postTitle}`,
@@ -124,12 +208,16 @@ export async function sendContactEmail(opts: {
         "Du kan svare direkte på denne email.",
       ],
     }),
+    context: {
+      category: "owner_portal",
+      emailType: "turvenner_contact",
+      metadata: {
+        senderName,
+        senderEmail,
+        postTitle,
+      },
+    },
   });
-
-  if (error) {
-    console.error("Resend error:", error);
-    throw new Error("Kunne ikke sende email.");
-  }
 }
 
 export async function sendOwnerPortalInviteEmail(opts: {
@@ -137,48 +225,57 @@ export async function sendOwnerPortalInviteEmail(opts: {
   shelterTitle: string;
   signupUrl: string;
   loginUrl: string;
+  shelterId?: string;
 }) {
   const { toEmail, shelterTitle, signupUrl, loginUrl } = opts;
-
-  const { error } = await getResend().emails.send({
-    from: FROM_EMAIL,
-    to: toEmail,
-    subject: `Opret din ejerkonto for ${shelterTitle}`,
-    html: renderEmail({
-      title: "Inviteret til ShelterDK ejerportal",
-      preheader: `Du er inviteret til at administrere ${shelterTitle} i ShelterDK.`,
-      bodyHtml: `
-        <p style="font-size:13px;color:#333;line-height:1.65;margin:0 0 12px;">
-          Hej! Du er inviteret til at administrere <strong>${escapeHtml(shelterTitle)}</strong> i ShelterDKs ejerportal.
-        </p>
-        <p style="font-size:13px;color:#555;line-height:1.65;margin:0 0 16px;">
-          Opret din konto via knappen nedenfor med den email, som dette shelter er registreret på. Har du allerede en konto, kan du logge ind bagefter med samme email.
-        </p>
-        <div style="margin:18px 0;">
-          <a href="${signupUrl}" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:10px 18px;border-radius:6px;font-size:13px;font-weight:600;">
-            Opret ejerkonto
-          </a>
-        </div>
-        <p style="font-size:12px;color:#777;line-height:1.55;margin:0 0 8px;">
-          Har du allerede oprettet en konto? Brug dette login-link i stedet:
-        </p>
-        <p style="font-size:12px;line-height:1.55;margin:0;">
-          <a href="${loginUrl}" style="color:#c5a059;text-decoration:none;">${escapeHtml(loginUrl)}</a>
-        </p>
-      `,
-    }),
-    text: renderEmailText({
-      title: "Inviteret til ShelterDK ejerportal",
-      lines: [
-        `Du er inviteret til at administrere ${shelterTitle} i ShelterDKs ejerportal.`,
-        "Opret din konto med den email, som shelteret er registreret på.",
-        `Signup: ${signupUrl}`,
-        `Login: ${loginUrl}`,
-      ],
-    }),
+  const subject = `Opret din ejerkonto for ${shelterTitle}`;
+  const html = renderEmail({
+    title: "Inviteret til ShelterDK ejerportal",
+    preheader: `Du er inviteret til at administrere ${shelterTitle} i ShelterDK.`,
+    bodyHtml: `
+      <p style="font-size:13px;color:#333;line-height:1.65;margin:0 0 12px;">
+        Hej! Du er inviteret til at administrere <strong>${escapeHtml(shelterTitle)}</strong> i ShelterDKs ejerportal.
+      </p>
+      <p style="font-size:13px;color:#555;line-height:1.65;margin:0 0 16px;">
+        Opret din konto via knappen nedenfor med den email, som dette shelter er registreret på. Har du allerede en konto, kan du logge ind bagefter med samme email.
+      </p>
+      <div style="margin:18px 0;">
+        <a href="${signupUrl}" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:10px 18px;border-radius:6px;font-size:13px;font-weight:600;">
+          Opret ejerkonto
+        </a>
+      </div>
+      <p style="font-size:12px;color:#777;line-height:1.55;margin:0 0 8px;">
+        Har du allerede oprettet en konto? Brug dette login-link i stedet:
+      </p>
+      <p style="font-size:12px;line-height:1.55;margin:0;">
+        <a href="${loginUrl}" style="color:#c5a059;text-decoration:none;">${escapeHtml(loginUrl)}</a>
+      </p>
+    `,
+  });
+  const text = renderEmailText({
+    title: "Inviteret til ShelterDK ejerportal",
+    lines: [
+      `Du er inviteret til at administrere ${shelterTitle} i ShelterDKs ejerportal.`,
+      "Opret din konto med den email, som shelteret er registreret på.",
+      `Signup: ${signupUrl}`,
+      `Login: ${loginUrl}`,
+    ],
   });
 
-  if (error) {
+  try {
+    await sendLoggedEmail({
+      to: toEmail,
+      subject,
+      html,
+      text,
+      context: {
+        category: "owner_portal",
+        emailType: "owner_portal_invite",
+        shelterId: opts.shelterId ?? null,
+        metadata: { shelterTitle },
+      },
+    });
+  } catch (error) {
     console.error("Resend error:", error);
     throw new Error("Kunne ikke sende invite-email.");
   }

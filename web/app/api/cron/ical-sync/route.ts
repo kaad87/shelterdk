@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/utils/supabase/server-admin";
 import { syncIcalForShelter } from "@/lib/ical-sync";
+import { recordBookingMonitorEvent } from "@/lib/booking-monitor";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +36,17 @@ export async function GET(req: NextRequest) {
       console.error(`iCal sync failed for shelter ${shelter.id}:`, msg);
       errors.push(`${shelter.title}: ${msg}`);
     }
+  }
+
+  if (errors.length > 0) {
+    await recordBookingMonitorEvent({
+      severity: "warning",
+      source: "api/cron/ical-sync",
+      eventType: "ical_sync_partial_failure",
+      message: `iCal sync havde ${errors.length} fejl`,
+      metadata: { synced, errors: errors.slice(0, 20) },
+      notify: false,
+    });
   }
 
   return NextResponse.json({ ok: true, synced, errors });

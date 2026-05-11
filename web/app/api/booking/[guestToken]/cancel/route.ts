@@ -18,6 +18,7 @@ import {
 } from "@/lib/booking-email";
 import { sendGa4Event } from "@/lib/server-analytics";
 import { expireCheckoutSession } from "@/lib/stripe";
+import { recordBookingMonitorEvent } from "@/lib/booking-monitor";
 
 export const dynamic = "force-dynamic";
 
@@ -76,6 +77,7 @@ export async function POST(
   const payment = getLatestPaidPayment(await listPaymentsByBookingId(booking.id));
   let refunded = false;
   let refundStatus: "refunded" | "manual_follow_up" | "not_refunded" = "not_refunded";
+  let manualFollowUpReason: string | null = null;
   let notice = wasPending
     ? "Din forespørgsel er trukket tilbage, og datoerne er frigivet."
     : "Din booking er annulleret.";
@@ -94,13 +96,35 @@ export async function POST(
         refunded = true;
         refundStatus = "refunded";
         notice = "Din booking er annulleret, og refunderingen er sat i gang.";
+      } else {
+        refundStatus = "manual_follow_up";
+        manualFollowUpReason = "Stripe checkout-session manglede payment_intent.id";
+        notice = "Din booking er annulleret. Vi følger manuelt op på refunderingen hurtigst muligt.";
       }
     } catch (err) {
       console.error("guest cancel: Stripe refund error:", err);
       // Non-fatal — admin can issue manually
       refundStatus = "manual_follow_up";
+      manualFollowUpReason = err instanceof Error ? err.message : String(err);
       notice = "Din booking er annulleret. Vi følger manuelt op på refunderingen hurtigst muligt.";
     }
+  }
+
+  if (refundStatus === "manual_follow_up") {
+    await recordBookingMonitorEvent({
+      severity: "error",
+      source: "api/booking/[guestToken]/cancel",
+      eventType: "guest_refund_manual_follow_up",
+      message: "Gæsteannullering kræver manuel refund-opfølgning",
+      bookingId: booking.id,
+      shelterId: shelter.id,
+      notify: true,
+      metadata: {
+        paymentId: payment?.id ?? null,
+        amountTotalDkk: payment?.amount_total_dkk ?? null,
+        reason: manualFollowUpReason,
+      },
+    });
   }
 
   // Send emails (non-critical)
@@ -114,6 +138,9 @@ export async function POST(
       checkOut: booking.check_out,
       refundStatus,
       amountTotalDkk: payment?.status === "paid" ? amountTotalDkk : null,
+      bookingId: booking.id,
+      shelterId: shelter.id,
+      paymentId: payment?.id ?? undefined,
     });
   } catch (err) {
     console.error("guest cancel: guest email error:", err);
@@ -127,6 +154,8 @@ export async function POST(
       shelterTitle: shelter.title,
       checkIn: booking.check_in,
       checkOut: booking.check_out,
+      bookingId: booking.id,
+      shelterId: shelter.id,
     });
   } catch (err) {
     console.error("guest cancel: owner email error:", err);

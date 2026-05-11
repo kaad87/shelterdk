@@ -217,6 +217,7 @@ export async function PATCH(req: NextRequest) {
         shelterTitle: shelter.title,
         signupUrl,
         loginUrl,
+        shelterId: shelter.id,
       });
     } catch (error) {
       return NextResponse.json(

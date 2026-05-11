@@ -10,6 +10,11 @@ const messages: Record<string, { emoji: string; title: string; body: string }> =
     title: "Booking bekræftet",
     body: "Du har bekræftet bookingen. Gæsten modtager en bekræftelsesemail.",
   },
+  confirmed_payment_required: {
+    emoji: "✓",
+    title: "Booking bekræftet",
+    body: "Du har bekræftet bookingen. Gæsten modtager nu et betalingslink for at færdiggøre bookingen.",
+  },
   rejected: {
     emoji: "✗",
     title: "Booking afvist",

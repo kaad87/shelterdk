@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { listExpiredPendingPayments, markPaymentExpired } from "@/lib/payment-db";
 import { sendBookingExpired } from "@/lib/booking-email";
-import { cancelPendingBooking } from "@/lib/booking-db";
+import { cancelBooking, cancelPendingBooking } from "@/lib/booking-db";
 import { createAdminClient } from "@/utils/supabase/server-admin";
+import { recordBookingMonitorError, recordBookingMonitorEvent } from "@/lib/booking-monitor";
 
 export const dynamic = "force-dynamic";
 
@@ -20,18 +21,27 @@ export async function GET(req: NextRequest) {
 
   const results = await Promise.allSettled(
     expiredPayments.map(async ({ id: paymentId, booking_id: bookingId }) => {
-      const wasCancelled = await cancelPendingBooking(bookingId);
+      const { data: booking } = await createAdminClient()
+        .from("shelter_bookings")
+        .select("status, guest_email, guest_name, check_in, check_out, bookable_shelters!inner(id, owner_email, title, payment_mode)")
+        .eq("id", bookingId)
+        .single();
+
+      let wasCancelled = false;
+      if (booking?.status === "pending") {
+        wasCancelled = await cancelPendingBooking(bookingId);
+      } else if (booking?.status === "confirmed") {
+        const shelter = (booking as any).bookable_shelters;
+        if (shelter?.payment_mode === "after_confirmation") {
+          wasCancelled = await cancelBooking(bookingId, "system");
+        }
+      }
+
       await markPaymentExpired(paymentId);
       if (!wasCancelled) {
         skipped += 1;
         return;
       }
-
-      const { data: booking } = await createAdminClient()
-        .from("shelter_bookings")
-        .select("guest_email, guest_name, check_in, check_out, bookable_shelters!inner(owner_email, title)")
-        .eq("id", bookingId)
-        .single();
 
       if (booking) {
         const shelter = (booking as any).bookable_shelters;
@@ -42,6 +52,9 @@ export async function GET(req: NextRequest) {
           shelterTitle: shelter.title,
           checkIn: booking.check_in,
           checkOut: booking.check_out,
+          bookingId,
+          shelterId: shelter.id,
+          paymentId,
         });
       }
 
@@ -57,6 +70,26 @@ export async function GET(req: NextRequest) {
       errors.push(`${bookingId}: ${msg}`);
     }
   });
+
+  if (errors.length > 0) {
+    await recordBookingMonitorEvent({
+      severity: "error",
+      source: "api/cron/expire-payments",
+      eventType: "cron_expire_payments_failed",
+      message: `Expire-payments cron havde ${errors.length} fejl`,
+      notify: true,
+      metadata: { errors, cancelled, skipped },
+    });
+  } else if (cancelled > 0) {
+    await recordBookingMonitorEvent({
+      severity: "info",
+      source: "api/cron/expire-payments",
+      eventType: "payments_expired",
+      message: `${cancelled} betaling(er) blev udløbet af cron`,
+      metadata: { cancelled, skipped },
+      needsAttention: false,
+    });
+  }
 
   return NextResponse.json({ ok: true, cancelled, skipped, errors });
 }
