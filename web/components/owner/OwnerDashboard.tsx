@@ -924,9 +924,7 @@ export function OwnerDashboard({
                       <div className="w-px bg-amber-100" />
                     </>
                   ) : (
-                    <div className="flex-1 px-4 py-3 text-sm text-amber-800 bg-amber-50/60">
-                      Gæsten har endnu ikke gennemført betalingen. Datoerne er reserveret midlertidigt.
-                    </div>
+                    <div className="flex-1" />
                   )}
                   <button
                     onClick={() => openThread(b.id)}

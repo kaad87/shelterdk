@@ -23,14 +23,22 @@ export default async function EjerShelterGroupEditPage({
   const sharedContent = await getSharedShelterContent(groupId);
 
   return (
-    <ShelterGroupSettingsForm
-      groupId={groupId}
-      label={stripUnitSuffix(shelters[0].title)}
-      shelters={shelters}
-      sharedDescription={sharedContent?.description ?? ""}
-      shelterData={sharedContent}
-      photoShelterUnitId={shelters[0].id}
-      shelterDbId={groupId}
-    />
+    <div>
+      <div className="mb-6">
+        <a href="/ejer/dashboard" className="text-sm text-primary/40 hover:text-primary transition-colors">
+          ← Tilbage til dashboard
+        </a>
+      </div>
+
+      <ShelterGroupSettingsForm
+        groupId={groupId}
+        label={stripUnitSuffix(shelters[0].title)}
+        shelters={shelters}
+        sharedDescription={sharedContent?.description ?? ""}
+        shelterData={sharedContent}
+        photoShelterUnitId={shelters[0].id}
+        shelterDbId={groupId}
+      />
+    </div>
   );
 }

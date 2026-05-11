@@ -118,10 +118,7 @@ export function ShelterEditForm({ shelter, sharedContent, shelterDbId }: Props) 
   return (
     <div>
       <div className="mb-6">
-        <a href="/ejer/dashboard" className="text-sm text-primary/40 hover:text-primary transition-colors">
-          ← Tilbage til dashboard
-        </a>
-        <h1 className="font-serif text-2xl font-bold text-primary mt-2">{shelter.title}</h1>
+        <h1 className="font-serif text-2xl font-bold text-primary">{shelter.title}</h1>
       </div>
 
       <form onSubmit={handleSave} className="space-y-5 bg-white rounded-2xl border border-primary/8 p-5 mb-6">

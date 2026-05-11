@@ -20,10 +20,18 @@ export default async function RedigerPage({ params }: Props) {
     : null;
 
   return (
-    <ShelterEditForm
-      shelter={shelter}
-      sharedContent={sharedContent}
-      shelterDbId={shelter.shelter_id ?? ""}
-    />
+    <div>
+      <div className="mb-6">
+        <a href="/ejer/dashboard" className="text-sm text-primary/40 hover:text-primary transition-colors">
+          ← Tilbage til dashboard
+        </a>
+      </div>
+
+      <ShelterEditForm
+        shelter={shelter}
+        sharedContent={sharedContent}
+        shelterDbId={shelter.shelter_id ?? ""}
+      />
+    </div>
   );
 }
