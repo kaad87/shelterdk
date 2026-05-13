@@ -22,7 +22,10 @@ export default async function RedigerPage({ params }: Props) {
   return (
     <div>
       <div className="mb-6">
-        <a href="/ejer/dashboard" className="text-sm text-primary/40 hover:text-primary transition-colors">
+        <a
+          href="/ejer/dashboard"
+          className="inline-flex items-center gap-1 text-sm font-medium text-primary/55 hover:text-primary transition-colors"
+        >
           ← Tilbage til dashboard
         </a>
       </div>

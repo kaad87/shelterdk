@@ -6,7 +6,7 @@ import { getSheltersByAuthUser } from "@/lib/owner-db";
 export const dynamic = "force-dynamic";
 
 function stripUnitSuffix(title: string) {
-  return title.replace(/\s+[–-]\s+Shelter\s+\d+$/i, "").trim();
+  return title.replace(/\s+[–-]\s+Shelter\s+\d+(?:\s+[–-]\s+.+)?$/i, "").trim();
 }
 
 function getUnitNumber(title: string): number {

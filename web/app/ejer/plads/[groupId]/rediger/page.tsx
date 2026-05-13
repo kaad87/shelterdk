@@ -6,7 +6,7 @@ import { ShelterGroupSettingsForm } from "@/components/ejer/ShelterGroupSettings
 export const dynamic = "force-dynamic";
 
 function stripUnitSuffix(title: string) {
-  return title.replace(/\s+[–-]\s+Shelter\s+\d+$/i, "").trim();
+  return title.replace(/\s+[–-]\s+Shelter\s+\d+(?:\s+[–-]\s+.+)?$/i, "").trim();
 }
 
 export default async function EjerShelterGroupEditPage({
@@ -25,7 +25,10 @@ export default async function EjerShelterGroupEditPage({
   return (
     <div>
       <div className="mb-6">
-        <a href="/ejer/dashboard" className="text-sm text-primary/40 hover:text-primary transition-colors">
+        <a
+          href="/ejer/dashboard"
+          className="inline-flex items-center gap-1 text-sm font-medium text-primary/55 hover:text-primary transition-colors"
+        >
           ← Tilbage til dashboard
         </a>
       </div>
