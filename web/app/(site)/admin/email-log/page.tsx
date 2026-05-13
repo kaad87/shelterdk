@@ -75,15 +75,18 @@ export default function AdminEmailLogPage() {
       if (isInitial) setLoading(true);
       try {
         const r = await fetch(query, { headers: { "x-admin-secret": secret } });
-        if (!r.ok) throw r.status;
-        const data = await r.json();
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          if (r.status === 401) throw new Error("401");
+          throw new Error(typeof data.error === "string" ? data.error : "FETCH_FAILED");
+        }
         if (cancelled) return;
         setLogs(data);
         setErrorMsg(null);
-      } catch (statusCode) {
+      } catch (err) {
         if (cancelled) return;
-        if (statusCode === 401) setAuthError(true);
-        else setErrorMsg("Kunne ikke hente email-loggen lige nu.");
+        if (err instanceof Error && err.message === "401") setAuthError(true);
+        else setErrorMsg(err instanceof Error ? err.message : "Kunne ikke hente email-loggen lige nu.");
       } finally {
         if (!cancelled && isInitial) setLoading(false);
       }

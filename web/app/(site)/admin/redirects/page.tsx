@@ -70,16 +70,20 @@ export default function AdminRedirectsPage() {
       if (isInitial) setLoading(true);
       try {
         const r = await fetch(query, { headers: { "x-admin-secret": secret } });
-        if (!r.ok) throw new Error(r.status === 401 ? "401" : "FETCH_FAILED");
-        const data = (await r.json()) as RedirectRow[];
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          if (r.status === 401) throw new Error("401");
+          throw new Error(typeof data.error === "string" ? data.error : "FETCH_FAILED");
+        }
         if (cancelled) return;
-        setRows(data);
-        setDrafts(Object.fromEntries(data.map((row) => [row.id, toDraft(row)])));
+        const rows = data as RedirectRow[];
+        setRows(rows);
+        setDrafts(Object.fromEntries(rows.map((row) => [row.id, toDraft(row)])));
         setErrorMsg(null);
       } catch (err) {
         if (cancelled) return;
         if (err instanceof Error && err.message === "401") setAuthError(true);
-        else setErrorMsg("Kunne ikke hente redirects lige nu.");
+        else setErrorMsg(err instanceof Error ? err.message : "Kunne ikke hente redirects lige nu.");
       } finally {
         if (!cancelled && isInitial) setLoading(false);
       }
@@ -93,10 +97,13 @@ export default function AdminRedirectsPage() {
 
   async function refresh() {
     const r = await fetch(query, { headers: { "x-admin-secret": secret } });
-    if (!r.ok) throw new Error("FETCH_FAILED");
-    const data = (await r.json()) as RedirectRow[];
-    setRows(data);
-    setDrafts(Object.fromEntries(data.map((row) => [row.id, toDraft(row)])));
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      throw new Error(typeof data.error === "string" ? data.error : "FETCH_FAILED");
+    }
+    const rows = data as RedirectRow[];
+    setRows(rows);
+    setDrafts(Object.fromEntries(rows.map((row) => [row.id, toDraft(row)])));
   }
 
   async function handleCreate() {

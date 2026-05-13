@@ -70,15 +70,18 @@ export default function AdminBookingMonitorPage() {
       if (isInitial) setLoading(true);
       try {
         const r = await fetch(query, { headers });
-        if (!r.ok) throw r.status;
-        const data = await r.json();
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          if (r.status === 401) throw new Error("401");
+          throw new Error(typeof data.error === "string" ? data.error : "FETCH_FAILED");
+        }
         if (cancelled) return;
         setEvents(data);
         setErrorMsg(null);
-      } catch (statusCode) {
+      } catch (err) {
         if (cancelled) return;
-        if (statusCode === 401) setAuthError(true);
-        else setErrorMsg("Kunne ikke hente monitor-hændelser lige nu.");
+        if (err instanceof Error && err.message === "401") setAuthError(true);
+        else setErrorMsg(err instanceof Error ? err.message : "Kunne ikke hente monitor-hændelser lige nu.");
       } finally {
         if (!cancelled && isInitial) setLoading(false);
       }
@@ -108,12 +111,20 @@ export default function AdminBookingMonitorPage() {
         },
         body: JSON.stringify({ id, action, actor: "admin" }),
       });
-      if (!res.ok) throw new Error("Kunne ikke gemme");
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(typeof data.error === "string" ? data.error : "Kunne ikke gemme");
       const headers = { "x-admin-secret": secret };
-      const refreshed = await fetch(query, { headers }).then((r) => r.json());
+      const refreshedRes = await fetch(query, { headers });
+      const refreshedData = await refreshedRes.json().catch(() => ({}));
+      if (!refreshedRes.ok) {
+        throw new Error(
+          typeof refreshedData.error === "string" ? refreshedData.error : "Kunne ikke hente opdaterede hændelser"
+        );
+      }
+      const refreshed = refreshedData as EventRow[];
       setEvents(refreshed);
-    } catch {
-      setErrorMsg("Kunne ikke opdatere hændelsen. Prøv igen.");
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : "Kunne ikke opdatere hændelsen. Prøv igen.");
     } finally {
       setBusyId(null);
     }

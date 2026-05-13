@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdmin } from "@/lib/admin-auth";
+import { describeAdminDataError } from "@/lib/admin-route-errors";
 import {
   acknowledgeBookingMonitorEvent,
   listBookingMonitorEvents,
@@ -17,8 +18,22 @@ export async function GET(req: NextRequest) {
   const status = (searchParams.get("status") ?? "open") as "open" | "acknowledged" | "resolved" | "all";
   const limit = Math.max(1, parseInt(searchParams.get("limit") ?? "200", 10) || 200);
 
-  const events = await listBookingMonitorEvents({ severity, status, limit });
-  return NextResponse.json(events);
+  try {
+    const events = await listBookingMonitorEvents({ severity, status, limit });
+    return NextResponse.json(events);
+  } catch (err) {
+    return NextResponse.json(
+      {
+        error: describeAdminDataError(err, {
+          entityLabel: "Booking-monitoren",
+          tableName: "booking_monitor_events",
+          migrationFile: "20260511_booking_monitor_events.sql",
+          fallbackMessage: "Kunne ikke hente booking-monitor lige nu.",
+        }),
+      },
+      { status: 500 }
+    );
+  }
 }
 
 export async function PATCH(req: NextRequest) {
@@ -33,13 +48,27 @@ export async function PATCH(req: NextRequest) {
   }
 
   const actor = body.actor?.trim() || "admin";
-  if (body.action === "acknowledge") {
-    await acknowledgeBookingMonitorEvent(body.id, actor);
-  } else if (body.action === "resolve") {
-    await resolveBookingMonitorEvent(body.id, actor);
-  } else {
-    return NextResponse.json({ error: "Ugyldig action" }, { status: 400 });
-  }
+  try {
+    if (body.action === "acknowledge") {
+      await acknowledgeBookingMonitorEvent(body.id, actor);
+    } else if (body.action === "resolve") {
+      await resolveBookingMonitorEvent(body.id, actor);
+    } else {
+      return NextResponse.json({ error: "Ugyldig action" }, { status: 400 });
+    }
 
-  return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    return NextResponse.json(
+      {
+        error: describeAdminDataError(err, {
+          entityLabel: "Booking-monitoren",
+          tableName: "booking_monitor_events",
+          migrationFile: "20260511_booking_monitor_events.sql",
+          fallbackMessage: "Kunne ikke opdatere booking-monitor lige nu.",
+        }),
+      },
+      { status: 500 }
+    );
+  }
 }

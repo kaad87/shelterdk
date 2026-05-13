@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdmin } from "@/lib/admin-auth";
+import { describeAdminDataError } from "@/lib/admin-route-errors";
 import {
   createCustomRedirect,
   deleteCustomRedirect,
@@ -17,8 +18,22 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   const limit = Math.max(1, parseInt(searchParams.get("limit") ?? "200", 10) || 200);
-  const redirects = await listCustomRedirects(limit);
-  return NextResponse.json(redirects);
+  try {
+    const redirects = await listCustomRedirects(limit);
+    return NextResponse.json(redirects);
+  } catch (err) {
+    return NextResponse.json(
+      {
+        error: describeAdminDataError(err, {
+          entityLabel: "Redirect-panelet",
+          tableName: "custom_redirects",
+          migrationFile: "20260513_custom_redirects.sql",
+          fallbackMessage: "Kunne ikke hente redirects lige nu.",
+        }),
+      },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -42,7 +57,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(row, { status: 201 });
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Kunne ikke oprette redirect" },
+      {
+        error: describeAdminDataError(err, {
+          entityLabel: "Redirect-panelet",
+          tableName: "custom_redirects",
+          migrationFile: "20260513_custom_redirects.sql",
+          fallbackMessage: err instanceof Error ? err.message : "Kunne ikke oprette redirect",
+        }),
+      },
       { status: 400 }
     );
   }
@@ -69,7 +91,14 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json(row);
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Kunne ikke opdatere redirect" },
+      {
+        error: describeAdminDataError(err, {
+          entityLabel: "Redirect-panelet",
+          tableName: "custom_redirects",
+          migrationFile: "20260513_custom_redirects.sql",
+          fallbackMessage: err instanceof Error ? err.message : "Kunne ikke opdatere redirect",
+        }),
+      },
       { status: 400 }
     );
   }
@@ -91,7 +120,14 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ ok: true });
   } catch (err) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Kunne ikke slette redirect" },
+      {
+        error: describeAdminDataError(err, {
+          entityLabel: "Redirect-panelet",
+          tableName: "custom_redirects",
+          migrationFile: "20260513_custom_redirects.sql",
+          fallbackMessage: err instanceof Error ? err.message : "Kunne ikke slette redirect",
+        }),
+      },
       { status: 400 }
     );
   }
