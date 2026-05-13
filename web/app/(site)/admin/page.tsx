@@ -64,6 +64,12 @@ export default function AdminIndexPage() {
           >
             ✉️ Email-log
           </Link>
+          <Link
+            href="/admin/redirects"
+            className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-white px-4 py-2.5 text-sm font-medium text-primary hover:border-accent hover:text-accent transition-colors"
+          >
+            ↪️ Redirects
+          </Link>
         </div>
       )}
 

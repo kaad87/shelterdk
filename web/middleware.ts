@@ -1,8 +1,29 @@
 import { createServerClient } from "@supabase/ssr";
+import { findActiveRedirect } from "@/lib/custom-redirect-lookup";
 import { NextResponse, type NextRequest } from "next/server";
 import type { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const skipRedirectLookup =
+    pathname.startsWith("/ejer/") ||
+    pathname.startsWith("/admin/") ||
+    pathname.startsWith("/api/") ||
+    pathname.startsWith("/_next/");
+
+  if (!skipRedirectLookup) {
+    const redirectRule = await findActiveRedirect(pathname);
+    if (redirectRule) {
+      const destination = new URL(redirectRule.destination_url, request.url);
+      request.nextUrl.searchParams.forEach((value, key) => {
+        if (!destination.searchParams.has(key)) {
+          destination.searchParams.set(key, value);
+        }
+      });
+      return NextResponse.redirect(destination, redirectRule.status_code);
+    }
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   // Create a Supabase client that can refresh session cookies on the response
@@ -28,7 +49,6 @@ export async function middleware(request: NextRequest) {
   // Refresh session — keeps session alive and rotates tokens
   const { data: { user } } = await supabase.auth.getUser();
 
-  const { pathname } = request.nextUrl;
   const isPublicEjerRoute =
     pathname.startsWith("/ejer/login") ||
     pathname.startsWith("/ejer/signup") ||
@@ -46,5 +66,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/ejer/:path*"],
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|icons|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|map|txt|xml|woff|woff2)$).*)",
+  ],
 };
