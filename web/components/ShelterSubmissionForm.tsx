@@ -10,9 +10,8 @@ import type { FacilityKey } from "@/lib/shelter-submissions";
 
 const SubmissionMapPicker = dynamic(
   async () => {
-    const { MapContainer, TileLayer, Marker, useMapEvents } = await import(
-      "react-leaflet"
-    );
+    const { MapContainer, TileLayer, LayersControl, Marker, useMapEvents } =
+      await import("react-leaflet");
     const L = await import("leaflet");
 
     const icon = L.icon({
@@ -51,10 +50,21 @@ const SubmissionMapPicker = dynamic(
           style={{ height: 300, width: "100%" }}
           className="rounded-xl z-0 [&_.leaflet-control-attribution]:text-[10px]"
         >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
+          <LayersControl position="topright">
+            <LayersControl.BaseLayer checked name="Kort">
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+            </LayersControl.BaseLayer>
+            <LayersControl.BaseLayer name="Satellit">
+              <TileLayer
+                attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
+                url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                maxZoom={19}
+              />
+            </LayersControl.BaseLayer>
+          </LayersControl>
           <ClickHandler />
           {lat != null && lng != null && (
             <Marker position={[lat, lng]} icon={icon} />
