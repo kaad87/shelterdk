@@ -507,7 +507,7 @@ export function ShelterSubmissionForm() {
         {wantsBooking && (
           <div className="border-t border-accent/20 px-5 pb-5 space-y-4">
             {/* Mini benefits */}
-            <div className="grid grid-cols-3 gap-3 pt-4">
+            <div className="grid sm:grid-cols-3 gap-3 pt-4">
               {[
                 { icon: "🚫", label: "Ingen dobbeltbookinger" },
                 { icon: "📩", label: "Automatiske bekræftelser" },
