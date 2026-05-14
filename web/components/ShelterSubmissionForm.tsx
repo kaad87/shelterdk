@@ -524,8 +524,8 @@ export function ShelterSubmissionForm() {
                   Ingen oprettelsespris, abonnement eller skjulte omkostninger.
                 </p>
                 <p>
-                  <strong className="text-primary/70">Ingen lejeopkrævning.</strong>{" "}
-                  Du stiller dit shelter gratis til rådighed og opkræver ingen leje.
+                  <strong className="text-primary/70">Du bestemmer prisen.</strong>{" "}
+                  Sæt selv en pris per nat og tjen penge på dit shelter — eller stil det gratis til rådighed. Det er helt op til dig.
                 </p>
                 <p>
                   <strong className="text-primary/70">Automatisk administration.</strong>{" "}

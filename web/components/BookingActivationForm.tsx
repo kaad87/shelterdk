@@ -8,8 +8,8 @@ const VILKAR = [
     text: "Ingen oprettelsespris, abonnement eller skjulte omkostninger.",
   },
   {
-    label: "Ingen lejeopkrævning.",
-    text: "Du stiller dit shelter gratis til rådighed og opkræver ingen leje.",
+    label: "Du bestemmer prisen.",
+    text: "Sæt selv en pris per nat og tjen penge på dit shelter — eller stil det gratis til rådighed. Det er helt op til dig.",
   },
   {
     label: "Automatisk administration.",
