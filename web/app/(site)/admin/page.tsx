@@ -70,6 +70,12 @@ export default function AdminIndexPage() {
           >
             ↪️ Redirects
           </Link>
+          <Link
+            href="/admin/kontakt"
+            className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-white px-4 py-2.5 text-sm font-medium text-primary hover:border-accent hover:text-accent transition-colors"
+          >
+            💬 Kontaktbeskeder
+          </Link>
         </div>
       )}
 

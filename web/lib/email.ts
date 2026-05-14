@@ -280,3 +280,81 @@ export async function sendOwnerPortalInviteEmail(opts: {
     throw new Error("Kunne ikke sende invite-email.");
   }
 }
+
+// ─── Admin reply email ─────────────────────────────────────────────────────────
+
+export interface AdminReplyEmailOpts {
+  toName: string;
+  replyText: string;
+  originalMessage: string;
+}
+
+export function buildAdminReplyEmailHtml(opts: AdminReplyEmailOpts): string {
+  const { toName, replyText, originalMessage } = opts;
+  return renderEmail({
+    title: "Svar fra ShelterDK",
+    preheader: replyText.slice(0, 120),
+    bodyHtml: `
+      <p style="font-size:13px;color:#333;line-height:1.65;margin:0 0 12px;">
+        Hej <strong>${escapeHtml(toName)}</strong>,
+      </p>
+      <p style="font-size:13px;color:#333;line-height:1.65;margin:0 0 16px;">
+        ${escapeHtml(replyText).replace(/\n/g, "<br>")}
+      </p>
+      <p style="font-size:12px;color:#777;margin:0 0 4px;">Med venlig hilsen,</p>
+      <p style="font-size:13px;color:#333;font-weight:600;margin:0 0 16px;">
+        Christian<br>
+        <span style="font-weight:400;color:#777;">ShelterDK &middot; <a href="https://shelterdk.dk" style="color:#c5a059;text-decoration:none;">shelterdk.dk</a></span>
+      </p>
+      <hr style="border:none;border-top:1px solid #ede9e1;margin:16px 0;">
+      <p style="font-size:11px;color:#aaa;margin:0 0 6px;">Din oprindelige besked:</p>
+      <blockquote style="background:#f9f7f4;border-left:3px solid #c5a059;margin:0;padding:10px 14px;border-radius:0 6px 6px 0;">
+        <p style="font-size:12px;color:#666;line-height:1.5;margin:0;">
+          ${escapeHtml(originalMessage).replace(/\n/g, "<br>")}
+        </p>
+      </blockquote>
+    `,
+  });
+}
+
+export function buildAdminReplyEmailText(opts: { replyText: string; originalMessage: string }): string {
+  return renderEmailText({
+    title: "Svar fra ShelterDK",
+    lines: [
+      opts.replyText,
+      "",
+      "Med venlig hilsen,",
+      "Christian",
+      "ShelterDK · shelterdk.dk",
+      "",
+      "---",
+      "Din oprindelige besked:",
+      opts.originalMessage,
+    ],
+  });
+}
+
+export async function sendAdminReplyEmail(opts: {
+  toEmail: string;
+  toName: string;
+  replyText: string;
+  originalMessage: string;
+  contactMessageId: string;
+}) {
+  const html = buildAdminReplyEmailHtml(opts);
+  const text = buildAdminReplyEmailText(opts);
+  await sendLoggedEmail({
+    to: opts.toEmail,
+    subject: "Re: Din henvendelse til ShelterDK",
+    html,
+    text,
+    context: {
+      category: "contact",
+      emailType: "admin_reply",
+      metadata: {
+        contactMessageId: opts.contactMessageId,
+        toName: opts.toName,
+      },
+    },
+  });
+}
