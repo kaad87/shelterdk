@@ -54,8 +54,9 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "Ansøgning ikke fundet" }, { status: 404 });
   }
 
-  // Update status first
-  const { error: updateError } = await supabase
+  // Update status — guard on pending so a concurrent approve is treated as 409.
+  // .select("id") lets us check whether any row was actually updated.
+  const { data: updatedRows, error: updateError } = await supabase
     .from("shelter_submissions")
     .update({
       status: "rejected",
@@ -63,10 +64,20 @@ export async function POST(request: NextRequest) {
       reviewed_at: new Date().toISOString(),
     })
     .eq("id", submissionId)
-    .eq("status", "pending"); // idempotency guard
+    .eq("status", "pending") // idempotency guard
+    .select("id");
 
   if (updateError) {
     return Response.json({ error: updateError.message }, { status: 500 });
+  }
+
+  // 0 rows updated means the submission was already processed (approved or rejected).
+  // Bail out before side effects (photo deletion, email).
+  if (!updatedRows || updatedRows.length === 0) {
+    return Response.json(
+      { error: "Ansøgning er allerede behandlet" },
+      { status: 409 }
+    );
   }
 
   // Delete photos from shelter-submissions bucket

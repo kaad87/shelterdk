@@ -151,9 +151,13 @@ describe("POST /api/admin/approve-shelter-submission", () => {
     // Default: shelter insert succeeds
     mockInsert.mockResolvedValue({ error: null });
 
-    // Default: update submission status succeeds
+    // Default: update submission status succeeds (1 row updated)
     mockUpdateEq.mockReturnValue({
-      eq: () => ({ eq: () => Promise.resolve({ error: null }) }),
+      eq: () => ({
+        eq: () => ({
+          select: () => Promise.resolve({ data: [{ id: VALID_UUID }], error: null }),
+        }),
+      }),
     });
   });
 
@@ -225,9 +229,13 @@ describe("POST /api/admin/reject-shelter-submission", () => {
       }),
     });
 
-    // Default: update succeeds
+    // Default: update succeeds and affects 1 row
     mockUpdateEq.mockReturnValue({
-      eq: () => ({ eq: () => Promise.resolve({ error: null }) }),
+      eq: () => ({
+        eq: () => ({
+          select: () => Promise.resolve({ data: [{ id: VALID_UUID }], error: null }),
+        }),
+      }),
     });
   });
 
@@ -246,6 +254,21 @@ describe("POST /api/admin/reject-shelter-submission", () => {
       submissionId: VALID_UUID,
     }) as never);
     expect(res.status).toBe(400);
+  });
+
+  it("returnerer 409 hvis ansøgning allerede er behandlet (0 rækker opdateret)", async () => {
+    mockUpdateEq.mockReturnValue({
+      eq: () => ({
+        eq: () => ({
+          select: () => Promise.resolve({ data: [], error: null }),
+        }),
+      }),
+    });
+    const res = await rejectModule.POST(adminRequest("POST", "/api/admin/reject-shelter-submission", {
+      submissionId: VALID_UUID,
+      reason: "Duplikat",
+    }) as never);
+    expect(res.status).toBe(409);
   });
 
   it("returnerer 200 ved afvisning med årsag", async () => {

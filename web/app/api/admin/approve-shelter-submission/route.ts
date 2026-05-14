@@ -145,10 +145,13 @@ export async function POST(request: NextRequest) {
     kommune: kommune || null,
     place: place || null,
     water: facilities.vand ?? false,
-    toilet: facilities.toilet ?? false,
+    // toilet is an enum ("flush"|"mulch"|"none"|"unknown") not a boolean.
+    // We only know there IS a toilet, not its type → store as "unknown".
+    toilet: facilities.toilet ? "unknown" : null,
     capacity: submission.capacity || null,
     booking_url: submission.booking_url || null,
-    user_image_urls: reuploadedUrls.length > 0 ? { urls: reuploadedUrls } : null,
+    // user_image_urls is a plain text[] array, not a wrapped object.
+    user_image_urls: reuploadedUrls.length > 0 ? reuploadedUrls : null,
     geofa_raw: Object.keys(geofa_raw).length > 0 ? geofa_raw : null,
   });
 
@@ -163,15 +166,38 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: insertError.message }, { status: 500 });
   }
 
-  // Update submission status + shelter_id reference
-  await supabase
+  // Clean up source photos from the submissions bucket now that they are in shelter-photos
+  if (photoPaths.length > 0) {
+    const { error: cleanupError } = await supabase.storage
+      .from(submissionsBucket)
+      .remove(photoPaths);
+    if (cleanupError) {
+      console.error("Failed to clean up submission photos after approval:", cleanupError);
+    }
+  }
+
+  // Update submission status + shelter_id reference.
+  // Guard on status=pending to protect against a concurrent reject having run between
+  // our fetch and now. We add .select("id") so we can detect a 0-row update.
+  const { data: updatedRows } = await supabase
     .from("shelter_submissions")
     .update({
       status: "approved",
       shelter_id: newShelterId,
       reviewed_at: new Date().toISOString(),
     })
-    .eq("id", submissionId);
+    .eq("id", submissionId)
+    .eq("status", "pending")
+    .select("id");
+
+  if (!updatedRows || updatedRows.length === 0) {
+    // A concurrent reject already processed this submission.
+    // The shelter is live — log the inconsistency but continue.
+    console.error(
+      `Approve: submission ${submissionId} was no longer pending when status update ran. ` +
+        `Shelter ${newShelterId} (slug: ${slug}) is live but submission may be marked rejected.`
+    );
+  }
 
   // Send approval email
   if (submission.contact_email) {
