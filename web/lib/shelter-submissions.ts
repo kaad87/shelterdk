@@ -4,7 +4,13 @@ export type SubmissionType = "owner_registration" | "user_tip";
 export type SubmissionStatus = "pending" | "approved" | "rejected";
 
 /** Canonical facility keys stored in the `facilities` JSONB column */
-export const FACILITY_KEYS = ["vand", "toilet", "baalplads", "parkering", "hund"] as const;
+export const FACILITY_KEYS = [
+  "vand",
+  "toilet",
+  "baalplads",
+  "parkering",
+  "hunde_tilladt",
+] as const;
 export type FacilityKey = (typeof FACILITY_KEYS)[number];
 
 export const FACILITY_LABELS: Record<FacilityKey, string> = {
@@ -12,7 +18,7 @@ export const FACILITY_LABELS: Record<FacilityKey, string> = {
   toilet: "🚽 Toilet",
   baalplads: "🔥 Bålplads",
   parkering: "🅿️ Parkering",
-  hund: "🐕 Hund",
+  hunde_tilladt: "🐕 Hund tilladt",
 };
 
 export interface ShelterSubmission {
@@ -21,6 +27,9 @@ export interface ShelterSubmission {
   status: SubmissionStatus;
   shelter_name: string;
   location_text: string;
+  lat: number | null;
+  lng: number | null;
+  photo_urls: string[];
   capacity: number | null;
   description: string | null;
   facilities: Partial<Record<FacilityKey, boolean>> | null;
@@ -32,6 +41,7 @@ export interface ShelterSubmission {
   rejected_reason: string | null;
   reviewed_at: string | null;
   created_at: string;
+  shelter_id: string | null;
 }
 
 /** Payload shape accepted by POST /api/submit-shelter */
@@ -39,6 +49,9 @@ export interface SubmitShelterPayload {
   type: SubmissionType;
   shelter_name: string;
   location_text: string;
+  lat?: number | null;
+  lng?: number | null;
+  photo_urls?: string[];
   capacity?: number | null;
   description?: string;
   facilities?: Partial<Record<FacilityKey, boolean>>;
@@ -47,3 +60,6 @@ export interface SubmitShelterPayload {
   contact_email?: string;
   source_info?: string;
 }
+
+/** Photo path pattern for submissions bucket: pending/{uuid}.{ext} */
+export const PHOTO_PATH_REGEX = /^pending\/[0-9a-f-]{36}\.(jpg|jpeg|png)$/i;

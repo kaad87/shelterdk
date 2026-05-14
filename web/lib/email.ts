@@ -358,3 +358,108 @@ export async function sendAdminReplyEmail(opts: {
     },
   });
 }
+
+// ─── Shelter submission emails ─────────────────────────────────────────────
+
+export function buildShelterApprovedEmailHtml(opts: {
+  shelterName: string;
+  shelterSlug: string;
+}): string {
+  const { shelterName, shelterSlug } = opts;
+  const shelterUrl = `https://shelterdk.dk/shelter/${shelterSlug}`;
+  return renderEmail({
+    title: "Dit shelter er nu på ShelterDK 🏕️",
+    preheader: `${escapeHtml(shelterName)} er godkendt og live på ShelterDK!`,
+    bodyHtml: `
+      <p style="font-size:13px;color:#333;line-height:1.65;margin:0 0 12px;">
+        Tillykke! Dit shelter <strong>${escapeHtml(shelterName)}</strong> er nu godkendt og live på ShelterDK.
+      </p>
+      <p style="font-size:13px;color:#333;line-height:1.65;margin:0 0 16px;">
+        Du kan se dit shelter her:<br>
+        <a href="${shelterUrl}" style="color:#c5a059;text-decoration:none;">${shelterUrl}</a>
+      </p>
+      <p style="font-size:13px;color:#333;line-height:1.65;margin:0 0 16px;">
+        Du er velkommen til at svare på denne mail med spørgsmål.
+      </p>
+      <p style="font-size:12px;color:#777;margin:0 0 4px;">Med venlig hilsen,</p>
+      <p style="font-size:13px;color:#333;font-weight:600;margin:0 0 16px;">
+        Christian<br>
+        <span style="font-weight:400;color:#777;">ShelterDK &middot; <a href="https://shelterdk.dk" style="color:#c5a059;text-decoration:none;">shelterdk.dk</a></span>
+      </p>
+    `,
+  });
+}
+
+export function buildShelterRejectedEmailHtml(opts: {
+  shelterName: string;
+  reason: string;
+}): string {
+  const { shelterName, reason } = opts;
+  return renderEmail({
+    title: "Din shelter-ansøgning til ShelterDK",
+    preheader: `Tak for din ansøgning om ${escapeHtml(shelterName)}.`,
+    bodyHtml: `
+      <p style="font-size:13px;color:#333;line-height:1.65;margin:0 0 12px;">
+        Tak for at du indsendte <strong>${escapeHtml(shelterName)}</strong> til ShelterDK.
+      </p>
+      <p style="font-size:13px;color:#333;line-height:1.65;margin:0 0 12px;">
+        Desværre kan vi ikke godkende ansøgningen på nuværende tidspunkt:
+      </p>
+      <blockquote style="background:#f9f7f4;border-left:3px solid #c5a059;margin:0 0 16px;padding:10px 14px;border-radius:0 6px 6px 0;">
+        <p style="font-size:13px;color:#555;line-height:1.5;margin:0;">
+          ${escapeHtml(reason).replace(/\n/g, "<br>")}
+        </p>
+      </blockquote>
+      <p style="font-size:13px;color:#333;line-height:1.65;margin:0 0 16px;">
+        Du er velkommen til at indsende en ny ansøgning når ovenstående er på plads.
+      </p>
+      <p style="font-size:12px;color:#777;margin:0 0 4px;">Med venlig hilsen,</p>
+      <p style="font-size:13px;color:#333;font-weight:600;margin:0 0 16px;">
+        Christian<br>
+        <span style="font-weight:400;color:#777;">ShelterDK &middot; <a href="https://shelterdk.dk" style="color:#c5a059;text-decoration:none;">shelterdk.dk</a></span>
+      </p>
+    `,
+  });
+}
+
+export async function sendShelterApprovedEmail(opts: {
+  toEmail: string;
+  shelterName: string;
+  shelterSlug: string;
+  submissionId: string;
+}) {
+  const html = buildShelterApprovedEmailHtml(opts);
+  const text = `Tillykke! Dit shelter "${opts.shelterName}" er nu godkendt og live på ShelterDK.\n\nhttps://shelterdk.dk/shelter/${opts.shelterSlug}\n\nDu er velkommen til at svare på denne mail med spørgsmål.\n\nMed venlig hilsen,\nChristian\nShelterDK · shelterdk.dk`;
+  await sendLoggedEmail({
+    to: opts.toEmail,
+    subject: "Dit shelter er nu på ShelterDK 🏕️",
+    html,
+    text,
+    context: {
+      category: "contact",
+      emailType: "shelter_approved",
+      metadata: { submissionId: opts.submissionId, shelterName: opts.shelterName },
+    },
+  });
+}
+
+export async function sendShelterRejectedEmail(opts: {
+  toEmail: string;
+  shelterName: string;
+  reason: string;
+  submissionId: string;
+}) {
+  const html = buildShelterRejectedEmailHtml(opts);
+  const text = `Tak for din ansøgning om "${opts.shelterName}".\n\nDesværre kan vi ikke godkende ansøgningen:\n\n${opts.reason}\n\nDu er velkommen til at indsende igen.\n\nMed venlig hilsen,\nChristian\nShelterDK · shelterdk.dk`;
+  await sendLoggedEmail({
+    to: opts.toEmail,
+    subject: "Din shelter-ansøgning til ShelterDK",
+    html,
+    text,
+    context: {
+      category: "contact",
+      emailType: "shelter_rejected",
+      metadata: { submissionId: opts.submissionId, shelterName: opts.shelterName },
+    },
+  });
+}
