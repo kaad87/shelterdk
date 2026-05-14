@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
   const { data, error } = await supabase
     .from("shelter_submissions")
     .select(
-      "id, type, status, shelter_name, location_text, capacity, description, facilities, booking_url, contact_name, contact_email, source_info, created_at"
+      "id, type, status, shelter_name, location_text, lat, lng, photo_urls, capacity, description, facilities, booking_url, contact_name, contact_email, source_info, created_at"
     )
     .eq("status", "pending")
     .order("created_at", { ascending: false });
@@ -34,5 +34,25 @@ export async function GET(request: NextRequest) {
     return Response.json({ error: error.message }, { status: 500 });
   }
 
-  return Response.json({ submissions: data ?? [] });
+  const submissions = data ?? [];
+
+  // Generate signed 60-min preview URLs for each submission's photos (private bucket)
+  const withPreviewUrls = await Promise.all(
+    submissions.map(async (sub) => {
+      const paths: string[] = Array.isArray(sub.photo_urls) ? sub.photo_urls : [];
+      if (paths.length === 0) return { ...sub, photo_preview_urls: [] };
+
+      const previewUrls = await Promise.all(
+        paths.map(async (path) => {
+          const { data: signed } = await supabase.storage
+            .from("shelter-submissions")
+            .createSignedUrl(path, 3600);
+          return signed?.signedUrl ?? null;
+        })
+      );
+      return { ...sub, photo_preview_urls: previewUrls };
+    })
+  );
+
+  return Response.json({ submissions: withPreviewUrls });
 }
