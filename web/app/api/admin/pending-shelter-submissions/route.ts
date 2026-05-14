@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
   const { data, error } = await supabase
     .from("shelter_submissions")
     .select(
-      "id, type, status, shelter_name, location_text, lat, lng, photo_urls, capacity, description, facilities, booking_url, contact_name, contact_email, source_info, created_at"
+      "id, type, status, shelter_name, location_text, lat, lng, photo_urls, capacity, description, facilities, booking_url, contact_name, contact_email, source_info, wants_booking, created_at"
     )
     .eq("status", "pending")
     .order("created_at", { ascending: false });

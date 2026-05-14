@@ -172,7 +172,7 @@ export async function sendBookingActivationEmails(opts: {
 
   // Admin notification
   await sendLoggedEmail({
-    to: FROM_EMAIL,
+    to: "hej@shelterdk.dk",
     replyTo: email,
     subject: `Bookingsystem-forespørgsel: ${shelterName}`,
     html: buildBookingActivationAdminHtml({ name, organisation, email, shelterName, message }),
