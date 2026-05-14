@@ -184,9 +184,9 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
   const photoUrls = getResolvedPhotoUrls(shelter, photoRef);
   const allPhotoUrls = photoUrls.length > 0 ? photoUrls : [];
   const displayDescription =
-    (shelter.seo_description?.trim() ? stripHtml(shelter.seo_description) : null) ||
     getLongDescription(shelter) ||
     stripHtml(shelter.description) ||
+    (shelter.seo_description?.trim() ? stripHtml(shelter.seo_description) : null) ||
     generateFallbackDescription(shelter);
   const capacity = getCapacity(shelter);
   const features = getFeatures(shelter);

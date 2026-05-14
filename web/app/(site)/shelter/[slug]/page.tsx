@@ -174,9 +174,9 @@ export default async function ShelterPage({ params }: PageProps) {
   const photoUrls = getResolvedPhotoUrls(shelter, photoRef);
   const allPhotoUrls = photoUrls.length > 0 ? photoUrls : [];
   const displayDescription =
-    (shelter.seo_description?.trim() ? stripHtml(shelter.seo_description) : null) ||
     getLongDescription(shelter) ||
     stripHtml(shelter.description) ||
+    (shelter.seo_description?.trim() ? stripHtml(shelter.seo_description) : null) ||
     null;
   const capacity = getCapacity(shelter);
   const features = getFeatures(shelter);
