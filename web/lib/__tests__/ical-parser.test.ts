@@ -58,8 +58,10 @@ describe("parseIcal", () => {
     expect(parseIcal(raw)).toEqual([]);
   });
 
-  it("skips events spanning more than 365 days", () => {
-    const raw = wrap(vevent(";VALUE=DATE:20260101", ";VALUE=DATE:20280101"));
+  it("skips events spanning more than 3650 days", () => {
+    // MAX_ICAL_EVENT_DAYS = 3650 — allows long seasonal closures but guards malformed feeds
+    // 2026-01-01 → 2036-02-01 ≈ 3683 days (> 3650)
+    const raw = wrap(vevent(";VALUE=DATE:20260101", ";VALUE=DATE:20360201"));
     expect(parseIcal(raw)).toEqual([]);
   });
 
