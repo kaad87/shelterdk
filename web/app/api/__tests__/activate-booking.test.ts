@@ -5,7 +5,8 @@ vi.mock("@/lib/email", () => ({
   sendBookingActivationEmails: vi.fn().mockResolvedValue(undefined),
 }));
 
-const { POST, ipTimestamps } = await import("../activate-booking/route");
+const { POST } = await import("../activate-booking/route");
+const { ipTimestamps } = await import("../activate-booking/_store");
 
 function req(body: unknown): Request {
   return new Request("http://localhost/api/activate-booking", {

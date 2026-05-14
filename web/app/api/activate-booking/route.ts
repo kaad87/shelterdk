@@ -1,5 +1,6 @@
 // web/app/api/activate-booking/route.ts
 import { sendBookingActivationEmails } from "@/lib/email";
+import { ipTimestamps } from "./_store";
 
 export const dynamic = "force-dynamic";
 
@@ -8,7 +9,6 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // Rate limiting — 3 submissions/min per IP
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const MAX_PER_WINDOW = 3;
-export const ipTimestamps = new Map<string, number[]>();
 
 export async function POST(request: Request) {
   // Rate limit
