@@ -71,6 +71,7 @@ const SubmissionMapPicker = dynamic(
 interface UploadedPhoto {
   path: string;
   previewUrl: string | null;
+  deleteToken: string;
 }
 
 // ─── Main form component ──────────────────────────────────────────────────────
@@ -134,7 +135,7 @@ export function ShelterSubmissionForm() {
       }
       setPhotos((prev) => [
         ...prev,
-        { path: data.path, previewUrl: data.previewUrl },
+        { path: data.path, previewUrl: data.previewUrl, deleteToken: data.deleteToken },
       ]);
     } catch {
       setPhotoError("Upload fejlede — prøv igen");
@@ -149,7 +150,7 @@ export function ShelterSubmissionForm() {
     fetch("/api/submit-shelter/photos", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ path: photo.path }),
+      body: JSON.stringify({ path: photo.path, deleteToken: photo.deleteToken }),
     }).catch((err) => console.error("Photo delete failed:", err));
     setPhotos((prev) => prev.filter((_, i) => i !== index));
   }

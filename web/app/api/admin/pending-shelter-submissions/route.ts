@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
         paths.map(async (path) => {
           const { data: signed } = await supabase.storage
             .from("shelter-submissions")
-            .createSignedUrl(path, 3600);
+            .createSignedUrl(path, 14_400); // 4-hour TTL — admin review sessions can run long
           return signed?.signedUrl ?? null;
         })
       );

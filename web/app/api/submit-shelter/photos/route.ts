@@ -1,4 +1,5 @@
 // app/api/submit-shelter/photos/route.ts
+import { createHmac } from "crypto";
 import { createAdminClient } from "@/utils/supabase/server-admin";
 import { PHOTO_PATH_REGEX } from "@/lib/shelter-submissions";
 
@@ -13,6 +14,16 @@ const EXT: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png" };
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const MAX_PER_WINDOW = 10;
 const ipTimestamps = new Map<string, number[]>();
+
+/**
+ * Sign a storage path with the server secret so the DELETE endpoint can verify
+ * the caller is the same client that performed the upload. Stateless — works
+ * across serverless cold-starts.  Domain-prefixed to isolate from ADMIN_SECRET.
+ */
+function signPath(path: string): string {
+  const secret = `photo-delete:${process.env.ADMIN_SECRET ?? "dev-only-not-secure"}`;
+  return createHmac("sha256", secret).update(path).digest("hex").slice(0, 32);
+}
 
 export async function POST(request: Request) {
   // Rate limit
@@ -77,7 +88,7 @@ export async function POST(request: Request) {
     return Response.json({ error: "Upload fejlede — prøv igen" }, { status: 500 });
   }
 
-  // Signed URL for thumbnail preview (60 min TTL)
+  // Signed URL for thumbnail preview (60 min TTL — form is submitted within minutes)
   const { data: signedData, error: signedError } = await supabase.storage
     .from(BUCKET)
     .createSignedUrl(storagePath, 3600);
@@ -85,18 +96,27 @@ export async function POST(request: Request) {
   if (signedError || !signedData?.signedUrl) {
     console.error("Signed URL error:", signedError);
     // Upload succeeded — return path even without preview URL
-    return Response.json({ path: storagePath, previewUrl: null });
+    return Response.json({
+      path: storagePath,
+      previewUrl: null,
+      deleteToken: signPath(storagePath),
+    });
   }
 
-  return Response.json({ path: storagePath, previewUrl: signedData.signedUrl });
+  return Response.json({
+    path: storagePath,
+    previewUrl: signedData.signedUrl,
+    deleteToken: signPath(storagePath),
+  });
 }
 
 // ─── DELETE /api/submit-shelter/photos ───────────────────────────────────────
 // Called fire-and-forget by the submission form when a user removes an uploaded
-// photo before submitting. Validates the path format to prevent arbitrary deletes.
+// photo before submitting.  Requires a deleteToken (HMAC of the path) returned
+// by POST — prevents deletion of arbitrary paths without a token.
 
 export async function DELETE(request: Request) {
-  let body: { path?: string };
+  let body: { path?: string; deleteToken?: string };
   try {
     body = await request.json();
   } catch {
@@ -106,6 +126,10 @@ export async function DELETE(request: Request) {
   const path = body.path?.trim();
   if (!path || !PHOTO_PATH_REGEX.test(path)) {
     return Response.json({ error: "Ugyldig sti" }, { status: 400 });
+  }
+
+  if (!body.deleteToken || body.deleteToken !== signPath(path)) {
+    return Response.json({ error: "Ugyldig token" }, { status: 403 });
   }
 
   const supabase = createAdminClient();
