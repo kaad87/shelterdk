@@ -6,6 +6,8 @@ import { sendShelterApprovedEmail } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
+const TOILET_VALUES = new Set(["flush", "mulch", "none", "unknown"]);
+
 function isAdmin(request: NextRequest | Request): boolean {
   const secret = process.env.ADMIN_SECRET;
   if (!secret) return false;
@@ -28,6 +30,7 @@ export async function POST(request: NextRequest) {
     place?: string;
     lat?: number;
     lng?: number;
+    toiletType?: string;
   };
   try {
     body = await request.json();
@@ -54,24 +57,42 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "Ugyldig lng" }, { status: 400 });
   }
 
+  const toiletType = body.toiletType?.trim() || null;
+  if (toiletType !== null && !TOILET_VALUES.has(toiletType)) {
+    return Response.json({ error: "Ugyldig toiletType" }, { status: 400 });
+  }
+
   const kommune = body.kommune?.trim() || null;
   const place = body.place?.trim() || null;
 
   const supabase = createAdminClient();
 
-  // Fetch submission
-  const { data: submission, error: fetchError } = await supabase
+  // Claim the submission atomically — update status to "approved" while guarding
+  // on status=pending. Fetching the submission data in the same round-trip avoids
+  // the window where a concurrent reject could sneak in between a separate SELECT
+  // and the eventual shelter INSERT.
+  const { data: claimedRows, error: claimError } = await supabase
     .from("shelter_submissions")
-    .select(
-      "id, shelter_name, description, capacity, facilities, booking_url, contact_email, photo_urls"
-    )
+    .update({
+      status: "approved",
+      reviewed_at: new Date().toISOString(),
+    })
     .eq("id", submissionId)
     .eq("status", "pending")
-    .single();
+    .select(
+      "id, shelter_name, description, capacity, facilities, booking_url, contact_email, photo_urls"
+    );
 
-  if (fetchError || !submission) {
-    return Response.json({ error: "Ansøgning ikke fundet" }, { status: 404 });
+  if (claimError) {
+    return Response.json({ error: claimError.message }, { status: 500 });
   }
+
+  // 0 rows means the submission was already approved or rejected.
+  if (!claimedRows || claimedRows.length === 0) {
+    return Response.json({ error: "Ansøgning er allerede behandlet" }, { status: 409 });
+  }
+
+  const submission = claimedRows[0];
 
   // Generate unique shelter ID and slug
   const newShelterId = crypto.randomUUID();
@@ -82,7 +103,7 @@ export async function POST(request: NextRequest) {
   const submissionsBucket = "shelter-submissions";
   const photosBucket = "shelter-photos";
   const reuploadedUrls: string[] = [];
-  const reuploadedPaths: string[] = []; // track storage paths for cleanup logging
+  const reuploadedPaths: string[] = [];
 
   const photoPaths: string[] = Array.isArray(submission.photo_urls)
     ? submission.photo_urls
@@ -119,7 +140,7 @@ export async function POST(request: NextRequest) {
         .from(photosBucket)
         .getPublicUrl(newPath);
       reuploadedUrls.push(urlData.publicUrl);
-      reuploadedPaths.push(newPath); // track path for cleanup if insert fails
+      reuploadedPaths.push(newPath);
     } catch (err) {
       console.error(`Unexpected error copying photo ${storagePath}:`, err);
     }
@@ -145,9 +166,8 @@ export async function POST(request: NextRequest) {
     kommune: kommune || null,
     place: place || null,
     water: facilities.vand ?? false,
-    // toilet is an enum ("flush"|"mulch"|"none"|"unknown") not a boolean.
-    // We only know there IS a toilet, not its type → store as "unknown".
-    toilet: facilities.toilet ? "unknown" : null,
+    // toiletType is set explicitly by admin during review (null = no toilet).
+    toilet: toiletType as "flush" | "mulch" | "none" | "unknown" | null,
     capacity: submission.capacity || null,
     booking_url: submission.booking_url || null,
     // user_image_urls is a plain text[] array, not a wrapped object.
@@ -157,16 +177,30 @@ export async function POST(request: NextRequest) {
 
   if (insertError) {
     console.error("Shelter insert error:", insertError);
+    // Revert submission to pending so it can be re-tried by the admin.
+    await supabase
+      .from("shelter_submissions")
+      .update({ status: "pending", reviewed_at: null })
+      .eq("id", submissionId);
+    // Delete any photos already copied to shelter-photos to avoid orphans.
     if (reuploadedPaths.length > 0) {
-      console.error(
-        `Orphaned photos in shelter-photos bucket for shelter ${newShelterId}:`,
-        reuploadedPaths
-      );
+      const { error: photoCleanupError } = await supabase.storage
+        .from(photosBucket)
+        .remove(reuploadedPaths);
+      if (photoCleanupError) {
+        console.error("Failed to clean up orphaned shelter-photos after insert rollback:", photoCleanupError);
+      }
     }
     return Response.json({ error: insertError.message }, { status: 500 });
   }
 
-  // Clean up source photos from the submissions bucket now that they are in shelter-photos
+  // Persist shelter_id reference back onto the submission record.
+  await supabase
+    .from("shelter_submissions")
+    .update({ shelter_id: newShelterId })
+    .eq("id", submissionId);
+
+  // Clean up source photos from the submissions bucket now that they are in shelter-photos.
   if (photoPaths.length > 0) {
     const { error: cleanupError } = await supabase.storage
       .from(submissionsBucket)
@@ -174,29 +208,6 @@ export async function POST(request: NextRequest) {
     if (cleanupError) {
       console.error("Failed to clean up submission photos after approval:", cleanupError);
     }
-  }
-
-  // Update submission status + shelter_id reference.
-  // Guard on status=pending to protect against a concurrent reject having run between
-  // our fetch and now. We add .select("id") so we can detect a 0-row update.
-  const { data: updatedRows } = await supabase
-    .from("shelter_submissions")
-    .update({
-      status: "approved",
-      shelter_id: newShelterId,
-      reviewed_at: new Date().toISOString(),
-    })
-    .eq("id", submissionId)
-    .eq("status", "pending")
-    .select("id");
-
-  if (!updatedRows || updatedRows.length === 0) {
-    // A concurrent reject already processed this submission.
-    // The shelter is live — log the inconsistency but continue.
-    console.error(
-      `Approve: submission ${submissionId} was no longer pending when status update ran. ` +
-        `Shelter ${newShelterId} (slug: ${slug}) is live but submission may be marked rejected.`
-    );
   }
 
   // Send approval email

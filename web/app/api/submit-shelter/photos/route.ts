@@ -1,5 +1,6 @@
 // app/api/submit-shelter/photos/route.ts
 import { createAdminClient } from "@/utils/supabase/server-admin";
+import { PHOTO_PATH_REGEX } from "@/lib/shelter-submissions";
 
 export const dynamic = "force-dynamic";
 
@@ -88,4 +89,32 @@ export async function POST(request: Request) {
   }
 
   return Response.json({ path: storagePath, previewUrl: signedData.signedUrl });
+}
+
+// ─── DELETE /api/submit-shelter/photos ───────────────────────────────────────
+// Called fire-and-forget by the submission form when a user removes an uploaded
+// photo before submitting. Validates the path format to prevent arbitrary deletes.
+
+export async function DELETE(request: Request) {
+  let body: { path?: string };
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ error: "Ugyldig JSON" }, { status: 400 });
+  }
+
+  const path = body.path?.trim();
+  if (!path || !PHOTO_PATH_REGEX.test(path)) {
+    return Response.json({ error: "Ugyldig sti" }, { status: 400 });
+  }
+
+  const supabase = createAdminClient();
+  const { error } = await supabase.storage.from(BUCKET).remove([path]);
+
+  if (error) {
+    console.error("Submission photo delete error:", error);
+    return Response.json({ error: "Sletning fejlede" }, { status: 500 });
+  }
+
+  return Response.json({ ok: true });
 }

@@ -94,6 +94,7 @@ export default function ShelterAnsogningerPage() {
   const [region, setRegion] = useState("");
   const [kommune, setKommune] = useState("");
   const [place, setPlace] = useState("");
+  const [toiletType, setToiletType] = useState("");
   const [rejectReason, setRejectReason] = useState("");
   const [showRejectField, setShowRejectField] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -136,6 +137,8 @@ export default function ShelterAnsogningerPage() {
     setRegion("");
     setKommune("");
     setPlace("");
+    // Default toilet type based on what the submitter indicated.
+    setToiletType(sub.facilities?.toilet ? "unknown" : "");
     setRejectReason("");
     setShowRejectField(false);
   }
@@ -163,6 +166,7 @@ export default function ShelterAnsogningerPage() {
           place: place.trim(),
           lat: reviewLat,
           lng: reviewLng,
+          toiletType: toiletType || undefined,
         }),
       });
       const data = await res.json();
@@ -442,6 +446,24 @@ export default function ShelterAnsogningerPage() {
                       className="w-full rounded-lg border border-primary/20 px-2 py-1.5 text-sm focus:outline-none focus:border-accent"
                     />
                   </div>
+                </div>
+
+                {/* Toilet type — admin sets the correct enum value before approving */}
+                <div>
+                  <label className="block text-xs text-primary/50 mb-1">
+                    Toilet-type
+                  </label>
+                  <select
+                    value={toiletType}
+                    onChange={(e) => setToiletType(e.target.value)}
+                    className="rounded-lg border border-primary/20 px-2 py-1.5 text-sm focus:outline-none focus:border-accent"
+                  >
+                    <option value="">— Intet toilet —</option>
+                    <option value="unknown">Toilet (ukendt type)</option>
+                    <option value="flush">Toilet (skylletoilet)</option>
+                    <option value="mulch">Toilet (muldtoilet)</option>
+                    <option value="none">Eksplicit: intet toilet</option>
+                  </select>
                 </div>
 
                 {/* Approve / Reject buttons */}

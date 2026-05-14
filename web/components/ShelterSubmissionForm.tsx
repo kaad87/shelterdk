@@ -144,6 +144,13 @@ export function ShelterSubmissionForm() {
   }
 
   function removePhoto(index: number) {
+    const photo = photos[index];
+    // Fire-and-forget: clean up the orphaned upload from the bucket.
+    fetch("/api/submit-shelter/photos", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path: photo.path }),
+    }).catch((err) => console.error("Photo delete failed:", err));
     setPhotos((prev) => prev.filter((_, i) => i !== index));
   }
 

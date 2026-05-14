@@ -139,26 +139,23 @@ describe("POST /api/admin/approve-shelter-submission", () => {
     mockUpdateEq.mockReset();
     mockInsert.mockReset();
 
-    // Default: fetch submission succeeds
-    mockSelectEq.mockReturnValue({
-      eq: () => ({
+    // Default: claim update succeeds (1 row claimed, returns full submission data).
+    // Subsequent .update() calls (shelter_id write-back, revert on error) get a
+    // simple fallback that resolves without error.
+    mockUpdateEq
+      .mockReturnValueOnce({
         eq: () => ({
-          single: () => Promise.resolve({ data: fakeSubmission, error: null }),
+          eq: () => ({
+            select: () => Promise.resolve({ data: [fakeSubmission], error: null }),
+          }),
         }),
-      }),
-    });
+      })
+      .mockReturnValue({
+        eq: () => Promise.resolve({ data: null, error: null }),
+      });
 
     // Default: shelter insert succeeds
     mockInsert.mockResolvedValue({ error: null });
-
-    // Default: update submission status succeeds (1 row updated)
-    mockUpdateEq.mockReturnValue({
-      eq: () => ({
-        eq: () => ({
-          select: () => Promise.resolve({ data: [{ id: VALID_UUID }], error: null }),
-        }),
-      }),
-    });
   });
 
   it("returnerer 401 uden admin-secret", async () => {
@@ -190,6 +187,25 @@ describe("POST /api/admin/approve-shelter-submission", () => {
     expect(res.status).toBe(400);
   });
 
+  it("returnerer 409 hvis ansøgning allerede er behandlet (claim påvirker 0 rækker)", async () => {
+    // Override the whole mock so the claim returns 0 rows.
+    mockUpdateEq.mockReset();
+    mockUpdateEq.mockReturnValue({
+      eq: () => ({
+        eq: () => ({
+          select: () => Promise.resolve({ data: [], error: null }),
+        }),
+      }),
+    });
+    const res = await approveModule.POST(adminRequest("POST", "/api/admin/approve-shelter-submission", {
+      submissionId: VALID_UUID,
+      region: "Sjælland",
+      lat: 56.07,
+      lng: 12.31,
+    }) as never);
+    expect(res.status).toBe(409);
+  });
+
   it("returnerer 200 ved godkendelse med alle påkrævede felter", async () => {
     const res = await approveModule.POST(adminRequest("POST", "/api/admin/approve-shelter-submission", {
       submissionId: VALID_UUID,
@@ -198,6 +214,7 @@ describe("POST /api/admin/approve-shelter-submission", () => {
       place: "Esrum",
       lat: 56.07,
       lng: 12.31,
+      toiletType: "flush",
     }) as never);
     expect(res.status).toBe(200);
     const json = await res.json();
