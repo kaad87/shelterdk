@@ -104,6 +104,10 @@ export function ShelterSubmissionForm() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
+  // Booking opt-in
+  const [wantsBooking, setWantsBooking] = useState(false);
+  const [bookingAccepted, setBookingAccepted] = useState(false);
+
   // ─── Photo upload ────────────────────────────────────────────────────────
 
   async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
@@ -178,6 +182,10 @@ export function ShelterSubmissionForm() {
       setSubmitError("Booking-URL skal starte med http:// eller https://");
       return;
     }
+    if (wantsBooking && !bookingAccepted) {
+      setSubmitError("Du skal acceptere samarbejdsvilkårene for bookingsystemet");
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -197,6 +205,7 @@ export function ShelterSubmissionForm() {
           contact_name: contactName.trim() || undefined,
           contact_email: contactEmail.trim(),
           photo_urls: photos.map((p) => p.path),
+          wants_booking: wantsBooking,
         }),
       });
       const data = await res.json();
@@ -454,6 +463,120 @@ export function ShelterSubmissionForm() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Section 5: Booking opt-in */}
+      <section className="rounded-2xl border-2 border-accent/30 bg-accent/5 overflow-hidden">
+        <label className="flex items-start gap-4 p-5 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={wantsBooking}
+            onChange={(e) => {
+              setWantsBooking(e.target.checked);
+              if (!e.target.checked) setBookingAccepted(false);
+            }}
+            className="mt-0.5 w-5 h-5 rounded border-accent/40 accent-[#C5A059] flex-shrink-0"
+          />
+          <div className="flex-1">
+            <div className="flex items-center flex-wrap gap-2 mb-1">
+              <span className="font-bold text-primary text-sm">
+                5. Aktiver digitalt bookingsystem
+              </span>
+              <span className="bg-accent text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                Anbefalet
+              </span>
+              <span className="text-xs text-accent font-semibold">Gratis</span>
+            </div>
+            <p className="text-sm text-primary/60">
+              Lad gæsterne booke dit shelter direkte på ShelterDK — helt
+              automatisk og uden administration for dig.
+            </p>
+          </div>
+        </label>
+
+        {wantsBooking && (
+          <div className="border-t border-accent/20 px-5 pb-5 space-y-4">
+            {/* Mini benefits */}
+            <div className="grid grid-cols-3 gap-3 pt-4">
+              {[
+                { icon: "🚫", label: "Ingen dobbeltbookinger" },
+                { icon: "📩", label: "Automatiske bekræftelser" },
+                { icon: "📊", label: "Fuldt overblik" },
+              ].map((b) => (
+                <div
+                  key={b.label}
+                  className="bg-white rounded-xl p-3 text-center border border-accent/15"
+                >
+                  <div className="text-xl mb-1">{b.icon}</div>
+                  <p className="text-xs font-semibold text-primary">{b.label}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Vilkår */}
+            <div className="bg-white rounded-xl p-4 border border-primary/8">
+              <p className="text-xs font-semibold text-primary/40 uppercase tracking-wider mb-2">
+                Samarbejdsvilkår
+              </p>
+              <div className="text-xs text-primary/50 leading-relaxed space-y-1.5 max-h-32 overflow-y-auto pr-1">
+                <p>
+                  <strong className="text-primary/70">Gratis for dig som ejer.</strong>{" "}
+                  Ingen oprettelsespris, abonnement eller skjulte omkostninger.
+                </p>
+                <p>
+                  <strong className="text-primary/70">Ingen lejeopkrævning.</strong>{" "}
+                  Du stiller dit shelter gratis til rådighed og opkræver ingen leje.
+                </p>
+                <p>
+                  <strong className="text-primary/70">Automatisk administration.</strong>{" "}
+                  ShelterDK håndterer al betaling og kommunikation med gæsten.
+                </p>
+                <p>
+                  <strong className="text-primary/70">Afmelding.</strong>{" "}
+                  Begge parter kan til enhver tid opsige med 1 måneds varsel.
+                </p>
+                <p>
+                  <strong className="text-primary/70">Servicegebyr.</strong>{" "}
+                  For at dække drift og administration opkræves et servicegebyr på
+                  20 kr. inkl. moms pr. gennemført booking direkte af gæsten. Du er
+                  ikke involveret i betalingstransaktionen.
+                </p>
+                <p>
+                  <strong className="text-primary/70">Aflysninger.</strong>{" "}
+                  Gæsten kan aflyse gratis op til 24 timer før. Aflyser du,
+                  refunderes gæsten altid fuldt ud.
+                </p>
+                <p>
+                  <strong className="text-primary/70">GDPR.</strong>{" "}
+                  Gæstens bookingdata (navn, kontaktinfo) deles med dig udelukkende
+                  til administration af overnatningerne.
+                </p>
+              </div>
+            </div>
+
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={bookingAccepted}
+                onChange={(e) => setBookingAccepted(e.target.checked)}
+                className="mt-0.5 rounded border-primary/20 accent-[#C5A059]"
+              />
+              <span className="text-xs text-primary/60">
+                Jeg accepterer{" "}
+                <span className="underline text-primary/80 font-medium">
+                  samarbejdsvilkårene
+                </span>{" "}
+                for bookingsystemet. Spørgsmål?{" "}
+                <a
+                  href="mailto:hej@shelterdk.dk"
+                  className="underline hover:text-primary/60"
+                >
+                  hej@shelterdk.dk
+                </a>
+              </span>
+            </label>
+          </div>
+        )}
       </section>
 
       {/* Error + Submit */}
