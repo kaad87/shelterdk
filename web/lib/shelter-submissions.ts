@@ -42,6 +42,7 @@ export interface ShelterSubmission {
   reviewed_at: string | null;
   created_at: string;
   shelter_id: string | null;
+  wants_booking: boolean;
 }
 
 /** Payload shape accepted by POST /api/submit-shelter */
@@ -59,6 +60,7 @@ export interface SubmitShelterPayload {
   contact_name?: string;
   contact_email?: string;
   source_info?: string;
+  wants_booking?: boolean;
 }
 
 /** Photo path pattern for submissions bucket: pending/{uuid}.{ext} */
