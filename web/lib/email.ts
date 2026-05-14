@@ -116,6 +116,82 @@ export interface RenderEmailTextOpts {
   url?: string;
 }
 
+// ─── Booking activation emails ────────────────────────────────────────────────
+
+export function buildBookingActivationAdminHtml(opts: {
+  name: string;
+  organisation: string;
+  email: string;
+  shelterName: string;
+  message?: string | null;
+}): string {
+  const { name, organisation, email, shelterName, message } = opts;
+  return renderEmail({
+    title: "Ny forespørgsel: bookingsystem",
+    preheader: `${escapeHtml(name)} ønsker bookingsystem for ${escapeHtml(shelterName)}`,
+    bodyHtml: `
+      <p>En shelter-ejer har anmodet om at få bookingsystemet aktiveret.</p>
+      <table style="width:100%;border-collapse:collapse;font-size:14px;">
+        <tr><td style="padding:6px 0;color:#6b7280;width:120px">Navn</td><td>${escapeHtml(name)}</td></tr>
+        <tr><td style="padding:6px 0;color:#6b7280">Organisation</td><td>${escapeHtml(organisation)}</td></tr>
+        <tr><td style="padding:6px 0;color:#6b7280">Email</td><td><a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></td></tr>
+        <tr><td style="padding:6px 0;color:#6b7280">Shelter</td><td>${escapeHtml(shelterName)}</td></tr>
+        ${message ? `<tr><td style="padding:6px 0;color:#6b7280;vertical-align:top">Besked</td><td>${escapeHtml(message)}</td></tr>` : ""}
+      </table>
+      <p style="margin-top:16px">Aktiver bookingsystemet på shelterets admin-side og svar ejeren direkte på ovenstående email.</p>
+    `,
+  });
+}
+
+export function buildBookingActivationConfirmHtml(opts: {
+  name: string;
+  shelterName: string;
+}): string {
+  const { name, shelterName } = opts;
+  return renderEmail({
+    title: "Vi har modtaget din forespørgsel",
+    preheader: `Tak for din interesse i bookingsystemet til ${escapeHtml(shelterName)}`,
+    bodyHtml: `
+      <p>Hej ${escapeHtml(name)},</p>
+      <p>Tak for din interesse i at tilmelde <strong>${escapeHtml(shelterName)}</strong> til ShelterDKs bookingsystem.</p>
+      <p>Vi gennemgår din forespørgsel og vender tilbage til dig inden for <strong>2 hverdage</strong>.</p>
+      <p>Har du spørgsmål i mellemtiden, er du velkommen til at skrive til <a href="mailto:hej@shelterdk.dk">hej@shelterdk.dk</a>.</p>
+      <p>Med venlig hilsen,<br>Christian, ShelterDK · shelterdk.dk</p>
+    `,
+  });
+}
+
+export async function sendBookingActivationEmails(opts: {
+  name: string;
+  organisation: string;
+  email: string;
+  shelterName: string;
+  message?: string | null;
+}): Promise<void> {
+  const { name, organisation, email, shelterName, message } = opts;
+
+  // Admin notification
+  await sendLoggedEmail({
+    to: FROM_EMAIL,
+    replyTo: email,
+    subject: `Bookingsystem-forespørgsel: ${shelterName}`,
+    html: buildBookingActivationAdminHtml({ name, organisation, email, shelterName, message }),
+    text: `Ny bookingsystem-forespørgsel fra ${name} (${organisation}) for ${shelterName}. Email: ${email}.${message ? ` Besked: ${message}` : ""}`,
+    context: { category: "contact", emailType: "booking_activation_request" },
+  });
+
+  // Owner confirmation
+  await sendLoggedEmail({
+    to: email,
+    subject: "Vi har modtaget din forespørgsel om bookingsystem",
+    html: buildBookingActivationConfirmHtml({ name, shelterName }),
+    text: `Hej ${name}, tak for din interesse i at tilmelde ${shelterName} til ShelterDKs bookingsystem. Vi vender tilbage inden for 2 hverdage. Spørgsmål? Skriv til hej@shelterdk.dk.`,
+    context: { category: "contact", emailType: "booking_activation_confirm" },
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export function renderEmail(opts: RenderEmailOpts): string {
   const { bodyHtml, preheader } = opts;
   const safeTitle = escapeHtml(opts.title);
