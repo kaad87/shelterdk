@@ -278,6 +278,11 @@ export default function ShelterAnsogningerPage() {
                       📷 {sub.photo_urls.length}
                     </span>
                   )}
+                  {sub.wants_booking && (
+                    <span className="ml-2 inline-flex items-center gap-1 bg-accent/10 border border-accent/20 rounded px-1.5 py-0.5 text-accent font-semibold">
+                      📅 Ønsker booking
+                    </span>
+                  )}
                 </p>
               </div>
               <button
