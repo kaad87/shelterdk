@@ -1,7 +1,7 @@
 // web/app/api/submit-shelter/route.ts
 import { createAdminClient } from "@/utils/supabase/server-admin";
 import type { SubmissionType, FacilityKey, SubmitShelterPayload } from "@/lib/shelter-submissions";
-import { FACILITY_KEYS } from "@/lib/shelter-submissions";
+import { FACILITY_KEYS, PHOTO_PATH_REGEX } from "@/lib/shelter-submissions";
 
 export const dynamic = "force-dynamic";
 
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
     return Response.json({ error: "Placering må højst være 200 tegn" }, { status: 400 });
   }
 
-  // Flow 1: email required + format check
+  // Email validation for owner_registration
   const contact_email = body.contact_email?.trim() || null;
   if (type === "owner_registration") {
     if (!contact_email) {
@@ -78,6 +78,45 @@ export async function POST(request: Request) {
       { error: "Beskrivelse må højst være 500 tegn" },
       { status: 400 }
     );
+  }
+
+  // Validate lat/lng — both must be present or both absent
+  let lat: number | null = null;
+  let lng: number | null = null;
+  if (body.lat != null || body.lng != null) {
+    const rawLat = body.lat;
+    const rawLng = body.lng;
+    if (
+      typeof rawLat !== "number" || !isFinite(rawLat) ||
+      rawLat < -90 || rawLat > 90
+    ) {
+      return Response.json({ error: "Ugyldig breddegrad (lat)" }, { status: 400 });
+    }
+    if (
+      typeof rawLng !== "number" || !isFinite(rawLng) ||
+      rawLng < -180 || rawLng > 180
+    ) {
+      return Response.json({ error: "Ugyldig længdegrad (lng)" }, { status: 400 });
+    }
+    lat = rawLat;
+    lng = rawLng;
+  }
+
+  // Validate photo_urls — max 5, each must match path pattern
+  let photo_urls: string[] = [];
+  if (Array.isArray(body.photo_urls)) {
+    if (body.photo_urls.length > 5) {
+      return Response.json({ error: "Maks 5 billeder" }, { status: 400 });
+    }
+    for (const p of body.photo_urls) {
+      if (typeof p !== "string" || !PHOTO_PATH_REGEX.test(p)) {
+        return Response.json(
+          { error: "Ugyldigt billede-sti format" },
+          { status: 400 }
+        );
+      }
+    }
+    photo_urls = body.photo_urls;
   }
 
   // Sanitise facilities — only allow canonical keys
@@ -103,6 +142,9 @@ export async function POST(request: Request) {
     type,
     shelter_name,
     location_text,
+    lat,
+    lng,
+    photo_urls,
     capacity,
     description: body.description?.trim() || null,
     facilities,
