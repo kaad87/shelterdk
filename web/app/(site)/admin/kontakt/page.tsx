@@ -19,14 +19,14 @@ type Tab = "alle" | "unread" | "replied" | "archived";
 
 const STATUS_LABELS: Record<ContactMessage["status"], string> = {
   unread: "Ulæst",
-  read: "Læst",
+  read: "Ulæst", // "read" without reply is treated as unread in this UI
   replied: "Besvaret",
   archived: "Arkiveret",
 };
 
 const STATUS_COLORS: Record<ContactMessage["status"], string> = {
   unread: "bg-amber-100 text-amber-800",
-  read: "bg-gray-100 text-gray-600",
+  read: "bg-amber-100 text-amber-800",
   replied: "bg-green-100 text-green-800",
   archived: "bg-gray-100 text-gray-400",
 };
@@ -70,8 +70,12 @@ export default function AdminKontaktPage() {
           throw new Error(data.error ?? "FETCH_FAILED");
         }
         if (!cancelled) {
-          setMessages((data.messages ?? []) as ContactMessage[]);
-          setErrorMsg(null);
+          if (data.setupRequired) {
+            setErrorMsg("Tabellen contact_messages mangler — kør migrationen i Supabase.");
+          } else {
+            setMessages((data.messages ?? []) as ContactMessage[]);
+            setErrorMsg(null);
+          }
         }
       } catch (err) {
         if (!cancelled) {
@@ -91,7 +95,8 @@ export default function AdminKontaktPage() {
   async function refresh() {
     const r = await fetch("/api/admin/contact", { headers: { "x-admin-secret": secret } });
     const data = await r.json().catch(() => ({}));
-    if (r.ok) setMessages((data.messages ?? []) as ContactMessage[]);
+    if (!r.ok) throw new Error(data.error ?? "Kunne ikke opdatere listen");
+    setMessages((data.messages ?? []) as ContactMessage[]);
   }
 
   async function handleArchive(id: string) {
@@ -142,13 +147,13 @@ export default function AdminKontaktPage() {
 
   const filtered = messages.filter((m) => {
     if (activeTab === "alle") return true;
-    if (activeTab === "unread") return m.status === "unread";
+    if (activeTab === "unread") return m.status === "unread" || m.status === "read";
     if (activeTab === "replied") return m.status === "replied";
     if (activeTab === "archived") return m.status === "archived";
     return true;
   });
 
-  const unreadCount = messages.filter((m) => m.status === "unread").length;
+  const unreadCount = messages.filter((m) => m.status === "unread" || m.status === "read").length;
 
   if (authError) {
     return (

@@ -40,6 +40,21 @@ describe("buildAdminReplyEmailHtml()", () => {
     const html = buildAdminReplyEmailHtml({ ...opts, toName: "<b>Hacker</b>" });
     expect(html).not.toContain("<b>Hacker</b>");
   });
+
+  it("converts newlines to <br> in replyText", () => {
+    const html = buildAdminReplyEmailHtml({ ...opts, replyText: "Linje 1\nLinje 2" });
+    expect(html).toContain("Linje 1<br>Linje 2");
+  });
+
+  it("converts newlines to <br> in originalMessage", () => {
+    const html = buildAdminReplyEmailHtml({ ...opts, originalMessage: "Del 1\nDel 2" });
+    expect(html).toContain("Del 1<br>Del 2");
+  });
+
+  it("escapes HTML in preheader (replyText used as preheader)", () => {
+    const html = buildAdminReplyEmailHtml({ ...opts, replyText: "<script>preheader</script>" });
+    expect(html).not.toContain("<script>preheader</script>");
+  });
 });
 
 describe("buildAdminReplyEmailText()", () => {

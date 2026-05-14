@@ -124,6 +124,11 @@ export async function POST(request: Request) {
     return Response.json({ error: "Svaret er for langt (max 5000 tegn)" }, { status: 400 });
   }
 
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!UUID_RE.test(id)) {
+    return Response.json({ error: "Ugyldigt id" }, { status: 400 });
+  }
+
   // Fetch original message
   const supabase = createAdminClient();
   const { data: msg, error: fetchError } = await supabase
