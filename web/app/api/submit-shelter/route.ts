@@ -137,6 +137,8 @@ export async function POST(request: Request) {
       ? Math.floor(body.capacity)
       : null;
 
+  const wants_booking = body.wants_booking === true;
+
   const supabase = createAdminClient();
   const { error } = await supabase.from("shelter_submissions").insert({
     type,
@@ -152,6 +154,7 @@ export async function POST(request: Request) {
     contact_name: body.contact_name?.trim() || null,
     contact_email,
     source_info,
+    wants_booking,
   });
 
   if (error) {
