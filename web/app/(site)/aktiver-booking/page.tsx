@@ -154,29 +154,6 @@ export default function AktiverBookingPage() {
         </div>
       </section>
 
-      {/* Naturstyrelsen note */}
-      <section className="px-4 py-10 bg-white border-b border-primary/8">
-        <div className="max-w-2xl mx-auto bg-stone-50 border border-primary/10 rounded-2xl p-6">
-          <p className="text-xs font-semibold text-primary/35 uppercase tracking-wider mb-2">
-            Hvem er dette for?
-          </p>
-          <p className="text-sm text-primary/65 leading-relaxed">
-            Naturstyrelsen og enkelte kommuner har allerede egne bookingsystemer
-            til deres shelters. ShelterDK er til alle andre: foreninger,
-            naturklubber, private lodsejere, spejdere, sportsforbund og kommuner
-            der endnu ikke har et system på plads. Har I tvivl, er I velkomne
-            til at skrive til{" "}
-            <a
-              href="mailto:hej@shelterdk.dk"
-              className="underline hover:text-primary/90 transition-colors"
-            >
-              hej@shelterdk.dk
-            </a>{" "}
-            inden I tilmelder jer.
-          </p>
-        </div>
-      </section>
-
       {/* Steps */}
       <section className="px-4 py-16 bg-background border-b border-primary/8">
         <div className="max-w-xl mx-auto">
