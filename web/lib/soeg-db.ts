@@ -5,8 +5,11 @@ import { findPostnummerSuggestions } from "@/lib/postnummer";
 import { haversineKm } from "@/lib/haversine";
 import { SEARCH_SYNONYMS } from "@/lib/search-synonyms";
 
-/** Sorter shelters: billede først, derefter score (billeder + anmeldelser), derefter titel. */
+/** Sorter shelters: featured boost først, derefter billede, derefter score, derefter titel. */
 function sortByImageAndScore(a: Shelter, b: Shelter): number {
+  const aBoost = a.featured_sort_boost ?? 0;
+  const bBoost = b.featured_sort_boost ?? 0;
+  if (bBoost !== aBoost) return bBoost - aBoost;
   const aHas = hasAnyImage(a) ? 1 : 0;
   const bHas = hasAnyImage(b) ? 1 : 0;
   if (bHas !== aHas) return bHas - aHas;
@@ -15,7 +18,7 @@ function sortByImageAndScore(a: Shelter, b: Shelter): number {
 }
 
 const SHELTER_SELECT =
-  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, water, toilet, capacity, display_score, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
+  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, water, toilet, capacity, display_score, featured_sort_boost, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
 const SHELTER_SELECT_FALLBACK =
   "id, title, slug, description, location, image_url, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, water, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
 
@@ -156,6 +159,7 @@ export async function getSheltersPage(
       .order("title", { ascending: true });
   } else {
     query = query
+      .order("featured_sort_boost", { ascending: false, nullsFirst: false })
       .order("display_score", { ascending: false, nullsFirst: false })
       .order("title", { ascending: true });
   }

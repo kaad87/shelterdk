@@ -39,6 +39,7 @@ const FRONT_PAGE_MAP_SHELTER_LIMIT = 40; // antal shelters til initiale pins på
 
 /** Udvalgte shelters på forsiden (i denne rækkefølge). */
 const FEATURED_SHELTER_SLUGS = [
+  "shelterplads-ved-solvognens-fundsted-11573",
   "shelter-og-stjernekiggertarn-ved-slaggardbanke-97136",
   "shelter-i-true-skov-10055",
   "logismose-10073",
@@ -52,9 +53,9 @@ const FEATURED_SHELTER_SLUGS = [
 ] as const;
 
 const SHELTER_SELECT =
-  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, display_score, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
+  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, display_score, featured_sort_boost, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
 const SHELTER_SELECT_FALLBACK =
-  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, display_score, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
+  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, display_score, featured_sort_boost, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
 
 const ALLOWED_IMAGE_HOSTS = new Set([
   "dynamic-media-cdn.tripadvisor.com",
@@ -122,6 +123,7 @@ async function getPrimaryShelters(limit: number): Promise<Shelter[]> {
         .from("shelters")
         .select(select)
         .is("duplicate_of_shelter_id", null)
+        .order("featured_sort_boost", { ascending: false, nullsFirst: false })
         .order("display_score", { ascending: false, nullsFirst: false })
         .order("title", { ascending: true })
         .limit(limit * 10);

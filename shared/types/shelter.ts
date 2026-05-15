@@ -54,4 +54,6 @@ export interface Shelter {
   blur_data_url?: string | null;
   /** Custom display order for all photos. null = use default order. */
   photo_order?: string[] | null;
+  /** Manuel rangering-boost — højere værdi = vises øverst. 0 = ingen boost. */
+  featured_sort_boost?: number | null;
 }
