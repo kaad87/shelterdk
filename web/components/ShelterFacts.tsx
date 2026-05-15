@@ -76,6 +76,11 @@ export function ShelterFacts({ shelter, coords, firewood = null }: ShelterFactsP
       term: "Booking",
       definition: "Direkte link til booking (se nedenfor)",
     });
+  } else if (bookable) {
+    items.push({
+      term: "Booking",
+      definition: "Bookbart – kontakt forvalteren for reservation",
+    });
   } else {
     items.push({
       term: "Booking",

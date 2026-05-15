@@ -137,7 +137,7 @@ export function getShelterFaqItems(
   } else if (options.bookable) {
     items.push({
       question: `Kan man booke ${title}?`,
-      answer: `Ja, shelteret angives som bookbart. Kontakt forvalteren eller tjek udinaturen.dk for aktuelle bookingmuligheder.`,
+      answer: `${title} angives som bookbart. Kontakt forvalteren direkte for at reservere — se kontaktoplysninger på siden.`,
     });
   } else {
     items.push({
