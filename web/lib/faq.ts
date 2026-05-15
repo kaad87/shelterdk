@@ -137,7 +137,7 @@ export function getShelterFaqItems(
   } else if (options.bookable) {
     items.push({
       question: `Kan man booke ${title}?`,
-      answer: `${title} angives som bookbart. Kontakt forvalteren direkte for at reservere — se kontaktoplysninger på siden.`,
+      answer: `Ja, ${title} kan bookes direkte på ShelterDK. Vælg en dato i bookingkalenderen på denne side.`,
     });
   } else {
     items.push({

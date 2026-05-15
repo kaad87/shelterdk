@@ -79,7 +79,7 @@ export function ShelterFacts({ shelter, coords, firewood = null }: ShelterFactsP
   } else if (bookable) {
     items.push({
       term: "Booking",
-      definition: "Bookbart – kontakt forvalteren for reservation",
+      definition: "Bookbart via ShelterDK",
     });
   } else {
     items.push({
