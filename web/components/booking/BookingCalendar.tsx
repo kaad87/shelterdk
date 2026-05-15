@@ -30,6 +30,10 @@ export function BookingCalendar({ unavailableDates, onRangeSelect }: BookingCale
   // unavailable night after the check-in so we can block everything from
   // that date onwards. This prevents the user from selecting a checkout that
   // "jumps over" a blocked night (which the backend would reject anyway).
+  //
+  // cutoff = firstBlockedNight + 1 day, because checkout ON the first blocked
+  // night is valid (guest leaves that morning, not occupying the night). But
+  // a checkout the following day would mean occupying the blocked night.
   const checkoutCutoff: Date | null = (() => {
     if (!range?.from || range?.to) return null;
     const start = range.from;
@@ -37,13 +41,38 @@ export function BookingCalendar({ unavailableDates, onRangeSelect }: BookingCale
     cur.setDate(cur.getDate() + 1); // first potential checkout is start+1
     while (cur <= latestBookableDate) {
       const iso = toIso(cur);
-      if (unavailableDates[iso]) return cur; // first blocked night after check-in
+      if (unavailableDates[iso]) {
+        // cur is the first blocked night. Checkout ON cur is fine (guest leaves
+        // that morning), but checkout the day after is not (would occupy cur).
+        const cutoff = new Date(cur);
+        cutoff.setDate(cutoff.getDate() + 1);
+        return cutoff;
+      }
       cur.setDate(cur.getDate() + 1);
     }
     return null;
   })();
 
   const handleSelect = (r: DateRange | undefined) => {
+    if (r?.from && r?.to) {
+      // Prevent 0-night booking (same day for both check-in and check-out).
+      if (toIso(r.from) === toIso(r.to)) {
+        setRange({ from: r.from, to: undefined });
+        onRangeSelect(null);
+        return;
+      }
+      // Defensive: reject ranges that span a blocked night. Normally prevented
+      // by the disabled function, but guard against edge cases in DayPicker.
+      const cur = new Date(r.from);
+      while (cur < r.to) {
+        if (unavailableDates[toIso(cur)]) {
+          setRange({ from: r.from, to: undefined });
+          onRangeSelect(null);
+          return;
+        }
+        cur.setDate(cur.getDate() + 1);
+      }
+    }
     setRange(r);
     if (r?.from && r?.to) {
       onRangeSelect({ checkIn: toIso(r.from), checkOut: toIso(r.to) });
@@ -62,13 +91,29 @@ export function BookingCalendar({ unavailableDates, onRangeSelect }: BookingCale
         toDate={latestBookableDate}
         disabled={(d) => {
           if (d < today) return true;
-          // During checkout selection: block the first unavailable night and
-          // everything after it (guest cannot hop over a blocked date).
-          if (checkoutCutoff && d >= checkoutCutoff) return true;
-          // The check-out date itself is never "unavailable" in our model
-          // (it's the morning you leave, not a night you occupy), so only
-          // block dates that are unavailable AND not the current range end.
-          return !!unavailableDates[toIso(d)];
+          const iso = toIso(d);
+
+          // Phase 2: checkout-selection mode — check-in chosen, checkout not yet.
+          if (range?.from && !range?.to) {
+            // Disable all dates strictly before check-in (including blocked dates that
+            // must not become re-selectable as a new start). Using strict < so the
+            // check-in date itself stays visually anchored — DayPicker clears the
+            // selection when range.from is disabled, which would break the UX.
+            // 0-night is caught by handleSelect instead.
+            if (d < range.from) return true;
+            if (checkoutCutoff && d >= checkoutCutoff) return true;
+            // The first blocked night (= cutoff − 1 day) intentionally stays open:
+            // checkout ON that date is valid — guest departs that morning, not occupying
+            // the night. Everything between check-in and cutoff is a valid checkout.
+            return false;
+          }
+
+          // Phase 1 / 3: check-in selection or full range already chosen.
+          // Don't re-disable currently selected endpoints (checkout may land on
+          // a blocked night, which is valid and must remain un-disabled).
+          if (range?.from && toIso(range.from) === iso) return false;
+          if (range?.to && toIso(range.to) === iso) return false;
+          return !!unavailableDates[iso];
         }}
         modifiers={{
           confirmed: (d) => unavailableDates[toIso(d)] === "confirmed",
