@@ -173,7 +173,7 @@ export async function createCheckoutSession(
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
-    payment_method_types: ["mobilepay", "card"],
+    payment_method_types: ["card"],
     locale: "da",
     line_items: lineItems,
     metadata: { booking_id: booking.id },
