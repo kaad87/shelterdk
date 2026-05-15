@@ -28,6 +28,8 @@ import { prepositionForRegionName } from "@/lib/area-db";
 import { TrackShelterView } from "@/components/TrackShelterView";
 import { TrackedExternalLink } from "@/components/TrackedExternalLink";
 
+const SHELTER_DK_CVR = "44 37 89 65";
+
 export interface BreadcrumbLink {
   label: string;
   href?: string;
@@ -161,6 +163,18 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
               </Link>
             ))}
           </div>
+          <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-primary/8 bg-primary/[0.03] px-3.5 py-3">
+            <span className="text-base leading-none mt-0.5 shrink-0">🔒</span>
+            <div>
+              <p className="text-xs font-semibold text-primary/70 leading-snug">
+                Booking via ShelterDK
+              </p>
+              <p className="text-xs text-primary/45 leading-relaxed mt-0.5">
+                ShelterDK er en dansk platform for shelter-booking. Servicegebyret dækker administration af din booking.{" "}
+                <span className="text-primary/60 font-medium">CVR {SHELTER_DK_CVR}</span>
+              </p>
+            </div>
+          </div>
         </>
       ) : bookingUnits.length === 1 ? (
         <>
@@ -170,9 +184,18 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
           >
             Book dette shelter
           </Link>
-          <p className="text-center text-primary/70 text-sm mt-3">
-            Booking håndteres direkte på ShelterDK
-          </p>
+          <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-primary/8 bg-primary/[0.03] px-3.5 py-3">
+            <span className="text-base leading-none mt-0.5 shrink-0">🔒</span>
+            <div>
+              <p className="text-xs font-semibold text-primary/70 leading-snug">
+                Booking via ShelterDK
+              </p>
+              <p className="text-xs text-primary/45 leading-relaxed mt-0.5">
+                ShelterDK er en dansk platform for shelter-booking. Servicegebyret dækker administration af din booking.{" "}
+                <span className="text-primary/60 font-medium">CVR {SHELTER_DK_CVR}</span>
+              </p>
+            </div>
+          </div>
         </>
       ) : bookingUrl ? (
         <>
