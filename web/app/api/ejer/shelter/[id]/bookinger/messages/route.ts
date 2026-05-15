@@ -8,7 +8,7 @@ const DEFAULTS = {
   confirmation_enabled: true,
   confirmation_subject: "Din booking af {shelter_navn} er bekræftet",
   confirmation_body:
-    "Hej {gæst_navn},\n\nDin booking er bekræftet — vi glæder os til at byde dig velkommen.\n\nAnkomst: {ankomst_dato}\nAfrejse: {afrejse_dato}\nVarighed: {antal_nætter} nætter\nAntal personer: {antal_personer}\n\nGod tur!",
+    "Hej {gæst_navn},\n\nDin booking er bekræftet — vi glæder os til at byde dig velkommen.\n\nAnkomst: {ankomst_dato}\nAfrejse: {afrejse_dato} (udtjekning senest kl. 12)\nVarighed: {antal_nætter} nætter\nAntal personer: {antal_personer}\n\nGod tur!",
   reminder_enabled: true,
   reminder_subject: "Reminder: du ankommer til {shelter_navn} i morgen",
   reminder_body:

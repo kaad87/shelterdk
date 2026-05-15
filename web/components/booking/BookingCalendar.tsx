@@ -26,6 +26,23 @@ export function BookingCalendar({ unavailableDates, onRangeSelect }: BookingCale
   const latestBookableDate = new Date(Date.now() + BOOKING_WINDOW_DAYS * 24 * 60 * 60 * 1000);
   latestBookableDate.setHours(0, 0, 0, 0);
 
+  // When a check-in is selected but check-out isn't yet, find the first
+  // unavailable night after the check-in so we can block everything from
+  // that date onwards. This prevents the user from selecting a checkout that
+  // "jumps over" a blocked night (which the backend would reject anyway).
+  const checkoutCutoff: Date | null = (() => {
+    if (!range?.from || range?.to) return null;
+    const start = range.from;
+    const cur = new Date(start);
+    cur.setDate(cur.getDate() + 1); // first potential checkout is start+1
+    while (cur <= latestBookableDate) {
+      const iso = toIso(cur);
+      if (unavailableDates[iso]) return cur; // first blocked night after check-in
+      cur.setDate(cur.getDate() + 1);
+    }
+    return null;
+  })();
+
   const handleSelect = (r: DateRange | undefined) => {
     setRange(r);
     if (r?.from && r?.to) {
@@ -43,7 +60,16 @@ export function BookingCalendar({ unavailableDates, onRangeSelect }: BookingCale
         onSelect={handleSelect}
         locale={da}
         toDate={latestBookableDate}
-        disabled={(d) => d < today || !!unavailableDates[toIso(d)]}
+        disabled={(d) => {
+          if (d < today) return true;
+          // During checkout selection: block the first unavailable night and
+          // everything after it (guest cannot hop over a blocked date).
+          if (checkoutCutoff && d >= checkoutCutoff) return true;
+          // The check-out date itself is never "unavailable" in our model
+          // (it's the morning you leave, not a night you occupy), so only
+          // block dates that are unavailable AND not the current range end.
+          return !!unavailableDates[toIso(d)];
+        }}
         modifiers={{
           confirmed: (d) => unavailableDates[toIso(d)] === "confirmed",
           pending: (d) => unavailableDates[toIso(d)] === "pending",
