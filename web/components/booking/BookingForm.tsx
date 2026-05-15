@@ -6,7 +6,7 @@ import Link from "next/link";
 import { BookingCalendar } from "./BookingCalendar";
 import type { AvailabilityResponse } from "@/types/booking";
 
-const SHELTER_DK_CVR = "44 37 89 65";
+const SHELTER_DK_CVR = "37343080";
 
 interface BookingFormProps {
   shelterSlug: string;

@@ -28,7 +28,7 @@ import { prepositionForRegionName } from "@/lib/area-db";
 import { TrackShelterView } from "@/components/TrackShelterView";
 import { TrackedExternalLink } from "@/components/TrackedExternalLink";
 
-const SHELTER_DK_CVR = "44 37 89 65";
+const SHELTER_DK_CVR = "37343080";
 
 export interface BreadcrumbLink {
   label: string;
