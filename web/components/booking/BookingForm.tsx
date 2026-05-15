@@ -6,6 +6,8 @@ import Link from "next/link";
 import { BookingCalendar } from "./BookingCalendar";
 import type { AvailabilityResponse } from "@/types/booking";
 
+const SHELTER_DK_CVR = "44 37 89 65";
+
 interface BookingFormProps {
   shelterSlug: string;
   shelterTitle: string;
@@ -54,6 +56,32 @@ function CheckIcon() {
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
       <path d="M2.5 7l3.5 3.5 5.5-6" stroke="#c5a059" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
+  );
+}
+
+function UpfrontTrustBlock() {
+  return (
+    <div className="rounded-xl border border-primary/10 bg-white px-4 py-3.5">
+      <p className="text-xs font-semibold text-primary/70 mb-1.5">Om ShelterDK</p>
+      <p className="text-xs text-primary/50 leading-relaxed mb-3">
+        ShelterDK er en dansk platform til at finde og booke shelters i hele Danmark.
+        Servicegebyret betales til ShelterDK og dækker administration af din booking.
+      </p>
+      <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+        <span className="flex items-center gap-1.5 text-[11px] text-primary/45">
+          <span>🏢</span>
+          <span>CVR {SHELTER_DK_CVR}</span>
+        </span>
+        <span className="flex items-center gap-1.5 text-[11px] text-primary/45">
+          <span>🔒</span>
+          <span>Betaling via Stripe</span>
+        </span>
+        <span className="flex items-center gap-1.5 text-[11px] text-primary/45">
+          <span>↩️</span>
+          <span>Fuld refundering ved aflysning</span>
+        </span>
+      </div>
+    </div>
   );
 }
 
@@ -139,9 +167,7 @@ export function BookingForm({
   const platformFee = Math.max(Math.round(shelterTotalDkk * platformFeePct / 100), platformFeeMinDkk);
   const totalDkk = shelterTotalDkk + platformFee;
 
-  const trustSignals = isUpfront
-    ? ["Sikker betaling via MobilePay eller kort", "Booking bekræftes automatisk ved betaling", "Fuld refundering hvis du aflyser mere end 24 timer før ankomst"]
-    : ["Gratis at sende en forespørgsel", "Du betaler ingenting nu", "Ejer svarer typisk inden 24 timer"];
+  const trustSignals = ["Gratis at sende en forespørgsel", "Du betaler ingenting nu", "Ejer svarer typisk inden 24 timer"];
 
   return (
     <div className="w-full">
@@ -192,15 +218,21 @@ export function BookingForm({
           </div>
 
           {/* Trust signals – desktop only */}
-          <div className="hidden md:flex flex-col gap-2 mt-5">
-            {trustSignals.map((t) => (
-              <div key={t} className="flex items-center gap-2.5">
-                <div className="w-4 h-4 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
-                  <CheckIcon />
-                </div>
-                <span className="text-xs text-primary/50">{t}</span>
+          <div className="hidden md:block mt-5">
+            {isUpfront ? (
+              <UpfrontTrustBlock />
+            ) : (
+              <div className="flex flex-col gap-2">
+                {trustSignals.map((t) => (
+                  <div key={t} className="flex items-center gap-2.5">
+                    <div className="w-4 h-4 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
+                      <CheckIcon />
+                    </div>
+                    <span className="text-xs text-primary/50">{t}</span>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
         </div>
 
@@ -382,15 +414,21 @@ export function BookingForm({
           </div>
 
           {/* Trust – mobile only */}
-          <div className="flex md:hidden flex-col gap-2 pt-1">
-            {trustSignals.map((t) => (
-              <div key={t} className="flex items-center gap-2.5">
-                <div className="w-4 h-4 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
-                  <CheckIcon />
-                </div>
-                <span className="text-xs text-primary/50">{t}</span>
+          <div className="md:hidden pt-1">
+            {isUpfront ? (
+              <UpfrontTrustBlock />
+            ) : (
+              <div className="flex flex-col gap-2">
+                {trustSignals.map((t) => (
+                  <div key={t} className="flex items-center gap-2.5">
+                    <div className="w-4 h-4 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
+                      <CheckIcon />
+                    </div>
+                    <span className="text-xs text-primary/50">{t}</span>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
 
         </div>
