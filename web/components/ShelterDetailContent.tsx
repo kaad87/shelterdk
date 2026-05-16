@@ -691,7 +691,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
               <h2 className="font-serif text-lg font-bold text-primary mb-3">
                 Fakta
               </h2>
-              <ShelterFacts shelter={shelter} coords={coords} firewood={firewood} />
+              <ShelterFacts shelter={shelter} coords={coords} firewood={firewood} hasShelterDkBooking={bookingUnits.length > 0} />
             </div>
 
             <NewsletterSignup variant="compact" source="shelter" />

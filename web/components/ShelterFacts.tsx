@@ -13,6 +13,8 @@ interface ShelterFactsProps {
   coords?: { lat: number; lon: number } | null;
   /** Bålplads – når data findes (fx fra geofa_raw). Ellers vises "Ikke oplyst". */
   firewood?: boolean | null;
+  /** True hvis shelteret har aktive ShelterDK-bookingenheder (bookable_shelters). */
+  hasShelterDkBooking?: boolean;
 }
 
 /** Præcis toilet-tekst – undgår "Maybe", giver konkret besked til LLMs. */
@@ -47,13 +49,13 @@ function firewoodLabel(firewood: boolean | null | undefined): string {
   return "Ikke oplyst (tjek beskrivelsen eller kontakt forvalter)";
 }
 
-export function ShelterFacts({ shelter, coords, firewood = null }: ShelterFactsProps) {
+export function ShelterFacts({ shelter, coords, firewood = null, hasShelterDkBooking = false }: ShelterFactsProps) {
   const toilet = getToilet(shelter);
   const water = getWater(shelter);
   const capacity = getCapacity(shelter);
   const gps = coords ?? getLocationCoords(shelter);
-  const bookable = isBookable(shelter);
   const bookingUrl = (shelter.booking_url || "").trim();
+  const hasExternalBookingLink = bookingUrl && /^https?:\/\//i.test(bookingUrl);
 
   const items: { term: string; definition: string }[] = [];
 
@@ -70,23 +72,15 @@ export function ShelterFacts({ shelter, coords, firewood = null }: ShelterFactsP
     });
   }
 
-  const hasBookingLink = bookable && bookingUrl && /^https?:\/\//i.test(bookingUrl);
-  if (hasBookingLink) {
-    items.push({
-      term: "Booking",
-      definition: "Direkte link til booking (se nedenfor)",
-    });
-  } else if (bookable) {
-    items.push({
-      term: "Booking",
-      definition: "Bookbart via ShelterDK",
-    });
+  let bookingDefinition: string;
+  if (hasShelterDkBooking) {
+    bookingDefinition = "Bookbart via ShelterDK";
+  } else if (hasExternalBookingLink) {
+    bookingDefinition = "Direkte link til booking (se nedenfor)";
   } else {
-    items.push({
-      term: "Booking",
-      definition: "Først til mølle (ingen reservation)",
-    });
+    bookingDefinition = "Først til mølle (ingen reservation)";
   }
+  items.push({ term: "Booking", definition: bookingDefinition });
 
   if (gps) {
     const latLon = `${gps.lat.toFixed(6)}, ${gps.lon.toFixed(6)}`;
