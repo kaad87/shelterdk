@@ -228,14 +228,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
             </>
           ) : (
             <>
-              Book dette shelter direkte på{" "}
-              <a
-                href="/shelter-booking"
-                className="text-accent underline hover:no-underline"
-              >
-                ShelterDK
-              </a>
-              .
+              Dette shelter kræver booking — se beskrivelsen eller kontakt shelter-ejeren for information.
             </>
           )}
         </p>
