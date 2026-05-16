@@ -53,9 +53,9 @@ const FEATURED_SHELTER_SLUGS = [
 ] as const;
 
 const SHELTER_SELECT =
-  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, display_score, featured_sort_boost, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
+  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, display_score, featured_sort_boost, bookable_shelters(id), google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
 const SHELTER_SELECT_FALLBACK =
-  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, display_score, featured_sort_boost, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
+  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, display_score, featured_sort_boost, bookable_shelters(id), google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
 
 const ALLOWED_IMAGE_HOSTS = new Set([
   "dynamic-media-cdn.tripadvisor.com",

@@ -10,7 +10,7 @@ export interface Area {
 }
 
 const SHELTER_SELECT =
-  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, water, display_score, featured_sort_boost, blur_data_url";
+  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, water, display_score, featured_sort_boost, bookable_shelters(id), blur_data_url";
 const EMBED_SHELTER_LIMIT = 500;
 
 /** Hent alle områder (sorteret efter navn). */

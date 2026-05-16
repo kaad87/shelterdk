@@ -199,6 +199,9 @@ export function ShelterCard({ shelter, onImageError, href, priority }: ShelterCa
     </div>
   );
 
+  const isShelterDkBookable =
+    Array.isArray(shelter.bookable_shelters) && shelter.bookable_shelters.length > 0;
+
   const ratingBadge = showRating && (
     <div className="absolute right-3 top-3 flex items-center gap-1 rounded-md bg-primary/90 px-2 py-1 text-sm font-medium text-white backdrop-blur-sm z-10">
       <Star size={14} className="fill-accent text-accent" />
@@ -208,6 +211,13 @@ export function ShelterCard({ shelter, onImageError, href, priority }: ShelterCa
           ({shelter.google_user_ratings_total})
         </span>
       )}
+    </div>
+  );
+
+  const bookBadge = isShelterDkBookable && (
+    <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-green-700 px-2.5 py-1 text-[10.5px] font-bold text-white shadow z-10">
+      <CheckCircle size={11} strokeWidth={2.5} />
+      Book på ShelterDK
     </div>
   );
 
@@ -229,6 +239,7 @@ export function ShelterCard({ shelter, onImageError, href, priority }: ShelterCa
             blurDataUrl={shelter.blur_data_url ?? undefined}
             priority={priority}
           />
+          {bookBadge}
           {ratingBadge}
         </div>
         {cardBody}
@@ -275,6 +286,7 @@ export function ShelterCard({ shelter, onImageError, href, priority }: ShelterCa
               : {})}
           />
         )}
+        {bookBadge}
         {ratingBadge}
       </div>
       {cardBody}

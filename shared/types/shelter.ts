@@ -56,4 +56,6 @@ export interface Shelter {
   photo_order?: string[] | null;
   /** Manuel rangering-boost — højere værdi = vises øverst. 0 = ingen boost. */
   featured_sort_boost?: number | null;
+  /** Bookable units på ShelterDK — non-empty array betyder sheltered kan bookes direkte her. */
+  bookable_shelters?: { id: string }[] | null;
 }
