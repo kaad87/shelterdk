@@ -42,16 +42,6 @@ export async function generateMetadata({
       url: canonicalPath,
       publishedTime: guide.publishedAt,
       modifiedTime: guide.updatedAt,
-      images: guide.coverImage
-        ? [
-            {
-              url: guide.coverImage,
-              width: 1200,
-              height: 630,
-              alt: guide.title,
-            },
-          ]
-        : undefined,
     },
   };
 }

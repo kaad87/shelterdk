@@ -13,6 +13,7 @@ interface BookingFormProps {
   shelterTitle: string;
   maxPersons: number;
   description?: string | null;
+  showPageHeader?: boolean;
   successPath?: string;
   paymentMode?: "after_confirmation" | "upfront";
   shelterPriceDkk?: number;
@@ -87,6 +88,7 @@ function UpfrontTrustBlock() {
 
 export function BookingForm({
   shelterSlug, shelterTitle, maxPersons, description, successPath,
+  showPageHeader = true,
   paymentMode = "after_confirmation", shelterPriceDkk = 0,
   platformFeePct = 5, platformFeeMinDkk = 25,
 }: BookingFormProps) {
@@ -172,13 +174,15 @@ export function BookingForm({
   return (
     <div className="w-full">
       {/* Page header */}
-      <div className="mb-8">
-        <p className="text-xs font-semibold text-accent uppercase tracking-widest mb-1.5">Booking</p>
-        <h1 className="font-serif text-3xl font-bold text-primary leading-tight">{shelterTitle}</h1>
-        {description && (
-          <p className="mt-2 text-sm text-primary/55 leading-relaxed line-clamp-2">{description}</p>
-        )}
-      </div>
+      {showPageHeader && (
+        <div className="mb-8">
+          <p className="text-xs font-semibold text-accent uppercase tracking-widest mb-1.5">Booking</p>
+          <h1 className="font-serif text-3xl font-bold text-primary leading-tight">{shelterTitle}</h1>
+          {description && (
+            <p className="mt-2 text-sm text-primary/55 leading-relaxed line-clamp-2">{description}</p>
+          )}
+        </div>
+      )}
 
       {/* Two-column grid on md+, single column on mobile */}
       <div className="grid md:grid-cols-[1fr_340px] lg:grid-cols-[1fr_360px] gap-8 lg:gap-12 items-start">

@@ -38,6 +38,10 @@ declare global {
 const STORAGE_KEY = "shelterdk-admin-secret";
 
 type TabKey = "photos" | "community" | "instagram" | "newsletter" | "contact" | "oplevelser" | "submissions" | "bookinger";
+export type AdminSummaryCounts = Record<
+  "photos" | "community" | "instagram" | "newsletter" | "contact" | "oplevelser" | "submissions" | "bookinger" | "bookingMonitor",
+  number
+>;
 
 type BookableShelterAdmin = {
   id: string;
@@ -138,9 +142,31 @@ const MANAGEMENT_TABS: { key: TabKey; label: string; icon: typeof Camera }[] = [
   { key: "bookinger", label: "Bookinger", icon: BookOpen },
 ];
 
-const TAB_CONFIG = [...MODERATION_TABS, ...MANAGEMENT_TABS];
+type AdminPhotoReviewProps = {
+  initialTab?: TabKey;
+  showManagementTabs?: boolean;
+  onSecretChange?: (secret: string | null) => void;
+  onSummaryChange?: (summary: AdminSummaryCounts) => void;
+};
 
-export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKey }) {
+const EMPTY_SUMMARY: AdminSummaryCounts = {
+  photos: 0,
+  community: 0,
+  instagram: 0,
+  newsletter: 0,
+  contact: 0,
+  oplevelser: 0,
+  submissions: 0,
+  bookinger: 0,
+  bookingMonitor: 0,
+};
+
+export function AdminPhotoReview({
+  initialTab = "photos",
+  showManagementTabs = true,
+  onSecretChange,
+  onSummaryChange,
+}: AdminPhotoReviewProps) {
   const [secret, setSecret] = useState("");
   const [inputSecret, setInputSecret] = useState("");
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -155,6 +181,7 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
   const [error, setError] = useState("");
   const [actingId, setActingId] = useState<string | null>(null);
   const [tab, setTab] = useState<TabKey>(initialTab);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(null);
   const [newIgUrl, setNewIgUrl] = useState("");
   const [igScriptReady, setIgScriptReady] = useState(false);
   const embedRef = useRef(0);
@@ -189,19 +216,29 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
   const loadStored = useCallback(() => {
     if (typeof window === "undefined") return;
     const stored = sessionStorage.getItem(STORAGE_KEY);
-    if (stored) setSecret(stored);
-  }, []);
+    if (stored) {
+      setSecret(stored);
+      onSecretChange?.(stored);
+    }
+  }, [onSecretChange]);
 
   useEffect(() => {
     loadStored();
   }, [loadStored]);
+
+  const publishSummary = useCallback(
+    (counts: AdminSummaryCounts) => {
+      onSummaryChange?.(counts);
+    },
+    [onSummaryChange]
+  );
 
   const fetchAll = useCallback(async (s: string) => {
     setLoading(true);
     setError("");
     try {
       const ts = Date.now();
-      const [photoRes, communityRes, igRes, nlRes, contactRes, experiencesRes, submissionsRes, sheltersRes] = await Promise.all([
+      const [photoRes, communityRes, igRes, nlRes, contactRes, experiencesRes, submissionsRes, sheltersRes, bookingMonitorRes] = await Promise.all([
         fetch(`/api/admin/pending-photos?t=${ts}`, {
           headers: { "x-admin-secret": s },
           cache: "no-store",
@@ -234,11 +271,16 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
           headers: { "x-admin-secret": s },
           cache: "no-store",
         }),
+        fetch(`/api/admin/booking-monitor?status=open&limit=200&t=${ts}`, {
+          headers: { "x-admin-secret": s },
+          cache: "no-store",
+        }),
       ]);
       if (photoRes.status === 401 || communityRes.status === 401 || igRes.status === 401 || nlRes.status === 401) {
         setError("Ugyldig kode");
         sessionStorage.removeItem(STORAGE_KEY);
         setSecret("");
+        onSecretChange?.(null);
         setSubmissions([]);
         setCommunitySubmissions([]);
         setIgPosts([]);
@@ -246,6 +288,9 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
         setContactMsgs([]);
         setExperiences([]);
         setShelterSubmissions([]);
+        setBookableShelters([]);
+        setLastUpdatedAt(null);
+        publishSummary(EMPTY_SUMMARY);
         return;
       }
       if (!photoRes.ok || !communityRes.ok) {
@@ -256,9 +301,12 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
         photoRes.json(),
         communityRes.json(),
       ]);
-      setSubmissions(photoData.submissions ?? []);
-      setCommunitySubmissions(communityData.submissions ?? []);
+      const nextSubmissions = photoData.submissions ?? [];
+      const nextCommunitySubmissions = communityData.submissions ?? [];
+      setSubmissions(nextSubmissions);
+      setCommunitySubmissions(nextCommunitySubmissions);
 
+      let nextIgPosts: IgPost[] = [];
       if (igRes.ok) {
         const igData = await igRes.json();
         if (igData.setupRequired) {
@@ -266,74 +314,114 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
           setIgPosts([]);
         } else {
           setIgSetupRequired(false);
-          setIgPosts(igData.posts ?? []);
+          nextIgPosts = igData.posts ?? [];
+          setIgPosts(nextIgPosts);
         }
       }
 
+      let nextNlSubs: NewsletterSub[] = [];
       if (nlRes.ok) {
         const nlData = await nlRes.json();
-        setNlSubs(nlData.subscribers ?? []);
+        nextNlSubs = nlData.subscribers ?? [];
+        setNlSubs(nextNlSubs);
       }
 
+      let nextContactMsgs: ContactMessage[] = [];
       if (contactRes.ok) {
         const contactData = await contactRes.json();
-        setContactMsgs(contactData.messages ?? []);
+        nextContactMsgs = contactData.messages ?? [];
+        setContactMsgs(nextContactMsgs);
       }
 
+      let nextExperiences: Experience[] = [];
       if (experiencesRes.ok) {
         const expData = await experiencesRes.json();
-        setExperiences(expData.experiences ?? []);
+        nextExperiences = expData.experiences ?? [];
+        setExperiences(nextExperiences);
       }
 
+      let nextShelterSubmissions: ShelterSubmission[] = [];
       if (submissionsRes.ok) {
         const subsData = await submissionsRes.json();
-        setShelterSubmissions(subsData.submissions ?? []);
+        nextShelterSubmissions = subsData.submissions ?? [];
+        setShelterSubmissions(nextShelterSubmissions);
       }
 
+      let nextBookableShelters: BookableShelterAdmin[] = [];
       if (sheltersRes.ok) {
         const sheltersData = await sheltersRes.json();
-        setBookableShelters(sheltersData.shelters ?? []);
+        nextBookableShelters = sheltersData.shelters ?? [];
+        setBookableShelters(nextBookableShelters);
       }
+
+      let nextBookingMonitorCount = 0;
+      if (bookingMonitorRes.ok) {
+        const bookingMonitorData = await bookingMonitorRes.json();
+        nextBookingMonitorCount = Array.isArray(bookingMonitorData) ? bookingMonitorData.length : 0;
+      }
+
+      const nextSummary: AdminSummaryCounts = {
+        photos: nextSubmissions.length,
+        community: nextCommunitySubmissions.length,
+        instagram: nextIgPosts.filter((p) => p.status === "pending").length,
+        newsletter: nextNlSubs.length,
+        contact: nextContactMsgs.filter((m) => m.status === "unread").length,
+        oplevelser: nextExperiences.length,
+        submissions: nextShelterSubmissions.length,
+        bookinger: nextBookableShelters.length,
+        bookingMonitor: nextBookingMonitorCount,
+      };
+
+      publishSummary(nextSummary);
+      setLastUpdatedAt(new Date().toISOString());
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [onSecretChange, publishSummary]);
 
   useEffect(() => {
     if (secret) {
       sessionStorage.setItem(STORAGE_KEY, secret);
+      onSecretChange?.(secret);
       fetchAll(secret);
     } else {
       setSubmissions([]);
+      setCommunitySubmissions([]);
+      setIgPosts([]);
+      setNlSubs([]);
+      setContactMsgs([]);
+      setExperiences([]);
+      setShelterSubmissions([]);
+      setBookableShelters([]);
+      setLastUpdatedAt(null);
+      publishSummary(EMPTY_SUMMARY);
     }
-  }, [secret, fetchAll]);
-
-  useEffect(() => {
-    if (!secret) return;
-    const id = window.setInterval(() => {
-      fetchAll(secret);
-    }, 15000);
-    return () => window.clearInterval(id);
-  }, [secret, fetchAll]);
+  }, [secret, fetchAll, onSecretChange, publishSummary]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     const s = inputSecret.trim();
     if (!s) return;
     setSecret(s);
+    onSecretChange?.(s);
     setInputSecret("");
   };
 
   const handleLogout = () => {
     sessionStorage.removeItem(STORAGE_KEY);
     setSecret("");
+    onSecretChange?.(null);
     setInputSecret("");
     setSubmissions([]);
     setCommunitySubmissions([]);
     setIgPosts([]);
     setNlSubs([]);
     setContactMsgs([]);
+    setExperiences([]);
+    setShelterSubmissions([]);
     setBookableShelters([]);
+    setLastUpdatedAt(null);
+    publishSummary(EMPTY_SUMMARY);
   };
 
   const act = async (
@@ -523,9 +611,18 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="font-serif text-2xl font-bold text-primary">Indhold & drift</h1>
-          <p className="text-sm text-primary/60 mt-1">Godkend bidrag, kurater Instagram og administrér bookinger.</p>
+          <p className="text-sm text-primary/60 mt-1">
+            {showManagementTabs
+              ? "Godkend bidrag, kurater Instagram og administrér bookinger."
+              : "Arbejdskø for moderation, indsendelser og beskeder."}
+          </p>
         </div>
         <div className="flex items-center gap-3">
+          {lastUpdatedAt && (
+            <p className="hidden text-xs text-primary/45 sm:block">
+              Sidst opdateret {new Date(lastUpdatedAt).toLocaleTimeString("da-DK", { hour: "2-digit", minute: "2-digit" })}
+            </p>
+          )}
           <button
             type="button"
             onClick={() => secret && fetchAll(secret)}
@@ -560,7 +657,6 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
 
       {/* Tabs */}
       <div className="mb-6 flex items-center gap-0.5 rounded-xl border border-primary/10 bg-primary/[0.02] p-1.5 overflow-x-auto">
-        {/* Moderation group */}
         {MODERATION_TABS.map(({ key, label, icon: Icon }) => {
           const count = badgeCounts[key];
           const isActive = tab === key;
@@ -589,39 +685,39 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
             </button>
           );
         })}
-
-        {/* Divider */}
-        <div className="w-px h-5 bg-primary/20 mx-1 shrink-0" />
-
-        {/* Management group */}
-        {MANAGEMENT_TABS.map(({ key, label, icon: Icon }) => {
-          const count = badgeCounts[key];
-          const isActive = tab === key;
-          return (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setTab(key)}
-              className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-all shrink-0 ${
-                isActive
-                  ? "bg-white text-primary shadow-sm"
-                  : "text-primary/55 hover:text-primary/80 hover:bg-white/50"
-              }`}
-            >
-              <Icon size={14} />
-              <span className="hidden sm:inline">{label}</span>
-              {count > 0 && (
-                <span
-                  className={`min-w-[18px] rounded-full px-1.5 py-0.5 text-xs font-semibold leading-none ${
-                    isActive ? "bg-accent text-white" : "bg-primary/10 text-primary/60"
+        {showManagementTabs && (
+          <>
+            <div className="w-px h-5 bg-primary/20 mx-1 shrink-0" />
+            {MANAGEMENT_TABS.map(({ key, label, icon: Icon }) => {
+              const count = badgeCounts[key];
+              const isActive = tab === key;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setTab(key)}
+                  className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-all shrink-0 ${
+                    isActive
+                      ? "bg-white text-primary shadow-sm"
+                      : "text-primary/55 hover:text-primary/80 hover:bg-white/50"
                   }`}
                 >
-                  {count}
-                </span>
-              )}
-            </button>
-          );
-        })}
+                  <Icon size={14} />
+                  <span className="hidden sm:inline">{label}</span>
+                  {count > 0 && (
+                    <span
+                      className={`min-w-[18px] rounded-full px-1.5 py-0.5 text-xs font-semibold leading-none ${
+                        isActive ? "bg-accent text-white" : "bg-primary/10 text-primary/60"
+                      }`}
+                    >
+                      {count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </>
+        )}
       </div>
 
       {/* Loading state */}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import type { ShelterBooking, BookingMessage } from "@/types/booking";
+import PrintButton from "@/components/PrintButton";
 
 const STATUS_LABELS: Record<string, string> = {
   pending: "Afventer bekræftelse",
@@ -34,6 +35,8 @@ interface Props {
   guestToken: string;
   paymentHref?: string | null;
   paymentLabel?: string | null;
+  amountPaidDkk?: number | null;
+  paidAt?: string | null;
 }
 
 export function BookingPageClient({
@@ -44,6 +47,8 @@ export function BookingPageClient({
   guestToken,
   paymentHref,
   paymentLabel,
+  amountPaidDkk = null,
+  paidAt = null,
 }: Props) {
   const [status, setStatus] = useState(booking.status);
   const [loading, setLoading] = useState(false);
@@ -122,15 +127,66 @@ export function BookingPageClient({
         86_400_000
     )
   );
+  const bookingReference = `BK-${booking.id.slice(0, 8).toUpperCase()}`;
+  const canShowProof = status === "confirmed";
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-[#2C3E50] mb-1">Din booking</h1>
-      <p className="text-gray-500 mb-6">{shelterTitle}</p>
+    <div className="print-proof-screen">
+      <div className="print-hide mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-[#2C3E50] mb-1">Din booking</h1>
+          <p className="text-gray-500">{shelterTitle}</p>
+        </div>
+        {canShowProof ? <PrintButton /> : null}
+      </div>
+
+      <div className="print-only mb-6 rounded-2xl border border-gray-300 bg-white p-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500 mb-2">
+          ShelterDK
+        </p>
+        <h1 className="text-2xl font-bold text-[#2C3E50] mb-2">Bookingbevis</h1>
+        <p className="text-sm text-gray-600">{shelterTitle}</p>
+      </div>
+
+      {canShowProof && (
+        <div className="print-card mb-6 rounded-2xl border border-green-200 bg-green-50/70 p-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-green-700 mb-1">
+                Bookingbevis
+              </p>
+              <h2 className="text-lg font-bold text-[#2C3E50]">
+                Vis denne side eller din bekræftelsesmail ved ankomst
+              </h2>
+            </div>
+            <span className="inline-flex rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800">
+              Bekræftet
+            </span>
+          </div>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <ProofItem label="Bookingreference" value={bookingReference} />
+            <ProofItem label="Shelter" value={shelterTitle} />
+            <ProofItem label="Ankomst" value={formatDate(booking.check_in)} />
+            <ProofItem label="Afrejse" value={formatDate(booking.check_out)} />
+            <ProofItem label="Antal personer" value={String(booking.guest_count)} />
+            <ProofItem
+              label="Betalingsstatus"
+              value={amountPaidDkk != null ? `Betalt (${amountPaidDkk} kr)` : "Bekræftet"}
+            />
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs text-gray-600">
+            <span>Booking-ID: {booking.id}</span>
+            <span>Oprettet: {new Date(booking.created_at).toLocaleString("da-DK")}</span>
+            {paidAt ? <span>Betalt: {new Date(paidAt).toLocaleString("da-DK")}</span> : null}
+          </div>
+        </div>
+      )}
 
       {/* Status badge */}
       <span
-        className={`inline-block px-3 py-1 rounded-full text-sm font-medium mb-6 ${
+        className={`print-hide inline-block px-3 py-1 rounded-full text-sm font-medium mb-6 ${
           STATUS_COLORS[status] ?? "bg-gray-100 text-gray-600"
         }`}
       >
@@ -138,7 +194,7 @@ export function BookingPageClient({
       </span>
 
       {/* Booking details */}
-      <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100 mb-8">
+      <div className="print-card bg-white rounded-xl border border-gray-200 divide-y divide-gray-100 mb-8">
         <Row label="Ankomst" value={formatDate(booking.check_in)} />
         <Row label="Afrejse" value={formatDate(booking.check_out)} />
         <Row label="Antal nætter" value={String(nights)} />
@@ -146,8 +202,15 @@ export function BookingPageClient({
         {booking.message && <Row label="Din besked" value={booking.message} />}
       </div>
 
+      {canShowProof && (
+        <div className="print-only mb-8 rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-700">
+          Dette bookingbevis er udstedt af ShelterDK og kan vises ved ankomst som dokumentation
+          for reservationen.
+        </div>
+      )}
+
       {(status === "pending" || status === "confirmed") && paymentHref && (
-        <div className="mb-8 bg-[#fff8ee] border border-[#ead7b1] rounded-xl p-5">
+        <div className="print-hide mb-8 bg-[#fff8ee] border border-[#ead7b1] rounded-xl p-5">
           <h2 className="text-base font-semibold text-[#2C3E50] mb-2">Din booking mangler betaling</h2>
           <p className="text-sm text-gray-700 mb-4">
             {status === "confirmed"
@@ -165,7 +228,7 @@ export function BookingPageClient({
 
       {/* Message thread — only for pending/confirmed bookings */}
       {canMessage && (
-        <div className="mb-8">
+        <div className="print-hide mb-8">
           <h2 className="text-base font-semibold text-[#2C3E50] mb-3">Beskeder</h2>
 
           {/* Thread */}
@@ -235,7 +298,7 @@ export function BookingPageClient({
 
       {/* Cancel section — pending requests can also be withdrawn by the guest */}
       {(status === "pending" || status === "confirmed") && !showConfirm && (
-        <div className="mt-4">
+        <div className="print-hide mt-4">
           <button
             onClick={() => setShowConfirm(true)}
             className="text-sm text-red-600 border border-red-200 rounded-lg px-4 py-2.5 hover:bg-red-50 transition-colors min-h-[44px]"
@@ -246,7 +309,7 @@ export function BookingPageClient({
       )}
 
       {(status === "pending" || status === "confirmed") && showConfirm && (
-        <div className="mt-6 bg-red-50 border border-red-200 rounded-xl p-5">
+        <div className="print-hide mt-6 bg-red-50 border border-red-200 rounded-xl p-5">
           <h2 className="font-semibold text-red-700 mb-2">Er du sikker?</h2>
           {status === "pending" ? (
             <p className="text-sm text-gray-700 mb-4">
@@ -290,11 +353,59 @@ export function BookingPageClient({
       )}
 
       {status === "cancelled" && (
-        <div className="mt-6 bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm text-gray-600">
+        <div className="print-hide mt-6 bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm text-gray-600">
           {cancelNotice ? `${cancelNotice} ` : "Din booking er annulleret. "}
           <a href="/soeg" className="text-[#c5a059] underline">Find andre shelters</a>
         </div>
       )}
+
+      <style jsx global>{`
+        .print-only {
+          display: none;
+        }
+
+        @page {
+          size: A4;
+          margin: 14mm;
+        }
+
+        @media print {
+          body {
+            background: white !important;
+          }
+
+          body * {
+            visibility: hidden;
+          }
+
+          .print-proof-screen,
+          .print-proof-screen * {
+            visibility: visible;
+          }
+
+          .print-proof-screen {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            color: #1f2937;
+          }
+
+          .print-hide {
+            display: none !important;
+          }
+
+          .print-only {
+            display: block !important;
+          }
+
+          .print-card {
+            border: 1px solid #d1d5db !important;
+            background: white !important;
+            box-shadow: none !important;
+            break-inside: avoid;
+          }
+        }
+      `}</style>
     </div>
   );
 }
@@ -304,6 +415,15 @@ function Row({ label, value }: { label: string; value: string }) {
     <div className="flex justify-between px-5 py-3 text-sm">
       <span className="text-gray-500">{label}</span>
       <span className="text-gray-900 font-medium text-right max-w-xs">{value}</span>
+    </div>
+  );
+}
+
+function ProofItem({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-green-200/70 bg-white/80 px-4 py-3">
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-1">{label}</p>
+      <p className="text-sm font-medium text-[#2C3E50] leading-relaxed">{value}</p>
     </div>
   );
 }

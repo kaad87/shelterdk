@@ -44,9 +44,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title: `Guides om ${category} | ShelterDK`,
       description,
       url: canonicalPath,
-      images: guides[0]
-        ? [{ url: guides[0].coverImage, width: 1200, height: 630, alt: guides[0].title }]
-        : undefined,
     },
   };
 }

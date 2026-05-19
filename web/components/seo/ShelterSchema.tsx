@@ -27,6 +27,12 @@ export interface ShelterSchemaReview {
   time: string | null;
 }
 
+interface AggregateRating {
+  "@type": "AggregateRating";
+  ratingValue: number;
+  reviewCount: number;
+}
+
 interface ShelterSchemaProps {
   shelter: Shelter;
   /** Canonical URL for this shelter (fx /danmark/region/kommune/slug). */
@@ -66,6 +72,16 @@ export function ShelterSchema({
     shelter.description ||
     null;
   const name = shelter.title?.trim() || "Shelter";
+  const aggregateRating: AggregateRating | undefined =
+    shelter.google_rating != null &&
+    shelter.google_user_ratings_total != null &&
+    shelter.google_user_ratings_total > 0
+      ? {
+          "@type": "AggregateRating",
+          ratingValue: Number(shelter.google_rating.toFixed(1)),
+          reviewCount: shelter.google_user_ratings_total,
+        }
+      : undefined;
 
   const amenityFeatures: LocationFeatureSpecification[] = [];
 
@@ -184,6 +200,7 @@ export function ShelterSchema({
     ...(priceRange !== undefined && { priceRange }),
     ...(amenityFeatures.length > 0 && { amenityFeature: amenityFeatures }),
     ...(images.length > 0 && { image: images }),
+    ...(aggregateRating && { aggregateRating }),
     ...(containedInPlace.length > 0 && { containedInPlace }),
     ...(hasMap && { hasMap }),
     ...(additionalProperties.length > 0 && { additionalProperty: additionalProperties }),

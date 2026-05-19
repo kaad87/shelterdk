@@ -56,9 +56,6 @@ export async function generateMetadata({
       url: canonicalPath,
       publishedTime: post.date,
       modifiedTime: getBlogUpdatedAt(post),
-      images: [
-        { url: post.coverImage, width: 1200, height: 630, alt: post.title },
-      ],
     },
   };
 }

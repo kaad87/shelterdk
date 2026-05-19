@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getBlogPosts, getBlogCategories, getFeaturedPost } from "@/data/blog";
+import { getBlogPosts, getBlogCategories } from "@/data/blog";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { BlogContent } from "@/components/BlogContent";
 import { slugifySegment } from "@/lib/slug";
 
-const featured = getFeaturedPost();
 const PAGE_DESCRIPTION =
   "Læs tips, guider og inspiration til shelterture i Danmark. Vi skriver om pakkelister, de bedste shelterpladser, årstidens muligheder og naturovernatning.";
 
@@ -17,14 +16,6 @@ export const metadata: Metadata = {
     title: "Blog – Tips og inspiration til naturovernatning | ShelterDK",
     description: PAGE_DESCRIPTION,
     url: "/blog",
-    images: [
-      {
-        url: featured.coverImage,
-        width: 1200,
-        height: 630,
-        alt: "ShelterDK Blog",
-      },
-    ],
   },
 };
 

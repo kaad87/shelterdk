@@ -16,7 +16,7 @@ import { ShelterFaq } from "@/components/ShelterFaq";
 import { ShelterFacts } from "@/components/ShelterFacts";
 import { ShareButtons } from "@/components/ShareButtons";
 import { WeatherWidget } from "@/components/WeatherWidget";
-import { ShelterAvailabilityPanel } from "@/components/ShelterAvailabilityPanel";
+import { ResponsiveShelterAvailabilityPanel } from "@/components/ResponsiveShelterAvailabilityPanel";
 import { CommunityContributionPanel } from "@/components/CommunityContributionPanel";
 import { CommunityApprovedSection } from "@/components/CommunityApprovedSection";
 import { ShelterExperiencesSection } from "@/components/ShelterExperiencesSection";
@@ -123,6 +123,8 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
     coords,
     weatherForecast = null,
   } = props;
+  const mobileAvailabilityTargetId = `availability-slot-mobile-${slug}`;
+  const desktopAvailabilityTargetId = `availability-slot-desktop-${slug}`;
 
   const hasMultipleBookingUnits = bookingUnits.length > 1;
   const showAvailabilityPanel =
@@ -575,11 +577,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
             <BookingCard className="mb-10 lg:hidden" />
 
             {showAvailabilityPanel && (
-              <ShelterAvailabilityPanel
-                slug={slug}
-                title={shelter.title}
-                className="mb-10 lg:hidden"
-              />
+              <div id={mobileAvailabilityTargetId} />
             )}
 
             {showReviews && reviews.length > 0 && (
@@ -666,11 +664,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
             <BookingCard className="hidden lg:block" />
 
             {showAvailabilityPanel && (
-              <ShelterAvailabilityPanel
-                slug={slug}
-                title={shelter.title}
-                className="hidden lg:block"
-              />
+              <div id={desktopAvailabilityTargetId} />
             )}
 
             {(owner || contact || season) && (
@@ -726,6 +720,17 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
       </div>
 
       {/* Sticky mobile booking bar */}
+      {showAvailabilityPanel && (
+        <ResponsiveShelterAvailabilityPanel
+          slug={slug}
+          title={shelter.title}
+          mobileTargetId={mobileAvailabilityTargetId}
+          desktopTargetId={desktopAvailabilityTargetId}
+          mobileClassName="mb-10"
+          desktopClassName=""
+        />
+      )}
+
       {bookingUrl && !hasMultipleBookingUnits && (
         <div className="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-primary/10 p-3 lg:hidden" role="complementary" aria-label="Booking">
           <TrackedExternalLink

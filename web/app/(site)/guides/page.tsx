@@ -17,14 +17,6 @@ export const metadata: Metadata = {
     title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
     url: "/guides",
-    images: [
-      {
-        url: "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1200&q=80&auto=format&fit=crop",
-        width: 1200,
-        height: 630,
-        alt: "Guides til shelters og naturovernatning",
-      },
-    ],
   },
 };
 

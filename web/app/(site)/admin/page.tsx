@@ -11,45 +11,100 @@ import {
   MessageSquare,
   CornerDownRight,
   ArrowRight,
+  Instagram,
+  Send,
 } from "lucide-react";
-import { AdminPhotoReview } from "@/components/AdminPhotoReview";
+import { AdminPhotoReview, type AdminSummaryCounts } from "@/components/AdminPhotoReview";
 
 const STORAGE_KEY = "shelterdk-admin-secret";
+type AdminBadgeKey = keyof AdminSummaryCounts;
+type AdminNavItem = {
+  href: string;
+  icon: typeof Tent;
+  title: string;
+  desc: string;
+  badgeKey?: AdminBadgeKey;
+};
+type AdminNavGroup = {
+  label: string;
+  items: AdminNavItem[];
+};
 
-const NAV_GROUPS = [
+const NAV_GROUPS: AdminNavGroup[] = [
   {
-    label: "Booking & økonomi",
+    label: "Kræver handling",
+    items: [
+      {
+        href: "/admin/kontakt",
+        icon: MessageSquare,
+        title: "Kontaktbeskeder",
+        desc: "Henvendelser fra brugere",
+        badgeKey: "contact",
+      },
+      {
+        href: "/admin/shelter-ansogninger",
+        icon: Tent,
+        title: "Shelter-ansøgninger",
+        desc: "Nye shelters til godkendelse",
+        badgeKey: "submissions",
+      },
+      {
+        href: "/admin/booking-monitor",
+        icon: Activity,
+        title: "Booking monitor",
+        desc: "Aktive og fejlede bookings",
+        badgeKey: "bookingMonitor",
+      },
+    ],
+  },
+  {
+    label: "Booking & drift",
     items: [
       { href: "/admin/shelters", icon: Tent, title: "Bookable shelters", desc: "Administrér shelters med booking" },
       { href: "/admin/bookinger", icon: BookOpen, title: "Bookinger", desc: "Oversigt over alle bookings" },
       { href: "/admin/payments", icon: CreditCard, title: "Betalinger", desc: "Betalingsstatus og Stripe" },
-      { href: "/admin/booking-monitor", icon: Activity, title: "Booking monitor", desc: "Aktive og fejlede bookings" },
+      { href: "/admin/email-log", icon: Mail, title: "Email-log", desc: "Sendte e-mails og leveringsstatus" },
+      { href: "/admin/redirects", icon: CornerDownRight, title: "Redirects", desc: "URL-omdirigeringer" },
     ],
   },
   {
-    label: "Drift & support",
+    label: "Kanaler & vækst",
     items: [
-      { href: "/admin/email-log", icon: Mail, title: "Email-log", desc: "Sendte e-mails og leveringsstatus" },
-      { href: "/admin/kontakt", icon: MessageSquare, title: "Kontaktbeskeder", desc: "Henvendelser fra brugere" },
-      { href: "/admin/shelter-ansogninger", icon: Tent, title: "Shelter-ansøgninger", desc: "Nye shelters til godkendelse" },
-      { href: "/admin/redirects", icon: CornerDownRight, title: "Redirects", desc: "URL-omdirigeringer" },
+      {
+        href: "/admin/instagram",
+        icon: Instagram,
+        title: "Instagram",
+        desc: "Kurater opslag til ShelterDK",
+        badgeKey: "instagram",
+      },
+      {
+        href: "/admin/nyhedsbrev",
+        icon: Send,
+        title: "Nyhedsbrev",
+        desc: "Nye tilmeldinger og eksport",
+        badgeKey: "newsletter",
+      },
     ],
   },
 ] as const;
 
 export default function AdminIndexPage() {
   const [secret, setSecret] = useState<string | null>(null);
+  const [summary, setSummary] = useState<AdminSummaryCounts>({
+    photos: 0,
+    community: 0,
+    instagram: 0,
+    newsletter: 0,
+    contact: 0,
+    oplevelser: 0,
+    submissions: 0,
+    bookinger: 0,
+    bookingMonitor: 0,
+  });
 
   useEffect(() => {
     const stored = sessionStorage.getItem(STORAGE_KEY);
     setSecret(stored ?? null);
-
-    const interval = setInterval(() => {
-      const current = sessionStorage.getItem(STORAGE_KEY);
-      setSecret((prev) => (prev !== current ? current : prev));
-    }, 500);
-
-    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -63,19 +118,26 @@ export default function AdminIndexPage() {
       </nav>
 
       {secret && (
-        <div className="mb-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="mb-10 space-y-6">
           {NAV_GROUPS.map((group) => (
             <div key={group.label}>
               <p className="text-xs font-semibold text-primary/35 uppercase tracking-wider mb-2.5">
                 {group.label}
               </p>
-              <div className="space-y-1.5">
-                {group.items.map(({ href, icon: Icon, title, desc }) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                {group.items.map(({ href, icon: Icon, title, desc, badgeKey }) => {
+                  const badgeCount = badgeKey ? summary[badgeKey] : 0;
+                  return (
                   <Link
                     key={href}
                     href={href}
-                    className="flex items-center gap-3 rounded-xl border border-primary/10 bg-white px-4 py-3 hover:border-accent/30 hover:bg-accent/[0.02] transition-all group shadow-sm shadow-primary/[0.03]"
+                    className="relative flex items-center gap-3 rounded-xl border border-primary/10 bg-white px-4 py-3 hover:border-accent/30 hover:bg-accent/[0.02] transition-all group shadow-sm shadow-primary/[0.03]"
                   >
+                    {badgeCount > 0 && (
+                      <span className="absolute right-10 top-3 inline-flex min-w-[22px] items-center justify-center rounded-full bg-accent px-1.5 py-0.5 text-xs font-semibold leading-none text-white shadow-sm">
+                        {badgeCount}
+                      </span>
+                    )}
                     <div className="w-8 h-8 rounded-lg bg-primary/[0.04] flex items-center justify-center shrink-0 group-hover:bg-accent/[0.08] transition-colors">
                       <Icon
                         size={15}
@@ -91,14 +153,19 @@ export default function AdminIndexPage() {
                       className="text-primary/15 group-hover:text-accent/40 group-hover:translate-x-0.5 transition-all shrink-0"
                     />
                   </Link>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ))}
         </div>
       )}
 
-      <AdminPhotoReview />
+      <AdminPhotoReview
+        showManagementTabs={false}
+        onSecretChange={setSecret}
+        onSummaryChange={setSummary}
+      />
     </div>
   );
 }

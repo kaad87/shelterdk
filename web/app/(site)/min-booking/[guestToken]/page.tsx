@@ -62,6 +62,8 @@ export default async function GuestBookingPage({ params }: Props) {
           guestToken={guestToken}
           paymentHref={paymentHref}
           paymentLabel={paymentHref ? paymentLabel : null}
+          amountPaidDkk={paidPayment?.amount_total_dkk ?? null}
+          paidAt={paidPayment?.paid_at ?? null}
         />
       </div>
     </div>

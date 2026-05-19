@@ -7,6 +7,11 @@ function bookingLink(guestToken: string): string {
   return `${SITE_URL}/min-booking/${guestToken}`;
 }
 
+function bookingReference(bookingId?: string | null): string | null {
+  if (!bookingId) return null;
+  return `BK-${bookingId.slice(0, 8).toUpperCase()}`;
+}
+
 // ─── Placeholder replacement ─────────────────────────────────────────────────
 
 export interface AutoMessageContext {
@@ -274,6 +279,7 @@ export async function sendBookingConfirmedToGuest(opts: {
   shelterId?: string;
 }) {
   const subject = `Din booking er bekræftet!`;
+  const reference = bookingReference(opts.bookingId);
   const html = renderEmail({
     title: "Din booking er bekræftet!",
     preheader: `Din booking af ${opts.shelterTitle} er bekræftet. God tur!`,
@@ -283,9 +289,10 @@ export async function sendBookingConfirmedToGuest(opts: {
         <p style="font-size:10px;color:#999;margin:0 0 2px;text-transform:uppercase;letter-spacing:0.5px;">Bekræftet ophold</p>
         <p style="font-size:13px;font-weight:600;color:#2C3E50;margin:0;">${esc(formatDate(opts.checkIn))} → ${esc(formatDate(opts.checkOut))}</p>
       </div>
-      <p style="font-size:13px;color:#666;margin:0 0 16px;">God tur!</p>
+      ${reference ? `<p style="font-size:12px;color:#666;margin:0 0 8px;"><strong>Bookingreference:</strong> ${esc(reference)}</p>` : ""}
+      <p style="font-size:13px;color:#666;margin:0 0 16px;">God tur! Denne e-mail og din bookingside kan bruges som bookingbevis ved ankomst.</p>
       <a href="${bookingLink(opts.guestToken)}" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">Se din booking på ShelterDK</a>
-      <p style="font-size:12px;color:#999;margin:12px 0 0;">Linket åbner shelterdk.dk og viser din booking direkte.</p>
+      <p style="font-size:12px;color:#999;margin:12px 0 0;">Linket åbner shelterdk.dk og viser din booking direkte. Vis siden eller denne mail ved ankomst.</p>
     `,
   });
   const text = renderEmailText({
@@ -293,6 +300,8 @@ export async function sendBookingConfirmedToGuest(opts: {
     lines: [
       `Hej ${opts.guestName}! Din booking af ${opts.shelterTitle} er nu bekræftet.`,
       `Datoer: ${formatDate(opts.checkIn)} → ${formatDate(opts.checkOut)}`,
+      ...(reference ? [`Bookingreference: ${reference}`] : []),
+      "Denne e-mail og din bookingside kan bruges som bookingbevis ved ankomst.",
       "God tur!",
     ],
     url: bookingLink(opts.guestToken),
@@ -528,6 +537,7 @@ export async function sendPaymentConfirmed(opts: {
   shelterId?: string;
   paymentId?: string;
 }) {
+  const reference = bookingReference(opts.bookingId);
   const [guestResult, ownerResult] = await Promise.allSettled([
     sendLoggedEmail({
       to: opts.guestEmail,
@@ -542,9 +552,10 @@ export async function sendPaymentConfirmed(opts: {
             <p style="font-size:13px;font-weight:600;color:#2C3E50;margin:0 0 2px;">${esc(opts.shelterTitle)}</p>
             <p style="font-size:12px;color:#666;margin:0;">${esc(formatDate(opts.checkIn))} → ${esc(formatDate(opts.checkOut))}</p>
           </div>
-          <p style="font-size:13px;color:#666;margin:0 0 16px;">Din booking er nu bekræftet. <strong>God tur!</strong></p>
+          ${reference ? `<p style="font-size:12px;color:#666;margin:0 0 8px;"><strong>Bookingreference:</strong> ${esc(reference)}</p>` : ""}
+          <p style="font-size:13px;color:#666;margin:0 0 16px;">Din booking er nu bekræftet. <strong>God tur!</strong> Denne e-mail og din bookingside fungerer som bookingbevis ved ankomst.</p>
           <a href="${bookingLink(opts.guestToken)}" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">Se din booking på ShelterDK</a>
-          <p style="font-size:12px;color:#999;margin:12px 0 0;">Linket åbner shelterdk.dk og viser din booking direkte.</p>
+          <p style="font-size:12px;color:#999;margin:12px 0 0;">Linket åbner shelterdk.dk og viser din booking direkte. Vis siden eller denne mail ved ankomst.</p>
         `,
       }),
       text: renderEmailText({
@@ -552,6 +563,8 @@ export async function sendPaymentConfirmed(opts: {
         lines: [
           `Hej ${opts.guestName}! Vi har modtaget din betaling på ${opts.amountTotalDkk} kr.`,
           `${opts.shelterTitle} · ${formatDate(opts.checkIn)} → ${formatDate(opts.checkOut)}`,
+          ...(reference ? [`Bookingreference: ${reference}`] : []),
+          "Denne e-mail og din bookingside fungerer som bookingbevis ved ankomst.",
           "Din booking er nu bekræftet. God tur!",
         ],
         url: bookingLink(opts.guestToken),
