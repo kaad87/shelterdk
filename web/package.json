@@ -24,6 +24,7 @@
     "match:booking-urls": "node ../scripts/match-booking-urls-from-naturstyrelsen.js",
     "match:booking-urls:apply": "node ../scripts/match-booking-urls-from-naturstyrelsen.js --apply",
     "match:booking-urls:apply:empty": "node ../scripts/match-booking-urls-from-naturstyrelsen.js --apply --only-empty",
+    "sync:nst-availability": "tsx scripts/sync-naturstyrelsen-availability.ts",
     "generate:favicon": "node scripts/generate-favicon.js"
   },
   "dependencies": {

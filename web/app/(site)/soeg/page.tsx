@@ -92,7 +92,7 @@ export async function generateMetadata(props: {
 type ViewMode = "list" | "map" | "split";
 
 interface SoegPageProps {
-  searchParams: Promise<{ region?: string; q?: string; view?: string; area?: string; billede?: string; anmeldelser?: string; bookbar?: string; vand?: string; toilet?: string; hund?: string; baalplads?: string; gratis?: string; handicap?: string; bord_baenk?: string; strand?: string; bruser?: string; min_pladser?: string }>;
+  searchParams: Promise<{ region?: string; q?: string; view?: string; area?: string; billede?: string; anmeldelser?: string; bookbar?: string; vand?: string; toilet?: string; hund?: string; baalplads?: string; gratis?: string; handicap?: string; bord_baenk?: string; strand?: string; bruser?: string; min_pladser?: string; date?: string; date_to?: string; confirmed_available?: string }>;
 }
 
 function parseFilters(params: SoegPageProps["searchParams"] extends Promise<infer P> ? P : never) {
@@ -111,6 +111,11 @@ function parseFilters(params: SoegPageProps["searchParams"] extends Promise<infe
   if (params.handicap === "1") filters.handicap = true;
   const minPladser = parseInt(params.min_pladser ?? "0", 10);
   if (minPladser > 0) filters.min_pladser = minPladser;
+  const date = params.date?.trim() ?? "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(date)) filters.date = date;
+  const dateTo = params.date_to?.trim() ?? "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateTo)) filters.date_to = dateTo;
+  if (params.confirmed_available === "1") filters.confirmed_available = true;
   return filters;
 }
 
@@ -152,7 +157,7 @@ export default async function SoegPage({ searchParams }: SoegPageProps) {
     area?.trim() ? getAreaBySlug(area.trim()) : Promise.resolve(null),
     getSheltersPage(region, resolvedQ, 1, initialPageSize, Object.keys(filters).length ? filters : undefined, postalBbox, area),
   ]);
-  const { shelters: rawShelters, hasMore: initialHasMore } = sheltersResult;
+  const { shelters: rawShelters, hasMore: initialHasMore, availabilityMap: initialAvailabilityMap } = sheltersResult;
   const initialShelters = await enrichSheltersWithGooglePhotoRef(rawShelters);
 
   let areaFaqItems: FaqItem[] = [];
@@ -239,6 +244,7 @@ export default async function SoegPage({ searchParams }: SoegPageProps) {
             initialQuery={q}
             initialArea={area}
             initialFilters={filters}
+            initialAvailabilityMap={initialAvailabilityMap}
             view={view}
           />
         </Suspense>

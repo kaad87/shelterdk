@@ -37,17 +37,20 @@ const FAQ_ITEMS: FaqItem[] = [
   },
 ];
 
-const PAGE_TITLE = "Shelter til cykeltur – overnat i naturen på din cykelrute | ShelterDK";
+const PAGE_TITLE = "Shelter til cykeltur – find shelters langs cykelruter | ShelterDK";
+const PAGE_OG_IMAGE =
+  "https://images.unsplash.com/photo-1517949908118-721c4a2f3d80?w=1200&q=80&auto=format&fit=crop";
 
 export const metadata: Metadata = {
   title: { absolute: PAGE_TITLE },
   description:
-    "Find shelters langs cykelruter i Danmark. Se de bedste ruter med overnatningsmuligheder for cykelturister i Jylland, på Fyn og Sjælland.",
+    "Find shelters langs cykelruter i Danmark. Se ruter med overnatning, afstande og shelters til cykelture i Jylland, på Fyn og Sjælland.",
   alternates: { canonical: "https://shelterdk.dk/shelter-til-cykeltur" },
   openGraph: {
     title: PAGE_TITLE,
     description: "Shelters langs cykelruter i Danmark – planlæg din cykeltur med overnatning.",
     url: "/shelter-til-cykeltur",
+    images: [{ url: PAGE_OG_IMAGE, width: 1200, height: 630, alt: "Shelter til cykeltur i Danmark" }],
   },
 };
 

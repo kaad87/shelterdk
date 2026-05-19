@@ -2,9 +2,40 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import {
+  Tent,
+  BookOpen,
+  CreditCard,
+  Activity,
+  Mail,
+  MessageSquare,
+  CornerDownRight,
+  ArrowRight,
+} from "lucide-react";
 import { AdminPhotoReview } from "@/components/AdminPhotoReview";
 
 const STORAGE_KEY = "shelterdk-admin-secret";
+
+const NAV_GROUPS = [
+  {
+    label: "Booking & økonomi",
+    items: [
+      { href: "/admin/shelters", icon: Tent, title: "Bookable shelters", desc: "Administrér shelters med booking" },
+      { href: "/admin/bookinger", icon: BookOpen, title: "Bookinger", desc: "Oversigt over alle bookings" },
+      { href: "/admin/payments", icon: CreditCard, title: "Betalinger", desc: "Betalingsstatus og Stripe" },
+      { href: "/admin/booking-monitor", icon: Activity, title: "Booking monitor", desc: "Aktive og fejlede bookings" },
+    ],
+  },
+  {
+    label: "Drift & support",
+    items: [
+      { href: "/admin/email-log", icon: Mail, title: "Email-log", desc: "Sendte e-mails og leveringsstatus" },
+      { href: "/admin/kontakt", icon: MessageSquare, title: "Kontaktbeskeder", desc: "Henvendelser fra brugere" },
+      { href: "/admin/shelter-ansogninger", icon: Tent, title: "Shelter-ansøgninger", desc: "Nye shelters til godkendelse" },
+      { href: "/admin/redirects", icon: CornerDownRight, title: "Redirects", desc: "URL-omdirigeringer" },
+    ],
+  },
+] as const;
 
 export default function AdminIndexPage() {
   const [secret, setSecret] = useState<string | null>(null);
@@ -13,7 +44,6 @@ export default function AdminIndexPage() {
     const stored = sessionStorage.getItem(STORAGE_KEY);
     setSecret(stored ?? null);
 
-    // Re-check whenever sessionStorage is updated (login/logout in AdminPhotoReview)
     const interval = setInterval(() => {
       const current = sessionStorage.getItem(STORAGE_KEY);
       setSecret((prev) => (prev !== current ? current : prev));
@@ -33,55 +63,38 @@ export default function AdminIndexPage() {
       </nav>
 
       {secret && (
-        <div className="mb-8 flex flex-wrap gap-3">
-          <Link
-            href="/admin/shelters"
-            className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-white px-4 py-2.5 text-sm font-medium text-primary hover:border-accent hover:text-accent transition-colors"
-          >
-            🏕️ Bookable shelters
-          </Link>
-          <Link
-            href="/admin/bookinger"
-            className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-white px-4 py-2.5 text-sm font-medium text-primary hover:border-accent hover:text-accent transition-colors"
-          >
-            📋 Bookinger
-          </Link>
-          <Link
-            href="/admin/payments"
-            className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-white px-4 py-2.5 text-sm font-medium text-primary hover:border-accent hover:text-accent transition-colors"
-          >
-            💳 Betalinger
-          </Link>
-          <Link
-            href="/admin/booking-monitor"
-            className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-white px-4 py-2.5 text-sm font-medium text-primary hover:border-accent hover:text-accent transition-colors"
-          >
-            🚨 Booking monitor
-          </Link>
-          <Link
-            href="/admin/email-log"
-            className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-white px-4 py-2.5 text-sm font-medium text-primary hover:border-accent hover:text-accent transition-colors"
-          >
-            ✉️ Email-log
-          </Link>
-          <Link
-            href="/admin/redirects"
-            className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-white px-4 py-2.5 text-sm font-medium text-primary hover:border-accent hover:text-accent transition-colors"
-          >
-            ↪️ Redirects
-          </Link>
-          <Link
-            href="/admin/kontakt"
-            className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-white px-4 py-2.5 text-sm font-medium text-primary hover:border-accent hover:text-accent transition-colors"
-          >
-            💬 Kontaktbeskeder
-          </Link>
-          <Link
-            href="/admin/shelter-ansogninger"
-            className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-white px-4 py-2.5 text-sm font-medium text-primary hover:border-accent hover:text-accent transition-colors"
-          >
-            🏕️ Shelter-ansøgninger
-          </Link>
+        <div className="mb-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+          {NAV_GROUPS.map((group) => (
+            <div key={group.label}>
+              <p className="text-xs font-semibold text-primary/35 uppercase tracking-wider mb-2.5">
+                {group.label}
+              </p>
+              <div className="space-y-1.5">
+                {group.items.map(({ href, icon: Icon, title, desc }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className="flex items-center gap-3 rounded-xl border border-primary/10 bg-white px-4 py-3 hover:border-accent/30 hover:bg-accent/[0.02] transition-all group shadow-sm shadow-primary/[0.03]"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-primary/[0.04] flex items-center justify-center shrink-0 group-hover:bg-accent/[0.08] transition-colors">
+                      <Icon
+                        size={15}
+                        className="text-primary/45 group-hover:text-accent transition-colors"
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-primary leading-tight">{title}</p>
+                      <p className="text-xs text-primary/40 mt-0.5">{desc}</p>
+                    </div>
+                    <ArrowRight
+                      size={13}
+                      className="text-primary/15 group-hover:text-accent/40 group-hover:translate-x-0.5 transition-all shrink-0"
+                    />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

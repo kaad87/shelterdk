@@ -38,6 +38,18 @@ export async function GET(request: NextRequest) {
   if (searchParams.get("bruser") === "1") filters.bruser = true;
   const minPladser = parseInt(searchParams.get("min_pladser") ?? "0", 10);
   if (minPladser > 0) filters.min_pladser = minPladser;
+  const dateParam = searchParams.get("date")?.trim() ?? null;
+  if (dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)) filters.date = dateParam;
+  const dateToParam = searchParams.get("date_to")?.trim() ?? null;
+  if (dateToParam && /^\d{4}-\d{2}-\d{2}$/.test(dateToParam)) filters.date_to = dateToParam;
+  if (searchParams.get("confirmed_available") === "1") filters.confirmed_available = true;
+
+  if (filters.confirmed_available && !filters.date) {
+    return Response.json(
+      { error: "confirmed_available requires a valid date parameter" },
+      { status: 400 }
+    );
+  }
 
   const minLat = parseNum(searchParams.get("minLat"));
   const maxLat = parseNum(searchParams.get("maxLat"));
@@ -77,7 +89,7 @@ export async function GET(request: NextRequest) {
   const limitParam = parseInt(searchParams.get("limit") ?? "0", 10);
   const pageSize = (limitParam > 0 && limitParam <= 500) ? limitParam : SOEG_PAGE_SIZE;
 
-  let { shelters, hasMore } = await getSheltersPage(
+  let { shelters, hasMore, availabilityMap } = await getSheltersPage(
     regionForQuery,
     effectiveQ,
     page,
@@ -91,7 +103,7 @@ export async function GET(request: NextRequest) {
   if (region && !effectiveBbox) shelters = filterSheltersByRegion(shelters, region);
   shelters = await enrichSheltersWithGooglePhotoRef(shelters);
 
-  return Response.json({ shelters, hasMore }, {
+  return Response.json({ shelters, hasMore, availabilityMap: availabilityMap ?? undefined }, {
     headers: {
       "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
     },

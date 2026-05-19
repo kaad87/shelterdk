@@ -54,6 +54,25 @@ def haversine_m(lon1, lat1, lon2, lat2):
     return R * c
 
 
+def fetch_all_rows(supabase, table, select_sql):
+    rows = []
+    page_size = 1000
+    start = 0
+    while True:
+        result = (
+            supabase.table(table)
+            .select(select_sql)
+            .range(start, start + page_size - 1)
+            .execute()
+        )
+        batch = result.data or []
+        rows.extend(batch)
+        if len(batch) < page_size:
+            break
+        start += page_size
+    return rows
+
+
 def main():
     url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
     key = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")
@@ -64,9 +83,9 @@ def main():
     from supabase import create_client
     supabase = create_client(url, key)
 
-    r_shelters = supabase.table("shelters").select("id,slug,title,location,booking_url").execute()
+    r_shelters = fetch_all_rows(supabase, "shelters", "id,slug,title,location,booking_url")
     shelters = []
-    for row in r_shelters.data or []:
+    for row in r_shelters:
         lon, lat = parse_point(row.get("location"))
         if lon is not None and lat is not None:
             shelters.append({
@@ -78,9 +97,13 @@ def main():
                 "booking_url": (row.get("booking_url") or "").strip() or None,
             })
 
-    r_nst = supabase.table("naturstyrelsen_raw").select("id,naturstyrelsen_id,name,location,booking_url,raw").execute()
+    r_nst = fetch_all_rows(
+        supabase,
+        "naturstyrelsen_raw",
+        "id,naturstyrelsen_id,name,location,booking_url,raw",
+    )
     nst_list = []
-    for row in r_nst.data or []:
+    for row in r_nst:
         lon, lat = parse_point(row.get("location"))
         if lon is not None and lat is not None:
             nst_list.append({
@@ -130,7 +153,14 @@ def main():
                 best_shelter = s
         if best_id and nst.get("booking_url") and best_shelter:
             try:
-                supabase.table("shelters").update({"booking_url": nst["booking_url"]}).eq("id", best_id).execute()
+                payload = {
+                    "booking_url": nst["booking_url"],
+                    "booking_provider": "naturstyrelsen",
+                    "booking_link_mode": "external_direct",
+                    "booking_lookup_key": (nst.get("booking_url") or "").rstrip("/").split("/")[-1] or None,
+                    "booking_confidence": "verified_match",
+                }
+                supabase.table("shelters").update(payload).eq("id", best_id).execute()
                 updated += 1
             except Exception as e:
                 print("Fejl ved opdatering", best_id, ":", e)

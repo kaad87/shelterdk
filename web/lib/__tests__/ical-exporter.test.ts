@@ -18,6 +18,10 @@ function makeBooking(overrides: Partial<ShelterBooking> = {}): ShelterBooking {
     guest_token: "00000000-0000-0000-0000-000000000001",
     cancelled_at: null,
     cancelled_by: null,
+    source: "guest" as const,
+    quoted_shelter_dkk: null,
+    quoted_platform_dkk: null,
+    quoted_total_dkk: null,
     ...overrides,
   };
 }

@@ -19,6 +19,10 @@ interface ShelterCardProps {
   href?: string;
   /** Sæt for above-the-fold kort (fx forsiden) for hurtigere LCP. */
   priority?: boolean;
+  /** Ledighedsstatus for aktiv datosøgning. */
+  availabilityState?: "available" | "booked" | "partial" | null;
+  /** Aktiv søgedato (ISO YYYY-MM-DD) – bruges i badge-tekst. */
+  activeDate?: string | null;
 }
 
 const IMAGE_LOAD_TIMEOUT_MS = 2500;
@@ -82,7 +86,12 @@ function FrontPageCardImage({
   );
 }
 
-export function ShelterCard({ shelter, onImageError, href, priority }: ShelterCardProps) {
+function formatDanishDate(iso: string): string {
+  const d = new Date(iso + "T12:00:00");
+  return new Intl.DateTimeFormat("da-DK", { day: "numeric", month: "long" }).format(d);
+}
+
+export function ShelterCard({ shelter, onImageError, href, priority, availabilityState, activeDate }: ShelterCardProps) {
   const router = useRouter();
   const embeddedPlaces = shelter.google_places;
   const embeddedRefs = Array.isArray(embeddedPlaces)
@@ -187,12 +196,23 @@ export function ShelterCard({ shelter, onImageError, href, priority }: ShelterCa
           );
         })()}
       </div>
-      {/* Bookbar badge */}
-      <div className="mt-1.5 min-h-[1.5rem]">
+      {/* Bookbar + availability badges */}
+      <div className="mt-1.5 flex flex-wrap gap-1 min-h-[1.5rem]">
         {isBookable(shelter) && (
           <span className="inline-flex items-center gap-1 bg-green-50 text-green-700 text-xs font-medium px-2 py-0.5 rounded-full border border-green-200">
             <CheckCircle size={12} />
             Bookbar
+          </span>
+        )}
+        {availabilityState === "available" && activeDate && (
+          <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 text-xs font-medium px-2 py-0.5 rounded-full border border-emerald-200">
+            <CheckCircle size={12} />
+            Ledig {formatDanishDate(activeDate)}
+          </span>
+        )}
+        {availabilityState === "partial" && activeDate && (
+          <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 text-xs font-medium px-2 py-0.5 rounded-full border border-amber-200">
+            Delvist ledig {formatDanishDate(activeDate)}
           </span>
         )}
       </div>

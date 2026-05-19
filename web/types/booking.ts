@@ -98,6 +98,27 @@ export interface AvailabilityResponse {
   dates: Record<string, "pending" | "confirmed" | "blocked">;
 }
 
+export type ShelterAvailabilityState =
+  | "available"
+  | "booked"
+  | "partial"
+  | "pending"
+  | "confirmed"
+  | "blocked"
+  | "unknown";
+
+export interface ShelterAvailabilityResponse {
+  provider: "shelterdk" | "naturstyrelsen" | "unknown";
+  mode: "internal_live" | "external_cached" | "external_unknown" | "none";
+  source_url: string | null;
+  lookup_key: string | null;
+  last_synced_at: string | null;
+  stale: boolean;
+  has_data: boolean;
+  unit_count: number;
+  days: Record<string, ShelterAvailabilityState>;
+}
+
 /** Request body for POST /api/book/[slug] */
 export interface CreateBookingBody {
   guest_name: string;

@@ -8,6 +8,8 @@ import {
   getLongDescription,
   getCity,
   getOwner,
+  getResolvedBookingModel,
+  isBookable,
 } from "../shelter-detail";
 import type { Shelter } from "@/types/shelter";
 
@@ -127,5 +129,41 @@ describe("getOwner", () => {
   it("returnerer ansvar_org fra geofa_raw", () => {
     const s = mk({ geofa_raw: { ansvar_org: "Naturstyrelsen" } });
     expect(getOwner(s)).toBe("Naturstyrelsen");
+  });
+});
+
+describe("booking model", () => {
+  it("prioriterer ShelterDK-bookingenheder som internal booking", () => {
+    const shelter = mk({
+      bookable_shelters: [{ id: "unit-1" }],
+      booking_url: null,
+    });
+    const model = getResolvedBookingModel(shelter);
+    expect(model.provider).toBe("shelterdk");
+    expect(model.linkMode).toBe("internal");
+    expect(isBookable(shelter)).toBe(true);
+  });
+
+  it("genkender direkte Naturstyrelsen-link som external_direct", () => {
+    const shelter = mk({
+      booking_url: "https://book.naturstyrelsen.dk/sted/jomfruhale-shelterplads/",
+    });
+    const model = getResolvedBookingModel(shelter);
+    expect(model.provider).toBe("naturstyrelsen");
+    expect(model.linkMode).toBe("external_direct");
+    expect(model.lookupKey).toBe("jomfruhale-shelterplads");
+  });
+
+  it("falder tilbage til external_search for bookbare NST-shelters uden konkret URL", () => {
+    const shelter = mk({
+      geofa_raw: {
+        book: "Ja",
+        ansvar_org: "Naturstyrelsen",
+      },
+    });
+    const model = getResolvedBookingModel(shelter);
+    expect(model.provider).toBe("naturstyrelsen");
+    expect(model.linkMode).toBe("external_search");
+    expect(model.fallbackHint).toBe("naturstyrelsen");
   });
 });

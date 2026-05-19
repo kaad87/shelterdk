@@ -56,6 +56,25 @@ def _find_udinaturen_url_in_obj(obj):
     return None
 
 
+def fetch_all_rows(supabase, table, select_sql):
+    rows = []
+    page_size = 1000
+    start = 0
+    while True:
+        result = (
+            supabase.table(table)
+            .select(select_sql)
+            .range(start, start + page_size - 1)
+            .execute()
+        )
+        batch = result.data or []
+        rows.extend(batch)
+        if len(batch) < page_size:
+            break
+        start += page_size
+    return rows
+
+
 def main():
     ap = argparse.ArgumentParser(description="Udfyld booking_url fra geofa_raw (udinaturen.dk)")
     ap.add_argument("--dry-run", action="store_true", help="Vis kun hvad der ville blive opdateret")
@@ -71,8 +90,7 @@ def main():
     supabase = create_client(url, key)
 
     # Shelters uden booking_url men med geofa_raw (så vi kan lede efter udinaturen-link)
-    r = supabase.table("shelters").select("id, title, slug, booking_url, geofa_raw").execute()
-    rows = r.data or []
+    rows = fetch_all_rows(supabase, "shelters", "id, title, slug, booking_url, geofa_raw")
     to_update = []
     for row in rows:
         if (row.get("booking_url") or "").strip():
@@ -97,7 +115,13 @@ def main():
         print("(dry-run – ingen opdateringer)")
     for u in to_update:
         if not args.dry_run:
-            supabase.table("shelters").update({"booking_url": u["booking_url"]}).eq("id", u["id"]).execute()
+            payload = {
+                "booking_url": u["booking_url"],
+                "booking_provider": "udinaturen",
+                "booking_link_mode": "external_direct",
+                "booking_confidence": "imported",
+            }
+            supabase.table("shelters").update(payload).eq("id", u["id"]).execute()
         print(f"  {u['title']}… → {u['booking_url'][:60]}…")
 
     print(f"Færdig. Opdateret {len(to_update)} shelter(s).")

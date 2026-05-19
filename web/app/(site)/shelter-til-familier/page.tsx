@@ -38,17 +38,20 @@ const FAQ_ITEMS: FaqItem[] = [
   },
 ];
 
-const PAGE_TITLE = "Shelter til familier – børnevenlige shelters med faciliteter | ShelterDK";
+const PAGE_TITLE = "Shelter til familier – find børnevenlige shelters | ShelterDK";
+const PAGE_OG_IMAGE =
+  "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=1200&q=80&auto=format&fit=crop";
 
 export const metadata: Metadata = {
   title: { absolute: PAGE_TITLE },
   description:
-    "Find familievenlige shelters i Danmark med plads, toilet og vand. Shelters der er perfekte til overnatning med børn.",
+    "Find familievenlige shelters i Danmark med plads, toilet og vand. Se børnevenlige shelterpladser med faciliteter og praktisk info.",
   alternates: { canonical: "https://shelterdk.dk/shelter-til-familier" },
   openGraph: {
     title: PAGE_TITLE,
     description: "Familievenlige shelters med toilet, vand og plads til hele familien.",
     url: "/shelter-til-familier",
+    images: [{ url: PAGE_OG_IMAGE, width: 1200, height: 630, alt: "Familievenlige shelters i Danmark" }],
   },
 };
 

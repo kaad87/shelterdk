@@ -28,8 +28,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const regionName = REGION_NAMES[regionSlug];
   if (!regionName) return {};
   const prep = prepositionForRegionName(regionName);
-  const title = `${FILTER.filterLabelLong} ${prep} ${regionName} | ShelterDK`;
-  const description = `Find ${FILTER.filterLabelLong.toLowerCase()} ${prep} ${regionName}. Se kort, liste og tilgængelighedsoplysninger.`;
+  const title = `Handicapvenlige shelters ${prep} ${regionName} – kort og info | ShelterDK`;
+  const description = `Find handicapvenlige shelters ${prep} ${regionName}. Se kort, liste og info om tilgængelighed.`;
   const canonical = `${FILTER.parentHref}/${regionSlug}`;
   return {
     title: { absolute: title },

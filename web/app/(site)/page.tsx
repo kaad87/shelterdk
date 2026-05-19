@@ -1,34 +1,23 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { Suspense } from "react";
 import { Route, Package, Users } from "lucide-react";
 import { WebSiteSchema } from "@/components/seo/WebSiteSchema";
 import { FrontPageShelterGrid } from "@/components/FrontPageShelterGrid";
 import { SearchBar } from "@/components/SearchBar";
 import { MobileHomePills } from "@/components/MobileHomePills";
+import { HomepageDatePicker } from "@/components/HomepageDatePicker";
 import { HomepageDealsWidget } from "@/components/HomepageDealsWidget";
 import { RecentExperiencesFeed } from "@/components/RecentExperiencesFeed";
+import { InstagramFeed } from "@/components/InstagramFeed";
+import NewsletterSignup from "@/components/NewsletterSignup";
+import { MapComponent } from "@/components/MapComponent";
+import { WeekendCTACard } from "@/components/WeekendCTACard";
 import { createPublicClient } from "@/utils/supabase/server-public";
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 import { getDistinctPlacesWithCounts } from "@/lib/danmark-silo";
 import { slugifySegment } from "@/lib/slug";
-
-const InstagramFeed = dynamic(
-  () => import("@/components/InstagramFeed").then((m) => ({ default: m.InstagramFeed })),
-  { ssr: false }
-);
-
-const NewsletterSignup = dynamic(
-  () => import("@/components/NewsletterSignup"),
-  { ssr: false }
-);
-
-const MapComponent = dynamic(
-  () => import("@/components/MapComponent").then((m) => ({ default: m.MapComponent })),
-  { ssr: false }
-);
 import type { Shelter } from "@/types/shelter";
 import { isShelterPlace } from "@/lib/shelter-detail";
 
@@ -188,6 +177,8 @@ export const metadata: Metadata = {
   },
 };
 
+const HOME_H1 = "Find dit næste shelter i Danmark";
+
 const regions = [
   {
     name: "Jylland",
@@ -300,14 +291,13 @@ export default async function HomePage() {
   return (
     <>
       <WebSiteSchema />
+      <h1 className="sr-only">{HOME_H1}</h1>
       {/* ===== MOBILE HERO (< md) ===== */}
       <header
         className="md:hidden bg-gradient-to-br from-[#2c3e2d] to-[#1a2b1a] text-white px-4 pt-14 pb-6"
         aria-label="Introduktion"
       >
-        <h1 className="font-serif text-2xl font-bold mb-3">
-          Find dit næste shelter
-        </h1>
+        <p className="font-serif text-2xl font-bold mb-3">{HOME_H1}</p>
         <Link
           href="/soeg"
           className="flex items-center gap-2 bg-white rounded-xl px-4 py-3 text-primary/50 text-sm"
@@ -325,9 +315,9 @@ export default async function HomePage() {
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1920&q=80&auto=format&fit=crop')] bg-cover bg-center opacity-25" aria-hidden />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 md:py-24 w-full">
           <div className="max-w-3xl mb-10">
-            <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-              Find dit næste shelter i Danmark
-            </h1>
+            <p className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
+              {HOME_H1}
+            </p>
             <p className="text-base sm:text-lg md:text-xl text-white/90 mb-4">
               Udforsk Danmarks shelters – ét samlet kort over naturovernatning fra
               Geodatastyrelsen, Naturstyrelsen og kommunale kilder.
@@ -396,6 +386,7 @@ export default async function HomePage() {
             >
               Guides
             </Link>
+            <HomepageDatePicker />
           </nav>
         </div>
       </section>
@@ -454,6 +445,8 @@ export default async function HomePage() {
         </section>
       )}
 
+      <WeekendCTACard />
+
       {/* ===== MOBILE REGION GRID (< md) ===== */}
       <section className="md:hidden py-6 bg-background" aria-labelledby="heading-region-mobile">
         <div className="mx-auto px-4">
@@ -490,7 +483,9 @@ export default async function HomePage() {
             Kort over Danmarks shelters
           </h2>
           <figure className="rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[320px] sm:min-h-[400px] md:min-h-[560px] h-[60vh] sm:h-[70vh] md:h-[75vh] max-h-[960px]" aria-label="Interaktivt kort med shelters">
-            <MapComponent shelters={mapShelters} className="w-full h-full" />
+            <Suspense fallback={<div className="h-full w-full animate-pulse bg-primary/5" />}>
+              <MapComponent shelters={mapShelters} className="w-full h-full" />
+            </Suspense>
           </figure>
           <div className="mt-5 text-center">
             <Link
@@ -563,7 +558,9 @@ export default async function HomePage() {
 
       <section className="py-8 bg-background">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <NewsletterSignup variant="inline" source="homepage" />
+          <Suspense fallback={<div className="h-40 animate-pulse rounded-2xl border border-primary/10 bg-primary/5" />}>
+            <NewsletterSignup variant="inline" source="homepage" />
+          </Suspense>
         </div>
       </section>
 
@@ -571,7 +568,9 @@ export default async function HomePage() {
 
       <section className="py-8 bg-background" id="instagram" aria-labelledby="heading-instagram">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <InstagramFeed title="Shelter-stemning fra Instagram" limit={6} />
+          <Suspense fallback={<div className="h-72 animate-pulse rounded-2xl border border-primary/10 bg-primary/5" />}>
+            <InstagramFeed title="Shelter-stemning fra Instagram" limit={6} />
+          </Suspense>
         </div>
       </section>
 

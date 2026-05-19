@@ -46,7 +46,9 @@ const BY_PAGE_SHELTER_SELECT =
   "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, water, toilet, capacity, geofa_raw, display_score, featured_sort_boost, bookable_shelters(id), created_at, updated_at, blur_data_url";
 
 const SHELTER_SELECT_DETAIL =
-  "id, title, slug, seo_title, description, seo_description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, toilet, water, geofa_raw, area_slug, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
+  "id, title, slug, seo_title, description, seo_description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, booking_provider, booking_link_mode, booking_lookup_key, booking_url_verified_at, booking_confidence, availability_provider, availability_mode, availability_lookup_key, availability_url, availability_verified_at, availability_confidence, duplicate_of_shelter_id, region, kommune, place, toilet, water, geofa_raw, area_slug, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
+const SHELTER_SELECT_DETAIL_FALLBACK =
+  "id, title, slug, seo_title, description, seo_description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, booking_provider, booking_link_mode, booking_lookup_key, booking_url_verified_at, booking_confidence, availability_provider, availability_mode, availability_lookup_key, availability_url, availability_verified_at, availability_confidence, duplicate_of_shelter_id, region, kommune, place, toilet, water, geofa_raw, area_slug, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
 
 const distinctByLandingPagesCache = new Map<number, Promise<{ place: string; count: number }[]>>();
 const byLandingDataCache = new Map<string, Promise<{
@@ -396,6 +398,24 @@ export async function getShelterBySlugInSilo(slug: string): Promise<{
     .is("duplicate_of_shelter_id", null)
     .single();
 
+  if (error?.code === "42703") {
+    const { data: fallback, error: fallbackError } = await supabase
+      .from("shelters")
+      .select(SHELTER_SELECT_DETAIL_FALLBACK)
+      .eq("slug", slug)
+      .is("duplicate_of_shelter_id", null)
+      .single();
+    if (fallbackError || !fallback) {
+      return { shelter: null, region: null, kommune: null };
+    }
+    const row = fallback as Shelter & { region?: string; kommune?: string | null };
+    return {
+      shelter: row as Shelter,
+      region: (row.region ?? "").trim() || null,
+      kommune: row.kommune && String(row.kommune).trim() ? String(row.kommune).trim() : null,
+    };
+  }
+
   if (error || !data) {
     return { shelter: null, region: null, kommune: null };
   }
@@ -419,6 +439,23 @@ export async function getShelterBySlugIncludingDuplicates(slug: string): Promise
     .select(`${SHELTER_SELECT_DETAIL}, duplicate_of_shelter_id`)
     .eq("slug", slug)
     .single();
+
+  if (error?.code === "42703") {
+    const { data: fallback, error: fallbackError } = await supabase
+      .from("shelters")
+      .select(`${SHELTER_SELECT_DETAIL_FALLBACK}, duplicate_of_shelter_id`)
+      .eq("slug", slug)
+      .single();
+    if (fallbackError || !fallback) {
+      return { shelter: null, region: null, kommune: null };
+    }
+    const row = fallback as Shelter & { region?: string; kommune?: string | null };
+    return {
+      shelter: row as Shelter,
+      region: (row.region ?? "").trim() || null,
+      kommune: row.kommune && String(row.kommune).trim() ? String(row.kommune).trim() : null,
+    };
+  }
 
   if (error || !data) {
     return { shelter: null, region: null, kommune: null };

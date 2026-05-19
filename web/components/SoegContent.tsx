@@ -23,6 +23,11 @@ function parseFiltersFromParams(sp: URLSearchParams): SoegFilters {
   }
   const mp = parseInt(sp.get("min_pladser") ?? "0", 10);
   if (mp > 0) f.min_pladser = mp;
+  const date = sp.get("date")?.trim() ?? "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(date)) f.date = date;
+  const dateTo = sp.get("date_to")?.trim() ?? "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateTo)) f.date_to = dateTo;
+  if (sp.get("confirmed_available") === "1") f.confirmed_available = true;
   return f;
 }
 
@@ -89,6 +94,7 @@ interface SoegContentProps {
   initialQuery: string | null;
   initialArea?: string | null;
   initialFilters?: SoegFilters;
+  initialAvailabilityMap?: Record<string, "available" | "booked" | "partial">;
   view: ViewMode;
   /** Hvis sat, navigerer filter-toggles til denne URL-base i stedet for /soeg.
    *  Bruges på regions-sider (/danmark/bornholm) så filteret ikke nulstiller regionen. */
@@ -102,6 +108,7 @@ export function SoegContent({
   initialQuery,
   initialArea = null,
   initialFilters = {},
+  initialAvailabilityMap,
   view: initialView,
   basePath,
 }: SoegContentProps) {
@@ -113,6 +120,7 @@ export function SoegContent({
   const [shelters, setShelters] = useState<Shelter[]>(() =>
     filterSheltersByRegion(initialShelters, initialRegion)
   );
+  const [availabilityMap, setAvailabilityMap] = useState<Record<string, "available" | "booked" | "partial"> | undefined>(initialAvailabilityMap);
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [nextPage, setNextPage] = useState(
     initialShelters.length >= 1000 ? Math.floor(1000 / 24) + 1 : 2
@@ -147,6 +155,9 @@ export function SoegContent({
     if (effectiveFilters?.min_pladser && effectiveFilters.min_pladser > 0) {
       params.min_pladser = String(effectiveFilters.min_pladser);
     }
+    if (effectiveFilters?.date) params.date = effectiveFilters.date;
+    if (effectiveFilters?.date_to) params.date_to = effectiveFilters.date_to;
+    if (effectiveFilters?.confirmed_available) params.confirmed_available = "1";
     if (sortMode !== "standard") params.sort = sortMode;
     return params;
   }, [view, initialRegion, initialQuery, initialArea, effectiveFilters, sortMode]);
@@ -159,6 +170,7 @@ export function SoegContent({
       .then((data) => {
         const list: Shelter[] = filterSheltersByRegion(data.shelters ?? [], initialRegion);
         setShelters(list);
+        setAvailabilityMap(data.availabilityMap ?? undefined);
         setHasMore(Boolean(data.hasMore));
         setNextPage(2);
         setListDisplayCount(view === "split" ? Math.min(24, list.length) : list.length);
@@ -211,6 +223,11 @@ export function SoegContent({
       const data = await res.json();
       let more: Shelter[] = filterSheltersByRegion(data.shelters ?? [], initialRegion);
       const moreHasMore = Boolean(data.hasMore);
+      setAvailabilityMap((prev) => {
+        const nextMap = data.availabilityMap as Record<string, "available" | "booked" | "partial"> | undefined;
+        if (!nextMap) return prev;
+        return prev ? { ...prev, ...nextMap } : nextMap;
+      });
       setShelters((prev) => {
         const ids = new Set(prev.map((s) => s.id));
         const newOnes = more.filter((s) => !ids.has(s.id));
@@ -375,6 +392,23 @@ export function SoegContent({
         filterBasePath={basePath}
       />
 
+      {effectiveFilters?.date && (
+        <p className="text-xs text-primary/55 bg-primary/5 rounded-lg px-3 py-2 -mt-1">
+          {(() => {
+            const fmt = (d: string) => new Intl.DateTimeFormat("da-DK", { day: "numeric", month: "long" }).format(new Date(d + "T12:00:00"));
+            const from = fmt(effectiveFilters.date!);
+            const to = effectiveFilters.date_to && effectiveFilters.date_to !== effectiveFilters.date ? fmt(effectiveFilters.date_to) : null;
+            const period = to ? `${from}–${to}` : from;
+            if (effectiveFilters.confirmed_available) {
+              return `Viser kun shelters med bekræftet ledighedsdata der ikke er optaget ${to ? `i perioden ${period}` : `den ${period}`}. Andre shelters kan også være ledige, men kræver ikke forudbestilling.`;
+            }
+            return to
+              ? `Shelters bekræftet optaget i perioden ${period} er skjult. Shelters uden ledighedsmærke kræver blot ikke forudbestilling.`
+              : `Shelters bekræftet optaget den ${period} er skjult. Shelters uden ledighedsmærke kræver blot ikke forudbestilling.`;
+          })()}
+        </p>
+      )}
+
       {shelters.length === 0 && !loading ? (
         <div className="text-center py-12">
           <p className="text-primary/70 text-lg mb-4">
@@ -413,7 +447,7 @@ export function SoegContent({
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6">
               {sortedShelters.slice(0, listDisplayCount).map((shelter) => (
-                <ShelterCard key={shelter.id} shelter={shelter} />
+                <ShelterCard key={shelter.id} shelter={shelter} availabilityState={availabilityMap?.[shelter.id] ?? null} activeDate={effectiveFilters?.date ?? null} />
               ))}
             </div>
             <div ref={sentinelRef} className="py-6 flex items-center justify-center gap-2">
@@ -474,7 +508,7 @@ export function SoegContent({
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {sortedAllShelters.map((shelter) => (
-              <ShelterCard key={shelter.id} shelter={shelter} />
+              <ShelterCard key={shelter.id} shelter={shelter} availabilityState={availabilityMap?.[shelter.id] ?? null} activeDate={effectiveFilters?.date ?? null} />
             ))}
           </div>
           <div ref={sentinelRef} className="py-6 flex items-center justify-center gap-2">

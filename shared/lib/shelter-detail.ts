@@ -1,4 +1,10 @@
-import type { Shelter, PhotoItem } from "../types/shelter";
+import type {
+  Shelter,
+  PhotoItem,
+  ShelterBookingConfidence,
+  ShelterBookingLinkMode,
+  ShelterBookingProvider,
+} from "../types/shelter";
 
 const RAW = (s: Shelter) => (s.geofa_raw || {}) as Record<string, unknown>;
 
@@ -330,8 +336,7 @@ export function getFeatures(shelter: Shelter): ShelterFeature[] {
   const bruser = getStr(raw, "bruser_bad");
   if (bruser && bruser.toLowerCase().includes("ja")) out.push({ label: "Bruser/bad" });
 
-  const book = getStr(raw, "book");
-  if ((book || "").toLowerCase().includes("ja") || shelter.booking_url)
+  if (isBookable(shelter))
     out.push({ label: "Bookbar" });
 
   const season = getSeason(shelter);
@@ -432,7 +437,7 @@ export function buildShelterDescription(shelter: Shelter): string {
 }
 
 /** True hvis shelteret anses for bookbart (booking_url, titel "bookbar", eller geofa book=ja). */
-export function isBookable(shelter: Shelter): boolean {
+function legacyBookableHeuristic(shelter: Shelter): boolean {
   if ((shelter.booking_url || "").trim()) return true;
   const raw = RAW(shelter);
   const book = getStr(raw, "book");
@@ -440,6 +445,136 @@ export function isBookable(shelter: Shelter): boolean {
   const title = (shelter.title || "").toLowerCase();
   if (title.includes("bookbar")) return true;
   return false;
+}
+
+function trimUrl(value: string | null | undefined): string | null {
+  const url = typeof value === "string" ? value.trim() : "";
+  return url && /^https?:\/\//i.test(url) ? url : null;
+}
+
+function inferProviderFromUrl(url: string | null): ShelterBookingProvider | null {
+  if (!url) return null;
+  const normalized = url.toLowerCase();
+  if (normalized.includes("shelterdk.dk")) return "shelterdk";
+  if (normalized.includes("book.naturstyrelsen.dk")) return "naturstyrelsen";
+  if (normalized.includes("udinaturen.dk")) return "udinaturen";
+  try {
+    const host = new URL(url).hostname.toLowerCase();
+    if (host.endsWith(".kommune.dk") || host.endsWith(".dk") && host.includes("kommune")) {
+      return "kommune";
+    }
+  } catch {
+    // ignore malformed external URLs; caller handles fallback
+  }
+  return "private";
+}
+
+function inferProviderFromOwnerContact(shelter: Shelter): ShelterBookingProvider | null {
+  const haystack = `${getOwner(shelter) || ""} ${getContact(shelter) || ""}`.toLowerCase();
+  if (!haystack.trim()) return null;
+  if (haystack.includes("naturstyrelsen") || haystack.includes("nst.dk")) return "naturstyrelsen";
+  if (haystack.includes("kommune")) return "kommune";
+  return "private";
+}
+
+function inferStoredProvider(shelter: Shelter): ShelterBookingProvider | null {
+  const provider = shelter.booking_provider ?? null;
+  return provider || null;
+}
+
+function inferStoredLinkMode(shelter: Shelter): ShelterBookingLinkMode | null {
+  const mode = shelter.booking_link_mode ?? null;
+  return mode || null;
+}
+
+function inferStoredConfidence(shelter: Shelter): ShelterBookingConfidence | null {
+  const confidence = shelter.booking_confidence ?? null;
+  return confidence || null;
+}
+
+function getBookingLookupKeyFromUrl(url: string | null): string | null {
+  if (!url) return null;
+  const lower = url.toLowerCase();
+  if (!lower.includes("book.naturstyrelsen.dk/sted/")) return null;
+  try {
+    const pathname = new URL(url).pathname;
+    const match = pathname.match(/\/sted\/([^/]+)\/?$/i);
+    return match?.[1] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export interface ResolvedBookingModel {
+  provider: ShelterBookingProvider | null;
+  linkMode: ShelterBookingLinkMode;
+  bookingUrl: string | null;
+  requiresBooking: boolean;
+  hasShelterDkBooking: boolean;
+  fallbackHint: "naturstyrelsen" | null;
+  confidence: ShelterBookingConfidence | null;
+  lookupKey: string | null;
+}
+
+export function getResolvedBookingModel(
+  shelter: Shelter,
+  opts: { hasShelterDkBooking?: boolean } = {}
+): ResolvedBookingModel {
+  const bookingUrl = trimUrl(shelter.booking_url);
+  const hasShelterDkBooking =
+    opts.hasShelterDkBooking === true ||
+    (Array.isArray(shelter.bookable_shelters) && shelter.bookable_shelters.length > 0);
+  if (hasShelterDkBooking) {
+    return {
+      provider: "shelterdk",
+      linkMode: "internal",
+      bookingUrl: null,
+      requiresBooking: true,
+      hasShelterDkBooking: true,
+      fallbackHint: null,
+      confidence: inferStoredConfidence(shelter) ?? "manual",
+      lookupKey: shelter.booking_lookup_key ?? null,
+    };
+  }
+
+  const storedMode = inferStoredLinkMode(shelter);
+  const storedProvider = inferStoredProvider(shelter);
+  const providerFromUrl = inferProviderFromUrl(bookingUrl);
+  const ownerProvider = inferProviderFromOwnerContact(shelter);
+  const provider = storedProvider ?? providerFromUrl ?? ownerProvider ?? (legacyBookableHeuristic(shelter) ? "unknown" : null);
+  const confidence = inferStoredConfidence(shelter) ?? (bookingUrl ? "imported" : legacyBookableHeuristic(shelter) ? "heuristic" : null);
+  const lookupKey = shelter.booking_lookup_key ?? getBookingLookupKeyFromUrl(bookingUrl);
+
+  let linkMode: ShelterBookingLinkMode;
+  if (storedMode) {
+    linkMode = storedMode;
+  } else if (bookingUrl) {
+    linkMode = "external_direct";
+  } else if (legacyBookableHeuristic(shelter) && provider === "naturstyrelsen") {
+    linkMode = "external_search";
+  } else if (legacyBookableHeuristic(shelter)) {
+    linkMode = "contact_only";
+  } else {
+    linkMode = "first_come";
+  }
+
+  return {
+    provider,
+    linkMode,
+    bookingUrl,
+    requiresBooking: linkMode !== "first_come",
+    hasShelterDkBooking: false,
+    fallbackHint: linkMode === "external_search" && provider === "naturstyrelsen" ? "naturstyrelsen" : null,
+    confidence,
+    lookupKey,
+  };
+}
+
+export function isBookable(
+  shelter: Shelter,
+  opts: { hasShelterDkBooking?: boolean } = {}
+): boolean {
+  return getResolvedBookingModel(shelter, opts).requiresBooking;
 }
 
 const GEOFA_PHOTO_KEYS = [

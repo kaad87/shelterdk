@@ -20,17 +20,20 @@ const TOILET_FAQ: FaqItem[] = [
   { question: "Skal man medbringe eget toiletpapir til shelters?", answer: "Det er altid en god idé at medbringe toiletpapir, da det ikke er garanteret at der er papir på pladsens toilet. Mange muldtoiletter har papir tilgængeligt, men det kan løbe tør – især i højsæsonen." },
 ];
 
-const PAGE_TITLE = "Shelter med toilet i Danmark | ShelterDK";
+const PAGE_TITLE = "Shelter med toilet i Danmark – find shelters med toilet | ShelterDK";
+const PAGE_OG_IMAGE =
+  "https://images.unsplash.com/photo-1522163182402-834f871fd851?w=1200&q=80&auto=format&fit=crop";
 export const metadata: Metadata = {
   title: { absolute: PAGE_TITLE },
   description:
-    "Find shelters og overnatningspladser i Danmark hvor der er toilet – vandskyllende toilet eller muldtoilet. Udforsk pladser med faciliteter til naturovernatning.",
+    "Find shelters med toilet i Danmark. Se shelterpladser med vandskyllende toilet eller muldtoilet, plus kort, faciliteter og praktisk info.",
   alternates: { canonical: "https://shelterdk.dk/shelter-med-toilet" },
   openGraph: {
     title: PAGE_TITLE,
     description:
       "Shelters med toilet – vandskyllende eller muldtoilet. Find overnatningspladser i naturen med faciliteter.",
     url: "/shelter-med-toilet",
+    images: [{ url: PAGE_OG_IMAGE, width: 1200, height: 630, alt: "Shelters med toilet i Danmark" }],
   },
 };
 

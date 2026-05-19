@@ -22,6 +22,7 @@ import {
   Archive,
   Eye,
   BookOpen,
+  Star,
 } from "lucide-react";
 import { getProxiedImageSrc } from "@/lib/image-proxy";
 import { FACILITY_FIELDS } from "@/lib/community";
@@ -123,16 +124,21 @@ const HASHTAGS = [
   { tag: "shelterplads", label: "Shelterplads" },
 ];
 
-const TAB_CONFIG: { key: TabKey; label: string; icon: typeof Camera }[] = [
+const MODERATION_TABS: { key: TabKey; label: string; icon: typeof Camera }[] = [
   { key: "photos", label: "Billeder", icon: Camera },
   { key: "community", label: "Community", icon: MessageSquare },
+  { key: "oplevelser", label: "Oplevelser", icon: Star },
+  { key: "submissions", label: "Indsendte", icon: Plus },
+  { key: "contact", label: "Beskeder", icon: Inbox },
+];
+
+const MANAGEMENT_TABS: { key: TabKey; label: string; icon: typeof Camera }[] = [
   { key: "instagram", label: "Instagram", icon: Instagram },
   { key: "newsletter", label: "Nyhedsbrev", icon: Mail },
-  { key: "contact", label: "Beskeder", icon: Inbox },
-  { key: "oplevelser", label: "Oplevelser", icon: Camera },
-  { key: "submissions", label: "Indsendte", icon: Plus },
   { key: "bookinger", label: "Bookinger", icon: BookOpen },
 ];
+
+const TAB_CONFIG = [...MODERATION_TABS, ...MANAGEMENT_TABS];
 
 export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKey }) {
   const [secret, setSecret] = useState("");
@@ -516,8 +522,8 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="font-serif text-2xl font-bold text-primary">Moderation</h1>
-          <p className="text-sm text-primary/60 mt-1">Godkend indhold fra brugere og kurater Instagram-feed.</p>
+          <h1 className="font-serif text-2xl font-bold text-primary">Indhold & drift</h1>
+          <p className="text-sm text-primary/60 mt-1">Godkend bidrag, kurater Instagram og administrér bookinger.</p>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -553,8 +559,9 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
       )}
 
       {/* Tabs */}
-      <div className="mb-6 flex gap-1 rounded-xl border border-primary/10 bg-primary/[0.02] p-1.5">
-        {TAB_CONFIG.map(({ key, label, icon: Icon }) => {
+      <div className="mb-6 flex items-center gap-0.5 rounded-xl border border-primary/10 bg-primary/[0.02] p-1.5 overflow-x-auto">
+        {/* Moderation group */}
+        {MODERATION_TABS.map(({ key, label, icon: Icon }) => {
           const count = badgeCounts[key];
           const isActive = tab === key;
           return (
@@ -562,17 +569,50 @@ export function AdminPhotoReview({ initialTab = "photos" }: { initialTab?: TabKe
               key={key}
               type="button"
               onClick={() => setTab(key)}
-              className={`flex-1 inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
+              className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-all shrink-0 ${
                 isActive
                   ? "bg-white text-primary shadow-sm"
                   : "text-primary/55 hover:text-primary/80 hover:bg-white/50"
               }`}
             >
-              <Icon size={16} />
+              <Icon size={14} />
               <span className="hidden sm:inline">{label}</span>
               {count > 0 && (
                 <span
-                  className={`min-w-[20px] rounded-full px-1.5 py-0.5 text-xs font-semibold leading-none ${
+                  className={`min-w-[18px] rounded-full px-1.5 py-0.5 text-xs font-semibold leading-none ${
+                    isActive ? "bg-accent text-white" : "bg-primary/10 text-primary/60"
+                  }`}
+                >
+                  {count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+
+        {/* Divider */}
+        <div className="w-px h-5 bg-primary/20 mx-1 shrink-0" />
+
+        {/* Management group */}
+        {MANAGEMENT_TABS.map(({ key, label, icon: Icon }) => {
+          const count = badgeCounts[key];
+          const isActive = tab === key;
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setTab(key)}
+              className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-all shrink-0 ${
+                isActive
+                  ? "bg-white text-primary shadow-sm"
+                  : "text-primary/55 hover:text-primary/80 hover:bg-white/50"
+              }`}
+            >
+              <Icon size={14} />
+              <span className="hidden sm:inline">{label}</span>
+              {count > 0 && (
+                <span
+                  className={`min-w-[18px] rounded-full px-1.5 py-0.5 text-xs font-semibold leading-none ${
                     isActive ? "bg-accent text-white" : "bg-primary/10 text-primary/60"
                   }`}
                 >

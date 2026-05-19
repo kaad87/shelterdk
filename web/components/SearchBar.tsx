@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Accessibility,
   Armchair,
+  CalendarDays,
   ChevronDown,
   Clock,
   Dog,
@@ -27,6 +28,7 @@ import {
   Umbrella,
   Users,
   X,
+  ArrowRight,
 } from "lucide-react";
 import type { SoegFilters, SearchSuggestion } from "@/lib/soeg-db";
 import { slugifySegment } from "@/lib/slug";
@@ -128,6 +130,12 @@ export function SearchBar({
   );
   const [filters, setFilters] = useState<SoegFilters>(() => initialFilters);
   const [suggestIndex, setSuggestIndex] = useState(-1);
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [pendingDate, setPendingDate] = useState<string>("");
+  const [pendingDateTo, setPendingDateTo] = useState<string>("");
+  const [isSunday, setIsSunday] = useState(false);
+  const [todayStr, setTodayStr] = useState("");
+  const datePickerRef = useRef<HTMLDivElement>(null);
   const suggestRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -138,7 +146,7 @@ export function SearchBar({
   useEffect(() => {
     setFilters(initialFilters);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialFilters.billede, initialFilters.anmeldelser, initialFilters.bookbar, initialFilters.vand, initialFilters.toilet, initialFilters.hund, initialFilters.baalplads, initialFilters.bord_baenk, initialFilters.strand, initialFilters.bruser, initialFilters.gratis, initialFilters.handicap, initialFilters.min_pladser]);
+  }, [initialFilters.billede, initialFilters.anmeldelser, initialFilters.bookbar, initialFilters.vand, initialFilters.toilet, initialFilters.hund, initialFilters.baalplads, initialFilters.bord_baenk, initialFilters.strand, initialFilters.bruser, initialFilters.gratis, initialFilters.handicap, initialFilters.min_pladser, initialFilters.date, initialFilters.date_to, initialFilters.confirmed_available]);
 
   const resolveBasePath = useCallback(
     (targetRegion: string) => {
@@ -180,6 +188,9 @@ export function SearchBar({
       if (active.gratis) params.set("gratis", "1");
       if (active.handicap) params.set("handicap", "1");
       if (active.min_pladser && active.min_pladser > 0) params.set("min_pladser", String(active.min_pladser));
+      if (active.date && /^\d{4}-\d{2}-\d{2}$/.test(active.date)) params.set("date", active.date);
+      if (active.date_to && /^\d{4}-\d{2}-\d{2}$/.test(active.date_to)) params.set("date_to", active.date_to);
+      if (active.confirmed_available) params.set("confirmed_available", "1");
       const s = params.toString();
       return basePage + (s ? `?${s}` : "");
     },
@@ -282,7 +293,84 @@ export function SearchBar({
     [filters, region, query, view, mode, buildSoegUrl, router, resolveBasePath]
   );
 
-  const activeFilterCount = FILTER_OPTIONS.filter(({ key }) => filters[key]).length;
+  const activeFilterCount = FILTER_OPTIONS.filter(({ key }) => filters[key]).length + (filters.date ? 1 : 0);
+
+  // Detect today's local date and day-of-week on mount (avoids SSR/client mismatch)
+  useEffect(() => {
+    const d = new Date();
+    const ds = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    setTodayStr(ds);
+    setIsSunday(d.getDay() === 0);
+  }, []);
+
+  // Close date picker on outside click
+  useEffect(() => {
+    if (!datePickerOpen) return;
+    function handleOutside(e: MouseEvent) {
+      if (datePickerRef.current && !datePickerRef.current.contains(e.target as Node)) {
+        setDatePickerOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, [datePickerOpen]);
+
+  // Sync pending dates when picker opens
+  useEffect(() => {
+    if (datePickerOpen) {
+      setPendingDate(filters.date ?? "");
+      setPendingDateTo(filters.date_to ?? "");
+    }
+  }, [datePickerOpen, filters.date, filters.date_to]);
+
+  function formatShortDate(iso: string): string {
+    const d = new Date(iso + "T12:00:00");
+    return new Intl.DateTimeFormat("da-DK", { day: "numeric", month: "short" }).format(d);
+  }
+
+  function getDateLabel(): string {
+    if (!filters.date) return "Dato";
+    if (filters.date_to && filters.date_to !== filters.date) {
+      return `${formatShortDate(filters.date)} – ${formatShortDate(filters.date_to)}`;
+    }
+    return formatShortDate(filters.date);
+  }
+
+  function getNextWeekendDates(weeksAhead: number): { sat: string; sun: string } {
+    const today = new Date();
+    const day = today.getDay();
+    const daysUntilSat = day === 6 ? 7 * weeksAhead : (6 - day) + 7 * (weeksAhead - 1);
+    const sat = new Date(today);
+    sat.setDate(today.getDate() + daysUntilSat);
+    const sun = new Date(sat);
+    sun.setDate(sat.getDate() + 1);
+    // Use local date formatting to avoid UTC offset issues (toISOString gives UTC midnight)
+    const fmt = (d: Date) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    return { sat: fmt(sat), sun: fmt(sun) };
+  }
+
+  function applyDateFilter(date: string, dateTo: string) {
+    const next: SoegFilters = {
+      ...filters,
+      date: date || undefined,
+      date_to: (dateTo && dateTo >= date) ? dateTo : undefined,
+    };
+    setFilters(next);
+    setDatePickerOpen(false);
+    const url = buildSoegUrl(region, query, mode === "search" ? view : "split", next, resolveBasePath(region));
+    router.push(url, { scroll: false });
+  }
+
+  function clearDateFilter() {
+    const next: SoegFilters = { ...filters, date: undefined, date_to: undefined };
+    setFilters(next);
+    setPendingDate("");
+    setPendingDateTo("");
+    setDatePickerOpen(false);
+    const url = buildSoegUrl(region, query, mode === "search" ? view : "split", next, resolveBasePath(region));
+    router.push(url, { scroll: false });
+  }
 
   const clearAllFilters = useCallback(() => {
     const next: SoegFilters = {};
@@ -524,6 +612,122 @@ export function SearchBar({
                 aria-label="Minimum antal pladser"
               />
               <span className="text-primary/70 whitespace-nowrap">pladser</span>
+            </div>
+
+            {/* Dato-filter med popover */}
+            <div className="relative shrink-0" ref={datePickerRef}>
+              <button
+                type="button"
+                onClick={() => setDatePickerOpen((o) => !o)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[13px] font-medium whitespace-nowrap transition-all touch-manipulation ${
+                  filters.date
+                    ? "bg-primary text-white border-primary shadow-sm"
+                    : "bg-white text-primary/70 border-primary/15 hover:border-primary/30 hover:text-primary"
+                } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50`}
+                aria-expanded={datePickerOpen}
+                aria-haspopup="dialog"
+              >
+                <CalendarDays size={14} className="shrink-0" />
+                {getDateLabel()}
+                {filters.date && (
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => { e.stopPropagation(); clearDateFilter(); }}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); clearDateFilter(); } }}
+                    className="ml-0.5 text-white/80 hover:text-white cursor-pointer"
+                    aria-label="Fjern datofilter"
+                  >
+                    <X size={12} />
+                  </span>
+                )}
+              </button>
+
+              {datePickerOpen && (
+                <div
+                  role="dialog"
+                  aria-label="Vælg datointerval"
+                  className="absolute top-full left-0 mt-2 z-50 bg-white rounded-2xl shadow-xl border border-primary/10 p-4 w-72"
+                >
+                  {/* Ankomst / Afgang */}
+                  <div className="grid grid-cols-2 gap-2 mb-3">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-primary/50 uppercase tracking-wide mb-1">
+                        Ankomst
+                      </label>
+                      <input
+                        type="date"
+                        value={pendingDate}
+                        min={todayStr || undefined}
+                        onChange={(e) => {
+                          setPendingDate(e.target.value);
+                          if (pendingDateTo && e.target.value > pendingDateTo) setPendingDateTo("");
+                        }}
+                        className="w-full rounded-lg border border-primary/20 px-2 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-accent/40 [color-scheme:light]"
+                        aria-label="Ankomstdato"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-primary/50 uppercase tracking-wide mb-1">
+                        Afgang
+                      </label>
+                      <input
+                        type="date"
+                        value={pendingDateTo}
+                        min={pendingDate || todayStr || undefined}
+                        onChange={(e) => setPendingDateTo(e.target.value)}
+                        className="w-full rounded-lg border border-primary/20 px-2 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-accent/40 [color-scheme:light]"
+                        aria-label="Afrejsedato"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Hurtige genveje */}
+                  <div className="flex gap-2 mb-4">
+                    {[1, 2].map((weeksAhead) => {
+                      const { sat, sun } = getNextWeekendDates(weeksAhead);
+                        const label = weeksAhead === 1
+                        ? (isSunday ? "Næste weekend" : "Denne weekend")
+                        : (isSunday ? "Weekenden derefter" : "Næste weekend");
+                      const isActive = pendingDate === sat && pendingDateTo === sun;
+                      return (
+                        <button
+                          key={weeksAhead}
+                          type="button"
+                          onClick={() => { setPendingDate(sat); setPendingDateTo(sun); }}
+                          className={`flex-1 text-xs font-medium rounded-lg px-2 py-1.5 border transition-colors ${
+                            isActive
+                              ? "bg-primary text-white border-primary"
+                              : "border-primary/15 text-primary/70 hover:border-primary/30 hover:text-primary"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Handlingsknapper */}
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={clearDateFilter}
+                      className="flex-1 rounded-lg border border-primary/15 px-3 py-2 text-sm font-medium text-primary/70 hover:bg-primary/5 transition-colors"
+                    >
+                      Ryd
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => applyDateFilter(pendingDate, pendingDateTo)}
+                      disabled={!pendingDate}
+                      className="flex-1 flex items-center justify-center gap-1.5 rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-white hover:bg-[#b8923f] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Søg
+                      <ArrowRight size={14} />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {(activeFilterCount > 0 || (filters.min_pladser && filters.min_pladser > 0)) && (

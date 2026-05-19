@@ -232,7 +232,8 @@ export async function sendBookingReceivedToGuest(opts: {
         <p style="font-size:13px;font-weight:600;color:#2C3E50;margin:0;">${esc(formatDate(opts.checkIn))} → ${esc(formatDate(opts.checkOut))}</p>
       </div>
       <p style="font-size:13px;color:#666;margin:0 0 16px;line-height:1.5;">Ejeren vender tilbage hurtigst muligt. Du kan allerede nu se din booking og trække forespørgslen tilbage, hvis du fortryder.</p>
-      <a href="${bookingLink(opts.guestToken)}" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">Se og administrér din booking</a>
+      <a href="${bookingLink(opts.guestToken)}" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">Se din booking på ShelterDK</a>
+      <p style="font-size:12px;color:#999;margin:12px 0 0;">Linket åbner shelterdk.dk og viser din booking direkte.</p>
     `,
   });
   const text = renderEmailText({
@@ -283,7 +284,8 @@ export async function sendBookingConfirmedToGuest(opts: {
         <p style="font-size:13px;font-weight:600;color:#2C3E50;margin:0;">${esc(formatDate(opts.checkIn))} → ${esc(formatDate(opts.checkOut))}</p>
       </div>
       <p style="font-size:13px;color:#666;margin:0 0 16px;">God tur!</p>
-      <a href="${bookingLink(opts.guestToken)}" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">Se og administrér din booking</a>
+      <a href="${bookingLink(opts.guestToken)}" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">Se din booking på ShelterDK</a>
+      <p style="font-size:12px;color:#999;margin:12px 0 0;">Linket åbner shelterdk.dk og viser din booking direkte.</p>
     `,
   });
   const text = renderEmailText({
@@ -541,7 +543,8 @@ export async function sendPaymentConfirmed(opts: {
             <p style="font-size:12px;color:#666;margin:0;">${esc(formatDate(opts.checkIn))} → ${esc(formatDate(opts.checkOut))}</p>
           </div>
           <p style="font-size:13px;color:#666;margin:0 0 16px;">Din booking er nu bekræftet. <strong>God tur!</strong></p>
-          <a href="${bookingLink(opts.guestToken)}" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">Se og administrér din booking</a>
+          <a href="${bookingLink(opts.guestToken)}" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">Se din booking på ShelterDK</a>
+          <p style="font-size:12px;color:#999;margin:12px 0 0;">Linket åbner shelterdk.dk og viser din booking direkte.</p>
         `,
       }),
       text: renderEmailText({
@@ -573,7 +576,7 @@ export async function sendPaymentConfirmed(opts: {
             <p style="font-size:13px;font-weight:600;color:#2C3E50;margin:0;">${esc(formatDate(opts.checkIn))} → ${esc(formatDate(opts.checkOut))}</p>
           </div>
           <p style="font-size:12px;color:#999;margin:0 0 16px;">Bookingen er automatisk bekræftet. Hvis du skal aflyse, sker der automatisk fuld refundering til gæsten.</p>
-          ${opts.ownerToken ? `<a href="${SITE_URL}/owner/${esc(opts.ownerToken)}" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">Se dit dashboard</a>` : ""}
+          ${opts.ownerToken ? `<a href="${SITE_URL}/owner/${esc(opts.ownerToken)}" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">Se bookingen i ShelterDK</a><p style="font-size:12px;color:#999;margin:12px 0 0;">Linket åbner shelterdk.dk og viser den bekræftede booking.</p>` : ""}
         `,
       }),
       text: renderEmailText({
@@ -633,7 +636,8 @@ export async function sendUpfrontPaymentReceived(opts: {
           <p style="font-size:13px;font-weight:600;color:#2C3E50;margin:0;">${esc(formatDate(opts.checkIn))} → ${esc(formatDate(opts.checkOut))}</p>
         </div>
         <p style="font-size:13px;color:#666;margin:0 0 16px;">Gæsten afventer din bekræftelse. Afviser du bookingen, refunderes betalingen automatisk.</p>
-        <a href="${dashboardUrl}" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">Gå til dit dashboard</a>
+        <a href="${dashboardUrl}" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">Se bookingen i ShelterDK</a>
+        <p style="font-size:12px;color:#999;margin:12px 0 0;">Linket åbner shelterdk.dk og viser bookingen direkte.</p>
       `,
     });
   const text = renderEmailText({
@@ -893,7 +897,8 @@ export async function sendGuestCancelledToOwner(opts: {
       bodyHtml: `
         <p style="font-size:13px;color:#333;line-height:1.65;margin:0 0 10px;"><strong>${esc(opts.guestName)}</strong> har annulleret sin booking af <strong>${esc(opts.shelterTitle)}</strong> (${esc(formatDate(opts.checkIn))}–${esc(formatDate(opts.checkOut))}).</p>
         <p style="font-size:13px;color:#666;margin:0 0 16px;">Datoen er nu ledig igen.</p>
-        <a href="${dashboardUrl}" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">Gå til dit dashboard</a>
+        <a href="${dashboardUrl}" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">Se annulleringen i ShelterDK</a>
+        <p style="font-size:12px;color:#999;margin:12px 0 0;">Linket åbner shelterdk.dk og viser den annullerede booking.</p>
       `,
     });
   const text = renderEmailText({
@@ -1007,7 +1012,8 @@ export async function sendNewMessageToOwner(opts: {
         <blockquote style="background:#f9f7f4;border-left:3px solid #c5a059;margin:0 0 16px;padding:10px 14px;border-radius:0 6px 6px 0;">
           <p style="font-size:13px;color:#555;line-height:1.5;margin:0;font-style:italic;">${esc(opts.messageBody).replace(/\n/g, "<br>")}</p>
         </blockquote>
-        <a href="${dashboardUrl}" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">Svar via dashboard</a>
+        <a href="${dashboardUrl}" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">Svar i ShelterDK</a>
+        <p style="font-size:12px;color:#999;margin:12px 0 0;">Linket åbner shelterdk.dk og viser samtalen direkte.</p>
       `,
     });
   const text = renderEmailText({

@@ -9,6 +9,9 @@ const discoverLinks = [
   { label: "Book shelter", href: "/shelter-booking" },
   { label: "Shelter med toilet", href: "/shelter-med-toilet" },
   { label: "Shelter med vand", href: "/shelter-med-vand" },
+  { label: "Handicapvenlige shelters", href: "/handicapvenlige-shelters" },
+  { label: "Shelter til familier", href: "/shelter-til-familier" },
+  { label: "Shelter til cykeltur", href: "/shelter-til-cykeltur" },
 ];
 
 const contentLinks = [

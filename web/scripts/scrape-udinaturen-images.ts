@@ -32,6 +32,28 @@ const REQUEST_DELAY_MS = 500;
 const IMAGE_BASE_URL =
   "https://mapcentia-www.s3-eu-west-1.amazonaws.com/fkg/1600";
 
+function normalizeImageUrl(imageValue: string): string | null {
+  const value = imageValue.trim();
+  if (!value) return null;
+
+  if (/^https?:\/\//i.test(value)) {
+    try {
+      const url = new URL(value);
+      if (
+        url.hostname === "mapcentia-www.s3-eu-west-1.amazonaws.com" &&
+        /^\/fkg\/\d+\//.test(url.pathname)
+      ) {
+        url.pathname = url.pathname.replace(/^\/fkg\/\d+\//, "/fkg/1600/");
+      }
+      return url.toString();
+    } catch {
+      return null;
+    }
+  }
+
+  return `${IMAGE_BASE_URL}/${value}.jpg`;
+}
+
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -167,7 +189,12 @@ async function main() {
         continue;
       }
 
-      const imageUrl = `${IMAGE_BASE_URL}/${imageData.imageUuid}.jpg`;
+      const imageUrl = normalizeImageUrl(imageData.imageUuid);
+      if (!imageUrl) {
+        skipped++;
+        await sleep(REQUEST_DELAY_MS);
+        continue;
+      }
 
       const { error: updateError } = await supabase
         .from("shelters")

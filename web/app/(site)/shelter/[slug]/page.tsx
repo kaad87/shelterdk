@@ -21,7 +21,7 @@ import {
   getCity,
   isShelterPlace,
   stripHtml,
-  isBookable,
+  getResolvedBookingModel,
   getToilet,
   getWater,
   getPetsAllowed,
@@ -47,9 +47,9 @@ interface PageProps {
 export const revalidate = 86400;
 
 const SHELTER_SELECT_DETAIL =
-  "id, title, slug, seo_title, description, seo_description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, toilet, water, geofa_raw, area_slug, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
+  "id, title, slug, seo_title, description, seo_description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, booking_provider, booking_link_mode, booking_lookup_key, booking_url_verified_at, booking_confidence, availability_provider, availability_mode, availability_lookup_key, availability_url, availability_verified_at, availability_confidence, duplicate_of_shelter_id, region, kommune, place, toilet, water, geofa_raw, area_slug, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
 const SHELTER_SELECT_DETAIL_FALLBACK =
-  "id, title, slug, description, seo_description, location, image_url, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, water, geofa_raw, area_slug, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
+  "id, title, slug, description, seo_description, location, image_url, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, availability_provider, availability_mode, availability_lookup_key, availability_url, availability_verified_at, availability_confidence, duplicate_of_shelter_id, region, kommune, place, water, geofa_raw, area_slug, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
 
 async function getShelterBySlugUncached(slug: string): Promise<Shelter | null> {
   const supabase = createPublicClient();
@@ -71,6 +71,20 @@ async function getShelterBySlugUncached(slug: string): Promise<Shelter | null> {
 }
 
 const getShelterBySlug = cache(getShelterBySlugUncached);
+
+function getCanonicalShelterPath(shelter: Shelter, slug: string): string {
+  const region = (shelter.region ?? "").trim();
+  const kommune =
+    shelter.kommune && String(shelter.kommune).trim()
+      ? String(shelter.kommune).trim()
+      : null;
+
+  if (!region) return `/shelter/${slug}`;
+
+  const regionSlug = slugifySegment(region);
+  const municipalitySlug = kommune ? slugifySegment(kommune) : NO_KOMMUNE_SLUG;
+  return `/danmark/${regionSlug}/${municipalitySlug}/${slug}`;
+}
 
 async function getReviews(googlePlaceId: string | null) {
   if (!googlePlaceId) return [];
@@ -115,17 +129,19 @@ export async function generateMetadata({
       ? photoUrls[0]
       : undefined;
   const ogImage = ogImageRaw?.startsWith("/") ? `${baseUrl}${ogImageRaw}` : ogImageRaw;
+  const canonicalPath = getCanonicalShelterPath(shelter, slug);
+  const canonicalUrl = `${baseUrl}${canonicalPath}`;
 
   return {
     title: { absolute: title },
     description,
-    alternates: { canonical: `https://shelterdk.dk/shelter/${slug}` },
+    alternates: { canonical: canonicalUrl },
     openGraph: {
       title,
       description,
       siteName: "ShelterDK",
       type: "website",
-      url: `https://shelterdk.dk/shelter/${slug}`,
+      url: canonicalUrl,
       ...(ogImage && {
         images: [{ url: ogImage, width: 1200, height: 630, alt: shelter.title }],
       }),
@@ -141,10 +157,9 @@ export default async function ShelterPage({ params }: PageProps) {
 
   const region = (shelter.region ?? "").trim();
   const kommune = shelter.kommune && String(shelter.kommune).trim() ? String(shelter.kommune).trim() : null;
+  const canonicalPath = getCanonicalShelterPath(shelter, slug);
   if (region) {
-    const regionSlug = slugifySegment(region);
-    const municipalitySlug = kommune ? slugifySegment(kommune) : NO_KOMMUNE_SLUG;
-    permanentRedirect(`/danmark/${regionSlug}/${municipalitySlug}/${slug}`);
+    permanentRedirect(canonicalPath);
   }
 
   const areaSlug = (shelter as { area_slug?: string | null }).area_slug?.trim() || null;
@@ -193,16 +208,11 @@ export default async function ShelterPage({ params }: PageProps) {
     : shelter.google_place_id
       ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(shelter.title)}&query_place_id=${encodeURIComponent(shelter.google_place_id)}`
       : null;
-  const rawBookingUrl = shelter.booking_url?.trim() || null;
-  const bookingUrl =
-    rawBookingUrl && /^https?:\/\//i.test(rawBookingUrl) ? rawBookingUrl : null;
-  // Naturstyrelsen + bookbar men ingen booking_url: vis link til forsiden (undgå 404 fra gættet /sted/slug)
-  const bookingFallbackHint =
-    !bookingUrl &&
-    isBookable(shelter) &&
-    ((owner || "").toLowerCase().includes("naturstyrelsen") || (contact || "").toLowerCase().includes("nst.dk"))
-      ? "naturstyrelsen"
-      : null;
+  const bookingModel = getResolvedBookingModel(shelter, {
+    hasShelterDkBooking: bookableShelters.length > 0,
+  });
+  const bookingUrl = bookingModel.bookingUrl;
+  const bookingFallbackHint = bookingModel.fallbackHint;
   const toilet = getToilet(shelter);
   const water = getWater(shelter);
   const facilityLinks: { label: string; href: string }[] = [];
@@ -211,7 +221,7 @@ export default async function ShelterPage({ params }: PageProps) {
   const petsAllowed = getPetsAllowed(shelter);
   const shelterFaqItems = getShelterFaqItems(shelter.title, {
     toilet,
-    bookable: isBookable(shelter),
+    bookable: bookingModel.requiresBooking,
     bookingUrl,
     petsAllowed,
   });
@@ -231,7 +241,7 @@ export default async function ShelterPage({ params }: PageProps) {
   ];
   return (
     <>
-      <ShelterSchema shelter={shelter} canonicalPath={`/shelter/${slug}`} reviews={reviews} />
+      <ShelterSchema shelter={shelter} canonicalPath={canonicalPath} reviews={reviews} />
       <BreadcrumbSchema items={breadcrumbs} />
       <ShelterDetailContent
       shelter={shelter}
@@ -267,7 +277,7 @@ export default async function ShelterPage({ params }: PageProps) {
       firewood={getFirewood(shelter)}
       facilityLinks={facilityLinks}
       nearbyRoutes={getRoutesForShelter(slug)}
-      isBookable={isBookable(shelter)}
+      isBookable={bookingModel.requiresBooking}
       shelterFaqItems={shelterFaqItems}
       shelterFaqJsonLd={shelterFaqJsonLd}
       reviews={reviews}

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { MapPin, CheckCircle, Flame, Gift, Bath } from "lucide-react";
+import { HomepageDatePicker } from "@/components/HomepageDatePicker";
 
 const PILLS = [
   { label: "Nær mig", href: "/shelter-naer-mig", icon: MapPin, accent: true },
@@ -29,6 +30,7 @@ export function MobileHomePills() {
             {pill.label}
           </Link>
         ))}
+        <HomepageDatePicker className="shrink-0" />
       </div>
     </section>
   );

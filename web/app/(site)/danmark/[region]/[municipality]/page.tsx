@@ -84,15 +84,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const bookable = shelters.filter((s) => !!s.booking_url && String(s.booking_url).trim() !== "").length;
   const withWater = shelters.filter((s) => getWater(s) === true).length;
   const title = count > 0
-    ? `Shelters i ${municipalityName} Kommune – ${regionName} | ShelterDK`
-    : `Shelters i ${municipalityName} Kommune, ${regionName} | ShelterDK`;
+    ? `Shelter i ${municipalityName} Kommune – ${count} shelters, kort og faciliteter | ShelterDK`
+    : `Shelter i ${municipalityName} Kommune – kort og faciliteter | ShelterDK`;
   const statParts: string[] = [];
   if (bookable > 0) statParts.push(`${bookable} kan bookes`);
   if (withWater > 0) statParts.push(`${withWater} med vand`);
   const statsText = statParts.length > 0 ? ` – ${statParts.join(", ")}` : "";
   const description = count > 0
-    ? `${count} shelters i ${municipalityName} Kommune${statsText}. Se alle shelterpladser i kommunen og find også lokale bysider for mere præcise søgninger.`
-    : `Find shelters og overnatningspladser i ${municipalityName} Kommune, ${regionName}. Se pladser og praktisk info.`;
+    ? `Find shelter i ${municipalityName} Kommune. Se ${count} shelters${statsText}, med kort, faciliteter, billeder og lokale bysider.`
+    : `Find shelter i ${municipalityName} Kommune med kort, faciliteter, billeder og praktisk info på ShelterDK.`;
   const canonicalPath = redirectBySlug
     ? `/by/${redirectBySlug}`
     : `/danmark/${regionSlug}/${municipalitySlug}`;

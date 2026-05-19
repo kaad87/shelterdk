@@ -19,17 +19,20 @@ const VAND_FAQ: FaqItem[] = [
   { question: "Er der vand tilgængeligt hele året på shelterpladser?", answer: "Mange vandhaner på shelterpladser lukkes om vinteren for at undgå frostskader, typisk fra november til marts. Planlæg med ekstra medbragt vand hvis du overvejer en vintertur." },
 ];
 
-const PAGE_TITLE = "Shelter med vand i Danmark – drikkevand og vandhane | ShelterDK";
+const PAGE_TITLE = "Shelter med vand i Danmark – find shelters med vand | ShelterDK";
+const PAGE_OG_IMAGE =
+  "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1200&q=80&auto=format&fit=crop";
 export const metadata: Metadata = {
   title: { absolute: PAGE_TITLE },
   description:
-    "Find shelters og overnatningspladser i Danmark hvor der er vand – vandhane eller drikkevand. Udforsk pladser med adgang til vand til naturovernatning.",
+    "Find shelters med vand i Danmark. Se shelterpladser med vandhane eller drikkevand, plus kort, faciliteter og praktisk info.",
   alternates: { canonical: "https://shelterdk.dk/shelter-med-vand" },
   openGraph: {
     title: PAGE_TITLE,
     description:
       "Shelters med vand – vandhane eller drikkevand. Find overnatningspladser i naturen med adgang til vand.",
     url: "/shelter-med-vand",
+    images: [{ url: PAGE_OG_IMAGE, width: 1200, height: 630, alt: "Shelters med vand i Danmark" }],
   },
 };
 

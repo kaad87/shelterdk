@@ -18,6 +18,7 @@ export {
   getToilet,
   getPetsAllowed,
   getFeatures,
+  getResolvedBookingModel,
   isBookable,
   isValidImageUrl,
   getGooglePhotoProxyUrl,
@@ -32,4 +33,4 @@ export {
   getLocationCoords,
 } from "@shared/lib/shelter-detail";
 
-export type { ShelterFeature } from "@shared/lib/shelter-detail";
+export type { ResolvedBookingModel, ShelterFeature } from "@shared/lib/shelter-detail";

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ribbon mockup</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f5f5f0;
+    padding: 48px 32px;
+  }
+  h1 { font-size: 13px; font-weight: 600; color: #999; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 36px; }
+  .section { margin-bottom: 56px; }
+  .label { font-size: 13px; font-weight: 600; color: #555; margin-bottom: 16px; }
+  .desc { font-size: 12px; color: #888; margin-top: 8px; max-width: 260px; line-height: 1.5; }
+  .cards { display: flex; gap: 20px; flex-wrap: wrap; }
+
+  /* BASE CARD */
+  .card {
+    width: 260px;
+    border-radius: 14px;
+    background: #fff;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.05);
+  }
+  .card-img {
+    position: relative;
+    width: 260px;
+    height: 170px;
+    overflow: hidden;
+    background: #c8d8c0;
+  }
+  .card-img img {
+    width: 100%; height: 100%; object-fit: cover;
+  }
+  .card-body { padding: 12px 14px 14px; }
+  .card-title { font-size: 14px; font-weight: 600; color: #1a1a1a; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card-loc { font-size: 12px; color: #888; display: flex; align-items: center; gap: 4px; }
+  .card-loc svg { flex-shrink: 0; }
+
+  /* STAR BADGE (existing) */
+  .star-badge {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: rgba(0,0,0,.55);
+    backdrop-filter: blur(4px);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 7px;
+    border-radius: 20px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .star-badge svg { color: #f5c842; }
+
+  /* ── OPTION A: Diagonal corner ribbon ── */
+  .ribbon-corner {
+    position: absolute;
+    top: 0; right: 0;
+    width: 90px; height: 90px;
+    overflow: hidden;
+  }
+  .ribbon-corner span {
+    display: block;
+    position: absolute;
+    top: 20px; right: -22px;
+    width: 110px;
+    background: #2e7d32;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .03em;
+    text-align: center;
+    padding: 5px 0;
+    transform: rotate(45deg);
+    box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+
+  /* ── OPTION B: Pill badge top-left ── */
+  .badge-tl {
+    position: absolute;
+    top: 10px; left: 10px;
+    background: #2e7d32;
+    color: #fff;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: .02em;
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: flex; align-items: center; gap: 5px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.3);
+  }
+
+  /* ── OPTION C: Bottom strip overlay ── */
+  .bottom-strip {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(to top, rgba(20,80,20,.85) 0%, rgba(20,80,20,.0) 100%);
+    padding: 28px 12px 10px;
+    display: flex; align-items: flex-end; justify-content: flex-start;
+  }
+  .bottom-strip span {
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: .03em;
+    display: flex; align-items: center; gap: 5px;
+  }
+
+  /* ── OPTION D: Subtle corner tab ── */
+  .corner-tab {
+    position: absolute;
+    top: 0; left: 0;
+    background: #2e7d32;
+    color: #fff;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    padding: 5px 12px 5px 10px;
+    border-bottom-right-radius: 10px;
+    display: flex; align-items: center; gap: 5px;
+  }
+
+  .tag { display: inline-block; font-size: 10px; font-weight: 600; color: #2e7d32; border: 1.5px solid #2e7d32; border-radius: 20px; padding: 2px 8px; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<h1>Ribbon design — "Book på ShelterDK"</h1>
+
+<!-- OPTION A -->
+<div class="section">
+  <div class="label">A — Diagonal ribbon (hjørnebånd)</div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-img">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/A_small_cup_of_coffee.JPG/640px-A_small_cup_of_coffee.JPG" onerror="this.style.display='none'" alt="">
+        <div style="position:absolute;inset:0;background:linear-gradient(135deg,#a8c5a0,#6b9e6b);"></div>
+        <div class="ribbon-corner"><span>Book på ShelterDK</span></div>
+        <div class="star-badge">
+          <svg width="10" height="10" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+          4.8 (15)
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Shelterplads ved Solvognens...</div>
+        <div class="card-loc">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          Odsherred
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-img">
+        <div style="position:absolute;inset:0;background:linear-gradient(135deg,#8db88d,#5a8a5a);"></div>
+        <div class="ribbon-corner"><span>Book på ShelterDK</span></div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Shelter i True Skov</div>
+        <div class="card-loc">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          Aarhus
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="desc">Klassisk "sale ribbon" — markant og velkendt, men fylder meget og kan kollidere med stjerne-badge.</div>
+</div>
+
+<!-- OPTION B -->
+<div class="section">
+  <div class="label">B — Pill badge øverst til venstre</div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-img">
+        <div style="position:absolute;inset:0;background:linear-gradient(135deg,#a8c5a0,#6b9e6b);"></div>
+        <div class="badge-tl">
+          <svg width="10" height="10" fill="currentColor" viewBox="0 0 20 20"><path d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zm3 10V7l4 2.5-4 2.5z"/></svg>
+          Book på ShelterDK
+        </div>
+        <div class="star-badge">
+          <svg width="10" height="10" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+          4.8 (15)
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Shelterplads ved Solvognens...</div>
+        <div class="card-loc">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          Odsherred
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-img">
+        <div style="position:absolute;inset:0;background:linear-gradient(135deg,#8db88d,#5a8a5a);"></div>
+        <div class="badge-tl">
+          <svg width="10" height="10" fill="currentColor" viewBox="0 0 20 20"><path d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zm3 10V7l4 2.5-4 2.5z"/></svg>
+          Book på ShelterDK
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Shelter i True Skov</div>
+        <div class="card-loc">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          Aarhus
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="desc">Kompakt pill — matcher stjerne-badge'et visuelt, nemt at læse, passer godt på alle korttyper.</div>
+</div>
+
+<!-- OPTION C -->
+<div class="section">
+  <div class="label">C — Gradient overlay nederst i billedet</div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-img">
+        <div style="position:absolute;inset:0;background:linear-gradient(135deg,#a8c5a0,#6b9e6b);"></div>
+        <div class="bottom-strip">
+          <span>
+            <svg width="11" height="11" fill="currentColor" viewBox="0 0 20 20"><path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3z"/></svg>
+            Book på ShelterDK
+          </span>
+        </div>
+        <div class="star-badge">
+          <svg width="10" height="10" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+          4.8 (15)
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Shelterplads ved Solvognens...</div>
+        <div class="card-loc">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          Odsherred
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-img">
+        <div style="position:absolute;inset:0;background:linear-gradient(135deg,#8db88d,#5a8a5a);"></div>
+        <div class="bottom-strip">
+          <span>
+            <svg width="11" height="11" fill="currentColor" viewBox="0 0 20 20"><path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3z"/></svg>
+            Book på ShelterDK
+          </span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Shelter i True Skov</div>
+        <div class="card-loc">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13circle cx="12" cy="9" r="2.5"/></svg>
+          Aarhus
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="desc">Subtil gradient-overlay — integreret i billedet, ser lidt "premium" ud men teksten kan forsvinde på lyse billeder.</div>
+</div>
+
+<!-- OPTION D -->
+<div class="section">
+  <div class="label">D — Corner tab (flap øverst til venstre)</div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-img">
+        <div style="position:absolute;inset:0;background:linear-gradient(135deg,#a8c5a0,#6b9e6b);"></div>
+        <div class="corner-tab">
+          <svg width="10" height="10" fill="currentColor" viewBox="0 0 20 20"><path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3z"/></svg>
+          Book på ShelterDK
+        </div>
+        <div class="star-badge">
+          <svg width="10" height="10" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+          4.8 (15)
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Shelterplads ved Solvognens...</div>
+        <div class="card-loc">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          Odsherred
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-img">
+        <div style="position:absolute;inset:0;background:linear-gradient(135deg,#8db88d,#5a8a5a);"></div>
+        <div class="corner-tab">
+          <svg width="10" height="10" fill="currentColor" viewBox="0 0 20 20"><path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3z"/></svg>
+          Book på ShelterDK
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Shelter i True Skov</div>
+        <div class="card-loc">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          Aarhus
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="desc">Flap-tab i hjørnet — ren og minimalistisk, kolliderer ikke med stjerne-badge, tydelig men ikke dominerende.</div>
+</div>
+
+</body>
+</html>

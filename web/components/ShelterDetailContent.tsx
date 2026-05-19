@@ -16,6 +16,7 @@ import { ShelterFaq } from "@/components/ShelterFaq";
 import { ShelterFacts } from "@/components/ShelterFacts";
 import { ShareButtons } from "@/components/ShareButtons";
 import { WeatherWidget } from "@/components/WeatherWidget";
+import { ShelterAvailabilityPanel } from "@/components/ShelterAvailabilityPanel";
 import { CommunityContributionPanel } from "@/components/CommunityContributionPanel";
 import { CommunityApprovedSection } from "@/components/CommunityApprovedSection";
 import { ShelterExperiencesSection } from "@/components/ShelterExperiencesSection";
@@ -124,6 +125,8 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
   } = props;
 
   const hasMultipleBookingUnits = bookingUnits.length > 1;
+  const showAvailabilityPanel =
+    bookingUnits.length === 1 || shelter.availability_provider === "naturstyrelsen";
   const getBookingUnitLabel = (title: string) => {
     const prefixes = [`${shelter.title} – `, `${shelter.title} - `];
     for (const prefix of prefixes) {
@@ -212,26 +215,28 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
           </p>
         </>
       ) : isBookable ? (
-        <p className="text-primary/80 text-center py-2">
+        <>
           {bookingFallbackHint === "naturstyrelsen" ? (
             <>
-              Søg eller book på{" "}
               <a
                 href="https://book.naturstyrelsen.dk"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-accent underline hover:no-underline"
+                className="flex items-center justify-center gap-2 w-full bg-accent text-white font-semibold px-6 py-4 rounded-xl hover:bg-accent/90 transition-colors"
               >
-                book.naturstyrelsen.dk
+                <ExternalLink size={20} />
+                Book på Naturstyrelsen
               </a>
-              .
+              <p className="text-center text-primary/60 text-xs mt-3">
+                Søg efter &quot;{shelter.title}&quot; på book.naturstyrelsen.dk
+              </p>
             </>
           ) : (
-            <>
+            <p className="text-primary/80 text-center py-2">
               Dette shelter kræver booking — se beskrivelsen eller kontakt shelter-ejeren for information.
-            </>
+            </p>
           )}
-        </p>
+        </>
       ) : (
         <p className="text-primary/80 text-center py-2">
           Booking er ikke tilgængelig for dette shelter.
@@ -569,6 +574,14 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
             {/* Mobile: show booking above reviews (aside moves below on mobile) */}
             <BookingCard className="mb-10 lg:hidden" />
 
+            {showAvailabilityPanel && (
+              <ShelterAvailabilityPanel
+                slug={slug}
+                title={shelter.title}
+                className="mb-10 lg:hidden"
+              />
+            )}
+
             {showReviews && reviews.length > 0 && (
               <section className="mb-10">
                 <h2 className="font-serif text-xl font-bold text-primary mb-4">
@@ -652,6 +665,14 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
             {/* Desktop: booking stays in sidebar */}
             <BookingCard className="hidden lg:block" />
 
+            {showAvailabilityPanel && (
+              <ShelterAvailabilityPanel
+                slug={slug}
+                title={shelter.title}
+                className="hidden lg:block"
+              />
+            )}
+
             {(owner || contact || season) && (
               <div className="rounded-2xl border border-primary/10 bg-white shadow-sm p-6">
                 <h2 className="font-serif text-lg font-bold text-primary mb-3">
@@ -691,7 +712,12 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
               <h2 className="font-serif text-lg font-bold text-primary mb-3">
                 Fakta
               </h2>
-              <ShelterFacts shelter={shelter} coords={coords} firewood={firewood} hasShelterDkBooking={bookingUnits.length > 0} />
+              <ShelterFacts
+                shelter={shelter}
+                coords={coords}
+                firewood={firewood}
+                hasShelterDkBooking={bookingUnits.length > 0}
+              />
             </div>
 
             <NewsletterSignup variant="compact" source="shelter" />

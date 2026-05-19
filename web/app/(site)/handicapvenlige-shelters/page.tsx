@@ -41,17 +41,20 @@ const FAQ_ITEMS: FaqItem[] = [
 ];
 
 const PAGE_TITLE =
-  "Handicapvenlige shelters i Danmark | ShelterDK";
+  "Handicapvenlige shelters i Danmark – find tilgængelige shelters | ShelterDK";
+const PAGE_OG_IMAGE =
+  "https://images.unsplash.com/photo-1511497584788-876760111969?w=1200&q=80&auto=format&fit=crop";
 export const metadata: Metadata = {
   title: { absolute: PAGE_TITLE },
   description:
-    "Find handicapvenlige og tilgængelige shelters i Danmark. Se alle shelters der er registreret som handicapegnede eller delvist handicapegnede.",
+    "Find handicapvenlige shelters i Danmark. Se tilgængelige shelterpladser med kort, faciliteter og info om adgangsforhold.",
   alternates: { canonical: "https://shelterdk.dk/handicapvenlige-shelters" },
   openGraph: {
     title: PAGE_TITLE,
     description:
       "Handicapvenlige shelters i Danmark – find tilgængelige overnatningspladser i naturen.",
     url: "/handicapvenlige-shelters",
+    images: [{ url: PAGE_OG_IMAGE, width: 1200, height: 630, alt: "Handicapvenlige shelters i Danmark" }],
   },
 };
 

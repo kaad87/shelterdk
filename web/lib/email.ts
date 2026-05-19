@@ -198,6 +198,15 @@ export function renderEmail(opts: RenderEmailOpts): string {
   const preheaderHtml = preheader
     ? `<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">${escapeHtml(preheader)}&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;</div>`
     : "";
+  const trustNotice = `
+    <div style="background:#f7f5f1;border:1px solid #ede9e1;border-radius:8px;padding:10px 12px;margin:0 0 16px;">
+      <p style="font-size:12px;color:#475569;line-height:1.55;margin:0 0 6px;">
+        Du modtager denne mail fra <strong>ShelterDK</strong>, fordi du har en booking, har sendt en forespørgsel eller er registreret som kontakt for et shelter på <strong>shelterdk.dk</strong>.
+      </p>
+      <p style="font-size:11px;color:#64748b;line-height:1.55;margin:0;">
+        Links i mailen åbner <strong>shelterdk.dk</strong> eller vores betalingsside, hvis mailen handler om betaling. Spørgsmål: <a href="mailto:hej@shelterdk.dk" style="color:#c5a059;text-decoration:none;">hej@shelterdk.dk</a>
+      </p>
+    </div>`;
   return `<!DOCTYPE html>
 <html lang="da">
 <head>
@@ -219,12 +228,15 @@ ${preheaderHtml}
       </tr>
       <tr>
         <td style="padding:20px 24px 16px;">
+          ${trustNotice}
           ${bodyHtml}
         </td>
       </tr>
       <tr>
         <td style="background:#faf9f7;border-top:1px solid #ede9e1;padding:11px 24px;">
-          <p style="font-size:10px;color:#bbb;margin:0;">Sendt via <a href="https://shelterdk.dk" style="color:#c5a059;text-decoration:none;">shelterdk.dk</a> · Find shelters i hele Danmark</p>
+          <p style="font-size:10px;color:#9aa4b2;line-height:1.5;margin:0;">
+            Sendt fra <strong>hej@shelterdk.dk</strong> via <a href="https://shelterdk.dk" style="color:#c5a059;text-decoration:none;">shelterdk.dk</a> · Find shelters i hele Danmark
+          </p>
         </td>
       </tr>
     </table>
@@ -244,7 +256,14 @@ export function renderEmailText(opts: RenderEmailTextOpts): string {
   if (url) {
     parts.push(url, "");
   }
-  parts.push(sep, "shelterdk.dk");
+  parts.push(
+    "Du modtager denne mail fra ShelterDK, fordi du har en booking, en forespørgsel eller er registreret som kontakt for et shelter på shelterdk.dk.",
+    "Links i mailen peger på shelterdk.dk eller på vores betalingsside, hvis mailen handler om betaling.",
+    "Spørgsmål: hej@shelterdk.dk",
+    "",
+    sep,
+    "shelterdk.dk"
+  );
   return parts.join("\n");
 }
 

@@ -1,4 +1,5 @@
 import { createPublicClient } from "@/utils/supabase/server-public";
+import { createAdminClient } from "@/utils/supabase/server-admin";
 import type { Shelter } from "@/types/shelter";
 import { getLocationCoords, getDisplayScore, hasAnyImage } from "@/lib/shelter-detail";
 import { findPostnummerSuggestions } from "@/lib/postnummer";
@@ -27,6 +28,7 @@ export const SOEG_PAGE_SIZE = 24;
 export interface SoegPageResult {
   shelters: Shelter[];
   hasMore: boolean;
+  availabilityMap?: Record<string, "available" | "booked" | "partial">;
 }
 
 export interface SoegFilters {
@@ -43,6 +45,12 @@ export interface SoegFilters {
   strand?: boolean;
   bruser?: boolean;
   min_pladser?: number;
+  /** ISO-dato "YYYY-MM-DD" — ankomstdato: filtrer bekræftet optagne shelters fra. */
+  date?: string;
+  /** ISO-dato "YYYY-MM-DD" — afrejsedato: kombineret med date giver det et interval. */
+  date_to?: string;
+  /** Vis KUN shelters med bekræftet ledighedsdata (NST + ShelterDK booking) der ikke er optaget i perioden. */
+  confirmed_available?: boolean;
 }
 
 /** Bounding box for kortvisning – hent shelters inden for det synlige område. */
@@ -120,6 +128,93 @@ export function prunePlaceOutliersForExactQuery(
   });
 }
 
+type AvailabilityState = "available" | "booked" | "partial";
+
+async function getDateAvailabilityData(
+  date: string,
+  dateTo?: string,
+  fetchTrackedIds?: boolean
+): Promise<{ bookedIds: string[]; availabilityMap: Record<string, AvailabilityState>; trackedIds?: string[] }> {
+  const admin = createAdminClient();
+  const availabilityMap: Record<string, AvailabilityState> = {};
+  const bookedIdSet = new Set<string>();
+  const effectiveDateTo = dateTo && dateTo >= date ? dateTo : date;
+
+  // External providers (NST m.fl.) — kræver admin client (RLS)
+  const { data: extDays } = await admin
+    .from("external_availability_days")
+    .select("shelter_id, state")
+    .gte("day", date)
+    .lte("day", effectiveDateTo);
+
+  for (const row of (extDays ?? []) as { shelter_id: string; state: string }[]) {
+    const s = row.state;
+    if (s === "booked" || s === "confirmed" || s === "blocked") {
+      availabilityMap[row.shelter_id] = "booked";
+      bookedIdSet.add(row.shelter_id);
+    } else if (s === "partial" || s === "pending") {
+      if (!availabilityMap[row.shelter_id]) availabilityMap[row.shelter_id] = "partial";
+    } else if (s === "available") {
+      if (!availabilityMap[row.shelter_id]) availabilityMap[row.shelter_id] = "available";
+    }
+  }
+
+  // Interne ShelterDK-bookinger
+  // For single-day search (effectiveDateTo === date) the overlap condition check_in < date
+  // misses same-day check-ins (e.g. check_in = date). We advance the upper bound by 1 day
+  // so that check_in <= date is equivalent to check_in < date+1.
+  const checkInUpperBound = (() => {
+    if (effectiveDateTo === date) {
+      const d = new Date(date + "T12:00:00");
+      d.setDate(d.getDate() + 1);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    }
+    return effectiveDateTo;
+  })();
+  const { data: bookings } = await admin
+    .from("shelter_bookings")
+    .select("bookable_shelter_id")
+    // Any overlap with the requested stay should mark the shelter as unavailable.
+    .lt("check_in", checkInUpperBound)
+    .gt("check_out", date)
+    .in("status", ["confirmed", "pending"]);
+
+  // Hent alle bookable_shelters IDs (bruges til både booked-check og tracked-set)
+  const { data: allBookableShelters } = fetchTrackedIds
+    ? await admin.from("bookable_shelters").select("shelter_id, id")
+    : { data: null };
+
+  if (bookings && bookings.length > 0) {
+    const bsIds = [...new Set((bookings as { bookable_shelter_id: string }[]).map((b) => b.bookable_shelter_id))];
+    const bsData = fetchTrackedIds
+      ? (allBookableShelters ?? []).filter((r: { id: string }) => bsIds.includes(r.id))
+      : await admin.from("bookable_shelters").select("shelter_id").in("id", bsIds).then((r) => r.data ?? []);
+    for (const row of (bsData ?? []) as { shelter_id: string | null }[]) {
+      if (row.shelter_id && !bookedIdSet.has(row.shelter_id)) {
+        availabilityMap[row.shelter_id] = "booked";
+        bookedIdSet.add(row.shelter_id);
+      }
+    }
+  }
+
+  if (!fetchTrackedIds) {
+    return { bookedIds: [...bookedIdSet], availabilityMap };
+  }
+
+  // Hent alle shelter IDs med ledighedsdata: NST + ShelterDK bookable
+  const [{ data: nstShelters }] = await Promise.all([
+    admin.from("shelters").select("id").not("availability_provider", "is", null).is("duplicate_of_shelter_id", null),
+  ]);
+
+  const trackedIdSet = new Set<string>();
+  for (const row of (nstShelters ?? []) as { id: string }[]) trackedIdSet.add(row.id);
+  for (const row of (allBookableShelters ?? []) as { shelter_id: string | null }[]) {
+    if (row.shelter_id) trackedIdSet.add(row.shelter_id);
+  }
+
+  return { bookedIds: [...bookedIdSet], availabilityMap, trackedIds: [...trackedIdSet] };
+}
+
 /**
  * Hent én side shelters med valgfri region, søgetekst, area_slug, filtre og bbox.
  * Ved bbox hentes op til BBOX_FETCH_LIMIT og filtreres efter koordinater (location).
@@ -140,6 +235,16 @@ export async function getSheltersPage(
   const useBbox = bbox && [bbox.minLat, bbox.maxLat, bbox.minLon, bbox.maxLon].every((n) => Number.isFinite(n));
   const from = useBbox ? 0 : (page - 1) * pageSize;
   const toInclusive = useBbox ? BBOX_FETCH_LIMIT - 1 : from + pageSize - 1;
+
+  const isValidDate = (d?: string): d is string => Boolean(d && /^\d{4}-\d{2}-\d{2}$/.test(d));
+  if (filters?.confirmed_available && !isValidDate(filters.date)) {
+    return { shelters: [], hasMore: false, availabilityMap: {} };
+  }
+  const needTrackedIds = Boolean(filters?.confirmed_available);
+  let dateAvailability: { bookedIds: string[]; availabilityMap: Record<string, AvailabilityState>; trackedIds?: string[] } | null = null;
+  if (isValidDate(filters?.date)) {
+    dateAvailability = await getDateAvailabilityData(filters.date, filters.date_to, needTrackedIds);
+  }
 
   let query = supabase
     .from("shelters")
@@ -239,6 +344,17 @@ export async function getSheltersPage(
   if (filters?.min_pladser && filters.min_pladser > 0) {
     query = query.gte("capacity", filters.min_pladser);
   }
+  if (filters?.confirmed_available && dateAvailability?.trackedIds) {
+    // Vis KUN shelters med bekræftet ledighedsdata der ikke er optaget i perioden
+    const bookedSet = new Set(dateAvailability.bookedIds);
+    const availableIds = dateAvailability.trackedIds.filter((id) => !bookedSet.has(id));
+    if (availableIds.length === 0) {
+      return { shelters: [], hasMore: false, availabilityMap: dateAvailability.availabilityMap };
+    }
+    query = query.in("id", availableIds);
+  } else if (dateAvailability && dateAvailability.bookedIds.length > 0) {
+    query = query.not("id", "in", `(${dateAvailability.bookedIds.join(",")})`);
+  }
 
   let { data, error } = await query.range(from, toInclusive);
 
@@ -257,7 +373,7 @@ export async function getSheltersPage(
       }
     }
     list.sort(sortByImageAndScore);
-    return { shelters: list, hasMore: false };
+    return { shelters: list, hasMore: false, ...(dateAvailability ? { availabilityMap: dateAvailability.availabilityMap } : {}) };
   }
 
   if (error?.code === "42703") {
@@ -357,13 +473,14 @@ export async function getSheltersPage(
         );
       });
       list.sort(sortByImageAndScore);
-      return { shelters: prunePlaceOutliersForExactQuery(list, q), hasMore: false };
+      return { shelters: prunePlaceOutliersForExactQuery(list, q), hasMore: false, ...(dateAvailability ? { availabilityMap: dateAvailability.availabilityMap } : {}) };
     }
     list = prunePlaceOutliersForExactQuery(list, q).slice(0, pageSize);
     list.sort(sortByImageAndScore);
     return {
       shelters: list,
       hasMore: list.length >= pageSize,
+      ...(dateAvailability ? { availabilityMap: dateAvailability.availabilityMap } : {}),
     };
   }
 
@@ -381,6 +498,7 @@ export async function getSheltersPage(
   return {
     shelters: list,
     hasMore: list.length >= pageSize,
+    ...(dateAvailability ? { availabilityMap: dateAvailability.availabilityMap } : {}),
   };
 }
 

@@ -86,15 +86,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const locationLabel = usesMunicipalityExpansion ? `i og omkring ${placeName}` : `i ${placeName}`;
 
   const title = count > 0
-    ? `Shelter ${placeName} | ${count} shelter${count !== 1 ? "s" : ""} i ${placeName} | ShelterDK`
-    : `Shelter ${placeName} | ShelterDK`;
+    ? `Shelter i ${placeName} – ${count} shelters, kort og faciliteter | ShelterDK`
+    : `Shelter i ${placeName} – kort og faciliteter | ShelterDK`;
   const statParts: string[] = [];
   if (bookable > 0) statParts.push(`${bookable} kan bookes`);
   if (withWater > 0) statParts.push(`${withWater} med vand`);
   const statsText = statParts.length > 0 ? ` – ${statParts.join(", ")}` : "";
   const description = count > 0
-    ? `Leder du efter shelter i ${placeName}? Se ${count} shelter${count !== 1 ? "s" : ""} ${locationLabel}${statsText}, med kort, faciliteter og praktisk info.`
-    : `Leder du efter shelter i ${placeName}? Se shelters, faciliteter og praktisk info på ShelterDK.`;
+    ? `Find shelter i ${placeName}. Se ${count} shelter${count !== 1 ? "s" : ""} ${locationLabel}${statsText}, med kort, faciliteter, billeder og praktisk info.`
+    : `Find shelter i ${placeName} med kort, faciliteter, billeder og praktisk info på ShelterDK.`;
 
   const canonicalPath = `/by/${by_slug}`;
   return {

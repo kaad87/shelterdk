@@ -30,7 +30,7 @@ import {
   getCity,
   isShelterPlace,
   stripHtml,
-  isBookable,
+  getResolvedBookingModel,
   getToilet,
   getWater,
   getPetsAllowed,
@@ -203,15 +203,11 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
     : shelter.google_place_id
       ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(shelter.title)}&query_place_id=${encodeURIComponent(shelter.google_place_id)}`
       : null;
-  const rawBookingUrl = shelter.booking_url?.trim() || null;
-  const bookingUrl =
-    rawBookingUrl && /^https?:\/\//i.test(rawBookingUrl) ? rawBookingUrl : null;
-  const bookingFallbackHint =
-    !bookingUrl &&
-    isBookable(shelter) &&
-    ((owner || "").toLowerCase().includes("naturstyrelsen") || (contact || "").toLowerCase().includes("nst.dk"))
-      ? "naturstyrelsen"
-      : null;
+  const bookingModel = getResolvedBookingModel(shelter, {
+    hasShelterDkBooking: bookableShelters.length > 0,
+  });
+  const bookingUrl = bookingModel.bookingUrl;
+  const bookingFallbackHint = bookingModel.fallbackHint;
   const toilet = getToilet(shelter);
   const water = getWater(shelter);
   const facilityLinks: { label: string; href: string }[] = [];
@@ -220,7 +216,7 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
   const petsAllowed = getPetsAllowed(shelter);
   const shelterFaqItems = getShelterFaqItems(shelter.title, {
     toilet,
-    bookable: isBookable(shelter),
+    bookable: bookingModel.requiresBooking,
     bookingUrl,
     petsAllowed,
   });
@@ -281,7 +277,7 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
       firewood={getFirewood(shelter)}
       facilityLinks={facilityLinks}
       nearbyRoutes={getRoutesForShelter(shelter_slug)}
-      isBookable={isBookable(shelter)}
+      isBookable={bookingModel.requiresBooking}
       shelterFaqItems={shelterFaqItems}
       shelterFaqJsonLd={shelterFaqJsonLd}
       reviews={reviews}
