@@ -5,6 +5,65 @@ import type { Shelter } from "@shared/types/shelter";
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const BUCKET = "shelter-photos";
 
+// ─── Dashboard summary ───────────────────────────────────────────────────────
+
+export interface DashboardShelterSummary {
+  shelterId: string;
+  /** Pending bookings that need the owner's response (after_confirmation mode). */
+  pendingCount: number;
+  /** Soonest upcoming confirmed check-in, if any. */
+  nextCheckIn: { date: string; guestName: string } | null;
+}
+
+/**
+ * Returns pending-count and next-check-in for a set of bookable shelter IDs.
+ * Uses two batched IN queries rather than N individual queries.
+ */
+export async function getDashboardSummaries(
+  shelterIds: string[],
+  ownerResponseShelterIds: string[] = shelterIds
+): Promise<DashboardShelterSummary[]> {
+  if (shelterIds.length === 0) return [];
+  const supabase = createAdminClient();
+  const today = new Date().toISOString().slice(0, 10);
+
+  const [pendingResult, upcomingResult] = await Promise.all([
+    ownerResponseShelterIds.length > 0
+      ? supabase
+          .from("shelter_bookings")
+          .select("bookable_shelter_id")
+          .in("bookable_shelter_id", ownerResponseShelterIds)
+          .eq("status", "pending")
+          .gte("check_out", today)
+      : Promise.resolve({ data: [] as { bookable_shelter_id: string }[] }),
+    supabase
+      .from("shelter_bookings")
+      .select("bookable_shelter_id, check_in, guest_name")
+      .in("bookable_shelter_id", shelterIds)
+      .eq("status", "confirmed")
+      .gte("check_in", today)
+      .order("check_in", { ascending: true }),
+  ]);
+
+  const pendingCounts: Record<string, number> = {};
+  for (const b of pendingResult.data ?? []) {
+    pendingCounts[b.bookable_shelter_id] = (pendingCounts[b.bookable_shelter_id] ?? 0) + 1;
+  }
+
+  const nextCheckIns: Record<string, { date: string; guestName: string }> = {};
+  for (const b of upcomingResult.data ?? []) {
+    if (!nextCheckIns[b.bookable_shelter_id]) {
+      nextCheckIns[b.bookable_shelter_id] = { date: b.check_in, guestName: b.guest_name };
+    }
+  }
+
+  return shelterIds.map((id) => ({
+    shelterId: id,
+    pendingCount: pendingCounts[id] ?? 0,
+    nextCheckIn: nextCheckIns[id] ?? null,
+  }));
+}
+
 // ─── Shelter lookup ──────────────────────────────────────────────────────────
 
 /**
