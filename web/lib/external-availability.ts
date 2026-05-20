@@ -126,7 +126,7 @@ export async function getShelterAvailabilityBySlug(
       lookup_key: units[0].id,
       last_synced_at: null,
       stale: false,
-      has_data: Object.keys(dates).length > 0,
+      has_data: true,
       unit_count: 1,
       days: dates,
     };
