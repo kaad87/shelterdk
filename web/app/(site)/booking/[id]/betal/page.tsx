@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { createAdminClient } from "@/utils/supabase/server-admin";
 import {
   createBookingPayment,
@@ -16,17 +16,21 @@ import {
   expireCheckoutSession,
 } from "@/lib/stripe";
 import { reconcileCompletedCheckoutSession } from "@/lib/payment-reconcile";
+import {
+  createPaymentAccessToken,
+  verifyPaymentAccessToken,
+} from "@/lib/booking-access";
 
 export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ t?: string; session_id?: string }>;
+  searchParams: Promise<{ access?: string; t?: string; session_id?: string }>;
 }
 
 export default async function BetalPage({ params, searchParams }: Props) {
   const { id } = await params;
-  const { t, session_id } = await searchParams;
+  const { access, t, session_id } = await searchParams;
 
   const loadBooking = async () =>
     createAdminClient()
@@ -40,7 +44,16 @@ export default async function BetalPage({ params, searchParams }: Props) {
     notFound();
   }
 
-  if (!t || booking.guest_token !== t) {
+  let paymentAccessToken = access ?? null;
+
+  if (!paymentAccessToken && t && booking.guest_token === t) {
+    const legacyRedirectParams = new URLSearchParams();
+    legacyRedirectParams.set("access", createPaymentAccessToken(booking));
+    if (session_id) legacyRedirectParams.set("session_id", session_id);
+    redirect(`/booking/${id}/betal?${legacyRedirectParams.toString()}`);
+  }
+
+  if (!paymentAccessToken || !verifyPaymentAccessToken(paymentAccessToken, booking)) {
     notFound();
   }
 
@@ -92,14 +105,7 @@ export default async function BetalPage({ params, searchParams }: Props) {
 
   if (canResumePayment) {
     try {
-      const hasActivePendingPayment =
-        pendingPayment &&
-        new Date(pendingPayment.expires_at) > new Date();
-
-      if (hasActivePendingPayment) {
-        if (!pendingPayment) {
-          throw new Error("Pending betaling mangler trods aktiv betalingsstatus");
-        }
+      if (pendingPayment && new Date(pendingPayment.expires_at) > new Date()) {
         const currentPendingPayment = pendingPayment;
         // Reuse existing Stripe session — avoid creating orphaned sessions on every load
         const Stripe = (await import("stripe")).default;

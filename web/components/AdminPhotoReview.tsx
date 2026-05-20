@@ -37,7 +37,15 @@ declare global {
 
 const STORAGE_KEY = "shelterdk-admin-secret";
 
-type TabKey = "photos" | "community" | "instagram" | "newsletter" | "contact" | "oplevelser" | "submissions" | "bookinger";
+export type TabKey =
+  | "photos"
+  | "community"
+  | "instagram"
+  | "newsletter"
+  | "contact"
+  | "oplevelser"
+  | "submissions"
+  | "bookinger";
 export type AdminSummaryCounts = Record<
   "photos" | "community" | "instagram" | "newsletter" | "contact" | "oplevelser" | "submissions" | "bookinger" | "bookingMonitor",
   number
@@ -144,7 +152,10 @@ const MANAGEMENT_TABS: { key: TabKey; label: string; icon: typeof Camera }[] = [
 
 type AdminPhotoReviewProps = {
   initialTab?: TabKey;
+  activeTab?: TabKey;
+  onTabChange?: (tab: TabKey) => void;
   showManagementTabs?: boolean;
+  showModerationTabs?: boolean;
   onSecretChange?: (secret: string | null) => void;
   onSummaryChange?: (summary: AdminSummaryCounts) => void;
 };
@@ -163,7 +174,10 @@ const EMPTY_SUMMARY: AdminSummaryCounts = {
 
 export function AdminPhotoReview({
   initialTab = "photos",
+  activeTab,
+  onTabChange,
   showManagementTabs = true,
+  showModerationTabs = true,
   onSecretChange,
   onSummaryChange,
 }: AdminPhotoReviewProps) {
@@ -185,6 +199,11 @@ export function AdminPhotoReview({
   const [newIgUrl, setNewIgUrl] = useState("");
   const [igScriptReady, setIgScriptReady] = useState(false);
   const embedRef = useRef(0);
+  const currentTab = activeTab ?? tab;
+  const selectTab = (next: TabKey) => {
+    if (activeTab === undefined) setTab(next);
+    onTabChange?.(next);
+  };
 
   // Bookinger tab
   const [bookableShelters, setBookableShelters] = useState<BookableShelterAdmin[]>([]);
@@ -276,7 +295,17 @@ export function AdminPhotoReview({
           cache: "no-store",
         }),
       ]);
-      if (photoRes.status === 401 || communityRes.status === 401 || igRes.status === 401 || nlRes.status === 401) {
+      if (
+        photoRes.status === 401 ||
+        communityRes.status === 401 ||
+        igRes.status === 401 ||
+        nlRes.status === 401 ||
+        contactRes.status === 401 ||
+        experiencesRes.status === 401 ||
+        submissionsRes.status === 401 ||
+        sheltersRes.status === 401 ||
+        bookingMonitorRes.status === 401
+      ) {
         setError("Ugyldig kode");
         sessionStorage.removeItem(STORAGE_KEY);
         setSecret("");
@@ -656,15 +685,16 @@ export function AdminPhotoReview({
       )}
 
       {/* Tabs */}
+      {(showModerationTabs || showManagementTabs) && (
       <div className="mb-6 flex items-center gap-0.5 rounded-xl border border-primary/10 bg-primary/[0.02] p-1.5 overflow-x-auto">
-        {MODERATION_TABS.map(({ key, label, icon: Icon }) => {
+        {showModerationTabs && MODERATION_TABS.map(({ key, label, icon: Icon }) => {
           const count = badgeCounts[key];
-          const isActive = tab === key;
+          const isActive = currentTab === key;
           return (
             <button
               key={key}
               type="button"
-              onClick={() => setTab(key)}
+              onClick={() => selectTab(key)}
               className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-all shrink-0 ${
                 isActive
                   ? "bg-white text-primary shadow-sm"
@@ -687,15 +717,15 @@ export function AdminPhotoReview({
         })}
         {showManagementTabs && (
           <>
-            <div className="w-px h-5 bg-primary/20 mx-1 shrink-0" />
+            {showModerationTabs && <div className="w-px h-5 bg-primary/20 mx-1 shrink-0" />}
             {MANAGEMENT_TABS.map(({ key, label, icon: Icon }) => {
               const count = badgeCounts[key];
-              const isActive = tab === key;
+              const isActive = currentTab === key;
               return (
                 <button
                   key={key}
                   type="button"
-                  onClick={() => setTab(key)}
+                  onClick={() => selectTab(key)}
                   className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-all shrink-0 ${
                     isActive
                       ? "bg-white text-primary shadow-sm"
@@ -719,6 +749,7 @@ export function AdminPhotoReview({
           </>
         )}
       </div>
+      )}
 
       {/* Loading state */}
       {loading && submissions.length === 0 && communitySubmissions.length === 0 && igPosts.length === 0 && (
@@ -729,7 +760,7 @@ export function AdminPhotoReview({
       )}
 
       {/* Photos tab */}
-      {tab === "photos" && !loading && (
+      {currentTab === "photos" && !loading && (
         submissions.length === 0 ? (
           <EmptyState icon={Camera} text="Ingen billeder venter på godkendelse." />
         ) : (
@@ -792,7 +823,7 @@ export function AdminPhotoReview({
       )}
 
       {/* Community tab */}
-      {tab === "community" && !loading && (
+      {currentTab === "community" && !loading && (
         communitySubmissions.length === 0 ? (
           <EmptyState icon={MessageSquare} text="Ingen community-bidrag venter på godkendelse." />
         ) : (
@@ -858,7 +889,7 @@ export function AdminPhotoReview({
       )}
 
       {/* Instagram tab */}
-      {tab === "instagram" && !loading && (
+      {currentTab === "instagram" && !loading && (
         <div className="space-y-6">
           <Script
             src="https://www.instagram.com/embed.js"
@@ -1037,7 +1068,7 @@ export function AdminPhotoReview({
       )}
 
       {/* Newsletter tab */}
-      {tab === "newsletter" && !loading && (
+      {currentTab === "newsletter" && !loading && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-sm text-primary/60">
@@ -1141,7 +1172,7 @@ export function AdminPhotoReview({
       )}
 
       {/* Contact messages tab */}
-      {tab === "contact" && !loading && (
+      {currentTab === "contact" && !loading && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-sm text-primary/60">
@@ -1295,7 +1326,7 @@ export function AdminPhotoReview({
       )}
 
       {/* Indsendte shelters tab */}
-      {tab === "submissions" && (
+      {currentTab === "submissions" && (
         <div className="flex flex-col gap-4">
           {loading && <div className="text-primary/60 text-sm">Henter…</div>}
           {!loading && shelterSubmissions.length === 0 && (
@@ -1433,7 +1464,7 @@ export function AdminPhotoReview({
       )}
 
       {/* Oplevelser tab */}
-      {tab === "oplevelser" && (
+      {currentTab === "oplevelser" && (
         <div className="space-y-4">
           {loading && <div className="text-primary/60 text-sm">Henter…</div>}
           {!loading && experiences.length === 0 && (
@@ -1499,7 +1530,7 @@ export function AdminPhotoReview({
       )}
 
       {/* ── BOOKINGER TAB ── */}
-      {tab === "bookinger" && (
+      {currentTab === "bookinger" && (
         <div className="space-y-8">
           {/* Create form */}
           <section className="rounded-2xl border border-primary/10 bg-white p-6">

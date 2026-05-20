@@ -50,6 +50,7 @@ export interface SubmitShelterPayload {
   type: SubmissionType;
   shelter_name: string;
   location_text: string;
+  website?: string;
   lat?: number | null;
   lng?: number | null;
   photo_urls?: string[];
@@ -64,4 +65,4 @@ export interface SubmitShelterPayload {
 }
 
 /** Photo path pattern for submissions bucket: pending/{uuid}.{ext} */
-export const PHOTO_PATH_REGEX = /^pending\/[0-9a-f-]{36}\.(jpg|jpeg|png)$/i;
+export const PHOTO_PATH_REGEX = /^pending\/[0-9a-f-]{36}\.(jpg|jpeg|png|webp)$/i;

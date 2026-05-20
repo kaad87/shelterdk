@@ -84,6 +84,9 @@ interface UploadedPhoto {
   deleteToken: string;
 }
 
+const MAX_PHOTO_SIZE_BYTES = 10 * 1024 * 1024;
+const ALLOWED_PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
 // ─── Main form component ──────────────────────────────────────────────────────
 
 export function ShelterSubmissionForm() {
@@ -113,6 +116,7 @@ export function ShelterSubmissionForm() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [website, setWebsite] = useState("");
 
   // Booking opt-in
   const [wantsBooking, setWantsBooking] = useState(false);
@@ -132,12 +136,23 @@ export function ShelterSubmissionForm() {
       return;
     }
 
+    if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
+      setPhotoError("Brug et billede i JPEG, PNG eller WebP");
+      return;
+    }
+
+    if (file.size > MAX_PHOTO_SIZE_BYTES) {
+      setPhotoError("Billedet er for stort (maks 10 MB)");
+      return;
+    }
+
     setPhotoError(null);
     setUploadingPhoto(true);
 
     try {
       const fd = new FormData();
       fd.append("file", file);
+      fd.append("website", website);
       const res = await fetch("/api/submit-shelter/photos", {
         method: "POST",
         body: fd,
@@ -206,6 +221,7 @@ export function ShelterSubmissionForm() {
           type: "owner_registration",
           shelter_name: shelterName.trim(),
           location_text: locationText.trim(),
+          website,
           lat,
           lng,
           capacity: capacity ? Number(capacity) : undefined,
@@ -321,6 +337,18 @@ export function ShelterSubmissionForm() {
             />
           </div>
         </div>
+        <div className="sr-only" aria-hidden="true">
+          <label>
+            Hjemmeside
+            <input
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+            />
+          </label>
+        </div>
       </section>
 
       {/* Section 2: Placering på kort */}
@@ -388,7 +416,7 @@ export function ShelterSubmissionForm() {
           {/* Photo upload */}
           <div>
             <p className="text-sm font-medium text-primary/80 mb-2">
-              Billeder (valgfrit, maks 5 stk., JPEG/PNG, maks 5 MB pr. billede)
+              Billeder (valgfrit, maks 5 stk., JPEG/PNG/WebP, maks 10 MB pr. billede)
             </p>
             <div className="flex flex-wrap gap-3 mb-3">
               {photos.map((photo, i) => (
@@ -435,7 +463,7 @@ export function ShelterSubmissionForm() {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/jpeg,image/png"
+              accept="image/jpeg,image/png,image/webp"
               className="hidden"
               onChange={handleFileSelect}
             />

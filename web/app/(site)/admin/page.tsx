@@ -13,17 +13,21 @@ import {
   ArrowRight,
   Instagram,
   Send,
+  Camera,
+  Star,
 } from "lucide-react";
 import { AdminPhotoReview, type AdminSummaryCounts } from "@/components/AdminPhotoReview";
+import type { TabKey } from "@/components/AdminPhotoReview";
 
 const STORAGE_KEY = "shelterdk-admin-secret";
 type AdminBadgeKey = keyof AdminSummaryCounts;
 type AdminNavItem = {
-  href: string;
+  href?: string;
   icon: typeof Tent;
   title: string;
   desc: string;
   badgeKey?: AdminBadgeKey;
+  tabKey?: TabKey;
 };
 type AdminNavGroup = {
   label: string;
@@ -35,11 +39,11 @@ const NAV_GROUPS: AdminNavGroup[] = [
     label: "Kræver handling",
     items: [
       {
-        href: "/admin/kontakt",
         icon: MessageSquare,
         title: "Kontaktbeskeder",
         desc: "Henvendelser fra brugere",
         badgeKey: "contact",
+        tabKey: "contact",
       },
       {
         href: "/admin/shelter-ansogninger",
@@ -86,10 +90,37 @@ const NAV_GROUPS: AdminNavGroup[] = [
       },
     ],
   },
+  {
+    label: "Indhold & moderation",
+    items: [
+      {
+        icon: Camera,
+        title: "Billeder",
+        desc: "Billeder der venter på godkendelse",
+        badgeKey: "photos",
+        tabKey: "photos",
+      },
+      {
+        icon: MessageSquare,
+        title: "Community",
+        desc: "Kommentarer og facilitetsbidrag",
+        badgeKey: "community",
+        tabKey: "community",
+      },
+      {
+        icon: Star,
+        title: "Oplevelser",
+        desc: "Brugeroplevelser og historier",
+        badgeKey: "oplevelser",
+        tabKey: "oplevelser",
+      },
+    ],
+  },
 ] as const;
 
 export default function AdminIndexPage() {
   const [secret, setSecret] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<TabKey>("photos");
   const [summary, setSummary] = useState<AdminSummaryCounts>({
     photos: 0,
     community: 0,
@@ -125,14 +156,12 @@ export default function AdminIndexPage() {
                 {group.label}
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
-                {group.items.map(({ href, icon: Icon, title, desc, badgeKey }) => {
+                {group.items.map(({ href, icon: Icon, title, desc, badgeKey, tabKey }) => {
                   const badgeCount = badgeKey ? summary[badgeKey] : 0;
-                  return (
-                  <Link
-                    key={href}
-                    href={href}
-                    className="relative flex items-center gap-3 rounded-xl border border-primary/10 bg-white px-4 py-3 hover:border-accent/30 hover:bg-accent/[0.02] transition-all group shadow-sm shadow-primary/[0.03]"
-                  >
+                  const classes =
+                    "relative flex items-center gap-3 rounded-xl border border-primary/10 bg-white px-4 py-3 hover:border-accent/30 hover:bg-accent/[0.02] transition-all group shadow-sm shadow-primary/[0.03] text-left w-full";
+                  const content = (
+                    <>
                     {badgeCount > 0 && (
                       <span className="absolute right-10 top-3 inline-flex min-w-[22px] items-center justify-center rounded-full bg-accent px-1.5 py-0.5 text-xs font-semibold leading-none text-white shadow-sm">
                         {badgeCount}
@@ -152,7 +181,30 @@ export default function AdminIndexPage() {
                       size={13}
                       className="text-primary/15 group-hover:text-accent/40 group-hover:translate-x-0.5 transition-all shrink-0"
                     />
-                  </Link>
+                    </>
+                  );
+
+                  if (href) {
+                    return (
+                      <Link
+                        key={href}
+                        href={href}
+                        className={classes}
+                      >
+                        {content}
+                      </Link>
+                    );
+                  }
+
+                  return (
+                    <button
+                      key={tabKey}
+                      type="button"
+                      onClick={() => tabKey && setActiveTab(tabKey)}
+                      className={classes}
+                    >
+                      {content}
+                    </button>
                   );
                 })}
               </div>
@@ -162,7 +214,10 @@ export default function AdminIndexPage() {
       )}
 
       <AdminPhotoReview
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
         showManagementTabs={false}
+        showModerationTabs={false}
         onSecretChange={setSecret}
         onSummaryChange={setSummary}
       />

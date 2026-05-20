@@ -1,19 +1,23 @@
 // app/api/submit-shelter/photos/route.ts
 import { createHmac } from "crypto";
 import { createAdminClient } from "@/utils/supabase/server-admin";
+import { enforcePublicRateLimit } from "@/lib/public-rate-limit";
 import { PHOTO_PATH_REGEX } from "@/lib/shelter-submissions";
 
 export const dynamic = "force-dynamic";
 
 const BUCKET = "shelter-submissions";
-const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
-const ALLOWED_TYPES = ["image/jpeg", "image/png"] as const;
-const EXT: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png" };
+const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
+const EXT: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
 
-// Rate limiting: 10 uploads/min per IP
-const RATE_LIMIT_WINDOW_MS = 60_000;
+// Rate limiting: 10 uploads/min per IP (shared across instances via DB)
+const RATE_LIMIT_WINDOW_SECONDS = 60;
 const MAX_PER_WINDOW = 10;
-const ipTimestamps = new Map<string, number[]>();
 
 /**
  * Sign a storage path with the server secret so the DELETE endpoint can verify
@@ -21,31 +25,33 @@ const ipTimestamps = new Map<string, number[]>();
  * across serverless cold-starts.  Domain-prefixed to isolate from ADMIN_SECRET.
  */
 function signPath(path: string): string {
-  const secret = `photo-delete:${process.env.ADMIN_SECRET ?? "dev-only-not-secure"}`;
+  const adminSecret = process.env.ADMIN_SECRET?.trim();
+  if (!adminSecret) {
+    throw new Error("ADMIN_SECRET er påkrævet for at signere billedsletninger");
+  }
+  const secret = `photo-delete:${adminSecret}`;
   return createHmac("sha256", secret).update(path).digest("hex").slice(0, 32);
 }
 
 export async function POST(request: Request) {
-  // Rate limit
-  const ip =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  const now = Date.now();
-  const timestamps = ipTimestamps.get(ip) ?? [];
-  const recent = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
-  if (recent.length >= MAX_PER_WINDOW) {
-    return Response.json(
-      { error: "For mange uploads. Prøv igen om lidt." },
-      { status: 429 }
-    );
+  const rateLimited = await enforcePublicRateLimit(request, {
+    scope: "submit-shelter-photo-upload",
+    windowSeconds: RATE_LIMIT_WINDOW_SECONDS,
+    maxHits: MAX_PER_WINDOW,
+    errorMessage: "For mange uploads. Prøv igen om lidt.",
+  });
+  if (rateLimited) {
+    return rateLimited;
   }
-  recent.push(now);
-  ipTimestamps.set(ip, recent);
 
   // File size guard via Content-Length header
   const contentLength = Number(request.headers.get("content-length") ?? "0");
   if (contentLength > MAX_SIZE_BYTES * 2) {
     // *2 for multipart overhead
-    return Response.json({ error: "Filen er for stor (maks 5 MB)" }, { status: 413 });
+    return Response.json(
+      { error: "Filen er for stor (maks 10 MB)" },
+      { status: 413 }
+    );
   }
 
   // Parse multipart
@@ -56,6 +62,14 @@ export async function POST(request: Request) {
     return Response.json({ error: "Ugyldig formdata" }, { status: 400 });
   }
 
+  const honeypot = formData.get("website");
+  if (typeof honeypot === "string" && honeypot.trim()) {
+    return Response.json(
+      { error: "Upload kunne ikke gennemføres" },
+      { status: 400 }
+    );
+  }
+
   const file = formData.get("file");
   if (!(file instanceof File)) {
     return Response.json({ error: "Mangler fil-felt 'file'" }, { status: 400 });
@@ -64,14 +78,17 @@ export async function POST(request: Request) {
   // Validate type
   if (!ALLOWED_TYPES.includes(file.type as (typeof ALLOWED_TYPES)[number])) {
     return Response.json(
-      { error: "Kun JPEG og PNG understøttes" },
+      { error: "Kun JPEG, PNG og WebP understøttes" },
       { status: 400 }
     );
   }
 
   // Validate size
   if (file.size > MAX_SIZE_BYTES) {
-    return Response.json({ error: "Filen er for stor (maks 5 MB)" }, { status: 400 });
+    return Response.json(
+      { error: "Filen er for stor (maks 10 MB)" },
+      { status: 400 }
+    );
   }
 
   const ext = EXT[file.type] ?? "jpg";
@@ -95,18 +112,42 @@ export async function POST(request: Request) {
 
   if (signedError || !signedData?.signedUrl) {
     console.error("Signed URL error:", signedError);
+    let deleteToken: string;
+    try {
+      deleteToken = signPath(storagePath);
+    } catch (err) {
+      console.error("Delete token signing error:", err);
+      await supabase.storage.from(BUCKET).remove([storagePath]).catch(() => null);
+      return Response.json(
+        { error: "Upload kunne ikke færdiggøres. Prøv igen." },
+        { status: 500 }
+      );
+    }
+
     // Upload succeeded — return path even without preview URL
     return Response.json({
       path: storagePath,
       previewUrl: null,
-      deleteToken: signPath(storagePath),
+      deleteToken,
     });
+  }
+
+  let deleteToken: string;
+  try {
+    deleteToken = signPath(storagePath);
+  } catch (err) {
+    console.error("Delete token signing error:", err);
+    await supabase.storage.from(BUCKET).remove([storagePath]).catch(() => null);
+    return Response.json(
+      { error: "Upload kunne ikke færdiggøres. Prøv igen." },
+      { status: 500 }
+    );
   }
 
   return Response.json({
     path: storagePath,
     previewUrl: signedData.signedUrl,
-    deleteToken: signPath(storagePath),
+    deleteToken,
   });
 }
 
@@ -128,7 +169,18 @@ export async function DELETE(request: Request) {
     return Response.json({ error: "Ugyldig sti" }, { status: 400 });
   }
 
-  if (!body.deleteToken || body.deleteToken !== signPath(path)) {
+  let expectedToken: string;
+  try {
+    expectedToken = signPath(path);
+  } catch (err) {
+    console.error("Delete token validation error:", err);
+    return Response.json(
+      { error: "Sletning kunne ikke valideres lige nu" },
+      { status: 500 }
+    );
+  }
+
+  if (!body.deleteToken || body.deleteToken !== expectedToken) {
     return Response.json({ error: "Ugyldig token" }, { status: 403 });
   }
 

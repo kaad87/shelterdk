@@ -136,11 +136,12 @@ export default function ShelterAnsogningerPage() {
     setReviewLng(sub.lng);
     setRegion("");
     setKommune("");
-    setPlace("");
+    setPlace(sub.location_text ?? "");
     // Default toilet type based on what the submitter indicated.
     setToiletType(sub.facilities?.toilet ? "unknown" : "");
     setRejectReason("");
     setShowRejectField(false);
+    setBanner(null);
   }
 
   function closeReview() {
@@ -149,7 +150,13 @@ export default function ShelterAnsogningerPage() {
   }
 
   async function handleApprove(sub: Submission) {
-    if (!region.trim()) return;
+    if (!region.trim()) {
+      setBanner({
+        type: "err",
+        msg: "Vælg region, før du kan godkende shelteret",
+      });
+      return;
+    }
     if (reviewLat == null || reviewLng == null) {
       setBanner({ type: "err", msg: "Sæt koordinater på kortet før godkendelse" });
       return;
@@ -475,7 +482,7 @@ export default function ShelterAnsogningerPage() {
                 <div className="flex items-center gap-3 flex-wrap">
                   <button
                     onClick={() => handleApprove(sub)}
-                    disabled={busy || !region.trim() || reviewLat == null}
+                    disabled={busy}
                     className="rounded-lg bg-green-600 text-white px-4 py-2 text-sm font-medium hover:bg-green-700 disabled:opacity-40 transition-colors"
                   >
                     {busy ? "Gemmer..." : "✅ Godkend"}

@@ -20,6 +20,19 @@ function isAdmin(request: NextRequest | Request): boolean {
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+function getContentTypeForExt(ext: string): string {
+  switch (ext.toLowerCase()) {
+    case "png":
+      return "image/png";
+    case "webp":
+      return "image/webp";
+    case "jpeg":
+    case "jpg":
+    default:
+      return "image/jpeg";
+  }
+}
+
 export async function POST(request: NextRequest) {
   if (!isAdmin(request)) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -124,7 +137,7 @@ export async function POST(request: NextRequest) {
       // Re-upload to shelter-photos bucket
       const ext = storagePath.split(".").pop() ?? "jpg";
       const newPath = `owner/${newShelterId}/${crypto.randomUUID()}.${ext}`;
-      const contentType = ext === "png" ? "image/png" : "image/jpeg";
+      const contentType = getContentTypeForExt(ext);
 
       const { error: uploadError } = await supabase.storage
         .from(photosBucket)

@@ -11,6 +11,7 @@ export function ShelterTipModal() {
   const [shelterName, setShelterName] = useState("");
   const [locationText, setLocationText] = useState("");
   const [sourceInfo, setSourceInfo] = useState("");
+  const [website, setWebsite] = useState("");
   const [state, setState] = useState<State>("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const titleId = "shelter-tip-modal-title";
@@ -22,6 +23,7 @@ export function ShelterTipModal() {
     setShelterName("");
     setLocationText("");
     setSourceInfo("");
+    setWebsite("");
     setState("idle");
     setErrorMsg("");
   };
@@ -39,6 +41,7 @@ export function ShelterTipModal() {
           type: "user_tip",
           shelter_name: shelterName.trim(),
           location_text: locationText.trim(),
+          website,
           source_info: sourceInfo.trim() || undefined,
         }),
       });
@@ -149,6 +152,19 @@ export function ShelterTipModal() {
                 <div className="text-right text-xs text-primary/40 mt-0.5">
                   {sourceInfo.length}/500
                 </div>
+              </div>
+
+              <div className="sr-only" aria-hidden="true">
+                <label>
+                  Hjemmeside
+                  <input
+                    type="text"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={website}
+                    onChange={(e) => setWebsite(e.target.value)}
+                  />
+                </label>
               </div>
 
               {errorMsg && (

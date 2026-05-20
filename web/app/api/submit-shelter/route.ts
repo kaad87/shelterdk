@@ -1,32 +1,28 @@
 // web/app/api/submit-shelter/route.ts
 import { createAdminClient } from "@/utils/supabase/server-admin";
+import { enforcePublicRateLimit } from "@/lib/public-rate-limit";
 import type { SubmissionType, FacilityKey, SubmitShelterPayload } from "@/lib/shelter-submissions";
 import { FACILITY_KEYS, PHOTO_PATH_REGEX } from "@/lib/shelter-submissions";
 
 export const dynamic = "force-dynamic";
 
-const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_WINDOW_SECONDS = 60;
 const MAX_PER_WINDOW = 3;
-const ipTimestamps = new Map<string, number[]>();
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MAX_DESCRIPTION_LENGTH = 4000;
 const VALID_TYPES: SubmissionType[] = ["owner_registration", "user_tip"];
 
 export async function POST(request: Request) {
-  // Rate limiting — same pattern as /api/contact/route.ts
-  const ip =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  const now = Date.now();
-  const timestamps = ipTimestamps.get(ip) ?? [];
-  const recent = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
-  if (recent.length >= MAX_PER_WINDOW) {
-    return Response.json(
-      { error: "For mange forsøg. Prøv igen om lidt." },
-      { status: 429 }
-    );
+  const rateLimited = await enforcePublicRateLimit(request, {
+    scope: "submit-shelter",
+    windowSeconds: RATE_LIMIT_WINDOW_SECONDS,
+    maxHits: MAX_PER_WINDOW,
+    errorMessage: "For mange forsøg. Prøv igen om lidt.",
+  });
+  if (rateLimited) {
+    return rateLimited;
   }
-  recent.push(now);
-  ipTimestamps.set(ip, recent);
 
   // Parse body
   let body: Partial<SubmitShelterPayload>;
@@ -34,6 +30,10 @@ export async function POST(request: Request) {
     body = await request.json();
   } catch {
     return Response.json({ error: "Ugyldig JSON" }, { status: 400 });
+  }
+
+  if (typeof body.website === "string" && body.website.trim()) {
+    return Response.json({ success: true }, { status: 201 });
   }
 
   const type = body.type?.trim() as SubmissionType | undefined;
@@ -78,6 +78,30 @@ export async function POST(request: Request) {
       { error: "Beskrivelse må højst være 500 tegn" },
       { status: 400 }
     );
+  }
+
+  const description = body.description?.trim() || null;
+  if (description && description.length > MAX_DESCRIPTION_LENGTH) {
+    return Response.json(
+      { error: `Beskrivelse må højst være ${MAX_DESCRIPTION_LENGTH} tegn` },
+      { status: 400 }
+    );
+  }
+
+  const booking_url = body.booking_url?.trim() || null;
+  if (booking_url) {
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(booking_url);
+    } catch {
+      return Response.json({ error: "Bookinglink skal være en gyldig URL" }, { status: 400 });
+    }
+    if (!["http:", "https:"].includes(parsedUrl.protocol)) {
+      return Response.json(
+        { error: "Bookinglink skal starte med http:// eller https://" },
+        { status: 400 }
+      );
+    }
   }
 
   // Validate lat/lng — both must be present or both absent
@@ -132,10 +156,20 @@ export async function POST(request: Request) {
   }
 
   // Optional numeric fields
-  const capacity =
-    typeof body.capacity === "number" && body.capacity > 0
-      ? Math.floor(body.capacity)
-      : null;
+  let capacity: number | null = null;
+  if (body.capacity != null) {
+    if (
+      typeof body.capacity !== "number" ||
+      !isFinite(body.capacity) ||
+      body.capacity < 1
+    ) {
+      return Response.json(
+        { error: "Kapacitet skal være mindst 1 person" },
+        { status: 400 }
+      );
+    }
+    capacity = Math.floor(body.capacity);
+  }
 
   const wants_booking = body.wants_booking === true;
 
@@ -148,9 +182,9 @@ export async function POST(request: Request) {
     lng,
     photo_urls,
     capacity,
-    description: body.description?.trim() || null,
+    description,
     facilities,
-    booking_url: body.booking_url?.trim() || null,
+    booking_url,
     contact_name: body.contact_name?.trim() || null,
     contact_email,
     source_info,

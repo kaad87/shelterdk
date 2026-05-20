@@ -14,6 +14,7 @@ interface BookingFormProps {
   maxPersons: number;
   description?: string | null;
   showPageHeader?: boolean;
+  hideTrustDetails?: boolean;
   successPath?: string;
   paymentMode?: "after_confirmation" | "upfront";
   shelterPriceDkk?: number;
@@ -89,6 +90,7 @@ function UpfrontTrustBlock() {
 export function BookingForm({
   shelterSlug, shelterTitle, maxPersons, description, successPath,
   showPageHeader = true,
+  hideTrustDetails = false,
   paymentMode = "after_confirmation", shelterPriceDkk = 0,
   platformFeePct = 5, platformFeeMinDkk = 25,
 }: BookingFormProps) {
@@ -224,18 +226,20 @@ export function BookingForm({
           {/* Trust signals – desktop only */}
           <div className="hidden md:block mt-5">
             {isUpfront ? (
-              <UpfrontTrustBlock />
+              !hideTrustDetails ? <UpfrontTrustBlock /> : null
             ) : (
-              <div className="flex flex-col gap-2">
-                {trustSignals.map((t) => (
-                  <div key={t} className="flex items-center gap-2.5">
-                    <div className="w-4 h-4 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
-                      <CheckIcon />
+              !hideTrustDetails ? (
+                <div className="flex flex-col gap-2">
+                  {trustSignals.map((t) => (
+                    <div key={t} className="flex items-center gap-2.5">
+                      <div className="w-4 h-4 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
+                        <CheckIcon />
+                      </div>
+                      <span className="text-xs text-primary/50">{t}</span>
                     </div>
-                    <span className="text-xs text-primary/50">{t}</span>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : null
             )}
           </div>
         </div>
@@ -412,7 +416,9 @@ export function BookingForm({
               </button>
 
               <p className="text-[11px] text-primary/30 text-center leading-relaxed">
-                {isUpfront ? "Sikker betaling · automatisk bekræftet · refundering ved aflysning" : "Gratis · uforpligtende · ingen betaling nu"}
+                {isUpfront
+                  ? "Du sendes videre til Stripe for at gennemføre betalingen sikkert."
+                  : "Du modtager svar på mail, når shelter-ejeren har taget stilling til din forespørgsel."}
               </p>
             </form>
           </div>
@@ -420,18 +426,20 @@ export function BookingForm({
           {/* Trust – mobile only */}
           <div className="md:hidden pt-1">
             {isUpfront ? (
-              <UpfrontTrustBlock />
+              !hideTrustDetails ? <UpfrontTrustBlock /> : null
             ) : (
-              <div className="flex flex-col gap-2">
-                {trustSignals.map((t) => (
-                  <div key={t} className="flex items-center gap-2.5">
-                    <div className="w-4 h-4 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
-                      <CheckIcon />
+              !hideTrustDetails ? (
+                <div className="flex flex-col gap-2">
+                  {trustSignals.map((t) => (
+                    <div key={t} className="flex items-center gap-2.5">
+                      <div className="w-4 h-4 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
+                        <CheckIcon />
+                      </div>
+                      <span className="text-xs text-primary/50">{t}</span>
                     </div>
-                    <span className="text-xs text-primary/50">{t}</span>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : null
             )}
           </div>
 

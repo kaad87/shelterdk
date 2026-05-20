@@ -27,6 +27,7 @@ export default async function BookShelterPage({ params }: Props) {
   const { slug } = await params;
   const shelter = await getBookableShelterBySlug(slug);
   if (!shelter || shelter.booking_mode === "iframe") notFound();
+  const isUpfront = shelter.payment_mode === "upfront";
 
   const linkedShelter = shelter.shelter_id
     ? await createAdminClient()
@@ -40,8 +41,16 @@ export default async function BookShelterPage({ params }: Props) {
     : null;
 
   const previewImage = linkedShelter ? getPhotoUrls(linkedShelter)[0] ?? null : null;
+  const humanLocation =
+    linkedShelter?.location && !/^POINT\s*\(/i.test(linkedShelter.location)
+      ? linkedShelter.location
+      : null;
   const placeLabel =
-    linkedShelter?.place || linkedShelter?.location || linkedShelter?.kommune || linkedShelter?.region || null;
+    linkedShelter?.place ||
+    humanLocation ||
+    linkedShelter?.kommune ||
+    linkedShelter?.region ||
+    null;
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
@@ -69,7 +78,7 @@ export default async function BookShelterPage({ params }: Props) {
             </div>
             <div className="p-6 sm:p-8">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent mb-2">
-                QR-booking
+                Book shelter
               </p>
               <h1 className="font-serif text-3xl font-bold text-primary leading-tight">
                 {shelter.title}
@@ -80,8 +89,9 @@ export default async function BookShelterPage({ params }: Props) {
                 </p>
               )}
               <p className="mt-4 text-sm sm:text-base text-primary/70 leading-relaxed max-w-2xl">
-                Du er landet direkte på booking for denne shelterplads. Vælg dine datoer, gennemfør bookingen,
-                og vis derefter dit bookingbevis ved ankomst.
+                {isUpfront
+                  ? "Her kan du booke dette shelter direkte. Vælg dine datoer, gennemfør betalingen sikkert via Stripe, og modtag bookingbevis på mail og på ShelterDK."
+                  : "Her kan du sende en bookingforespørgsel til dette shelter. Vælg dine datoer, send forespørgslen, og modtag svar og bookingbevis på mail og på ShelterDK, når bookingen er bekræftet."}
               </p>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -90,13 +100,35 @@ export default async function BookShelterPage({ params }: Props) {
                   <p className="text-sm text-primary/70">Se kalenderen og vælg ankomst og afrejse.</p>
                 </div>
                 <div className="rounded-2xl border border-primary/10 bg-primary/[0.02] px-4 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-primary/40 mb-1">2. Book pladsen</p>
-                  <p className="text-sm text-primary/70">Udfyld oplysninger og gennemfør betaling eller forespørgsel.</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-primary/40 mb-1">2. Gennemfør booking</p>
+                  <p className="text-sm text-primary/70">
+                    {isUpfront
+                      ? "Udfyld dine oplysninger og betal sikkert med kort eller MobilePay."
+                      : "Udfyld dine oplysninger og send din forespørgsel til shelter-ejeren."}
+                  </p>
                 </div>
                 <div className="rounded-2xl border border-primary/10 bg-primary/[0.02] px-4 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-primary/40 mb-1">3. Vis bevis</p>
-                  <p className="text-sm text-primary/70">Du får bookingbevis på mail og på ShelterDK efter bekræftelse.</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-primary/40 mb-1">3. Modtag bookingbevis</p>
+                  <p className="text-sm text-primary/70">
+                    {isUpfront
+                      ? "Du modtager bookingbevis på mail og på ShelterDK med det samme efter betaling."
+                      : "Du modtager bookingbevis på mail og på ShelterDK, når bookingen er bekræftet."}
+                  </p>
                 </div>
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                {(isUpfront
+                  ? ["Sikker betaling via Stripe", "Kort og MobilePay", "Bookingbevis på mail og ShelterDK"]
+                  : ["Gratis at sende forespørgsel", "Intet kort kræves nu", "Bookingbevis efter bekræftelse"]
+                ).map((item) => (
+                  <span
+                    key={item}
+                    className="inline-flex items-center rounded-full border border-primary/10 bg-white px-3 py-1.5 text-xs font-medium text-primary/65"
+                  >
+                    {item}
+                  </span>
+                ))}
               </div>
 
               <div className="mt-5 flex flex-wrap gap-3 text-sm">
@@ -122,6 +154,7 @@ export default async function BookShelterPage({ params }: Props) {
           maxPersons={shelter.max_persons}
           description={shelter.description}
           showPageHeader={false}
+          hideTrustDetails
           successPath={`/book/${shelter.slug}/tak`}
           paymentMode={shelter.payment_mode}
           shelterPriceDkk={shelter.shelter_price_dkk ?? 0}

@@ -1,5 +1,6 @@
 import Stripe from "stripe";
 import type { ShelterBooking, BookableShelter } from "@/types/booking";
+import { createPaymentAccessToken } from "@/lib/booking-access";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://shelterdk.dk";
 
@@ -177,8 +178,8 @@ export async function createCheckoutSession(
     locale: "da",
     line_items: lineItems,
     metadata: { booking_id: booking.id },
-    success_url: `${SITE_URL}/booking/${booking.id}/tak?t=${encodeURIComponent(booking.guest_token)}&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${SITE_URL}/booking/${booking.id}/betal?t=${encodeURIComponent(booking.guest_token)}`,
+    success_url: `${SITE_URL}/booking/${booking.id}/tak?access=${encodeURIComponent(createPaymentAccessToken(booking))}&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${SITE_URL}/booking/${booking.id}/betal?access=${encodeURIComponent(createPaymentAccessToken(booking))}`,
     expires_at: Math.floor(Date.now() / 1000) + 24 * 3600,
   });
 

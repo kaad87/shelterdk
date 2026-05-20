@@ -6,6 +6,7 @@ import {
   getLatestPendingPayment,
   listPaymentsByBookingId,
 } from "@/lib/payment-db";
+import { createPaymentAccessToken } from "@/lib/booking-access";
 import { BookingPageClient } from "./BookingPageClient";
 
 interface Props { params: Promise<{ guestToken: string }> }
@@ -42,7 +43,7 @@ export default async function GuestBookingPage({ params }: Props) {
         booking.status === "confirmed" &&
         !!pendingPayment)
     )
-      ? `/booking/${booking.id}/betal?t=${encodeURIComponent(guestToken)}`
+      ? `/booking/${booking.id}/betal?access=${encodeURIComponent(createPaymentAccessToken(booking))}`
       : null;
   const paymentLabel =
     shelter.payment_mode === "after_confirmation"

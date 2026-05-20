@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { createAdminClient } from "@/utils/supabase/server-admin";
 import PrintButton from "@/components/PrintButton";
 import {
@@ -9,6 +9,10 @@ import {
   listPaymentsByBookingId,
 } from "@/lib/payment-db";
 import { reconcileCompletedCheckoutSession } from "@/lib/payment-reconcile";
+import {
+  createPaymentAccessToken,
+  verifyPaymentAccessToken,
+} from "@/lib/booking-access";
 
 export const dynamic = "force-dynamic";
 
@@ -19,12 +23,12 @@ export const metadata: Metadata = {
 
 interface Props {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ session_id?: string; t?: string }>;
+  searchParams: Promise<{ session_id?: string; access?: string; t?: string }>;
 }
 
 export default async function TakPage({ params, searchParams }: Props) {
   const { id } = await params;
-  const { session_id, t } = await searchParams;
+  const { session_id, access, t } = await searchParams;
 
   const loadBooking = async () =>
     createAdminClient()
@@ -35,7 +39,18 @@ export default async function TakPage({ params, searchParams }: Props) {
 
   let { data: booking } = await loadBooking();
   if (!booking) notFound();
-  if (!t || booking.guest_token !== t) notFound();
+
+  let paymentAccessToken = access ?? null;
+  if (!paymentAccessToken && t && booking.guest_token === t) {
+    const legacyRedirectParams = new URLSearchParams();
+    legacyRedirectParams.set("access", createPaymentAccessToken(booking));
+    if (session_id) legacyRedirectParams.set("session_id", session_id);
+    redirect(`/booking/${id}/tak?${legacyRedirectParams.toString()}`);
+  }
+
+  if (!paymentAccessToken || !verifyPaymentAccessToken(paymentAccessToken, booking)) {
+    notFound();
+  }
 
   if (session_id) {
     try {
@@ -53,14 +68,14 @@ export default async function TakPage({ params, searchParams }: Props) {
   const pendingPayment = getLatestPendingPayment(payments);
   const sessionMatches = !session_id || paidPayment?.stripe_checkout_session_id === session_id;
   const isConfirmed = booking.status === "confirmed" && !!paidPayment && sessionMatches;
-  const paymentHref = `/booking/${id}/betal?t=${encodeURIComponent(t)}`;
+  const paymentHref = `/booking/${id}/betal?access=${encodeURIComponent(createPaymentAccessToken(booking))}`;
   const refreshParams = new URLSearchParams();
   if (session_id) refreshParams.set("session_id", session_id);
-  if (t) refreshParams.set("t", t);
+  refreshParams.set("access", createPaymentAccessToken(booking));
   const refreshHref = `/booking/${id}/tak${refreshParams.size > 0 ? `?${refreshParams.toString()}` : ""}`;
   const bookingReference = `BK-${id.slice(0, 8).toUpperCase()}`;
   const shelterTitle = (booking as any).bookable_shelters?.title ?? "Dit shelter";
-  const bookingHref = `/min-booking/${encodeURIComponent(t)}`;
+  const bookingHref = `/min-booking/${encodeURIComponent(booking.guest_token)}`;
 
   if (isConfirmed) {
     return (
@@ -188,7 +203,7 @@ export default async function TakPage({ params, searchParams }: Props) {
           </Link>
           {isStillProcessing && (
             <Link
-              href={`/min-booking/${encodeURIComponent(t)}`}
+              href={`/min-booking/${encodeURIComponent(booking.guest_token)}`}
               className="inline-block border border-primary/15 text-primary font-semibold px-6 py-3 rounded-xl hover:bg-primary/5 transition-colors"
             >
               Gå til min booking

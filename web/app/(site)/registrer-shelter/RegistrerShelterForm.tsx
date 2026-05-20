@@ -20,6 +20,7 @@ export function RegistrerShelterForm() {
   const [contactName, setContactName] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [bookingUrl, setBookingUrl] = useState("");
+  const [website, setWebsite] = useState("");
 
   const toggleFacility = (key: FacilityKey) => {
     setFacilities((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -40,6 +41,7 @@ export function RegistrerShelterForm() {
           type: "owner_registration",
           shelter_name: shelterName.trim(),
           location_text: locationText.trim(),
+          website,
           capacity: cap && cap > 0 ? cap : null,
           description: description.trim() || undefined,
           facilities: Object.keys(facilities).length > 0 ? facilities : undefined,
@@ -220,6 +222,18 @@ export function RegistrerShelterForm() {
               placeholder="https://..."
               className="w-full border border-primary/20 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#2d7a4e]/40"
             />
+          </div>
+          <div className="sr-only" aria-hidden="true">
+            <label>
+              Hjemmeside
+              <input
+                type="text"
+                tabIndex={-1}
+                autoComplete="off"
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+              />
+            </label>
           </div>
         </div>
 

@@ -3,8 +3,10 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mock Supabase admin client
 const mockInsert = vi.fn();
+const mockRpc = vi.fn();
 vi.mock("@/utils/supabase/server-admin", () => ({
   createAdminClient: () => ({
+    rpc: mockRpc,
     from: () => ({ insert: mockInsert }),
   }),
 }));
@@ -29,6 +31,11 @@ describe("POST /api/submit-shelter", () => {
   beforeEach(() => {
     mockInsert.mockReset();
     mockInsert.mockResolvedValue({ error: null });
+    mockRpc.mockReset();
+    mockRpc.mockResolvedValue({
+      data: [{ allowed: true, hits: 1, retry_after_seconds: 60 }],
+      error: null,
+    });
   });
 
   it("returnerer 400 hvis type mangler", async () => {
@@ -81,6 +88,42 @@ describe("POST /api/submit-shelter", () => {
     expect(res.status).toBe(400);
   });
 
+  it("returnerer 400 hvis description er over 4000 tegn", async () => {
+    const res = await POST(makeRequest({
+      type: "user_tip",
+      shelter_name: "Test",
+      location_text: "Aarhus",
+      description: "x".repeat(4001),
+    }));
+    expect(res.status).toBe(400);
+    const json = await res.json();
+    expect(json.error).toMatch(/beskrivelse/i);
+  });
+
+  it("returnerer 400 ved ugyldig booking_url", async () => {
+    const res = await POST(makeRequest({
+      type: "owner_registration",
+      shelter_name: "Test",
+      location_text: "Aarhus",
+      contact_email: "ejer@test.dk",
+      booking_url: "ikke-et-link",
+    }));
+    expect(res.status).toBe(400);
+    const json = await res.json();
+    expect(json.error).toMatch(/bookinglink/i);
+  });
+
+  it("returnerer 400 ved booking_url med ugyldig protokol", async () => {
+    const res = await POST(makeRequest({
+      type: "owner_registration",
+      shelter_name: "Test",
+      location_text: "Aarhus",
+      contact_email: "ejer@test.dk",
+      booking_url: "javascript:alert(1)",
+    }));
+    expect(res.status).toBe(400);
+  });
+
   it("returnerer 201 ved gyldigt user_tip", async () => {
     const res = await POST(makeRequest({
       type: "user_tip",
@@ -103,6 +146,20 @@ describe("POST /api/submit-shelter", () => {
     }));
     expect(res.status).toBe(201);
     expect(mockInsert).toHaveBeenCalledOnce();
+  });
+
+  it("sluger honeypot-spam som tilsyneladende succes uden insert", async () => {
+    const res = await POST(
+      makeRequest({
+        type: "owner_registration",
+        shelter_name: "Naturhytten",
+        location_text: "Skanderborg",
+        contact_email: "ejer@naturhytten.dk",
+        website: "https://spam.example",
+      })
+    );
+    expect(res.status).toBe(201);
+    expect(mockInsert).not.toHaveBeenCalled();
   });
 
   it("ignorerer ukendte fields i facilities", async () => {
