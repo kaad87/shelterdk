@@ -62,12 +62,12 @@ export async function POST(request: Request) {
 
   // Email validation for owner_registration
   const contact_email = body.contact_email?.trim() || null;
+  if (contact_email && !EMAIL_REGEX.test(contact_email)) {
+    return Response.json({ error: "Ugyldig email-adresse" }, { status: 400 });
+  }
   if (type === "owner_registration") {
     if (!contact_email) {
       return Response.json({ error: "Email er påkrævet for ejere/operatører" }, { status: 400 });
-    }
-    if (!EMAIL_REGEX.test(contact_email)) {
-      return Response.json({ error: "Ugyldig email-adresse" }, { status: 400 });
     }
   }
 

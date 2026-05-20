@@ -10,6 +10,7 @@ export function ShelterTipModal() {
   const { isOpen, closeModal } = useShelterTipModal();
   const [shelterName, setShelterName] = useState("");
   const [locationText, setLocationText] = useState("");
+  const [email, setEmail] = useState("");
   const [sourceInfo, setSourceInfo] = useState("");
   const [website, setWebsite] = useState("");
   const [state, setState] = useState<State>("idle");
@@ -22,6 +23,7 @@ export function ShelterTipModal() {
     closeModal();
     setShelterName("");
     setLocationText("");
+    setEmail("");
     setSourceInfo("");
     setWebsite("");
     setState("idle");
@@ -41,6 +43,7 @@ export function ShelterTipModal() {
           type: "user_tip",
           shelter_name: shelterName.trim(),
           location_text: locationText.trim(),
+          contact_email: email.trim() || undefined,
           website,
           source_info: sourceInfo.trim() || undefined,
         }),
@@ -130,6 +133,22 @@ export function ShelterTipModal() {
                   onChange={(e) => setLocationText(e.target.value)}
                   placeholder="Adresse, by eller postnr"
                   required
+                  maxLength={200}
+                  className="w-full border border-primary/20 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#4a90d9]/40 focus-visible:border-[#4a90d9]"
+                />
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="block text-xs font-bold text-primary uppercase tracking-wide mb-1.5">
+                  Din e-mail{" "}
+                  <span className="font-normal text-primary/50">(valgfrit)</span>
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Fx navn@email.dk"
                   maxLength={200}
                   className="w-full border border-primary/20 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#4a90d9]/40 focus-visible:border-[#4a90d9]"
                 />

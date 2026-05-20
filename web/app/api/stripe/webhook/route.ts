@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
     try {
       const { data: booking } = await createAdminClient()
         .from("shelter_bookings")
-        .select("status, guest_email, guest_name, guest_count, check_in, check_out, bookable_shelters!inner(owner_email, title, payment_mode)")
+        .select("status, guest_email, guest_name, guest_count, check_in, check_out, bookable_shelters!inner(id, owner_email, title, payment_mode)")
         .eq("id", payment.booking_id)
         .single();
 

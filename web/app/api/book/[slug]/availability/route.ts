@@ -13,5 +13,12 @@ export async function GET(
     return NextResponse.json({ error: "Shelter ikke fundet" }, { status: 404 });
   }
   const dates = await getUnavailableDates(shelter.id);
-  return NextResponse.json({ dates });
+  return NextResponse.json(
+    { dates },
+    {
+      headers: {
+        "Cache-Control": "no-store, max-age=0",
+      },
+    }
+  );
 }

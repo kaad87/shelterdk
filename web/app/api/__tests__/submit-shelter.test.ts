@@ -68,6 +68,19 @@ describe("POST /api/submit-shelter", () => {
     expect(json.error).toMatch(/email/i);
   });
 
+  it("returnerer 400 ved user_tip med ugyldig optional email", async () => {
+    const res = await POST(
+      makeRequest({
+        type: "user_tip",
+        shelter_name: "Tip shelter",
+        location_text: "Aarhus",
+        contact_email: "ikke-en-email",
+      })
+    );
+    expect(res.status).toBe(400);
+    await expect(res.json()).resolves.toEqual({ error: "Ugyldig email-adresse" });
+  });
+
   it("returnerer 400 ved ugyldig email-format", async () => {
     const res = await POST(makeRequest({
       type: "owner_registration",
@@ -133,6 +146,27 @@ describe("POST /api/submit-shelter", () => {
     }));
     expect(res.status).toBe(201);
     expect(mockInsert).toHaveBeenCalledOnce();
+  });
+
+  it("returnerer 201 ved gyldigt user_tip med optional email", async () => {
+    const res = await POST(
+      makeRequest({
+        type: "user_tip",
+        shelter_name: "Tip shelter",
+        location_text: "Aarhus",
+        source_info: "Har overnattet der to gange",
+        contact_email: "tipper@example.com",
+      })
+    );
+    expect(res.status).toBe(201);
+    const json = await res.json();
+    expect(json.success).toBe(true);
+    expect(mockInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "user_tip",
+        contact_email: "tipper@example.com",
+      })
+    );
   });
 
   it("returnerer 201 ved gyldigt owner_registration", async () => {

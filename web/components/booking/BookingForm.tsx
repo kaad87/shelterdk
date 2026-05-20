@@ -61,6 +61,23 @@ function CheckIcon() {
   );
 }
 
+function rangeConflictsWithAvailability(
+  range: { checkIn: string; checkOut: string } | null,
+  dates: Record<string, "pending" | "confirmed" | "blocked">
+) {
+  if (!range) return false;
+  const cur = new Date(`${range.checkIn}T12:00:00`);
+  const end = new Date(`${range.checkOut}T12:00:00`);
+  while (cur < end) {
+    const iso = `${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, "0")}-${String(
+      cur.getDate()
+    ).padStart(2, "0")}`;
+    if (dates[iso]) return true;
+    cur.setDate(cur.getDate() + 1);
+  }
+  return false;
+}
+
 function UpfrontTrustBlock() {
   return (
     <div className="rounded-xl border border-primary/10 bg-white px-4 py-3.5">
@@ -98,33 +115,78 @@ export function BookingForm({
   const [availability, setAvailability] = useState<Record<string, "pending" | "confirmed" | "blocked">>({});
   const [loadingAvailability, setLoadingAvailability] = useState(true);
   const [availabilityError, setAvailabilityError] = useState<string | null>(null);
+  const [lastAvailabilityRefresh, setLastAvailabilityRefresh] = useState<number | null>(null);
   const [dateRange, setDateRange] = useState<{ checkIn: string; checkOut: string } | null>(null);
   const [form, setForm] = useState({ guest_name: "", guest_email: "", guest_count: 1, message: "" });
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadAvailability = useCallback(async () => {
-    setLoadingAvailability(true);
+  const loadAvailability = useCallback(async (opts?: { silent?: boolean }) => {
+    if (!opts?.silent) {
+      setLoadingAvailability(true);
+    }
     setAvailabilityError(null);
     try {
-      const res = await fetch(`/api/book/${shelterSlug}/availability`);
+      const res = await fetch(`/api/book/${shelterSlug}/availability?ts=${Date.now()}`, {
+        cache: "no-store",
+      });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         throw new Error((data as { error?: string }).error ?? "Kunne ikke hente kalenderen");
       }
-      setAvailability((data as AvailabilityResponse).dates ?? {});
+      const nextDates = (data as AvailabilityResponse).dates ?? {};
+      setAvailability(nextDates);
+      setLastAvailabilityRefresh(Date.now());
+      setDateRange((currentRange) => {
+        if (!rangeConflictsWithAvailability(currentRange, nextDates)) {
+          return currentRange;
+        }
+        setError("De valgte datoer er blevet booket i mellemtiden. Vælg venligst nye datoer.");
+        return null;
+      });
     } catch {
       setAvailability({});
       setAvailabilityError("Kalenderen kunne ikke indlæses lige nu. Prøv igen, før du fortsætter.");
       setDateRange(null);
     } finally {
-      setLoadingAvailability(false);
+      if (!opts?.silent) {
+        setLoadingAvailability(false);
+      }
     }
   }, [shelterSlug]);
 
   useEffect(() => {
     void loadAvailability();
+  }, [loadAvailability]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleVisibleRefresh = () => {
+      if (document.visibilityState === "visible") {
+        void loadAvailability({ silent: true });
+      }
+    };
+
+    const handleFocusRefresh = () => {
+      void loadAvailability({ silent: true });
+    };
+
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        void loadAvailability({ silent: true });
+      }
+    }, 30000);
+
+    document.addEventListener("visibilitychange", handleVisibleRefresh);
+    window.addEventListener("focus", handleFocusRefresh);
+
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibleRefresh);
+      window.removeEventListener("focus", handleFocusRefresh);
+    };
   }, [loadAvailability]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -217,11 +279,28 @@ export function BookingForm({
             ) : (
               <BookingCalendar
                 unavailableDates={availability}
-                onRangeSelect={setDateRange}
+                onRangeSelect={(range) => {
+                  setError(null);
+                  setDateRange(range);
+                  if (range) {
+                    void loadAvailability({ silent: true });
+                  }
+                }}
                 maxPersons={maxPersons}
               />
             )}
           </div>
+
+          {!loadingAvailability && !availabilityError && lastAvailabilityRefresh ? (
+            <p className="mt-3 text-[11px] text-primary/30">
+              Kalenderen opdateres automatisk. Sidst opdateret{" "}
+              {new Date(lastAvailabilityRefresh).toLocaleTimeString("da-DK", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+              .
+            </p>
+          ) : null}
 
           {/* Trust signals – desktop only */}
           <div className="hidden md:block mt-5">
