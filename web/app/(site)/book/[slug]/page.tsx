@@ -90,7 +90,7 @@ export default async function BookShelterPage({ params }: Props) {
               )}
               <p className="mt-4 text-sm sm:text-base text-primary/70 leading-relaxed max-w-2xl">
                 {isUpfront
-                  ? "Her kan du booke dette shelter direkte. Vælg dine datoer, gennemfør betalingen sikkert via Stripe, og modtag bookingbevis på mail og på ShelterDK."
+                  ? "Her kan du booke dette shelter direkte. Vælg dine datoer, gennemfør betalingen sikkert, og modtag bookingbevis på mail og på ShelterDK."
                   : "Her kan du sende en bookingforespørgsel til dette shelter. Vælg dine datoer, send forespørgslen, og modtag svar og bookingbevis på mail og på ShelterDK, når bookingen er bekræftet."}
               </p>
 
@@ -119,7 +119,7 @@ export default async function BookShelterPage({ params }: Props) {
 
               <div className="mt-4 flex flex-wrap gap-2">
                 {(isUpfront
-                  ? ["Sikker betaling via Stripe", "Kort og MobilePay", "Bookingbevis på mail og ShelterDK"]
+                  ? ["Sikker betaling", "Kort og MobilePay", "Bookingbevis på mail og ShelterDK"]
                   : ["Gratis at sende forespørgsel", "Intet kort kræves nu", "Bookingbevis efter bekræftelse"]
                 ).map((item) => (
                   <span

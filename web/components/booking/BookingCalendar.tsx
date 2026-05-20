@@ -116,11 +116,16 @@ export function BookingCalendar({ unavailableDates, onRangeSelect }: BookingCale
           return !!unavailableDates[iso];
         }}
         modifiers={{
+          selectingStart: (d) =>
+            !!range?.from &&
+            !range?.to &&
+            toIso(d) === toIso(range.from),
           confirmed: (d) => unavailableDates[toIso(d)] === "confirmed",
           pending: (d) => unavailableDates[toIso(d)] === "pending",
           blocked: (d) => unavailableDates[toIso(d)] === "blocked",
         }}
         modifiersClassNames={{
+          selectingStart: "cal-selecting-start",
           confirmed: "cal-confirmed",
           pending: "cal-pending",
           blocked: "cal-blocked",
@@ -189,6 +194,14 @@ export function BookingCalendar({ unavailableDates, onRangeSelect }: BookingCale
           background: #c5a059 !important;
           color: #fff !important;
           border-radius: 9999px !important;
+        }
+        .cal-selecting-start .cal-day-btn {
+          background: rgba(197,160,89,0.14) !important;
+          border: 1px solid rgba(197,160,89,0.55) !important;
+          color: #8a6a26 !important;
+          border-radius: 9999px !important;
+          font-weight: 700;
+          box-shadow: inset 0 0 0 1px rgba(197,160,89,0.1);
         }
         /* Extend range background through the td */
         .cal-range-mid {

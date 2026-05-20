@@ -22,7 +22,7 @@ const baseCsp = [
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
   "connect-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com https://www.instagram.com https://*.supabase.co",
-  "frame-src 'self' https://checkout.stripe.com",
+  "frame-src 'self' https://checkout.stripe.com https://www.instagram.com",
   "worker-src 'self' blob:",
   "manifest-src 'self'",
 ].join("; ");
@@ -38,7 +38,7 @@ const embedCsp = [
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
   "connect-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com https://www.instagram.com https://*.supabase.co",
-  "frame-src 'self' https://checkout.stripe.com",
+  "frame-src 'self' https://checkout.stripe.com https://www.instagram.com",
   "worker-src 'self' blob:",
   "manifest-src 'self'",
 ].join("; ");

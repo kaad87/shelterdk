@@ -76,7 +76,7 @@ function UpfrontTrustBlock() {
         </span>
         <span className="flex items-center gap-1.5 text-[11px] text-primary/45">
           <span>🔒</span>
-          <span>Betaling via Stripe</span>
+          <span>Sikker online betaling</span>
         </span>
         <span className="flex items-center gap-1.5 text-[11px] text-primary/45">
           <span>↩️</span>
@@ -417,7 +417,7 @@ export function BookingForm({
 
               <p className="text-[11px] text-primary/30 text-center leading-relaxed">
                 {isUpfront
-                  ? "Du sendes videre til Stripe for at gennemføre betalingen sikkert."
+                  ? "Du sendes videre til sikker betaling for at gennemføre bookingen."
                   : "Du modtager svar på mail, når shelter-ejeren har taget stilling til din forespørgsel."}
               </p>
             </form>
