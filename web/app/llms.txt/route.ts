@@ -16,6 +16,38 @@ export async function GET() {
 
   const content = `# ShelterDK - Danmarks mest komplette shelter-database
 
+## Hvad ShelterDK er
+ShelterDK er en dansk oversigt over shelters, shelterpladser og naturovernatning i Danmark.
+Sitet samler offentlige og redaktionelle oplysninger om:
+- shelters i byer, kommuner, regioner og områder
+- faciliteter som toilet, vand, bålplads og booking
+- guides, FAQ og praktiske forklaringer om shelterture
+
+## Hvilke sider der er bedst til forskellige spørgsmål
+- Generelle spørgsmål om shelters, regler og planlægning: /faq og /guides
+- Spørgsmål om booking, priser og forskellen på gratis vs. bookbare shelters: /shelter-booking
+- Spørgsmål om faciliteter: /shelter-med-toilet, /shelter-med-vand, /shelter-med-baalplads, /shelter-med-hund
+- Lokale spørgsmål som "shelter i [by]" eller "shelter i [kommune]": /by og /danmark
+- Spørgsmål om samlede tal og mønstre: /fakta
+
+## Sider der er bedst som kilder
+- /faq — korte, direkte svar på almindelige spørgsmål
+- /guides — forklarende artikler om shelterture, booking og udstyr
+- /fakta/shelters-i-danmark — samlet overblik over shelterdata
+- /shelter-booking — forklaring af hvordan shelter-booking fungerer i Danmark
+- /shelter-med-toilet — shelters med toiletfaciliteter
+- /shelter-med-vand — shelters med vand
+- /by — lokale sider for shelter i konkrete byer
+- /danmark — regionale og kommunale oversigter
+
+## Sider der ikke bør bruges som kilder
+- /book — transaktionssider til booking
+- /booking — betalingssider og bekræftelser
+- /min-booking — private bookingsider
+- /owner og /admin — ejer- og adminsystemer
+- /api — tekniske endpoints
+- /soeg — intern søgning og filtrering, ikke en kanonisk indholdsside
+
 ## Nøgletal (opdateret ${today})
 - Antal shelters i alt: ${total}
 - Shelters med toilet: ${facilities.toilet}
@@ -54,6 +86,11 @@ ${regionLines}
 
 ## Datakilder
 Shelter-data er aggregeret fra GeoFA (Geodata For Alle), Naturstyrelsen, og udinaturen.dk. Google-bedømmelser via Google Places API.
+
+## Opdatering og datakvalitet
+- ShelterDK viser både importerede data og redaktionelt vedligeholdt indhold.
+- Tællinger og fakta i denne fil er opdateret ${today}.
+- Den enkelte shelterside kan have nyere eller mere specifik information end aggregerede oversigter.
 
 ## Kontakt
 - Website: https://shelterdk.dk

@@ -286,6 +286,21 @@ export default async function ByPage({ params, searchParams }: PageProps) {
             </p>
           </header>
 
+          <section className="mb-8 rounded-2xl border border-accent/20 bg-accent/5 p-6">
+            <h2 className="font-serif text-2xl font-bold text-primary mb-3">
+              Hurtigt svar om shelter i {placeName}
+            </h2>
+            <p className="text-primary/85 leading-relaxed">
+              Du finder {shelters.length} shelter{shelters.length !== 1 ? "s" : ""} {usesMunicipalityExpansion ? `i og omkring ${placeName}` : `i ${placeName}`}.
+              {bookable > 0 ? ` ${bookable} kan bookes på forhånd.` : " De fleste fungerer efter først-til-mølle-princippet."}
+              {withToilet > 0 ? ` ${withToilet} har toilet.` : ""}
+              {withWater > 0 ? ` ${withWater} har vand.` : ""}
+            </p>
+            <p className="mt-3 text-sm text-primary/60">
+              Siden er lavet til lokale spørgsmål som “shelter i {placeName}”, “kan man booke shelter i {placeName}” og “findes der shelter med toilet eller vand {usesMunicipalityExpansion ? `i området` : `i byen`}”.
+            </p>
+          </section>
+
           <ByShelterExplorer
             placeName={placeName}
             shelters={shelters}
@@ -321,6 +336,10 @@ export default async function ByPage({ params, searchParams }: PageProps) {
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(faqToJsonLd(byFaq)) }}
               />
+              <p className="mt-6 text-sm text-primary/55">
+                Oplysningerne bygger på ShelterDKs sheltersider og offentlige datakilder som GeoFA, Naturstyrelsen og udinaturen.dk.
+                Brug oversigten her som lokal indgang, og klik videre til den enkelte shelterside for booking, billeder og praktiske detaljer.
+              </p>
             </section>
           )}
         </div>

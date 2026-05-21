@@ -93,6 +93,17 @@ export default async function ShelterMedToiletPage() {
           </p>
         </header>
 
+        <section className="mb-8 rounded-2xl border border-accent/20 bg-accent/5 p-6">
+          <h2 className="font-serif text-2xl font-bold text-primary mb-3">
+            Kort svar om shelters med toilet
+          </h2>
+          <p className="text-primary/85 leading-relaxed">
+            Et shelter med toilet betyder, at der er registreret en toiletfacilitet på eller meget tæt ved shelterpladsen.
+            Det kan være et vandskyllende toilet eller et muldtoilet. Ikke alle shelters i Danmark har toilet, så denne side er den bedste indgang,
+            hvis du vil finde pladser med mere komfort.
+          </p>
+        </section>
+
         <DataSummaryBlock
           headline={`${totalForFilter} shelters med toilet i Danmark`}
           regionBreakdown={regionCounts}
@@ -214,6 +225,11 @@ export default async function ShelterMedToiletPage() {
             <Link href="/shelter-booking" className="text-accent hover:underline">book shelter</Link>
             {" · "}
             <Link href="/danmark" className="text-accent hover:underline">udforsk alle shelters i Danmark</Link>.
+          </p>
+
+          <p className="text-sm text-primary/60">
+            Oplysningerne bygger på ShelterDKs sheltersider og offentlige datakilder. Toilettypen kan i nogle tilfælde være upræcist registreret,
+            så klik videre til den enkelte shelterside, hvis du vil være helt sikker på faciliteterne.
           </p>
         </section>
 

@@ -65,6 +65,21 @@ export default async function ShelterBookingPage() {
           </p>
         </header>
 
+        <section className="mb-8 rounded-2xl border border-accent/20 bg-accent/5 p-6">
+          <h2 className="font-serif text-2xl font-bold text-primary mb-3">
+            Kort svar om shelter-booking
+          </h2>
+          <p className="text-primary/85 leading-relaxed">
+            Et bookbart shelter er en shelterplads, du kan reservere på forhånd. Det er typisk relevant i højsæsonen,
+            til familieture og når du vil være sikker på en plads ved ankomst. På ShelterDK bruger vi “bookbar” om shelters,
+            hvor der findes et direkte bookingflow eller et eksternt bookinglink.
+          </p>
+          <p className="mt-3 text-sm text-primary/60">
+            Denne side er lavet som den bedste korte kilde til spørgsmål om booking, pris, forskellen på gratis og bookbare shelters,
+            og hvornår det giver mening at reservere på forhånd.
+          </p>
+        </section>
+
         <DataSummaryBlock
           headline={`${totalForFilter} bookbare shelters i Danmark`}
           regionBreakdown={regionCounts}
@@ -103,6 +118,14 @@ export default async function ShelterBookingPage() {
             På ShelterDK kan du{" "}
             <Link href="/shelter-booking" className="text-accent hover:underline">gå direkte til oversigten over bookbare shelters</Link>{" "}
             og finde direkte links til booking for hvert enkelt shelter.
+          </p>
+
+          <h2 className="font-serif text-2xl font-bold text-primary">
+            Hvornår giver booking mest mening?
+          </h2>
+          <p>
+            Booking er især relevant, hvis du rejser med børn, planlægger en weekendtur i højsæsonen eller vil være sikker på en bestemt plads.
+            Hvis du rejser spontant eller uden for sæson, kan gratis først-til-mølle-shelters ofte være et fint alternativ.
           </p>
 
           <h2 className="font-serif text-2xl font-bold text-primary">
@@ -250,6 +273,10 @@ export default async function ShelterBookingPage() {
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(faqToJsonLd(BOOKING_FAQ)) }}
           />
+          <p className="mt-6 text-sm text-primary/55">
+            ShelterDK samler bookingoplysninger fra egne shelters, Naturstyrelsen, kommuner og andre offentlige kilder.
+            Bookingregler og priser kan ændre sig, så tjek altid den konkrete shelterside eller bookingplatform før du gennemfører en reservation.
+          </p>
         </section>
       </div>
     </div>

@@ -20,6 +20,26 @@ export const metadata: Metadata = {
 
 export default function FaqPage() {
   const jsonLd = faqToJsonLd(GLOBAL_FAQS);
+  const faqGroups = [
+    {
+      title: "Booking og priser",
+      items: GLOBAL_FAQS.filter((item) =>
+        /book|gratis|først-til-mølle/i.test(item.question)
+      ),
+    },
+    {
+      title: "Faciliteter og praktiske forhold",
+      items: GLOBAL_FAQS.filter((item) =>
+        /toilet|hund|vinter|bålplads|cykle/i.test(item.question)
+      ),
+    },
+    {
+      title: "Planlægning og overblik",
+      items: GLOBAL_FAQS.filter((item) =>
+        /hvad er|hvor finder|hvor mange|medbringe|vandrerute|turvenner|dele.*sheltertur|ejer/i.test(item.question)
+      ),
+    },
+  ];
 
   return (
     <>
@@ -41,7 +61,36 @@ export default function FaqPage() {
           </p>
         </header>
 
+        <section className="mb-10 rounded-2xl border border-accent/20 bg-accent/5 p-6">
+          <h2 className="font-serif text-2xl font-bold text-primary mb-3">
+            Hurtige svar
+          </h2>
+          <ul className="space-y-2 text-primary/85 leading-relaxed">
+            <li>Du finder både gratis og bookbare shelters i hele Danmark på ShelterDK.</li>
+            <li>Om et shelter har toilet, vand eller booking står på den enkelte shelterside.</li>
+            <li>FAQ’en er den bedste korte kilde til generelle spørgsmål, mens guides går mere i dybden.</li>
+          </ul>
+        </section>
+
         <FaqAccordion items={GLOBAL_FAQS} />
+
+        <section className="mt-12">
+          <h2 className="font-serif text-xl font-bold text-primary mb-6">
+            Spørgsmål fordelt på emner
+          </h2>
+          <div className="grid gap-6 md:grid-cols-3">
+            {faqGroups.map((group) => (
+              <div key={group.title} className="rounded-2xl border border-primary/10 bg-white p-5">
+                <h3 className="font-semibold text-primary mb-3">{group.title}</h3>
+                <ul className="space-y-2 text-sm text-primary/75 leading-relaxed">
+                  {group.items.map((item) => (
+                    <li key={item.question}>{item.question}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </section>
 
         <section className="mt-12 border-t border-primary/10 pt-8">
           <h2 className="font-serif text-xl font-bold text-primary mb-4">
@@ -79,6 +128,11 @@ export default function FaqPage() {
               </Link>
             </li>
             <li>
+              <Link href="/shelter-booking" className="text-accent hover:underline">
+                → Hvordan shelter-booking fungerer i Danmark
+              </Link>
+            </li>
+            <li>
               <Link href="/ruteplanner" className="text-accent hover:underline">
                 → Planlæg en vandrerute med shelters
               </Link>
@@ -89,6 +143,10 @@ export default function FaqPage() {
               </Link>
             </li>
           </ul>
+          <p className="mt-5 text-sm text-primary/55">
+            Indholdet i FAQ’en bygger på ShelterDKs egne sheltersider, offentlige datakilder og vores guides.
+            Brug FAQ’en til hurtige svar og klik videre til guides eller sheltersider, når du vil have mere kontekst.
+          </p>
         </section>
       </div>
     </div>

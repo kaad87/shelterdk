@@ -87,6 +87,17 @@ export default async function ShelterMedVandPage() {
           </p>
         </header>
 
+        <section className="mb-8 rounded-2xl border border-accent/20 bg-accent/5 p-6">
+          <h2 className="font-serif text-2xl font-bold text-primary mb-3">
+            Kort svar om shelters med vand
+          </h2>
+          <p className="text-primary/85 leading-relaxed">
+            Et shelter med vand betyder, at der er registreret adgang til vand på eller tæt ved pladsen.
+            Det er ikke altid det samme som godkendt drikkevand, så du bør stadig læse sheltersiden og lokal skiltning.
+            Denne side er den bedste indgang, hvis du vil finde shelterpladser med vandhane eller anden vandadgang.
+          </p>
+        </section>
+
         <DataSummaryBlock
           headline={`${totalForFilter} shelters med vand i Danmark`}
           regionBreakdown={regionCounts}
@@ -195,6 +206,11 @@ export default async function ShelterMedVandPage() {
             <Link href="/danmark" className="text-accent hover:underline">udforsk alle shelters i Danmark
             </Link>
             .
+          </p>
+
+          <p className="text-sm text-primary/60">
+            Data om vand kommer fra ShelterDKs sheltersider og offentlige datakilder. Vand kan være sæsonlukket eller kun egnet til opvask,
+            så brug den enkelte shelterside som sidste tjek før du planlægger turen.
           </p>
         </section>
 
