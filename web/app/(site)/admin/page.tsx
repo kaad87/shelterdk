@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   Tent,
@@ -121,6 +121,7 @@ const NAV_GROUPS: AdminNavGroup[] = [
 export default function AdminIndexPage() {
   const [secret, setSecret] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>("photos");
+  const panelRef = useRef<HTMLDivElement>(null);
   const [summary, setSummary] = useState<AdminSummaryCounts>({
     photos: 0,
     community: 0,
@@ -200,7 +201,13 @@ export default function AdminIndexPage() {
                     <button
                       key={tabKey}
                       type="button"
-                      onClick={() => tabKey && setActiveTab(tabKey)}
+                      onClick={() => {
+                        if (!tabKey) return;
+                        setActiveTab(tabKey);
+                        setTimeout(() => {
+                          panelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }, 30);
+                      }}
                       className={classes}
                     >
                       {content}
@@ -213,14 +220,16 @@ export default function AdminIndexPage() {
         </div>
       )}
 
-      <AdminPhotoReview
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        showManagementTabs={false}
-        showModerationTabs={false}
-        onSecretChange={setSecret}
-        onSummaryChange={setSummary}
-      />
+      <div ref={panelRef}>
+        <AdminPhotoReview
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          showManagementTabs={false}
+          showModerationTabs={false}
+          onSecretChange={setSecret}
+          onSummaryChange={setSummary}
+        />
+      </div>
     </div>
   );
 }
