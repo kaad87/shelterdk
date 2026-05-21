@@ -22,6 +22,7 @@ export function DatasetSchema({
   const schema = {
     "@context": "https://schema.org",
     "@type": "Dataset",
+    inLanguage: "da",
     name,
     description,
     url,

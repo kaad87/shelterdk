@@ -71,6 +71,7 @@ export default async function BlogPostPage({ params }: PageProps) {
   const articleSchema = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
+    inLanguage: "da",
     headline: post.title,
     datePublished: post.date,
     dateModified: getBlogUpdatedAt(post),

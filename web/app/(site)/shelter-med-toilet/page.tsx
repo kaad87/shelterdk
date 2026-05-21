@@ -11,6 +11,9 @@ import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import { DataSummaryBlock } from "@/components/DataSummaryBlock";
 import { getFilterRegionCount, getCountPerRegion } from "@/lib/fakta-db";
 import { REGION_SLUGS, REGION_NAMES, REGION_SHORT_NAMES } from "@/lib/cross-page-config";
+import { LastVerifiedBadge } from "@/components/LastVerifiedBadge";
+import { SpeakableSchema } from "@/components/seo/SpeakableSchema";
+import { getSitePageModified } from "@/lib/content-dates";
 
 const TOILET_FAQ: FaqItem[] = [
   { question: "Hvad er et muldtoilet på en shelterplads?", answer: "Et muldtoilet (også kaldet tørkloset) er et toilet uden vandskyl, der bruger naturlig nedbrydning. Det er det mest almindelige toilettype på shelterpladser i Danmark. Man tilfører typisk savsmuld eller lignende efter brug for at reducere lugt og fremme kompostering." },
@@ -58,6 +61,7 @@ const TOILET_LABELS: Record<string, string> = {
 
 export default async function ShelterMedToiletPage() {
   const shelters = await getSheltersWithToilet(50);
+  const lastVerified = getSitePageModified("/shelter-med-toilet");
 
   // Fetch summary data for DataSummaryBlock
   const regionCounts = await Promise.all(
@@ -71,6 +75,7 @@ export default async function ShelterMedToiletPage() {
   return (
     <>
     <BreadcrumbSchema items={[{ label: "Hjem", href: "/" }, { label: "Shelter med toilet" }]} />
+    <SpeakableSchema url="https://shelterdk.dk/shelter-med-toilet" selectors={[".llm-quote"]} />
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-primary/70 py-2">
@@ -91,13 +96,16 @@ export default async function ShelterMedToiletPage() {
             Her finder du overnatningspladser i naturen hvor der er toilet – enten vandskyllende
             toilet eller muldtoilet/tørkloset. Perfekt til dig der vil have faciliteter tæt på.
           </p>
+          <div className="mt-4">
+            <LastVerifiedBadge isoDate={lastVerified} />
+          </div>
         </header>
 
         <section className="mb-8 rounded-2xl border border-accent/20 bg-accent/5 p-6">
           <h2 className="font-serif text-2xl font-bold text-primary mb-3">
             Kort svar om shelters med toilet
           </h2>
-          <p className="text-primary/85 leading-relaxed">
+          <p className="llm-quote text-primary/85 leading-relaxed">
             Et shelter med toilet betyder, at der er registreret en toiletfacilitet på eller meget tæt ved shelterpladsen.
             Det kan være et vandskyllende toilet eller et muldtoilet. Ikke alle shelters i Danmark har toilet, så denne side er den bedste indgang,
             hvis du vil finde pladser med mere komfort.
@@ -166,6 +174,38 @@ export default async function ShelterMedToiletPage() {
         )}
 
         <section className="prose prose-primary max-w-none text-primary/90 space-y-6">
+          <h2 className="font-serif text-xl font-bold text-primary">
+            Toilet-typer ved danske shelters
+          </h2>
+          <div className="overflow-x-auto not-prose">
+            <table className="w-full border-collapse text-left text-sm">
+              <thead>
+                <tr className="border-b border-primary/10">
+                  <th className="py-3 pr-4 font-semibold text-primary/70">Type</th>
+                  <th className="py-3 pr-4 font-semibold text-primary/70">Hvad betyder det?</th>
+                  <th className="py-3 font-semibold text-primary/70">Typisk oplevelse</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-primary/5">
+                  <td className="py-3 pr-4 font-medium text-primary">Vandskyllende toilet</td>
+                  <td className="py-3 pr-4 text-primary/85">Almindeligt toilet med vand og afløb</td>
+                  <td className="py-3 text-primary/85">Mest komfort, ofte ved servicebygning</td>
+                </tr>
+                <tr className="border-b border-primary/5">
+                  <td className="py-3 pr-4 font-medium text-primary">Muldtoilet / tørkloset</td>
+                  <td className="py-3 pr-4 text-primary/85">Toilet uden vandskyl</td>
+                  <td className="py-3 text-primary/85">Almindeligt på primitive naturpladser</td>
+                </tr>
+                <tr>
+                  <td className="py-3 pr-4 font-medium text-primary">Ingen toilet</td>
+                  <td className="py-3 pr-4 text-primary/85">Ingen registreret toiletfacilitet på pladsen</td>
+                  <td className="py-3 text-primary/85">Mere primitiv oplevelse, kræver plan B</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
           <h2 className="font-serif text-xl font-bold text-primary">
             Hvorfor vælge shelter med toilet?
           </h2>

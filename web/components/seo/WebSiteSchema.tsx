@@ -7,6 +7,7 @@ export function WebSiteSchema() {
     "@type": "WebSite",
     name: "ShelterDK",
     url: BASE_URL,
+    inLanguage: "da",
     description:
       "Find og udforsk shelters i hele Danmark. Se billeder, anmeldelser og praktisk info for overnatning i naturen.",
   };
@@ -16,6 +17,7 @@ export function WebSiteSchema() {
     "@type": "Organization",
     name: "ShelterDK",
     url: BASE_URL,
+    inLanguage: "da",
     logo: `${BASE_URL}/icon-96.png`,
     description:
       "ShelterDK hjælper dig med at finde shelters og overnatningspladser i hele Danmark.",

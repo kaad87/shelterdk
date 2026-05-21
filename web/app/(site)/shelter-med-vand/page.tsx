@@ -10,6 +10,9 @@ import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import { DataSummaryBlock } from "@/components/DataSummaryBlock";
 import { getFilterRegionCount, getCountPerRegion } from "@/lib/fakta-db";
 import { REGION_SLUGS, REGION_NAMES, REGION_SHORT_NAMES } from "@/lib/cross-page-config";
+import { LastVerifiedBadge } from "@/components/LastVerifiedBadge";
+import { SpeakableSchema } from "@/components/seo/SpeakableSchema";
+import { getSitePageModified } from "@/lib/content-dates";
 
 const VAND_FAQ: FaqItem[] = [
   { question: "Er vandet på shelterpladser drikkevand?", answer: "Det varierer fra plads til plads. Nogle shelterpladser har vandhaner med godkendt drikkevand, mens andre kun har vand til opvask. Tjek altid lokal skiltning ved vandhanen, og medtag drikkevand som backup hvis du er i tvivl." },
@@ -52,6 +55,7 @@ function shelterHref(
 
 export default async function ShelterMedVandPage() {
   const shelters = await getSheltersWithWater(50);
+  const lastVerified = getSitePageModified("/shelter-med-vand");
 
   // Fetch summary data for DataSummaryBlock
   const regionCounts = await Promise.all(
@@ -65,6 +69,7 @@ export default async function ShelterMedVandPage() {
   return (
     <>
     <BreadcrumbSchema items={[{ label: "Hjem", href: "/" }, { label: "Shelter med vand" }]} />
+    <SpeakableSchema url="https://shelterdk.dk/shelter-med-vand" selectors={[".llm-quote"]} />
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-primary/70 py-2">
@@ -85,13 +90,16 @@ export default async function ShelterMedVandPage() {
             Her finder du overnatningspladser i naturen hvor der er vand – enten vandhane eller
             adgang til drikkevand. Perfekt til dig der vil have vand tæt på uden at medbringe alt.
           </p>
+          <div className="mt-4">
+            <LastVerifiedBadge isoDate={lastVerified} />
+          </div>
         </header>
 
         <section className="mb-8 rounded-2xl border border-accent/20 bg-accent/5 p-6">
           <h2 className="font-serif text-2xl font-bold text-primary mb-3">
             Kort svar om shelters med vand
           </h2>
-          <p className="text-primary/85 leading-relaxed">
+          <p className="llm-quote text-primary/85 leading-relaxed">
             Et shelter med vand betyder, at der er registreret adgang til vand på eller tæt ved pladsen.
             Det er ikke altid det samme som godkendt drikkevand, så du bør stadig læse sheltersiden og lokal skiltning.
             Denne side er den bedste indgang, hvis du vil finde shelterpladser med vandhane eller anden vandadgang.
@@ -146,6 +154,38 @@ export default async function ShelterMedVandPage() {
         )}
 
         <section className="prose prose-primary max-w-none text-primary/90 space-y-6">
+          <h2 className="font-serif text-xl font-bold text-primary">
+            Vand ved shelters – hvad betyder det?
+          </h2>
+          <div className="overflow-x-auto not-prose">
+            <table className="w-full border-collapse text-left text-sm">
+              <thead>
+                <tr className="border-b border-primary/10">
+                  <th className="py-3 pr-4 font-semibold text-primary/70">Registrering</th>
+                  <th className="py-3 pr-4 font-semibold text-primary/70">Hvad det typisk betyder</th>
+                  <th className="py-3 font-semibold text-primary/70">Hvad du bør gøre</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-primary/5">
+                  <td className="py-3 pr-4 font-medium text-primary">Vand registreret</td>
+                  <td className="py-3 pr-4 text-primary/85">Der er adgang til vand på eller tæt ved pladsen</td>
+                  <td className="py-3 text-primary/85">Tjek om det er drikkevand på den konkrete shelterside</td>
+                </tr>
+                <tr className="border-b border-primary/5">
+                  <td className="py-3 pr-4 font-medium text-primary">Drikkevand ikke bekræftet</td>
+                  <td className="py-3 pr-4 text-primary/85">Vand kan være egnet til opvask eller servicebrug</td>
+                  <td className="py-3 text-primary/85">Medbring drikkevand som backup</td>
+                </tr>
+                <tr>
+                  <td className="py-3 pr-4 font-medium text-primary">Sæsonlukket vand</td>
+                  <td className="py-3 pr-4 text-primary/85">Vandhane kan være lukket om vinteren</td>
+                  <td className="py-3 text-primary/85">Planlæg ekstra vand uden for sæson</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
           <h2 className="font-serif text-xl font-bold text-primary">
             Hvorfor vælge shelter med vand?
           </h2>

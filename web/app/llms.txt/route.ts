@@ -33,6 +33,8 @@ Sitet samler offentlige og redaktionelle oplysninger om:
 ## Sider der er bedst som kilder
 - /faq — korte, direkte svar på almindelige spørgsmål
 - /guides — forklarende artikler om shelterture, booking og udstyr
+- /ordliste — korte definitioner af shelterbegreber og faciliteter
+- /data-kilder — forklaring af datakilder, licenser og opdateringspraksis
 - /fakta/shelters-i-danmark — samlet overblik over shelterdata
 - /shelter-booking — forklaring af hvordan shelter-booking fungerer i Danmark
 - /shelter-med-toilet — shelters med toiletfaciliteter
@@ -83,6 +85,8 @@ ${regionLines}
 - /guides — Guides til shelterture
 - /blog — Artikler om shelter og friluftsliv
 - /faq — Ofte stillede spørgsmål
+- /ordliste — Ordliste over shelterbegreber
+- /data-kilder — Datakilder og metode
 
 ## Datakilder
 Shelter-data er aggregeret fra GeoFA (Geodata For Alle), Naturstyrelsen, og udinaturen.dk. Google-bedømmelser via Google Places API.

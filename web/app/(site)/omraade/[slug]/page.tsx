@@ -19,6 +19,19 @@ interface PageProps {
 
 export const revalidate = 86400;
 
+function getAreaDisplayParts(name: string) {
+  const trimmed = name.trim();
+  const match = trimmed.match(/^(.+?)\s*\((.+)\)$/);
+  if (!match) {
+    return { primaryName: trimmed, secondaryName: null as string | null };
+  }
+
+  return {
+    primaryName: match[1].trim(),
+    secondaryName: match[2].trim(),
+  };
+}
+
 function shelterHref(region: string | null, kommune: string | null, slug: string): string {
   const regionName = (region || "").trim();
   if (!regionName || regionName === "Danmark") return `/shelter/${slug}`;
@@ -40,19 +53,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const prep = prepositionForArea(area);
+  const { primaryName, secondaryName } = getAreaDisplayParts(area.name);
   const canonicalPath = `/omraade/${slug}`;
   const description =
     area.description?.trim() ||
-    `Find shelters ${prep} ${area.name}. Se billeder, overnatningsmuligheder og links videre til kort, booking og nærliggende shelters.`;
+    `Find shelters ${prep} ${primaryName}. Se billeder, overnatningsmuligheder og links videre til kort, booking og nærliggende shelters.${secondaryName ? ` Siden dækker også ${secondaryName}.` : ""}`;
 
   return {
     title: {
-      absolute: `Shelters ${prep} ${area.name} – kort, billeder og overnatning | ShelterDK`,
+      absolute: `Shelters ${prep} ${primaryName} – kort, billeder og overnatning | ShelterDK`,
     },
     description,
     alternates: { canonical: `https://shelterdk.dk${canonicalPath}` },
     openGraph: {
-      title: `Shelters ${prep} ${area.name} | ShelterDK`,
+      title: `Shelters ${prep} ${primaryName} | ShelterDK`,
       description,
       url: canonicalPath,
     },
@@ -66,7 +80,8 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
 
   const shelters = await getSheltersByAreaSlug(slug);
   const prep = prepositionForArea(area);
-  const faqItems = getAreaFaqItems(area.name, prep);
+  const { primaryName, secondaryName } = getAreaDisplayParts(area.name);
+  const faqItems = getAreaFaqItems(primaryName, prep);
   const faqJsonLd = JSON.stringify(faqToJsonLd(faqItems));
   const featuredShelters = shelters.slice(0, 12);
   const regionSlug = slugifySegment(area.region);
@@ -104,7 +119,7 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
         items={[
           { label: "Hjem", href: "/" },
           { label: "Områder", href: "/omraade" },
-          { label: area.name },
+          { label: primaryName },
         ]}
       />
       <main className="min-h-screen bg-background">
@@ -127,7 +142,7 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
               <li aria-hidden className="text-primary/50">
                 /
               </li>
-              <li className="text-primary font-medium">{area.name}</li>
+              <li className="text-primary font-medium">{primaryName}</li>
             </ol>
           </nav>
 
@@ -136,11 +151,11 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
               Områdeguide
             </p>
             <h1 className="font-serif text-3xl md:text-5xl font-bold text-primary mb-4">
-              Shelters {prep} {area.name}
+              Shelters {prep} {primaryName}
             </h1>
             <p className="text-primary/85 text-lg max-w-3xl leading-relaxed">
               {area.description?.trim() ||
-                `${area.name} rummer shelters og primitive overnatningspladser i ${area.region}. Her får du en landingsside med direkte links til de mest relevante pladser og videre adgang til den interaktive søgning.`}
+                `${primaryName} rummer shelters og primitive overnatningspladser i ${area.region}.${secondaryName ? ` Områdesiden dækker også ${secondaryName}.` : ""} Her får du en landingsside med direkte links til de mest relevante pladser og videre adgang til den interaktive søgning.`}
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-3 text-sm">
               <span className="rounded-full bg-primary/5 px-4 py-2 text-primary/80">
@@ -167,7 +182,7 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
                 Sådan bruger du siden
               </h2>
               <p className="text-primary/80 leading-relaxed">
-                Brug denne områdeside som et hurtigt overblik over de mest relevante shelters {prep} {area.name}. Du kan starte med de udvalgte pladser herunder og hoppe direkte til den fulde liste længere nede på siden, hvis du vil have hele områdets katalog samlet ét sted.
+                Brug denne områdeside som et hurtigt overblik over de mest relevante shelters {prep} {primaryName}.{secondaryName ? ` Siden samler også pladser fra ${secondaryName}.` : ""} Du kan starte med de udvalgte pladser herunder og hoppe direkte til den fulde liste længere nede på siden, hvis du vil have hele områdets katalog samlet ét sted.
               </p>
             </div>
           </section>
@@ -177,7 +192,7 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
               {topPlaces.length > 0 && (
                 <div className="rounded-2xl border border-primary/10 bg-white p-6 shadow-sm">
                   <h2 className="font-serif text-xl font-bold text-primary mb-3">
-                    Populære byer i {area.name}
+                    Populære byer i {primaryName}
                   </h2>
                   <div className="flex flex-wrap gap-2">
                     {topPlaces.map((place) => (
@@ -219,7 +234,7 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
             <div className="flex items-end justify-between gap-4 mb-5">
               <div>
                 <h2 className="font-serif text-2xl font-bold text-primary">
-                  Udvalgte shelters {prep} {area.name}
+                  Udvalgte shelters {prep} {primaryName}
                 </h2>
                 <p className="text-primary/70 mt-1">
                   Direkte links til pladser med billeder, faciliteter og detaljer.
@@ -260,7 +275,7 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
             <div className="flex items-end justify-between gap-4 mb-5">
               <div>
                 <h2 className="font-serif text-2xl font-bold text-primary">
-                  Alle shelters {prep} {area.name}
+                  Alle shelters {prep} {primaryName}
                 </h2>
                 <p className="text-primary/70 mt-1">
                   Hele områdets shelterkatalog samlet på én side.
@@ -319,7 +334,7 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
           </section>
 
           <AreaFaq
-            areaName={area.name}
+            areaName={primaryName}
             preposition={prep}
             items={faqItems}
             jsonLd={faqJsonLd}
@@ -329,7 +344,7 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
             <h2 className="font-serif text-xl font-bold text-primary mb-4">Læs mere</h2>
             <div className="flex flex-wrap gap-3">
               <Link href="#alle-shelters" className="text-sm bg-accent/10 text-accent font-medium px-4 py-2 rounded-full hover:bg-accent/20 transition-colors">
-                Hele listen for {area.name}
+                Hele listen for {primaryName}
               </Link>
               <Link href={`/danmark/${regionSlug}`} className="text-sm bg-accent/10 text-accent font-medium px-4 py-2 rounded-full hover:bg-accent/20 transition-colors">
                 Shelters i {area.region}

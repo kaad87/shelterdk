@@ -26,6 +26,7 @@ export default function GuidesIndexPage() {
   const itemListSchema = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
+    inLanguage: "da",
     name: "ShelterDK Guides",
     description: PAGE_DESCRIPTION,
     url: "https://shelterdk.dk/guides",

@@ -13,6 +13,9 @@ import { AuthorBio } from "@/components/AuthorBio";
 import { ArticleFaq } from "@/components/ArticleFaq";
 import { ShelterCTA } from "@/components/ShelterCTA";
 import { ShareExperience } from "@/components/ShareExperience";
+import { LastVerifiedBadge } from "@/components/LastVerifiedBadge";
+import { SpeakableSchema } from "@/components/seo/SpeakableSchema";
+import { getGuideHowToSchema } from "@/lib/guide-howto";
 import { Calendar } from "lucide-react";
 import { slugifySegment } from "@/lib/slug";
 
@@ -70,6 +73,7 @@ export default async function GuidePage({ params }: PageProps) {
   const guideSchema = {
     "@context": "https://schema.org",
     "@type": "Article",
+    inLanguage: "da",
     headline: guide.title,
     description: guide.excerpt,
     datePublished: guide.publishedAt,
@@ -86,14 +90,28 @@ export default async function GuidePage({ params }: PageProps) {
       "@id": `${BASE_URL}${canonicalPath}`,
     },
   };
+  const howToSchema = getGuideHowToSchema(
+    guide.slug,
+    `${BASE_URL}${canonicalPath}`
+  );
 
   return (
     <div className="min-h-screen bg-background">
       <BreadcrumbSchema items={breadcrumbItems} />
+      <SpeakableSchema
+        url={`${BASE_URL}${canonicalPath}`}
+        selectors={[".llm-quote"]}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(guideSchema) }}
       />
+      {howToSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
+        />
+      )}
 
       {/* Header with cover image */}
       <header className="relative w-full h-[260px] sm:h-[320px] md:h-[380px] bg-primary text-white overflow-hidden">
@@ -176,12 +194,33 @@ export default async function GuidePage({ params }: PageProps) {
               >
                 {guide.category}
               </Link>
+              <LastVerifiedBadge
+                isoDate={guide.updatedAt}
+                className="border-white/20 bg-white/10 text-white/85"
+              />
             </div>
           </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-10 lg:py-14">
+        <section className="mb-10 rounded-2xl border border-primary/10 bg-accent/5 p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent">
+                Hurtigt svar
+              </p>
+              <h2 className="mt-2 font-serif text-xl font-bold text-primary">
+                Kort om denne guide
+              </h2>
+            </div>
+            <LastVerifiedBadge isoDate={guide.updatedAt} />
+          </div>
+          <p className="llm-quote mt-4 text-base leading-8 text-primary/80">
+            {guide.excerpt}
+          </p>
+        </section>
+
         {/* Guide content — first half */}
         <article className="prose prose-primary max-w-none">
           {firstHalf}

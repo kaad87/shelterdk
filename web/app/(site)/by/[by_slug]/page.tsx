@@ -18,6 +18,9 @@ import { getWater, getToilet } from "@/lib/shelter-detail";
 import { generatePlacePageFaq } from "@/lib/fakta-faq";
 import { faqToJsonLd } from "@/lib/faq";
 import type { SoegFilters } from "@/lib/soeg-db";
+import { LastVerifiedBadge } from "@/components/LastVerifiedBadge";
+import { SpeakableSchema } from "@/components/seo/SpeakableSchema";
+import { newestIsoDate } from "@/lib/content-dates";
 
 interface PageProps {
   params: Promise<{ by_slug: string }>;
@@ -244,6 +247,8 @@ export default async function ByPage({ params, searchParams }: PageProps) {
     waterCount: withWater,
     bookableCount: bookable,
   });
+  const lastVerified = newestIsoDate(...shelters.map((shelter) => shelter.updated_at ?? shelter.created_at));
+  const quickAnswer = `I ${placeName} finder du ${shelters.length} shelter${shelters.length !== 1 ? "s" : ""}${bookable > 0 ? `, hvor ${bookable} kan bookes` : ""}${withToilet > 0 ? ` og ${withToilet} har toilet` : ""}${withWater > 0 ? `, mens ${withWater} har adgang til vand` : ""}.`;
 
   return (
     <>
@@ -252,6 +257,7 @@ export default async function ByPage({ params, searchParams }: PageProps) {
         { label: "Byer", href: "/by" },
         { label: `Shelter ${placeName}` },
       ]} />
+      <SpeakableSchema url={`https://shelterdk.dk/by/${by_slug}`} selectors={[".llm-quote"]} />
       <ShelterListSchema
         name={`Shelter ${placeName}`}
         shelters={shelters}
@@ -284,18 +290,16 @@ export default async function ByPage({ params, searchParams }: PageProps) {
                 Se flere bysider
               </Link>
             </p>
+            <div className="mt-4">
+              <LastVerifiedBadge isoDate={lastVerified} />
+            </div>
           </header>
 
           <section className="mb-8 rounded-2xl border border-accent/20 bg-accent/5 p-6">
             <h2 className="font-serif text-2xl font-bold text-primary mb-3">
               Hurtigt svar om shelter i {placeName}
             </h2>
-            <p className="text-primary/85 leading-relaxed">
-              Du finder {shelters.length} shelter{shelters.length !== 1 ? "s" : ""} {usesMunicipalityExpansion ? `i og omkring ${placeName}` : `i ${placeName}`}.
-              {bookable > 0 ? ` ${bookable} kan bookes på forhånd.` : " De fleste fungerer efter først-til-mølle-princippet."}
-              {withToilet > 0 ? ` ${withToilet} har toilet.` : ""}
-              {withWater > 0 ? ` ${withWater} har vand.` : ""}
-            </p>
+            <p className="llm-quote text-primary/85 leading-relaxed">{quickAnswer}</p>
             <p className="mt-3 text-sm text-primary/60">
               Siden er lavet til lokale spørgsmål som “shelter i {placeName}”, “kan man booke shelter i {placeName}” og “findes der shelter med toilet eller vand {usesMunicipalityExpansion ? `i området` : `i byen`}”.
             </p>

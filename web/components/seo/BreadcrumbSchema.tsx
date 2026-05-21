@@ -32,6 +32,7 @@ export function BreadcrumbSchema({
   const schema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
+    inLanguage: "da",
     itemListElement: listItems,
   };
 

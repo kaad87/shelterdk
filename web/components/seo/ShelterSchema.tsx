@@ -185,6 +185,7 @@ export function ShelterSchema({
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": useLodgingBusiness ? "LodgingBusiness" : "Campground",
+    inLanguage: "da",
     name,
     ...(description && { description }),
     ...(canonicalPath && { url: `${BASE_URL}${canonicalPath}` }),

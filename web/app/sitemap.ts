@@ -91,6 +91,8 @@ const STATIC_PAGES: Array<{
   { path: "/shelter-til-familier", source: "app/(site)/shelter-til-familier/page.tsx", changeFrequency: "weekly", priority: 0.85 },
   { path: "/guides", source: "app/(site)/guides/page.tsx", changeFrequency: "weekly", priority: 0.75 },
   { path: "/faq", source: "app/(site)/faq/page.tsx", changeFrequency: "monthly", priority: 0.8 },
+  { path: "/ordliste", source: "app/(site)/ordliste/page.tsx", changeFrequency: "monthly", priority: 0.72 },
+  { path: "/data-kilder", source: "app/(site)/data-kilder/page.tsx", changeFrequency: "monthly", priority: 0.68 },
   { path: "/privacy", source: "app/(site)/privacy/page.tsx", changeFrequency: "monthly", priority: 0.5 },
   { path: "/blog", source: "app/(site)/blog/page.tsx", changeFrequency: "weekly", priority: 0.7 },
   { path: "/om-os", source: "app/(site)/om-os/page.tsx", changeFrequency: "monthly", priority: 0.7 },

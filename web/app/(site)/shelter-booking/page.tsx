@@ -6,6 +6,9 @@ import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import { DataSummaryBlock } from "@/components/DataSummaryBlock";
 import { getFilterRegionCount, getCountPerRegion } from "@/lib/fakta-db";
 import { REGION_SLUGS, REGION_NAMES, REGION_SHORT_NAMES } from "@/lib/cross-page-config";
+import { LastVerifiedBadge } from "@/components/LastVerifiedBadge";
+import { SpeakableSchema } from "@/components/seo/SpeakableSchema";
+import { getSitePageModified } from "@/lib/content-dates";
 
 const BOOKING_FAQ: FaqItem[] = [
   { question: "Hvor kan man booke shelter i Danmark?", answer: "Du kan booke shelters via udinaturen.dk (Friluftsrådet), book.naturstyrelsen.dk (Naturstyrelsen) og kommunernes egne bookingsystemer. På ShelterDK kan du filtrere efter bookbare shelters og finde direkte links til booking." },
@@ -42,10 +45,12 @@ export default async function ShelterBookingPage() {
     }))
   );
   const totalForFilter = regionCounts.reduce((sum, r) => sum + r.count, 0);
+  const lastVerified = getSitePageModified("/shelter-booking");
 
   return (
     <>
     <BreadcrumbSchema items={[{ label: "Hjem", href: "/" }, { label: "Shelter-booking" }]} />
+    <SpeakableSchema url="https://shelterdk.dk/shelter-booking" selectors={[".llm-quote"]} />
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-primary/70 py-2">
@@ -63,13 +68,16 @@ export default async function ShelterBookingPage() {
             om shelter-booking i Danmark — hvor du booker, hvad det koster, og hvornår du bør
             reservere.
           </p>
+          <div className="mt-4">
+            <LastVerifiedBadge isoDate={lastVerified} />
+          </div>
         </header>
 
         <section className="mb-8 rounded-2xl border border-accent/20 bg-accent/5 p-6">
           <h2 className="font-serif text-2xl font-bold text-primary mb-3">
             Kort svar om shelter-booking
           </h2>
-          <p className="text-primary/85 leading-relaxed">
+          <p className="llm-quote text-primary/85 leading-relaxed">
             Et bookbart shelter er en shelterplads, du kan reservere på forhånd. Det er typisk relevant i højsæsonen,
             til familieture og når du vil være sikker på en plads ved ankomst. På ShelterDK bruger vi “bookbar” om shelters,
             hvor der findes et direkte bookingflow eller et eksternt bookinglink.
@@ -90,6 +98,47 @@ export default async function ShelterBookingPage() {
         />
 
         <article className="prose prose-primary max-w-none text-primary/90">
+          <h2 className="font-serif text-2xl font-bold text-primary">
+            Gratis vs. bookbar shelter
+          </h2>
+          <div className="overflow-x-auto not-prose">
+            <table className="w-full border-collapse text-left text-sm">
+              <thead>
+                <tr className="border-b border-primary/10">
+                  <th className="py-3 pr-4 font-semibold text-primary/70">Emne</th>
+                  <th className="py-3 pr-4 font-semibold text-primary/70">Gratis / først-til-mølle</th>
+                  <th className="py-3 font-semibold text-primary/70">Bookbar shelter</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-primary/5">
+                  <td className="py-3 pr-4 font-medium text-primary">Pris</td>
+                  <td className="py-3 pr-4 text-primary/85">Typisk gratis</td>
+                  <td className="py-3 text-primary/85">Ofte 0–100 kr. pr. nat</td>
+                </tr>
+                <tr className="border-b border-primary/5">
+                  <td className="py-3 pr-4 font-medium text-primary">Reservation</td>
+                  <td className="py-3 pr-4 text-primary/85">Nej</td>
+                  <td className="py-3 text-primary/85">Ja, på forhånd</td>
+                </tr>
+                <tr className="border-b border-primary/5">
+                  <td className="py-3 pr-4 font-medium text-primary">Risiko for optaget plads</td>
+                  <td className="py-3 pr-4 text-primary/85">Høj i højsæson</td>
+                  <td className="py-3 text-primary/85">Lav, når booking er bekræftet</td>
+                </tr>
+                <tr className="border-b border-primary/5">
+                  <td className="py-3 pr-4 font-medium text-primary">Bedst til</td>
+                  <td className="py-3 pr-4 text-primary/85">Spontane ture og lavsæson</td>
+                  <td className="py-3 text-primary/85">Familier, weekender og højsæson</td>
+                </tr>
+                <tr>
+                  <td className="py-3 pr-4 font-medium text-primary">Typiske ejere</td>
+                  <td className="py-3 pr-4 text-primary/85">Naturstyrelsen, kommuner</td>
+                  <td className="py-3 text-primary/85">Kommuner, private, foreninger, ShelterDK</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
           <h2 className="font-serif text-2xl font-bold text-primary">
             Hvor booker man shelter?
@@ -123,10 +172,12 @@ export default async function ShelterBookingPage() {
           <h2 className="font-serif text-2xl font-bold text-primary">
             Hvornår giver booking mest mening?
           </h2>
-          <p>
-            Booking er især relevant, hvis du rejser med børn, planlægger en weekendtur i højsæsonen eller vil være sikker på en bestemt plads.
-            Hvis du rejser spontant eller uden for sæson, kan gratis først-til-mølle-shelters ofte være et fint alternativ.
-          </p>
+          <ul>
+            <li>Rejser du i juli eller august, giver booking ofte mening.</li>
+            <li>Rejser du med børn eller som familie, er booking den tryggeste løsning.</li>
+            <li>Vil du have en bestemt plads eller udsigt, bør du reservere på forhånd.</li>
+            <li>Rejser du spontant uden for sæson, kan gratis først-til-mølle-shelters være et fint alternativ.</li>
+          </ul>
 
           <h2 className="font-serif text-2xl font-bold text-primary">
             Hvad koster det?

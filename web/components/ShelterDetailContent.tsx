@@ -28,6 +28,8 @@ import { formatRelativeTimeDa } from "@/lib/relative-time-da";
 import { prepositionForRegionName } from "@/lib/area-db";
 import { TrackShelterView } from "@/components/TrackShelterView";
 import { TrackedExternalLink } from "@/components/TrackedExternalLink";
+import { LastVerifiedBadge } from "@/components/LastVerifiedBadge";
+import { SpeakableSchema } from "@/components/seo/SpeakableSchema";
 
 const SHELTER_DK_CVR = "37343080";
 
@@ -125,6 +127,33 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
   } = props;
   const mobileAvailabilityTargetId = `availability-slot-mobile-${slug}`;
   const desktopAvailabilityTargetId = `availability-slot-desktop-${slug}`;
+  const hasFlushToilet = features.some((feature) => feature.label === "Toilet");
+  const hasMulchToilet = features.some((feature) => feature.label === "Muldtoilet");
+  const hasWater = features.some((feature) => feature.label === "Vand");
+  const toiletClause = hasFlushToilet
+    ? "med vandskyllende toilet"
+    : hasMulchToilet
+      ? "med muldtoilet"
+      : null;
+  const waterClause = hasWater
+    ? toiletClause
+      ? "og adgang til vand"
+      : "med adgang til vand"
+    : null;
+  const definitionTextParts = [
+    `${shelter.title} er ${isBookable ? "et bookbart" : "et"} shelter`,
+    city ? `i ${city}` : null,
+    capacity != null ? `med plads til ${capacity} personer` : null,
+    toiletClause,
+    waterClause,
+    isBookable ? "via ShelterDK eller tilknyttet booking" : "som typisk fungerer efter først-til-mølle-princippet",
+  ].filter(Boolean);
+  const llmDefinition = `${definitionTextParts.join(" ")}.`;
+  const lastVerifiedIso =
+    shelter.availability_verified_at ??
+    shelter.updated_at ??
+    shelter.created_at ??
+    null;
 
   const hasMultipleBookingUnits = bookingUnits.length > 1;
   const showAvailabilityPanel =
@@ -260,6 +289,10 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
 
   return (
     <main className="min-h-screen bg-background pb-20 lg:pb-0">
+      <SpeakableSchema
+        url={`https://shelterdk.dk/shelter/${slug}`}
+        selectors={[".llm-quote"]}
+      />
       <TrackShelterView shelterName={shelter.title} shelterId={slug} />
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
         <nav aria-label="Brødkrummer" className="mb-6 py-2">
@@ -343,6 +376,17 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                 <span className="ml-auto">
                   <ShareButtons title={shelter.title} url={`/shelter/${slug}`} />
                 </span>
+              </div>
+              <div className="mt-5 rounded-2xl border border-accent/20 bg-accent/5 p-5">
+                <div className="flex flex-wrap items-center gap-3">
+                  <h2 className="font-serif text-lg font-bold text-primary">
+                    Hurtigt svar
+                  </h2>
+                  <LastVerifiedBadge isoDate={lastVerifiedIso} />
+                </div>
+                <p className="llm-quote mt-3 text-primary/90 leading-relaxed">
+                  {llmDefinition}
+                </p>
               </div>
             </header>
 
