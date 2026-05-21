@@ -68,6 +68,8 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://lh3.googleusercontent.com" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
         <link rel="dns-prefetch" href="https://tile.openstreetmap.org" />
+        <link rel="alternate" type="text/plain" href="/llms.txt" title="LLMs.txt" />
+        <link rel="alternate" type="text/plain" href="/llms-full.txt" title="LLMs full context" />
         {/* Google Consent Mode v2 defaults — must run synchronously before any Google tag */}
         <script
           dangerouslySetInnerHTML={{
