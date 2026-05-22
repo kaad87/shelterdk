@@ -2,12 +2,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSessionClient } from "@/utils/supabase/server-session";
 import { createAdminClient } from "@/utils/supabase/server-admin";
 import { consumeOwnerClaimToken, normalizeClaimToken, resolveOwnerClaim } from "@/lib/owner-claim";
+import { enforcePublicRateLimit } from "@/lib/public-rate-limit";
 
 export const dynamic = "force-dynamic";
 
 const MIN_PASSWORD_LENGTH = 8;
 
 export async function POST(req: NextRequest) {
+  // Tight rate limit to prevent signup-spam and claim-token brute-force.
+  const rateLimited = await enforcePublicRateLimit(req, {
+    scope: "ejer_signup",
+    windowSeconds: 600,
+    maxHits: 5,
+    errorMessage:
+      "For mange oprettelses-forsøg. Prøv igen om lidt eller skriv til kontakt@shelterdk.dk.",
+  });
+  if (rateLimited) return rateLimited;
+
   let body: unknown;
   try { body = await req.json(); } catch {
     return NextResponse.json({ error: "Ugyldig JSON" }, { status: 400 });

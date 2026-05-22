@@ -41,9 +41,25 @@ vi.mock("@/lib/owner-claim", () => ({
   consumeOwnerClaimToken: mockConsumeOwnerClaimToken,
 }));
 
+// ─── Default rate-limit RPC response so route handlers don't fail ────────────
+function allowRateLimit() {
+  // `enforcePublicRateLimit` calls `.rpc("consume_public_rate_limit", …)`
+  // and destructures { data, error } — we provide an allowing response so
+  // the rest of the handler logic gets to run.
+  mockRpc.mockImplementation((name: string) => {
+    if (name === "consume_public_rate_limit") {
+      return Promise.resolve({
+        data: [{ allowed: true, hits: 1, retry_after_seconds: 60 }],
+        error: null,
+      });
+    }
+    return Promise.resolve({ data: null, error: null });
+  });
+}
+
 // ─── Login route ──────────────────────────────────────────────────────────────
 describe("POST /api/ejer/login", () => {
-  beforeEach(() => { vi.clearAllMocks(); });
+  beforeEach(() => { vi.clearAllMocks(); allowRateLimit(); });
 
   it("returns 200 on valid credentials", async () => {
     mockSignIn.mockResolvedValueOnce({
@@ -93,7 +109,7 @@ describe("POST /api/ejer/login", () => {
 
 // ─── Signup route ─────────────────────────────────────────────────────────────
 describe("POST /api/ejer/signup", () => {
-  beforeEach(() => { vi.clearAllMocks(); });
+  beforeEach(() => { vi.clearAllMocks(); allowRateLimit(); });
 
   it("returns 200 and links shelters on valid signup", async () => {
     mockResolveOwnerClaim.mockResolvedValueOnce({
@@ -213,7 +229,7 @@ describe("POST /api/ejer/signup", () => {
 
 // ─── Password reset route ────────────────────────────────────────────────────
 describe("POST /api/ejer/password-reset", () => {
-  beforeEach(() => { vi.clearAllMocks(); });
+  beforeEach(() => { vi.clearAllMocks(); allowRateLimit(); });
 
   it("sends reset email for valid address", async () => {
     mockResetPasswordForEmail.mockResolvedValueOnce({ data: {}, error: null });
@@ -266,7 +282,7 @@ const mockGetSessionUserFn = vi.mocked(mockGetSessionUser);
 
 // ─── GET /api/ejer/shelters ───────────────────────────────────────────────────
 describe("GET /api/ejer/shelters", () => {
-  beforeEach(() => { vi.clearAllMocks(); });
+  beforeEach(() => { vi.clearAllMocks(); allowRateLimit(); });
 
   it("returns shelters for authenticated user", async () => {
     mockGetSessionUserFn.mockResolvedValueOnce({ id: "user-1", email: "kim@test.dk" });
@@ -293,7 +309,7 @@ describe("GET /api/ejer/shelters", () => {
 
 // ─── PATCH /api/ejer/shelter/[id] ─────────────────────────────────────────────
 describe("PATCH /api/ejer/shelter/[id]", () => {
-  beforeEach(() => { vi.clearAllMocks(); });
+  beforeEach(() => { vi.clearAllMocks(); allowRateLimit(); });
 
   it("updates fields when user owns the shelter", async () => {
     mockGetSessionUserFn.mockResolvedValueOnce({ id: "user-1", email: "kim@test.dk" });
@@ -355,7 +371,7 @@ describe("PATCH /api/ejer/shelter/[id]", () => {
 
 // ─── POST + DELETE /api/ejer/shelter/[id]/billeder ───────────────────────────
 describe("POST /api/ejer/shelter/[id]/billeder", () => {
-  beforeEach(() => { vi.clearAllMocks(); });
+  beforeEach(() => { vi.clearAllMocks(); allowRateLimit(); });
 
   it("returns 403 when user doesn't own the shelter", async () => {
     mockGetSessionUserFn.mockResolvedValueOnce({ id: "user-1", email: "kim@test.dk" });
@@ -391,7 +407,7 @@ describe("POST /api/ejer/shelter/[id]/billeder", () => {
 });
 
 describe("DELETE /api/ejer/shelter/[id]/billeder", () => {
-  beforeEach(() => { vi.clearAllMocks(); });
+  beforeEach(() => { vi.clearAllMocks(); allowRateLimit(); });
 
   it("returns 403 when photo path doesn't belong to the shelter", async () => {
     mockGetSessionUserFn.mockResolvedValueOnce({ id: "user-1", email: "kim@test.dk" });

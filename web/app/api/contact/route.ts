@@ -1,27 +1,19 @@
 import { createPublicClient } from "@/utils/supabase/server-public";
 import { sendGa4Event } from "@/lib/server-analytics";
+import { enforcePublicRateLimit } from "@/lib/public-rate-limit";
 
 export const dynamic = "force-dynamic";
 
-const RATE_LIMIT_WINDOW_MS = 60_000;
-const MAX_PER_WINDOW = 3;
-const ipTimestamps = new Map<string, number[]>();
-
 export async function POST(request: Request) {
-  const ip =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-
-  const now = Date.now();
-  const timestamps = ipTimestamps.get(ip) ?? [];
-  const recent = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
-  if (recent.length >= MAX_PER_WINDOW) {
-    return Response.json(
-      { error: "For mange beskeder. Prøv igen om lidt." },
-      { status: 429 }
-    );
-  }
-  recent.push(now);
-  ipTimestamps.set(ip, recent);
+  // DB-backed rate limit replaces the old in-memory Map (which leaked
+  // memory and didn't work across serverless instances).
+  const rateLimited = await enforcePublicRateLimit(request, {
+    scope: "contact_form",
+    windowSeconds: 60,
+    maxHits: 3,
+    errorMessage: "For mange beskeder. Prøv igen om lidt.",
+  });
+  if (rateLimited) return rateLimited;
 
   let body: { name?: string; email?: string; category?: string; message?: string };
   try {

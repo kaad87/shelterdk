@@ -101,7 +101,7 @@ vi.mock("@/lib/booking-db", () => ({
   unblockDate: mockUnblockDate,
 }));
 
-// ── Supabase admin client mock (used by sendAutoMessageIfEnabled) ─────────────
+// ── Supabase admin client mock (used by sendAutoMessageIfEnabled + rate limit) ─
 vi.mock("@/utils/supabase/server-admin", () => {
   const chain = { data: null, error: null };
   const qb: Record<string, unknown> = {};
@@ -109,6 +109,16 @@ vi.mock("@/utils/supabase/server-admin", () => {
   for (const m of methods) {
     qb[m] = vi.fn(() => ({ ...qb, ...chain }));
   }
+  // Rate-limit RPC: always allow in tests so handler logic runs.
+  qb.rpc = vi.fn((name: string) => {
+    if (name === "consume_public_rate_limit") {
+      return Promise.resolve({
+        data: [{ allowed: true, hits: 1, retry_after_seconds: 60 }],
+        error: null,
+      });
+    }
+    return Promise.resolve({ data: null, error: null });
+  });
   return { createAdminClient: vi.fn(() => qb) };
 });
 

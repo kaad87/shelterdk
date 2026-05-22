@@ -21,6 +21,7 @@ import { createBookingPayment, markPaymentLinkSent } from "@/lib/payment-db";
 import { sendGa4Event } from "@/lib/server-analytics";
 import { BOOKING_WINDOW_DAYS } from "@/lib/booking-config";
 import { recordBookingMonitorError, recordBookingMonitorEvent } from "@/lib/booking-monitor";
+import { enforcePublicRateLimit } from "@/lib/public-rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,18 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
+  // Booking-spam protection: 10 bookings/hour per IP is well above any
+  // legitimate user and stops attackers from polluting the database with
+  // bogus pending reservations.
+  const rateLimited = await enforcePublicRateLimit(req, {
+    scope: "booking_create",
+    windowSeconds: 3600,
+    maxHits: 10,
+    errorMessage:
+      "For mange bookingforsøg. Prøv igen om et øjeblik eller kontakt os hvis du har brug for hjælp.",
+  });
+  if (rateLimited) return rateLimited;
+
   const { slug } = await params;
   const shelter = await getBookableShelterBySlug(slug);
   if (!shelter) {

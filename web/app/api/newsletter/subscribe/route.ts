@@ -1,10 +1,20 @@
 import { createAdminClient } from "@/utils/supabase/server-admin";
+import { enforcePublicRateLimit } from "@/lib/public-rate-limit";
 
 export const dynamic = "force-dynamic";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(request: Request) {
+  // Newsletter-spam protection.
+  const rateLimited = await enforcePublicRateLimit(request, {
+    scope: "newsletter_subscribe",
+    windowSeconds: 600,
+    maxHits: 5,
+    errorMessage: "For mange tilmeldings-forsøg. Prøv igen om lidt.",
+  });
+  if (rateLimited) return rateLimited;
+
   let body: { email?: string; source?: string; website?: string };
   try {
     body = await request.json();

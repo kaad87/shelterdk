@@ -1,9 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSessionClient } from "@/utils/supabase/server-session";
+import { enforcePublicRateLimit } from "@/lib/public-rate-limit";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
+  // Prevent password-reset spam and email-enumeration abuse.
+  const rateLimited = await enforcePublicRateLimit(req, {
+    scope: "ejer_password_reset",
+    windowSeconds: 600,
+    maxHits: 5,
+    errorMessage:
+      "For mange nulstillings-forsøg. Prøv igen om lidt — tjek også din spam-mappe.",
+  });
+  if (rateLimited) return rateLimited;
+
   let body: unknown;
   try {
     body = await req.json();
