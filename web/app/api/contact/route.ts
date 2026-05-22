@@ -1,4 +1,4 @@
-import { createPublicClient } from "@/utils/supabase/server-public";
+import { createAdminClient } from "@/utils/supabase/server-admin";
 import { sendGa4Event } from "@/lib/server-analytics";
 import { enforcePublicRateLimit } from "@/lib/public-rate-limit";
 
@@ -46,7 +46,10 @@ export async function POST(request: Request) {
     return Response.json({ error: "Ugyldig email-adresse." }, { status: 400 });
   }
 
-  const supabase = createPublicClient();
+  // Must use the admin client now that RLS is enabled on contact_messages
+  // (migration 045). Anon SDK has no INSERT policy by design — writes go
+  // through this rate-limited server-side route only.
+  const supabase = createAdminClient();
   const { error } = await supabase.from("contact_messages").insert({
     name,
     email,
