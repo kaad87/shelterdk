@@ -1,6 +1,15 @@
 import { createAdminClient } from "@/utils/supabase/server-admin";
 
-export type EmailLogStatus = "sent" | "failed";
+// "sent" + "failed" are set at send-time. "suppressed" is set when we
+// skipped a known-bad recipient. The remaining states are written by
+// the Resend webhook handler when delivery status updates arrive.
+export type EmailLogStatus =
+  | "sent"
+  | "failed"
+  | "suppressed"
+  | "delivered"
+  | "bounced"
+  | "complained";
 export type EmailLogCategory = "booking" | "owner_portal" | "monitor" | "contact";
 
 export interface EmailLogInput {

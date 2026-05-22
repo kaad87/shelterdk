@@ -1,8 +1,36 @@
 // lib/email.ts
 import { Resend } from "resend";
 import { recordEmailLog, type EmailLogCategory } from "./email-log";
+import { createAdminClient } from "@/utils/supabase/server-admin";
 
 export const FROM_EMAIL = "ShelterDK <hej@shelterdk.dk>";
+
+/**
+ * Filters out addresses that are on the email_suppression list
+ * (hard-bounced or complained previously via Resend webhook).
+ * Returns the surviving recipients. Failures fall back to "keep all"
+ * so a DB outage never blocks transactional emails.
+ */
+async function filterSuppressed(recipients: string[]): Promise<{
+  allowed: string[];
+  suppressed: string[];
+}> {
+  const normalized = recipients.map((r) => r.toLowerCase().trim()).filter(Boolean);
+  if (normalized.length === 0) return { allowed: [], suppressed: [] };
+  try {
+    const { data } = await createAdminClient()
+      .from("email_suppression")
+      .select("email")
+      .in("email", normalized);
+    const blocked = new Set((data ?? []).map((r: { email: string }) => r.email));
+    return {
+      allowed: recipients.filter((r) => !blocked.has(r.toLowerCase().trim())),
+      suppressed: recipients.filter((r) => blocked.has(r.toLowerCase().trim())),
+    };
+  } catch {
+    return { allowed: recipients, suppressed: [] };
+  }
+}
 
 export function escapeHtml(str: string): string {
   return str
@@ -32,9 +60,37 @@ export async function sendLoggedEmail(opts: {
   html: string;
   text: string;
   replyTo?: string;
+  /** Optional List-Unsubscribe URL — included for newsletter / promotional sends. */
+  unsubscribeUrl?: string;
   context: SendLoggedEmailContext;
 }) {
-  const recipients = Array.isArray(opts.to) ? opts.to : [opts.to];
+  const rawRecipients = Array.isArray(opts.to) ? opts.to : [opts.to];
+  const { allowed, suppressed } = await filterSuppressed(rawRecipients);
+  if (suppressed.length > 0) {
+    // Log the suppression so we have an audit trail; no send attempted.
+    void Promise.allSettled(
+      suppressed.map((toEmail) =>
+        recordEmailLog({
+          category: opts.context.category ?? "booking",
+          emailType: opts.context.emailType,
+          provider: "resend",
+          subject: opts.subject,
+          previewText: opts.text.slice(0, 500),
+          bookingId: opts.context.bookingId,
+          paymentId: opts.context.paymentId,
+          shelterId: opts.context.shelterId,
+          metadata: { ...(opts.context.metadata ?? {}), suppressed: true },
+          status: "suppressed",
+          toEmail,
+        })
+      )
+    );
+  }
+  if (allowed.length === 0) {
+    // All recipients suppressed; nothing left to send.
+    return { data: null, error: null } as const;
+  }
+  const recipients = allowed;
   const previewText = opts.text.slice(0, 500);
   const sharedContext = {
     category: opts.context.category ?? "booking",
@@ -47,12 +103,23 @@ export async function sendLoggedEmail(opts: {
     shelterId: opts.context.shelterId,
     metadata: opts.context.metadata,
   } as const;
+
+  // Gmail/Yahoo bulk-sender requirements (Feb 2024): List-Unsubscribe +
+  // one-click POST. Only add for senders that need it (newsletter); leave
+  // transactional emails without it so they aren't treated as bulk.
+  const headers: Record<string, string> = {};
+  if (opts.unsubscribeUrl) {
+    headers["List-Unsubscribe"] = `<${opts.unsubscribeUrl}>`;
+    headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click";
+  }
+
   let failureLogged = false;
   try {
     const result = await getResend().emails.send({
       from: FROM_EMAIL,
       to: recipients,
       ...(opts.replyTo ? { replyTo: opts.replyTo } : {}),
+      ...(Object.keys(headers).length > 0 ? { headers } : {}),
       subject: opts.subject,
       html: opts.html,
       text: opts.text,
