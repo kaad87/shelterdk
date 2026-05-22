@@ -7,12 +7,16 @@ const dmSans = DM_Sans({
   subsets: ["latin"],
   variable: "--font-dm-sans",
   display: "swap",
+  // Only the weights actually used in the codebase (font-normal/medium/semibold/bold).
+  weight: ["400", "500", "600", "700"],
 });
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-playfair",
   display: "swap",
+  // Playfair is only used as serif headings with font-bold.
+  weight: ["700"],
 });
 
 export const viewport: Viewport = {
@@ -65,6 +69,9 @@ export default function RootLayout({
     <html lang="da" className={`${dmSans.variable} ${playfair.variable}`}>
       <head>
         <link rel="preconnect" href="https://lh3.googleusercontent.com" crossOrigin="anonymous" />
+        {process.env.NEXT_PUBLIC_SUPABASE_URL ? (
+          <link rel="preconnect" href={process.env.NEXT_PUBLIC_SUPABASE_URL} crossOrigin="anonymous" />
+        ) : null}
         <link rel="dns-prefetch" href="https://lh3.googleusercontent.com" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
         <link rel="dns-prefetch" href="https://tile.openstreetmap.org" />

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Heart } from "lucide-react";
 import { isInWishlist, toggleWishlist } from "@/lib/wishlist";
@@ -49,19 +50,29 @@ export function WishlistButton({
 
   if (variant === "labeled") {
     return (
-      <button
-        type="button"
-        onClick={handleToggle}
-        aria-label={saved ? "Fjern fra favoritter" : "Gem som favorit"}
-        aria-pressed={saved}
-        className={`inline-flex items-center gap-1.5 rounded-lg border border-primary/15 bg-white px-3 py-1.5 text-sm font-medium text-primary/80 hover:bg-primary/5 transition-colors ${className}`}
-      >
-        <Heart
-          size={16}
-          className={saved ? "fill-red-500 text-red-500" : "text-primary/60"}
-        />
-        <span>{saved ? "Gemt" : "Gem"}</span>
-      </button>
+      <div className={`inline-flex items-center gap-2 ${className}`}>
+        <button
+          type="button"
+          onClick={handleToggle}
+          aria-label={saved ? "Fjern fra favoritter" : "Gem som favorit"}
+          aria-pressed={saved}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-primary/15 bg-white px-3 py-1.5 text-sm font-medium text-primary/80 hover:bg-primary/5 transition-colors"
+        >
+          <Heart
+            size={16}
+            className={saved ? "fill-red-500 text-red-500" : "text-primary/60"}
+          />
+          <span>{saved ? "Gemt" : "Gem"}</span>
+        </button>
+        {saved ? (
+          <Link
+            href="/favoritter"
+            className="text-sm font-medium text-accent hover:text-accent/80 transition-colors"
+          >
+            Se favoritter
+          </Link>
+        ) : null}
+      </div>
     );
   }
 

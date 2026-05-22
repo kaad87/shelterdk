@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
 import { createAdminClient } from "@/utils/supabase/server-admin";
 import {
@@ -196,11 +197,13 @@ export default async function BetalPage({ params, searchParams }: Props) {
       <div className="max-w-md w-full bg-white rounded-2xl shadow-sm overflow-hidden">
         {shelterImageUrl ? (
           <div className="relative w-full h-40 bg-primary/10">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={shelterImageUrl}
               alt={shelter.title}
-              className="w-full h-full object-cover"
+              fill
+              sizes="448px"
+              className="object-cover"
+              priority
             />
           </div>
         ) : null}

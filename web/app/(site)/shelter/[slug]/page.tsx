@@ -163,20 +163,21 @@ export default async function ShelterPage({ params }: PageProps) {
   }
 
   const areaSlug = (shelter as { area_slug?: string | null }).area_slug?.trim() || null;
-  const [reviews, area, bookableShelters] = await Promise.all([
+  // Compute coords synchronously so weather fetch can run in parallel with the others.
+  const coordsEarly = getLocationCoords(shelter);
+  const [reviews, area, bookableShelters, weatherForecast] = await Promise.all([
     getReviews(shelter.google_place_id ?? null),
     areaSlug ? getAreaBySlug(areaSlug) : Promise.resolve(null),
     listBookableSheltersByShelterDbId(shelter.id).catch(() => []),
+    coordsEarly
+      ? getWeatherForecast(coordsEarly.lat, coordsEarly.lon).catch(() => null)
+      : Promise.resolve(null),
   ]);
   const embeddedPlaces = shelter.google_places;
   const embeddedRefs = Array.isArray(embeddedPlaces)
     ? embeddedPlaces?.[0]?.photo_references
     : embeddedPlaces?.photo_references;
   const photoRef = Array.isArray(embeddedRefs) ? (embeddedRefs?.[0] ?? null) : null;
-  const coordsEarly = getLocationCoords(shelter);
-  const weatherForecast = coordsEarly
-    ? await getWeatherForecast(coordsEarly.lat, coordsEarly.lon)
-    : null;
 
   const googlePlaceName = shelter.google_place_name ?? null;
   const showReviews = isShelterPlace(googlePlaceName);

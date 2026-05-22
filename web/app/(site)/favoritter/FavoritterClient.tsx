@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Heart, MapPin, Trash2 } from "lucide-react";
 import { getWishlist, removeFromWishlist, type WishlistItem } from "@/lib/wishlist";
@@ -57,15 +58,16 @@ export function FavoritterClient() {
         >
           <Link
             href={`/shelter/${item.slug}`}
-            className="flex-shrink-0 block w-24 h-24 sm:w-32 sm:h-24 rounded-xl overflow-hidden bg-primary/10"
+            className="relative flex-shrink-0 block w-24 h-24 sm:w-32 sm:h-24 rounded-xl overflow-hidden bg-primary/10"
             aria-label={`Åbn ${item.title}`}
           >
             {item.imageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <Image
                 src={item.imageUrl}
                 alt={item.title}
-                className="w-full h-full object-cover"
+                fill
+                sizes="(max-width: 640px) 96px, 128px"
+                className="object-cover"
                 loading="lazy"
               />
             ) : (

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { Camera } from "lucide-react";
 import { ExperienceUploadModal } from "@/components/ExperienceUploadModal";
 import type { ShelterExperience } from "@/lib/experiences";
@@ -66,10 +67,12 @@ export function ShelterExperiencesSection({
               >
                 {coverUrl ? (
                   <div className="relative h-28">
-                    <img
+                    <Image
                       src={coverUrl}
                       alt={`Billede delt af ${exp.author_name} fra ${shelterTitle}`}
-                      className="w-full h-full object-cover"
+                      fill
+                      sizes="192px"
+                      className="object-cover"
                     />
                     {extra > 0 && (
                       <div className="absolute top-1.5 right-1.5 bg-black/50 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full">

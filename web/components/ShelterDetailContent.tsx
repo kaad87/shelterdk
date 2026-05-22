@@ -17,7 +17,18 @@ import { ShelterFacts } from "@/components/ShelterFacts";
 import { ShareButtons } from "@/components/ShareButtons";
 import { WeatherWidget } from "@/components/WeatherWidget";
 import { ResponsiveShelterAvailabilityPanel } from "@/components/ResponsiveShelterAvailabilityPanel";
-import { CommunityContributionPanel } from "@/components/CommunityContributionPanel";
+import dynamic from "next/dynamic";
+
+// Lazy-load CommunityContributionPanel — it pulls the full @supabase/supabase-js
+// (auth + realtime, ~140KB unminified). It sits below the fold and only triggers
+// when the user actually scrolls down or interacts with community features.
+const CommunityContributionPanel = dynamic(
+  () =>
+    import("@/components/CommunityContributionPanel").then(
+      (m) => m.CommunityContributionPanel
+    ),
+  { ssr: false, loading: () => null }
+);
 import { CommunityApprovedSection } from "@/components/CommunityApprovedSection";
 import { ShelterExperiencesSection } from "@/components/ShelterExperiencesSection";
 import NewsletterSignup from "@/components/NewsletterSignup";

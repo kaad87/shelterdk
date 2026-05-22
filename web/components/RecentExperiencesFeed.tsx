@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { createPublicClient } from "@/utils/supabase/server-public";
 
@@ -59,10 +60,12 @@ export async function RecentExperiencesFeed() {
               >
                 {coverUrl ? (
                   <div className="h-28 relative">
-                    <img
+                    <Image
                       src={coverUrl}
                       alt={`Billede delt fra ${shelter?.title ?? "shelteroplevelse"}`}
-                      className="w-full h-full object-cover"
+                      fill
+                      sizes="208px"
+                      className="object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                     <div className="absolute bottom-2 left-2.5 right-2.5">
