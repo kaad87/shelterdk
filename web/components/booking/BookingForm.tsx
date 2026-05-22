@@ -388,6 +388,8 @@ export function BookingForm({
                   </label>
                   <input
                     type="text" required maxLength={100}
+                    name="guest_name"
+                    autoComplete="name"
                     value={form.guest_name}
                     onChange={(e) => setForm((f) => ({ ...f, guest_name: e.target.value }))}
                     placeholder="Dit fulde navn"
@@ -400,6 +402,9 @@ export function BookingForm({
                   </label>
                   <input
                     type="email" required
+                    name="guest_email"
+                    autoComplete="email"
+                    inputMode="email"
                     value={form.guest_email}
                     onChange={(e) => setForm((f) => ({ ...f, guest_email: e.target.value }))}
                     placeholder="din@email.dk"
@@ -445,6 +450,8 @@ export function BookingForm({
                 </label>
                 <textarea
                   maxLength={500} rows={3}
+                  name="message"
+                  autoComplete="off"
                   value={form.message}
                   onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
                   placeholder="Skriv et par ord til ejeren…"
@@ -494,7 +501,7 @@ export function BookingForm({
                     Sender…
                   </span>
                 ) : dateRange ? (
-                  isUpfront ? `Gå til betaling — ${totalDkk} kr` : "Send bookingforespørgsel"
+                  isUpfront ? `Gå til betaling — ${totalDkk} kr` : "Send forespørgsel — gratis, ingen betaling"
                 ) : (
                   "Vælg datoer for at fortsætte"
                 )}

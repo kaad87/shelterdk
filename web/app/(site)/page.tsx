@@ -305,6 +305,13 @@ export default async function HomePage() {
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-primary/40"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
           <span>Søg by, område eller shelter…</span>
         </Link>
+        <Link
+          href="/shelter-naer-mig"
+          className="mt-2.5 inline-flex items-center gap-1.5 text-sm text-white/85 font-medium"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          Find shelters nær mig →
+        </Link>
       </header>
 
       {/* ===== DESKTOP HERO (md+) ===== */}

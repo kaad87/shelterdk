@@ -79,3 +79,31 @@ export function trackOutboundClick(url: string, label?: string) {
 export function trackCommunitySubmit(type: "comment" | "photo" | "facilities") {
   push("community_submit", { submission_type: type });
 }
+
+/**
+ * Fired when a user clicks the Book CTA on a shelter detail page.
+ * Key funnel metric — measures view → click conversion.
+ */
+export function trackBookButtonClick(args: {
+  shelterId: string;
+  shelterSlug: string;
+  bookingType: "shelterdk" | "external" | "multi_unit" | "naturstyrelsen_fallback";
+  position: "main_card" | "sticky_mobile";
+}) {
+  push("book_button_clicked", {
+    shelter_id: args.shelterId,
+    shelter_slug: args.shelterSlug,
+    booking_type: args.bookingType,
+    cta_position: args.position,
+  });
+}
+
+/** Fired when a user adds or removes a shelter from their wishlist. */
+export function trackWishlist(action: "add" | "remove", shelterId: string) {
+  push("wishlist_changed", { wishlist_action: action, shelter_id: shelterId });
+}
+
+/** Fired when a Stripe checkout is cancelled (user returns via cancel_url). */
+export function trackPaymentCancelled(bookingId: string) {
+  push("payment_cancelled", { booking_id: bookingId });
+}

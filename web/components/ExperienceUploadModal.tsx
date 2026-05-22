@@ -33,6 +33,10 @@ export function ExperienceUploadModal({
   const [experienceId, setExperienceId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const firstActionRef = useRef<HTMLButtonElement>(null);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
   const handleFiles = (selected: FileList | null) => {
     if (!selected) return;
@@ -125,17 +129,49 @@ export function ExperienceUploadModal({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // ESC key + body scroll lock — modal is always "open" while mounted
+  // ESC key + body scroll lock + focus trap — modal is always "open" while mounted
   useEffect(() => {
+    previouslyFocusedRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+    const focusFirstElement = () => {
+      const target = firstActionRef.current ?? closeButtonRef.current;
+      target?.focus();
+    };
+    const rafId = window.requestAnimationFrame(focusFirstElement);
+
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab" || !modalRef.current) return;
+      const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      if (e.shiftKey) {
+        if (active === first || !modalRef.current.contains(active)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (active === last || !modalRef.current.contains(active)) {
+        e.preventDefault();
+        first.focus();
+      }
     };
     document.addEventListener("keydown", handleKey);
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
+      window.cancelAnimationFrame(rafId);
       document.removeEventListener("keydown", handleKey);
       document.body.style.overflow = prevOverflow;
+      previouslyFocusedRef.current?.focus();
     };
   }, [onClose]);
 
@@ -148,6 +184,7 @@ export function ExperienceUploadModal({
       onClick={onClose}
     >
       <div
+        ref={modalRef}
         className="w-full sm:max-w-lg bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
@@ -157,7 +194,7 @@ export function ExperienceUploadModal({
             <h2 id="experience-upload-modal-title" className="font-semibold text-primary text-base">Del din oplevelse</h2>
             <div className="text-xs text-primary/50">{shelterTitle}</div>
           </div>
-          <button onClick={onClose} aria-label="Luk" className="p-2 rounded-lg text-primary/60 hover:text-primary hover:bg-primary/5 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50">
+          <button ref={closeButtonRef} onClick={onClose} aria-label="Luk" className="p-2 rounded-lg text-primary/60 hover:text-primary hover:bg-primary/5 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50">
             <X size={20} />
           </button>
         </div>
@@ -167,6 +204,7 @@ export function ExperienceUploadModal({
           {step === "upload" && (
             <div className="space-y-4">
               <button
+                ref={firstActionRef}
                 type="button"
                 onClick={() => fileRef.current?.click()}
                 className="w-full border-2 border-dashed border-primary/20 rounded-xl p-8 flex flex-col items-center gap-2 cursor-pointer hover:border-accent/50 hover:bg-accent/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2"

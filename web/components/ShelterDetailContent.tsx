@@ -30,6 +30,8 @@ import { TrackShelterView } from "@/components/TrackShelterView";
 import { TrackedExternalLink } from "@/components/TrackedExternalLink";
 import { LastVerifiedBadge } from "@/components/LastVerifiedBadge";
 import { SpeakableSchema } from "@/components/seo/SpeakableSchema";
+import { TrackedBookLink } from "@/components/TrackedBookLink";
+import { WishlistButton } from "@/components/WishlistButton";
 
 const SHELTER_DK_CVR = "37343080";
 
@@ -180,9 +182,13 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
           </div>
           <div className="space-y-2.5">
             {bookingUnits.map((unit) => (
-              <Link
+              <TrackedBookLink
                 key={unit.id}
                 href={unit.href}
+                shelterId={shelter.id}
+                shelterSlug={slug}
+                bookingType="multi_unit"
+                position="main_card"
                 className="flex items-center justify-between gap-3 rounded-xl border border-primary/10 px-4 py-3 hover:border-accent/40 hover:bg-accent/5 transition-colors"
               >
                 <span className="min-w-0">
@@ -194,7 +200,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                 <span className="shrink-0 text-sm font-semibold text-accent">
                   Book
                 </span>
-              </Link>
+              </TrackedBookLink>
             ))}
           </div>
           <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-primary/8 bg-primary/[0.03] px-3.5 py-3">
@@ -212,12 +218,16 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
         </>
       ) : bookingUnits.length === 1 ? (
         <>
-          <Link
+          <TrackedBookLink
             href={bookingUnits[0].href}
+            shelterId={shelter.id}
+            shelterSlug={slug}
+            bookingType="shelterdk"
+            position="main_card"
             className="flex items-center justify-center gap-2 w-full bg-accent text-white font-semibold px-6 py-4 rounded-xl hover:bg-accent/90 transition-colors"
           >
             Book dette shelter
-          </Link>
+          </TrackedBookLink>
           <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-primary/8 bg-primary/[0.03] px-3.5 py-3">
             <span className="text-base leading-none mt-0.5 shrink-0">🔒</span>
             <div>
@@ -236,6 +246,12 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
           <TrackedExternalLink
             href={bookingUrl}
             eventLabel="Book shelter"
+            bookContext={{
+              shelterId: shelter.id,
+              shelterSlug: slug,
+              bookingType: "external",
+              position: "main_card",
+            }}
             className="flex items-center justify-center gap-2 w-full bg-accent text-white font-semibold px-6 py-4 rounded-xl hover:bg-accent/90 transition-colors"
           >
             <ExternalLink size={20} />
@@ -373,7 +389,14 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                     )}
                   </span>
                 )}
-                <span className="ml-auto">
+                <span className="ml-auto flex items-center gap-2">
+                  <WishlistButton
+                    slug={slug}
+                    title={shelter.title}
+                    city={city}
+                    imageUrl={shelter.image_url ?? null}
+                    variant="labeled"
+                  />
                   <ShareButtons title={shelter.title} url={`/shelter/${slug}`} />
                 </span>
               </div>
@@ -776,11 +799,41 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
         />
       )}
 
-      {bookingUrl && !hasMultipleBookingUnits && (
+      {/* Mobile sticky CTA — covers external bookingUrl, single ShelterDK unit, and multi-unit */}
+      {bookingUnits.length === 1 ? (
+        <div className="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-primary/10 p-3 lg:hidden" role="complementary" aria-label="Booking">
+          <TrackedBookLink
+            href={bookingUnits[0].href}
+            shelterId={shelter.id}
+            shelterSlug={slug}
+            bookingType="shelterdk"
+            position="sticky_mobile"
+            ariaLabel={`Book ${shelter.title}`}
+            className="flex items-center justify-center gap-2 w-full bg-accent text-white text-center font-semibold py-3 rounded-lg hover:bg-accent/90 transition-colors"
+          >
+            Book dette shelter
+          </TrackedBookLink>
+        </div>
+      ) : hasMultipleBookingUnits ? (
+        <div className="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-primary/10 p-3 lg:hidden" role="complementary" aria-label="Booking">
+          <a
+            href="#booking-enheder"
+            className="flex items-center justify-center gap-2 w-full bg-accent text-white text-center font-semibold py-3 rounded-lg hover:bg-accent/90 transition-colors"
+          >
+            Vælg shelter ({bookingUnits.length} på pladsen)
+          </a>
+        </div>
+      ) : bookingUrl ? (
         <div className="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-primary/10 p-3 lg:hidden" role="complementary" aria-label="Booking">
           <TrackedExternalLink
             href={bookingUrl}
             eventLabel="Book dette shelter"
+            bookContext={{
+              shelterId: shelter.id,
+              shelterSlug: slug,
+              bookingType: "external",
+              position: "sticky_mobile",
+            }}
             aria-label={`Book ${shelter.title} – åbner i nyt vindue`}
             className="flex items-center justify-center gap-2 w-full bg-accent text-white text-center font-semibold py-3 rounded-lg hover:bg-accent/90 transition-colors"
           >
@@ -788,7 +841,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
             Book dette shelter
           </TrackedExternalLink>
         </div>
-      )}
+      ) : null}
     </main>
   );
 }

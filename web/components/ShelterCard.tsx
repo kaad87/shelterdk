@@ -3,10 +3,9 @@
 import { useRef, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { MapPin, Star, CheckCircle, Droplets, Dog, Flame } from "lucide-react";
+import { MapPin, Star, CheckCircle, Droplets, Dog, Flame, Users } from "lucide-react";
 import type { Shelter } from "@/types/shelter";
-import { getCity, getResolvedPhotoUrls, isShelterPlace, isValidImageUrl, getWater, getToilet, getPetsAllowed, isBookable } from "@/lib/shelter-detail";
+import { getCity, getResolvedPhotoUrls, isShelterPlace, isValidImageUrl, getWater, getToilet, getPetsAllowed, isBookable, getPayment } from "@/lib/shelter-detail";
 import { ShelterPlaceholder } from "@/components/ShelterPlaceholder";
 import { getProxiedImageSrc, isUnoptimizedImageUrl } from "@/lib/image-proxy";
 import { ImageCarousel } from "@/components/ImageCarousel";
@@ -92,7 +91,6 @@ function formatDanishDate(iso: string): string {
 }
 
 export function ShelterCard({ shelter, onImageError, href, priority, availabilityState, activeDate }: ShelterCardProps) {
-  const router = useRouter();
   const embeddedPlaces = shelter.google_places;
   const embeddedRefs = Array.isArray(embeddedPlaces)
     ? embeddedPlaces?.[0]?.photo_references
@@ -168,6 +166,27 @@ export function ShelterCard({ shelter, onImageError, href, priority, availabilit
           <span className="truncate">{city}</span>
         </p>
       )}
+      {/* Capacity + price quick-scan row */}
+      {(() => {
+        const payment = getPayment(shelter);
+        const isFree =
+          !payment || (typeof payment === "string" && payment.toLowerCase().includes("nej"));
+        const showCapacity = shelter.capacity != null && shelter.capacity > 0;
+        if (!showCapacity && !isFree) return null;
+        return (
+          <div className="mt-1 flex items-center gap-2.5 text-xs text-primary/65">
+            {showCapacity && (
+              <span className="flex items-center gap-1">
+                <Users size={12} aria-hidden="true" />
+                {shelter.capacity} pladser
+              </span>
+            )}
+            {isFree && (
+              <span className="font-semibold text-green-700">Gratis</span>
+            )}
+          </div>
+        );
+      })()}
       {/* Facility badges */}
       <div className="mt-1.5 flex items-center gap-1.5 min-h-[1.25rem]" aria-label="Faciliteter">
         {(() => {
@@ -235,21 +254,20 @@ export function ShelterCard({ shelter, onImageError, href, priority, availabilit
   );
 
   const bookBadge = isShelterDkBookable && (
-    <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-green-700 px-2.5 py-1 text-[10.5px] font-bold text-white shadow z-10">
-      <CheckCircle size={11} strokeWidth={2.5} />
+    <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-green-700 px-3 py-1.5 text-xs font-bold text-white shadow-lg ring-2 ring-white/20 z-10">
+      <CheckCircle size={13} strokeWidth={2.5} />
       Book på ShelterDK
     </div>
   );
 
-  // Carousel path: entire card is a clickable div (swipe handled by ImageCarousel)
+  // Carousel path: outer is a real <Link> so Cmd/Ctrl-click and right-click work.
+  // ImageCarousel handles swipe internally; on swipe it stopPropagation's the click
+  // so the Link doesn't navigate. Normal clicks bubble up to Link and navigate.
   if (useCarousel) {
     return (
-      <div
-        className="group block overflow-hidden rounded-xl bg-white shadow-sm transition-transform duration-300 hover:scale-[1.02] cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 active:scale-[0.98] touch-manipulation"
-        onClick={() => router.push(linkHref)}
-        role="link"
-        tabIndex={0}
-        onKeyDown={(e) => { if (e.key === "Enter") router.push(linkHref); }}
+      <Link
+        href={linkHref}
+        className="group block overflow-hidden rounded-xl bg-white shadow-sm transition-transform duration-300 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 active:scale-[0.98] touch-manipulation"
       >
         <div className="relative aspect-[4/3] overflow-hidden bg-primary/10">
           <ImageCarousel
@@ -263,7 +281,7 @@ export function ShelterCard({ shelter, onImageError, href, priority, availabilit
           {ratingBadge}
         </div>
         {cardBody}
-      </div>
+      </Link>
     );
   }
 

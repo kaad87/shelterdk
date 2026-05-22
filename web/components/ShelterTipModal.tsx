@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { X, Lightbulb, Loader2, CheckCircle } from "lucide-react";
 import { useShelterTipModal } from "@/components/ShelterTipModalProvider";
 
@@ -16,26 +16,12 @@ export function ShelterTipModal() {
   const [state, setState] = useState<State>("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const titleId = "shelter-tip-modal-title";
+  const modalRef = useRef<HTMLDivElement>(null);
+  const firstInputRef = useRef<HTMLInputElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
-  // ESC key + body scroll lock while modal is open
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") handleClose();
-    };
-    document.addEventListener("keydown", handleKey);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", handleKey);
-      document.body.style.overflow = prevOverflow;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
-
-  if (!isOpen) return null;
-
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     closeModal();
     setShelterName("");
     setLocationText("");
@@ -44,7 +30,56 @@ export function ShelterTipModal() {
     setWebsite("");
     setState("idle");
     setErrorMsg("");
-  };
+  }, [closeModal]);
+
+  // ESC key + body scroll lock + focus trap while modal is open
+  useEffect(() => {
+    if (!isOpen) return;
+    previouslyFocusedRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+    const focusFirstElement = () => {
+      const target = firstInputRef.current ?? closeButtonRef.current;
+      target?.focus();
+    };
+    const rafId = window.requestAnimationFrame(focusFirstElement);
+
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        handleClose();
+        return;
+      }
+      if (e.key !== "Tab" || !modalRef.current) return;
+      const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      if (e.shiftKey) {
+        if (active === first || !modalRef.current.contains(active)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (active === last || !modalRef.current.contains(active)) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", handleKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      document.removeEventListener("keydown", handleKey);
+      document.body.style.overflow = prevOverflow;
+      previouslyFocusedRef.current?.focus();
+    };
+  }, [isOpen, handleClose]);
+
+  if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,6 +122,7 @@ export function ShelterTipModal() {
       aria-labelledby={titleId}
     >
       <div
+        ref={modalRef}
         className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
@@ -95,6 +131,7 @@ export function ShelterTipModal() {
           <Lightbulb size={20} />
           <h2 id={titleId} className="font-semibold">Tip om manglende shelter</h2>
           <button
+            ref={closeButtonRef}
             onClick={handleClose}
             className="ml-auto rounded-full hover:bg-white/20 p-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
             aria-label="Luk"
@@ -128,6 +165,7 @@ export function ShelterTipModal() {
                   Shelterens navn <span className="text-red-500">*</span>
                 </label>
                 <input
+                  ref={firstInputRef}
                   type="text"
                   value={shelterName}
                   onChange={(e) => setShelterName(e.target.value)}
