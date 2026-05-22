@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
+import { getProxiedImageSrc, isUnoptimizedImageUrl } from "@/lib/image-proxy";
 import { createAdminClient } from "@/utils/supabase/server-admin";
 import {
   createBookingPayment,
@@ -189,8 +190,10 @@ export default async function BetalPage({ params, searchParams }: Props) {
     }
   }
 
-  const shelterImageUrl: string | null =
-    shelter.shelters?.image_url ?? null;
+  const rawShelterImageUrl: string | null = shelter.shelters?.image_url ?? null;
+  const shelterImageUrl = rawShelterImageUrl
+    ? getProxiedImageSrc(rawShelterImageUrl, { q: 75, w: 960 })
+    : null;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#F9FAFB] py-8 px-4">
@@ -203,6 +206,7 @@ export default async function BetalPage({ params, searchParams }: Props) {
               fill
               sizes="448px"
               className="object-cover"
+              unoptimized={isUnoptimizedImageUrl(shelterImageUrl)}
               priority
             />
           </div>

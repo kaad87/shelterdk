@@ -15,8 +15,8 @@ const playfair = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-playfair",
   display: "swap",
-  // Playfair is only used as serif headings with font-bold.
-  weight: ["700"],
+  // Include semibold too, since several serif headings use font-semibold.
+  weight: ["600", "700"],
 });
 
 export const viewport: Viewport = {

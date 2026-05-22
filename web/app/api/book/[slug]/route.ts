@@ -261,6 +261,20 @@ export async function POST(
             payment_context: "upfront_booking",
           },
         });
+        // GA4 standard `begin_checkout` so the funnel report shows
+        // view_item → begin_checkout → purchase.
+        await sendGa4Event({
+          headers: req.headers,
+          eventName: "begin_checkout",
+          path: referrer,
+          referrer,
+          eventParams: {
+            transaction_id: booking.id,
+            currency: "DKK",
+            value: amountTotalDkk,
+            payment_mode: shelter.payment_mode,
+          },
+        });
       } catch (err) {
         console.error("book route: non-fatal payment analytics error:", err);
       }

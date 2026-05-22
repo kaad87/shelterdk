@@ -58,9 +58,17 @@ export function trackFilter(filterName: string, active: boolean) {
 }
 
 export function trackShelterView(shelterName: string, shelterId: string) {
+  // Custom event (kept for backwards compat / dashboards)
   push("shelter_viewed", {
     shelter_name: shelterName,
     shelter_id: shelterId,
+  });
+  // GA4 standard e-commerce event so GA4's built-in reports recognise it.
+  push("view_item", {
+    currency: "DKK",
+    item_id: shelterId,
+    item_name: shelterName,
+    item_category: "shelter",
   });
 }
 
@@ -74,6 +82,31 @@ export function trackShare(method: string, contentType: string) {
 
 export function trackOutboundClick(url: string, label?: string) {
   push("outbound_click", { outbound_url: url, link_label: label });
+}
+
+/**
+ * Fired when a user clicks an affiliate product link (Backpackerlife, Outmore, etc.).
+ * Distinct from outbound_click so we can isolate affiliate revenue funnels in GA4.
+ */
+export function trackAffiliateClick(args: {
+  url: string;
+  productName: string;
+  retailer: string;
+  brand?: string;
+  category?: string;
+  position: "editorial" | "product" | "pill" | "deals_widget";
+  priceDkk?: number;
+}) {
+  push("affiliate_click", {
+    outbound_url: args.url,
+    product_name: args.productName,
+    retailer: args.retailer,
+    brand: args.brand,
+    item_category: args.category,
+    placement: args.position,
+    currency: "DKK",
+    value: args.priceDkk,
+  });
 }
 
 export function trackCommunitySubmit(type: "comment" | "photo" | "facilities") {
@@ -101,6 +134,14 @@ export function trackBookButtonClick(args: {
 /** Fired when a user adds or removes a shelter from their wishlist. */
 export function trackWishlist(action: "add" | "remove", shelterId: string) {
   push("wishlist_changed", { wishlist_action: action, shelter_id: shelterId });
+  // GA4 standard: fires only on add, since GA4 has no "remove_from_wishlist".
+  if (action === "add") {
+    push("add_to_wishlist", {
+      currency: "DKK",
+      item_id: shelterId,
+      item_category: "shelter",
+    });
+  }
 }
 
 /** Fired when a Stripe checkout is cancelled (user returns via cancel_url). */

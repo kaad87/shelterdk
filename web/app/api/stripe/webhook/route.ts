@@ -72,6 +72,7 @@ export async function POST(req: NextRequest) {
           ((booking as any)?.bookable_shelters?.payment_mode as "after_confirmation" | "upfront" | undefined) ??
           undefined;
         try {
+          // Custom event (for legacy dashboards)
           await sendGa4Event({
             eventName: "payment_completed",
             identityKey: `payment:${payment.booking_id}`,
@@ -79,6 +80,18 @@ export async function POST(req: NextRequest) {
               booking_id: payment.booking_id,
               payment_mode: paymentMode,
               amount_total_dkk: payment.amount_total_dkk,
+            },
+          });
+          // GA4 standard e-commerce `purchase` event — unlocks built-in revenue,
+          // AOV and conversion reporting.
+          await sendGa4Event({
+            eventName: "purchase",
+            identityKey: `payment:${payment.booking_id}`,
+            eventParams: {
+              transaction_id: payment.booking_id,
+              currency: "DKK",
+              value: payment.amount_total_dkk,
+              payment_mode: paymentMode,
             },
           });
         } catch (err) {

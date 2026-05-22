@@ -1,14 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, MapPin, Trash2 } from "lucide-react";
+import { getProxiedImageSrc, isUnoptimizedImageUrl } from "@/lib/image-proxy";
 import { getWishlist, removeFromWishlist, type WishlistItem } from "@/lib/wishlist";
 import { trackWishlist } from "@/lib/tracking";
 
 export function FavoritterClient() {
   const [items, setItems] = useState<WishlistItem[] | null>(null);
+  const renderedItems = useMemo(
+    () =>
+      (items ?? []).map((item) => {
+        const imageSrc = item.imageUrl
+          ? getProxiedImageSrc(item.imageUrl, { q: 70, w: 320 })
+          : null;
+        return {
+          ...item,
+          imageSrc,
+          imageUnoptimized: imageSrc ? isUnoptimizedImageUrl(imageSrc) : false,
+        };
+      }),
+    [items]
+  );
 
   useEffect(() => {
     setItems(getWishlist());
@@ -51,7 +66,7 @@ export function FavoritterClient() {
 
   return (
     <div className="space-y-3">
-      {items.map((item) => (
+      {renderedItems.map((item) => (
         <article
           key={item.slug}
           className="flex gap-3 rounded-2xl border border-primary/8 bg-white p-3 hover:border-accent/30 transition-colors"
@@ -61,14 +76,15 @@ export function FavoritterClient() {
             className="relative flex-shrink-0 block w-24 h-24 sm:w-32 sm:h-24 rounded-xl overflow-hidden bg-primary/10"
             aria-label={`Åbn ${item.title}`}
           >
-            {item.imageUrl ? (
+            {item.imageSrc ? (
               <Image
-                src={item.imageUrl}
+                src={item.imageSrc}
                 alt={item.title}
                 fill
                 sizes="(max-width: 640px) 96px, 128px"
                 className="object-cover"
                 loading="lazy"
+                unoptimized={item.imageUnoptimized}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-primary/20">

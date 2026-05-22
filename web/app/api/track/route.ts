@@ -7,10 +7,16 @@ const ALLOWED_EVENTS = new Set([
   "search_performed",
   "filter_applied",
   "shelter_viewed",
+  "view_item",
   "newsletter_signup",
   "share_click",
   "outbound_click",
+  "affiliate_click",
   "community_submit",
+  "book_button_clicked",
+  "wishlist_changed",
+  "add_to_wishlist",
+  "payment_cancelled",
 ]);
 
 type EventValue = string | number | boolean | null | undefined;

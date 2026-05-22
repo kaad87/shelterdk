@@ -3,7 +3,22 @@
 import Image from "next/image";
 import { ExternalLink } from "lucide-react";
 import type { AffiliateProduct } from "@/lib/affiliate-products";
-import { trackOutboundClick } from "@/lib/tracking";
+import { trackAffiliateClick } from "@/lib/tracking";
+
+function fireAffiliate(
+  product: AffiliateProduct,
+  position: "editorial" | "product" | "pill" | "deals_widget"
+) {
+  trackAffiliateClick({
+    url: product.affiliate_url,
+    productName: product.product_name,
+    retailer: product.retailer,
+    brand: product.brand ?? undefined,
+    category: product.category_mapped ?? undefined,
+    position,
+    priceDkk: typeof product.price === "number" ? product.price : undefined,
+  });
+}
 
 export type GearCardVariant = "editorial" | "product" | "pill";
 
@@ -49,7 +64,7 @@ function EditorialVariant({ product, className }: { product: AffiliateProduct; c
             target="_blank"
             rel="sponsored nofollow noopener"
             className="mt-2 inline-flex items-center gap-1 border-b border-primary pb-px text-sm font-medium text-primary hover:border-accent hover:text-accent"
-            onClick={() => trackOutboundClick(product.affiliate_url, `${product.product_name} [editorial]`)}
+            onClick={() => fireAffiliate(product, "editorial")}
           >
             Se tilbud hos <RetailerLabel retailer={product.retailer} />
             <ExternalLink size={12} />
@@ -95,7 +110,7 @@ function ProductVariant({ product, className }: { product: AffiliateProduct; cla
               target="_blank"
               rel="sponsored nofollow noopener"
               className="block rounded-lg bg-primary px-3 md:px-4 py-2 md:py-2.5 text-center text-xs md:text-sm font-semibold text-white hover:bg-accent"
-              onClick={() => trackOutboundClick(product.affiliate_url, `${product.product_name} [product]`)}
+              onClick={() => fireAffiliate(product, "product")}
             >
               Se tilbud
             </a>
@@ -119,7 +134,7 @@ function PillVariant({ product, className }: { product: AffiliateProduct; classN
       className={`inline-flex items-center gap-2 rounded-full border border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50 py-1.5 pl-1.5 pr-3 align-middle text-sm no-underline transition-all hover:-translate-y-0.5 hover:border-accent hover:shadow-md ${outOfStock ? "opacity-60" : ""} ${className ?? ""}`}
       aria-label={`Affiliate-link til ${product.product_name}`}
       title="Annonce · Sponsoreret link"
-      onClick={() => trackOutboundClick(product.affiliate_url, `${product.product_name} [pill]`)}
+      onClick={() => fireAffiliate(product, "pill")}
     >
       <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full bg-white">
         <Image src={product.image_url} alt="" fill className="object-contain" sizes="32px" unoptimized />
