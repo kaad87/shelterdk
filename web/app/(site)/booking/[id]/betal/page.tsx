@@ -25,12 +25,13 @@ export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ access?: string; t?: string; session_id?: string }>;
+  searchParams: Promise<{ access?: string; t?: string; session_id?: string; cancelled?: string }>;
 }
 
 export default async function BetalPage({ params, searchParams }: Props) {
   const { id } = await params;
-  const { access, t, session_id } = await searchParams;
+  const { access, t, session_id, cancelled } = await searchParams;
+  const wasCancelled = cancelled === "1";
 
   const loadBooking = async () =>
     createAdminClient()
@@ -217,12 +218,18 @@ export default async function BetalPage({ params, searchParams }: Props) {
           </p>
         </div>
 
+        {wasCancelled && checkoutUrl && (
+          <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            Du afbrød betalingen. Din booking er stadig reserveret — klik herunder for at fortsætte hvor du slap.
+          </div>
+        )}
+
         {checkoutUrl ? (
           <a
             href={checkoutUrl}
             className="block w-full text-center bg-[#c5a059] text-white font-semibold py-3 rounded-xl hover:bg-[#b38f48] transition-colors"
           >
-            Gå til betaling
+            {wasCancelled ? "Fortsæt betaling" : "Gå til betaling"}
           </a>
         ) : (
           <p className="text-center text-primary/50 text-sm">

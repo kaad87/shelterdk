@@ -377,17 +377,6 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                   <ShareButtons title={shelter.title} url={`/shelter/${slug}`} />
                 </span>
               </div>
-              <div className="mt-5 rounded-2xl border border-accent/20 bg-accent/5 p-5">
-                <div className="flex flex-wrap items-center gap-3">
-                  <h2 className="font-serif text-lg font-bold text-primary">
-                    Hurtigt svar
-                  </h2>
-                  <LastVerifiedBadge isoDate={lastVerifiedIso} />
-                </div>
-                <p className="llm-quote mt-3 text-primary/90 leading-relaxed">
-                  {llmDefinition}
-                </p>
-              </div>
             </header>
 
             {hasMultipleBookingUnits && (
@@ -490,6 +479,18 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                 </p>
               </section>
             )}
+
+            <section className="mb-10 rounded-2xl border border-primary/10 bg-primary/[0.03] p-4 sm:p-5">
+              <div className="flex flex-wrap items-center gap-3">
+                <h2 className="font-serif text-base font-bold text-primary">
+                  Kort fortalt
+                </h2>
+                <LastVerifiedBadge isoDate={lastVerifiedIso} />
+              </div>
+              <p className="llm-quote mt-3 text-sm leading-7 text-primary/75">
+                {llmDefinition}
+              </p>
+            </section>
 
             {accessDesc && (
               <section className="mb-10">

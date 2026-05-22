@@ -209,7 +209,7 @@ const MapInner = dynamic(
               position={[shelter._coords.lat, shelter._coords.lon]}
               icon={icon}
             >
-              <Popup closeButton={false}>
+              <Popup closeButton closeOnEscapeKey autoClose>
                 {embedMode ? (
                   <div className="p-1 min-w-[180px]">
                     {isValidImageUrl(shelter.image_url) && (

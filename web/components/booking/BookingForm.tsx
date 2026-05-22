@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { BookingCalendar } from "./BookingCalendar";
@@ -120,9 +120,12 @@ export function BookingForm({
   const [form, setForm] = useState({ guest_name: "", guest_email: "", guest_count: 1, message: "" });
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
 
   const loadAvailability = useCallback(async (opts?: { silent?: boolean }) => {
+    // Don't clobber dateRange via silent refresh while user is submitting.
+    if (opts?.silent && submittingRef.current) return;
     if (!opts?.silent) {
       setLoadingAvailability(true);
     }
@@ -191,9 +194,11 @@ export function BookingForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submittingRef.current) return; // Guard against double-submit races
     if (!dateRange) { setError("Vælg ankomst- og afrejsedato"); return; }
     if (availabilityError) { setError("Kalenderen skal indlæses korrekt, før du kan booke"); return; }
     if (!acceptedTerms) { setError("Du skal acceptere bookingvilkårene og læse privatlivspolitikken"); return; }
+    submittingRef.current = true;
     setSubmitting(true);
     setError(null);
     try {
@@ -212,7 +217,7 @@ export function BookingForm({
       if (data.checkoutUrl) {
         window.location.href = data.checkoutUrl;
       } else {
-        const target = successPath ?? `/embed/book/${shelterSlug}/tak`;
+        const target = successPath ?? `/book/${shelterSlug}/tak`;
         const params = new URLSearchParams();
         if (data.guestToken) params.set("guestToken", data.guestToken);
         router.push(params.size > 0 ? `${target}?${params.toString()}` : target);
@@ -220,6 +225,7 @@ export function BookingForm({
     } catch {
       setError("Noget gik galt. Tjek din forbindelse og prøv igen.");
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
   };

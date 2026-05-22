@@ -26,6 +26,17 @@ body {
   display: none;
 }
 
+/* Prevent iOS Safari auto-zoom on input focus.
+   iOS zooms when font-size < 16px; we set minimum 16px on mobile inputs only,
+   keeping Tailwind's text-sm/text-xs visual scale intact on desktop. */
+@media (max-width: 640px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
 /* Compact map on mobile: force leaflet + wrapper to respect parent height */
 @media (max-width: 767px) {
   .leaflet-container {
