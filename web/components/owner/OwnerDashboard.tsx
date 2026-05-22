@@ -122,7 +122,7 @@ function BookingThreadPanel({
             key={m.id}
             className={`max-w-[80%] rounded-xl px-3 py-2 text-sm ${
               m.sender === "owner"
-                ? "self-end bg-[#c5a059] text-white"
+                ? "self-end bg-accent-dark text-white"
                 : "self-start bg-white border border-gray-200 text-gray-800"
             }`}
           >
@@ -154,7 +154,7 @@ function BookingThreadPanel({
         <button
           onClick={onSend}
           disabled={sending || !body.trim()}
-          className="shrink-0 bg-[#c5a059] text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-[#b8904a] disabled:opacity-50 self-end"
+          className="shrink-0 bg-accent-dark text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-[#b8904a] disabled:opacity-50 self-end"
         >
           {sending ? "…" : "Send"}
         </button>
@@ -1341,7 +1341,7 @@ export function OwnerDashboard({
             <button
               type="submit"
               disabled={manualSaving || !manualForm.check_in || !manualForm.check_out}
-              className="rounded-xl bg-accent text-white px-5 py-2 text-sm font-semibold hover:bg-accent/90 disabled:opacity-40 transition-colors"
+              className="rounded-xl bg-accent-dark text-white px-5 py-2 text-sm font-semibold hover:bg-accent-dark/90 disabled:opacity-40 transition-colors"
             >
               {manualSaving ? "Opretter…" : "Opret manuel booking"}
             </button>
@@ -1402,7 +1402,7 @@ export function OwnerDashboard({
           <button
             onClick={handleCutoffSave}
             disabled={cutoffSaving}
-            className="rounded-xl bg-accent text-white px-4 py-2 text-sm font-semibold hover:bg-accent/90 disabled:opacity-40 transition-colors"
+            className="rounded-xl bg-accent-dark text-white px-4 py-2 text-sm font-semibold hover:bg-accent-dark/90 disabled:opacity-40 transition-colors"
           >
             {cutoffSaving ? "Gemmer…" : "Gem frist"}
           </button>
@@ -1456,7 +1456,7 @@ export function OwnerDashboard({
             <button
               onClick={handleIcalSave}
               disabled={icalSaving}
-              className="shrink-0 rounded-xl bg-accent text-white px-4 py-2 text-sm font-semibold hover:bg-accent/90 disabled:opacity-40 transition-colors"
+              className="shrink-0 rounded-xl bg-accent-dark text-white px-4 py-2 text-sm font-semibold hover:bg-accent-dark/90 disabled:opacity-40 transition-colors"
             >
               {icalSaving ? "Gemmer…" : "Gem & synk"}
             </button>
@@ -1726,7 +1726,7 @@ export function OwnerDashboard({
                   msgSaving ||
                   JSON.stringify(msgTemplates) === JSON.stringify(msgOriginal)
                 }
-                className="rounded-xl bg-accent text-white px-5 py-2 text-sm font-semibold hover:bg-accent/90 disabled:opacity-40 transition-colors"
+                className="rounded-xl bg-accent-dark text-white px-5 py-2 text-sm font-semibold hover:bg-accent-dark/90 disabled:opacity-40 transition-colors"
               >
                 {msgSaving ? "Gemmer…" : "Gem beskeder"}
               </button>

@@ -57,7 +57,7 @@ export function TripPostCard({ post, onContact, onReport }: Props) {
       <div className="flex items-center gap-2">
         <button
           onClick={() => onContact(post)}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent/90 transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-accent-dark px-3 py-2 text-sm font-medium text-white hover:bg-accent-dark/90 transition-colors"
         >
           Kontakt
         </button>

@@ -261,7 +261,7 @@ export default function AdminBookingMonitorPage() {
                         type="button"
                         disabled={busyId === event.id}
                         onClick={() => updateEvent(event.id, "resolve")}
-                        className="rounded-lg bg-accent px-3 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+                        className="rounded-lg bg-accent-dark px-3 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
                       >
                         Markér som løst
                       </button>

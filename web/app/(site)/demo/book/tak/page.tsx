@@ -65,7 +65,7 @@ export default function DemoTakPage() {
         <div className="mt-6 text-center">
           <Link
             href="/aktiver-booking"
-            className="inline-block bg-accent text-white text-sm font-semibold px-6 py-3 rounded-xl hover:opacity-90 transition-colors shadow-sm"
+            className="inline-block bg-accent-dark text-white text-sm font-semibold px-6 py-3 rounded-xl hover:opacity-90 transition-colors shadow-sm"
           >
             Aktiver booking til dit shelter →
           </Link>

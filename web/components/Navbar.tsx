@@ -270,7 +270,7 @@ export function Navbar() {
             })}
             <button
               onClick={openModal}
-              className="hidden lg:flex items-center gap-1.5 bg-accent text-white text-sm font-semibold px-3.5 py-1.5 rounded-lg hover:bg-accent/85 transition-colors whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 focus-visible:ring-offset-2"
+              className="hidden lg:flex items-center gap-1.5 bg-accent-dark text-white text-sm font-semibold px-3.5 py-1.5 rounded-lg hover:bg-accent/85 transition-colors whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 focus-visible:ring-offset-2"
             >
               <span>💡</span>
               Mangler dit shelter?
@@ -423,7 +423,7 @@ export function Navbar() {
                 />
                 <button
                   type="submit"
-                  className="flex items-center justify-center w-12 rounded-lg bg-accent text-white shrink-0 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 focus-visible:ring-offset-2"
+                  className="flex items-center justify-center w-12 rounded-lg bg-accent-dark text-white shrink-0 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 focus-visible:ring-offset-2"
                   aria-label="Søg"
                 >
                   <Search size={20} />

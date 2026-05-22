@@ -139,7 +139,7 @@ export function ContactForm() {
       </div>
 
       {error && (
-        <p className="text-sm text-red-600 bg-red-50 rounded-lg px-4 py-2.5">
+        <p className="text-sm text-red-700 bg-red-50 rounded-lg px-4 py-2.5">
           {error}
         </p>
       )}
@@ -147,7 +147,7 @@ export function ContactForm() {
       <button
         type="submit"
         disabled={sending}
-        className="inline-flex items-center gap-2 rounded-xl bg-accent px-6 py-3 text-sm font-medium text-white hover:bg-accent/90 transition-colors disabled:opacity-50"
+        className="inline-flex items-center gap-2 rounded-xl bg-accent-dark px-6 py-3 text-sm font-medium text-white hover:bg-accent-dark/90 transition-colors disabled:opacity-50"
       >
         {sending ? (
           <Loader2 size={16} className="animate-spin" />

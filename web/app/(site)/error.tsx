@@ -26,7 +26,7 @@ export default function Error({
       <div className="flex flex-wrap gap-4 justify-center mb-12">
         <button
           onClick={reset}
-          className="rounded-lg bg-accent text-white font-medium px-6 py-3 hover:bg-accent/90 transition-colors"
+          className="rounded-lg bg-accent-dark text-white font-medium px-6 py-3 hover:bg-accent-dark/90 transition-colors"
         >
           Prøv igen
         </button>

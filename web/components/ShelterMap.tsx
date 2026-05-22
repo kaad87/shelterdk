@@ -228,7 +228,7 @@ const MapInner = dynamic(
                       href={getHref(shelter)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-block px-3 py-1.5 text-sm font-medium text-white bg-accent rounded-lg hover:opacity-90"
+                      className="inline-block px-3 py-1.5 text-sm font-medium text-white bg-accent-dark rounded-lg hover:opacity-90"
                     >
                       Se detaljer & book
                     </a>

@@ -164,7 +164,7 @@ export default function AdminIndexPage() {
                   const content = (
                     <>
                     {badgeCount > 0 && (
-                      <span className="absolute right-10 top-3 inline-flex min-w-[22px] items-center justify-center rounded-full bg-accent px-1.5 py-0.5 text-xs font-semibold leading-none text-white shadow-sm">
+                      <span className="absolute right-10 top-3 inline-flex min-w-[22px] items-center justify-center rounded-full bg-accent-dark px-1.5 py-0.5 text-xs font-semibold leading-none text-white shadow-sm">
                         {badgeCount}
                       </span>
                     )}

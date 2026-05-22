@@ -64,7 +64,7 @@ export function CommunityApprovedSection({ slug }: CommunityApprovedSectionProps
   return (
     <section className="mb-10 rounded-2xl border border-accent/20 bg-accent/[0.06] p-5 sm:p-6">
       <div className="flex items-center gap-2 mb-3">
-        <span className="inline-flex rounded-full bg-accent text-white text-xs font-semibold px-2.5 py-1">
+        <span className="inline-flex rounded-full bg-accent-dark text-white text-xs font-semibold px-2.5 py-1">
           Godkendt af admin
         </span>
         <h2 className="font-serif text-xl font-bold text-primary">Community-opdateringer</h2>

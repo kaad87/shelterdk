@@ -113,7 +113,7 @@ export function ResetPasswordForm() {
           />
         </div>
         {error && (
-          <div className="rounded-xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-600">{error}</div>
+          <div className="rounded-xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-700">{error}</div>
         )}
         {success && (
           <div className="rounded-xl bg-green-50 border border-green-100 px-4 py-3 text-sm text-green-700">{success}</div>
@@ -121,7 +121,7 @@ export function ResetPasswordForm() {
         <button
           type="submit"
           disabled={!ready || loading}
-          className="w-full rounded-xl py-3 text-sm font-semibold bg-accent text-white hover:bg-[#b8923f] disabled:opacity-50 transition-colors"
+          className="w-full rounded-xl py-3 text-sm font-semibold bg-accent-dark text-white hover:bg-accent-dark/90 disabled:opacity-50 transition-colors"
         >
           {loading ? "Gemmer…" : "Gem ny adgangskode"}
         </button>

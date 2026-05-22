@@ -190,7 +190,7 @@ export default async function TakPage({ params, searchParams }: Props) {
           {!isStillProcessing && (
             <Link
               href={paymentHref}
-              className="inline-block bg-[#c5a059] text-white font-semibold px-6 py-3 rounded-xl hover:bg-[#b38f48] transition-colors"
+              className="inline-block bg-accent-dark text-white font-semibold px-6 py-3 rounded-xl hover:bg-accent-dark/90 transition-colors"
             >
               Gå til betalingssiden
             </Link>

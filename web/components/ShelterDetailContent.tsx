@@ -235,7 +235,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
             shelterSlug={slug}
             bookingType="shelterdk"
             position="main_card"
-            className="flex items-center justify-center gap-2 w-full bg-accent text-white font-semibold px-6 py-4 rounded-xl hover:bg-accent/90 transition-colors"
+            className="flex items-center justify-center gap-2 w-full bg-accent-dark text-white font-semibold px-6 py-4 rounded-xl hover:bg-accent-dark/90 transition-colors"
           >
             Book dette shelter
           </TrackedBookLink>
@@ -263,7 +263,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
               bookingType: "external",
               position: "main_card",
             }}
-            className="flex items-center justify-center gap-2 w-full bg-accent text-white font-semibold px-6 py-4 rounded-xl hover:bg-accent/90 transition-colors"
+            className="flex items-center justify-center gap-2 w-full bg-accent-dark text-white font-semibold px-6 py-4 rounded-xl hover:bg-accent-dark/90 transition-colors"
           >
             <ExternalLink size={20} />
             Book shelter
@@ -280,7 +280,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                 href="https://book.naturstyrelsen.dk"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full bg-accent text-white font-semibold px-6 py-4 rounded-xl hover:bg-accent/90 transition-colors"
+                className="flex items-center justify-center gap-2 w-full bg-accent-dark text-white font-semibold px-6 py-4 rounded-xl hover:bg-accent-dark/90 transition-colors"
               >
                 <ExternalLink size={20} />
                 Book på Naturstyrelsen
@@ -820,7 +820,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
             bookingType="shelterdk"
             position="sticky_mobile"
             ariaLabel={`Book ${shelter.title}`}
-            className="flex items-center justify-center gap-2 w-full bg-accent text-white text-center font-semibold py-3 rounded-lg hover:bg-accent/90 transition-colors"
+            className="flex items-center justify-center gap-2 w-full bg-accent-dark text-white text-center font-semibold py-3 rounded-lg hover:bg-accent-dark/90 transition-colors"
           >
             Book dette shelter
           </TrackedBookLink>
@@ -829,7 +829,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
         <div className="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-primary/10 p-3 lg:hidden" role="complementary" aria-label="Booking">
           <a
             href="#booking-enheder"
-            className="flex items-center justify-center gap-2 w-full bg-accent text-white text-center font-semibold py-3 rounded-lg hover:bg-accent/90 transition-colors"
+            className="flex items-center justify-center gap-2 w-full bg-accent-dark text-white text-center font-semibold py-3 rounded-lg hover:bg-accent-dark/90 transition-colors"
           >
             Vælg shelter ({bookingUnits.length} på pladsen)
           </a>
@@ -846,7 +846,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
               position: "sticky_mobile",
             }}
             aria-label={`Book ${shelter.title} – åbner i nyt vindue`}
-            className="flex items-center justify-center gap-2 w-full bg-accent text-white text-center font-semibold py-3 rounded-lg hover:bg-accent/90 transition-colors"
+            className="flex items-center justify-center gap-2 w-full bg-accent-dark text-white text-center font-semibold py-3 rounded-lg hover:bg-accent-dark/90 transition-colors"
           >
             <ExternalLink size={18} aria-hidden="true" />
             Book dette shelter

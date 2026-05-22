@@ -68,7 +68,7 @@ export function TurvennerClient() {
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent/90 transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-accent-dark px-4 py-2 text-sm font-medium text-white hover:bg-accent-dark/90 transition-colors"
         >
           <Plus size={16} />
           Opret opslag
@@ -89,7 +89,7 @@ export function TurvennerClient() {
               </p>
               <button
                 onClick={() => setRegion("")}
-                className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent/90 transition-colors"
+                className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-accent-dark px-4 py-2 text-sm font-medium text-white hover:bg-accent-dark/90 transition-colors"
               >
                 Nulstil filter
               </button>

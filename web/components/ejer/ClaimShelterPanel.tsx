@@ -92,7 +92,7 @@ export function ClaimShelterPanel() {
           </Link>
           <Link
             href="/ejer/login"
-            className="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent/90"
+            className="rounded-xl bg-accent-dark px-4 py-2 text-sm font-semibold text-white hover:bg-accent-dark/90"
           >
             Log ind igen
           </Link>

@@ -22,7 +22,7 @@ function BlogCard({ post, index }: { post: BlogPost; index: number }) {
               className="object-cover transition-transform duration-300 group-hover:scale-105"
               sizes="(max-width: 768px) 100vw, 50vw"
             />
-            <span className="absolute top-3 left-3 bg-accent text-white text-xs font-medium px-2.5 py-1 rounded-full">
+            <span className="absolute top-3 left-3 bg-accent-dark text-white text-xs font-medium px-2.5 py-1 rounded-full">
               {post.category}
             </span>
           </div>
@@ -67,7 +67,7 @@ function GuidesCTA() {
         </p>
         <Link
           href="/guides"
-          className="inline-flex items-center gap-2 bg-accent text-white px-6 py-3 rounded-full font-medium hover:bg-accent/90 transition-colors"
+          className="inline-flex items-center gap-2 bg-accent-dark text-white px-6 py-3 rounded-full font-medium hover:bg-accent-dark/90 transition-colors"
         >
           Se guides
           <ArrowRight size={16} />
@@ -120,7 +120,7 @@ export function BlogContent({
           <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/50 to-transparent" />
           <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-10 md:p-16">
             <div className="max-w-3xl">
-              <span className="inline-block bg-accent text-white text-xs font-medium px-3 py-1 rounded-full mb-3">
+              <span className="inline-block bg-accent-dark text-white text-xs font-medium px-3 py-1 rounded-full mb-3">
                 {featured.category}
               </span>
               <h2 className="font-serif text-2xl sm:text-3xl md:text-5xl font-bold text-white mb-3 leading-tight">

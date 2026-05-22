@@ -56,7 +56,7 @@ export function FavoritterClient() {
         </p>
         <Link
           href="/soeg"
-          className="inline-flex items-center rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-white hover:bg-accent/90 transition-colors"
+          className="inline-flex items-center rounded-xl bg-accent-dark px-5 py-2.5 text-sm font-semibold text-white hover:bg-accent-dark/90 transition-colors"
         >
           Søg efter shelters
         </Link>

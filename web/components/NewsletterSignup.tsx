@@ -95,7 +95,7 @@ export default function NewsletterSignup({
               <button
                 type="submit"
                 disabled={status === "loading"}
-                className="w-full rounded-xl bg-accent text-white font-semibold px-4 py-2.5 text-sm hover:bg-accent/90 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+                className="w-full rounded-xl bg-accent-dark text-white font-semibold px-4 py-2.5 text-sm hover:bg-accent-dark/90 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
               >
                 {status === "loading" ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -166,7 +166,7 @@ export default function NewsletterSignup({
               <button
                 type="submit"
                 disabled={status === "loading"}
-                className="rounded-xl bg-accent text-white font-semibold px-5 py-3 text-sm hover:bg-accent/90 transition-colors disabled:opacity-60 flex items-center justify-center gap-2 whitespace-nowrap"
+                className="rounded-xl bg-accent-dark text-white font-semibold px-5 py-3 text-sm hover:bg-accent-dark/90 transition-colors disabled:opacity-60 flex items-center justify-center gap-2 whitespace-nowrap"
               >
                 {status === "loading" ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

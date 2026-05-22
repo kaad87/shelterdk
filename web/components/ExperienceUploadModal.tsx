@@ -194,7 +194,7 @@ export function ExperienceUploadModal({
             <h2 id="experience-upload-modal-title" className="font-semibold text-primary text-base">Del din oplevelse</h2>
             <div className="text-xs text-primary/50">{shelterTitle}</div>
           </div>
-          <button ref={closeButtonRef} onClick={onClose} aria-label="Luk" className="p-2 rounded-lg text-primary/60 hover:text-primary hover:bg-primary/5 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50">
+          <button ref={closeButtonRef} onClick={onClose} aria-label="Luk" className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-lg text-primary/60 hover:text-primary hover:bg-primary/5 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50">
             <X size={20} />
           </button>
         </div>
@@ -253,7 +253,7 @@ export function ExperienceUploadModal({
               <button
                 onClick={() => files.length > 0 ? setStep("text") : fileRef.current?.click()}
                 disabled={files.length === 0}
-                className="w-full bg-accent text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 disabled:opacity-40 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2"
+                className="w-full bg-accent-dark text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 disabled:opacity-40 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2"
               >
                 Næste <ChevronRight size={16} />
               </button>
@@ -291,7 +291,7 @@ export function ExperienceUploadModal({
               <button
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="w-full bg-accent text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 disabled:opacity-60 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2"
+                className="w-full bg-accent-dark text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 disabled:opacity-60 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2"
               >
                 {submitting ? "Sender…" : "Indsend oplevelse"}
               </button>

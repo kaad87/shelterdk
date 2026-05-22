@@ -200,7 +200,7 @@ export default async function RouteDetailPage({ params }: PageProps) {
                 {shelters.map((shelter, i) => (
                   <div key={shelter.id} className="flex items-center justify-between px-4 py-3 hover:bg-primary/[0.02] transition-colors">
                     <div className="flex items-center gap-3 min-w-0">
-                      <span className="w-7 h-7 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center shrink-0">
+                      <span className="w-7 h-7 rounded-full bg-accent-dark text-white text-xs font-bold flex items-center justify-center shrink-0">
                         {i + 1}
                       </span>
                       <div className="min-w-0">
@@ -235,7 +235,7 @@ export default async function RouteDetailPage({ params }: PageProps) {
             </p>
             <Link
               href="/ruteplanner"
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-accent text-white font-medium text-sm hover:bg-accent/90 transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-accent-dark text-white font-medium text-sm hover:bg-accent-dark/90 transition-colors"
             >
               <MapPin size={16} />
               Se alle vandreruter

@@ -154,7 +154,7 @@ export function WeekendCTACard() {
                 type="button"
                 onClick={handleSearch}
                 disabled={!dateFrom}
-                className="w-full md:w-auto justify-center flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#b8923f] disabled:opacity-40 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+                className="w-full md:w-auto justify-center flex items-center gap-2 rounded-xl bg-accent-dark px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-accent-dark/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
               >
                 Søg ledige shelters
                 <ArrowRight size={16} />

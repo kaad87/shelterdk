@@ -384,7 +384,7 @@ export function CommunityContributionPanel({
             <button
               type="submit"
               disabled={sendingComment}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent/90 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-accent-dark px-3 py-2 text-sm font-medium text-white hover:bg-accent-dark/90 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2"
             >
               {sendingComment ? (
                 <Loader2 size={14} className="animate-spin" />
@@ -436,7 +436,7 @@ export function CommunityContributionPanel({
             <button
               type="submit"
               disabled={sendingPhoto || !photoFile}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent/90 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-accent-dark px-3 py-2 text-sm font-medium text-white hover:bg-accent-dark/90 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2"
             >
               {sendingPhoto ? (
                 <Loader2 size={14} className="animate-spin" />

@@ -29,7 +29,7 @@ export function GpxUploadButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors text-sm font-medium"
+      className="inline-flex items-center gap-2 px-4 py-2 bg-accent-dark text-white rounded-lg hover:bg-accent-dark/90 transition-colors text-sm font-medium"
     >
       <Upload size={16} />
       Upload din GPX
@@ -215,7 +215,7 @@ export function GpxUploadZone({
         {uploadedShelters.length > 0 && (
           <button
             onClick={onDownload}
-            className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors text-sm font-medium"
+            className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-accent-dark text-white rounded-lg hover:bg-accent-dark/90 transition-colors text-sm font-medium"
           >
             <Download size={16} />
             Download GPX med shelters

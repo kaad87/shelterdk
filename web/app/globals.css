@@ -37,6 +37,19 @@ body {
   }
 }
 
+/* Respect users with vestibular sensitivity / motion sickness / reduced-motion OS preference.
+   Disables all animations + transitions, plus keeps smooth-scroll instant. WCAG 2.3.3. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* Compact map on mobile: force leaflet + wrapper to respect parent height */
 @media (max-width: 767px) {
   .leaflet-container {

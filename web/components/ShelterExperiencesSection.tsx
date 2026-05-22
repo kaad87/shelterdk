@@ -40,7 +40,7 @@ export function ShelterExperiencesSection({
         </div>
         <button
           onClick={() => setModalOpen(true)}
-          className="flex items-center gap-2 bg-accent text-white text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-accent/90 transition-colors touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2"
+          className="flex items-center gap-2 bg-accent-dark text-white text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-accent-dark/90 transition-colors touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2"
         >
           <Camera size={15} />
           Del din oplevelse

@@ -720,7 +720,7 @@ export function SearchBar({
                       type="button"
                       onClick={() => applyDateFilter(pendingDate, pendingDateTo)}
                       disabled={!pendingDate}
-                      className="flex-1 flex items-center justify-center gap-1.5 rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-white hover:bg-[#b8923f] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      className="flex-1 flex items-center justify-center gap-1.5 rounded-lg bg-accent-dark px-3 py-2 text-sm font-semibold text-white hover:bg-accent-dark/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
                       Søg
                       <ArrowRight size={14} />

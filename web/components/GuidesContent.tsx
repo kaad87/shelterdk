@@ -43,7 +43,7 @@ function GuideCard({ guide, index }: { guide: Guide; index: number }) {
               className="object-cover transition-transform duration-300 group-hover:scale-105"
               sizes="(max-width: 768px) 100vw, 50vw"
             />
-            <span className="absolute top-3 left-3 bg-accent text-white text-xs font-medium px-2.5 py-1 rounded-full">
+            <span className="absolute top-3 left-3 bg-accent-dark text-white text-xs font-medium px-2.5 py-1 rounded-full">
               {guide.category}
             </span>
           </div>
@@ -263,7 +263,7 @@ export function GuidesContent({
             </p>
             <Link
               href="/danmark"
-              className="inline-flex items-center gap-2 bg-accent text-white px-6 py-3 rounded-full font-medium hover:bg-accent/90 transition-colors"
+              className="inline-flex items-center gap-2 bg-accent-dark text-white px-6 py-3 rounded-full font-medium hover:bg-accent-dark/90 transition-colors"
             >
               Udforsk shelters i Danmark
               <ArrowRight size={16} />

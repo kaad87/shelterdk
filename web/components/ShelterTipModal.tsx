@@ -133,7 +133,7 @@ export function ShelterTipModal() {
           <button
             ref={closeButtonRef}
             onClick={handleClose}
-            className="ml-auto rounded-full hover:bg-white/20 p-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
+            className="ml-auto inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-full hover:bg-white/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
             aria-label="Luk"
           >
             <X size={18} />

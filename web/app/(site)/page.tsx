@@ -496,7 +496,7 @@ export default async function HomePage() {
           <div className="mt-5 text-center">
             <Link
               href="/soeg"
-              className="inline-flex items-center gap-2 rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#b8923f] transition-colors"
+              className="inline-flex items-center gap-2 rounded-xl bg-accent-dark px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-accent-dark/90 transition-colors"
             >
               Søg og filtrer alle shelters →
             </Link>

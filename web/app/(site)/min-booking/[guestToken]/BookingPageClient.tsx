@@ -219,7 +219,7 @@ export function BookingPageClient({
           </p>
           <a
             href={paymentHref}
-            className="inline-block bg-[#c5a059] text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-[#b8904a]"
+            className="inline-block bg-accent-dark text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-[#b8904a]"
           >
             {paymentLabel ?? "Gå til betaling"}
           </a>
@@ -243,7 +243,7 @@ export function BookingPageClient({
                 key={m.id}
                 className={`max-w-[80%] rounded-xl px-3 py-2 text-sm ${
                   m.sender === "guest"
-                    ? "self-end bg-[#c5a059] text-white"
+                    ? "self-end bg-accent-dark text-white"
                     : "self-start bg-white border border-gray-200 text-gray-800"
                 }`}
               >
@@ -287,7 +287,7 @@ export function BookingPageClient({
               <button
                 onClick={sendMessage}
                 disabled={msgLoading || !msgBody.trim()}
-                className="bg-[#c5a059] text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-[#b8904a] disabled:opacity-50"
+                className="bg-accent-dark text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-[#b8904a] disabled:opacity-50"
               >
                 {msgLoading ? "Sender…" : "Send"}
               </button>

@@ -154,7 +154,7 @@ function SingleUnitCard({
             href={`/ejer/shelter/${unit.id}/bookinger`}
             className={`flex-1 sm:flex-none text-center text-sm font-semibold rounded-xl px-5 py-2.5 transition-colors ${
               hasPending
-                ? "bg-amber-500 text-white hover:bg-amber-600"
+                ? "bg-amber-600 text-white hover:bg-amber-700"
                 : "bg-primary text-white hover:bg-primary/90"
             }`}
           >
@@ -338,7 +338,7 @@ export default async function EjerDashboardPage() {
                             href={`/ejer/shelter/${unit.id}/bookinger`}
                             className={`text-sm font-medium rounded-lg px-4 py-2 shrink-0 text-center transition-colors ${
                               unitPending > 0
-                                ? "bg-amber-500 text-white hover:bg-amber-600"
+                                ? "bg-amber-600 text-white hover:bg-amber-700"
                                 : "bg-primary text-white hover:bg-primary/90"
                             }`}
                           >

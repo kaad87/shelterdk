@@ -276,7 +276,7 @@ export function TurvennerCreateModal({ onClose, onCreated }: Props) {
           <button
             type="submit"
             disabled={creating}
-            className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-white hover:bg-accent/90 disabled:opacity-50 transition-colors"
+            className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-accent-dark px-4 py-2.5 text-sm font-medium text-white hover:bg-accent-dark/90 disabled:opacity-50 transition-colors"
           >
             {creating ? "Opretter..." : "Opret opslag"}
           </button>

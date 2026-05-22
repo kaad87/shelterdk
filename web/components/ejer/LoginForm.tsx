@@ -52,8 +52,9 @@ export function LoginForm() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1.5">Email</label>
+          <label htmlFor="login-email" className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1.5">Email</label>
           <input
+            id="login-email"
             type="email" required autoComplete="email"
             value={form.email}
             onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
@@ -61,8 +62,9 @@ export function LoginForm() {
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1.5">Adgangskode</label>
+          <label htmlFor="login-password" className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1.5">Adgangskode</label>
           <input
+            id="login-password"
             type="password" required autoComplete="current-password"
             value={form.password}
             onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
@@ -70,11 +72,13 @@ export function LoginForm() {
           />
         </div>
         {error && (
-          <div className="rounded-xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-600">{error}</div>
+          <div role="alert" aria-live="polite" className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+            <span className="font-semibold">Fejl: </span>{error}
+          </div>
         )}
         <button
           type="submit" disabled={loading}
-          className="w-full rounded-xl py-3 text-sm font-semibold bg-accent text-white hover:bg-[#b8923f] disabled:opacity-50 transition-colors"
+          className="w-full rounded-xl py-3 text-sm font-semibold bg-accent-dark text-white hover:bg-accent-dark/90 disabled:opacity-50 transition-colors"
         >
           {loading ? "Logger ind…" : "Log ind"}
         </button>

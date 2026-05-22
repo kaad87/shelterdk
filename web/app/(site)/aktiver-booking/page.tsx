@@ -84,7 +84,7 @@ export default function AktiverBookingPage() {
           </p>
           <a
             href="#tilmeld"
-            className="inline-block bg-accent text-white font-bold px-6 py-3.5 rounded-xl hover:opacity-90 transition shadow-sm"
+            className="inline-block bg-accent-dark text-white font-bold px-6 py-3.5 rounded-xl hover:opacity-90 transition shadow-sm"
           >
             Se hvordan det virker →
           </a>

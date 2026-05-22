@@ -126,7 +126,7 @@ export function ShelterNaerMigClient() {
         type="button"
         onClick={handleFind}
         disabled={status === "loading"}
-        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-accent text-white font-semibold px-8 py-4 text-lg shadow-lg hover:bg-accent/90 focus:outline-none focus:ring-2 focus:ring-accent/50 disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
+        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-accent-dark text-white font-semibold px-8 py-4 text-lg shadow-lg hover:bg-accent-dark/90 focus:outline-none focus:ring-2 focus:ring-accent/50 disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
         aria-busy={status === "loading"}
         aria-live="polite"
       >

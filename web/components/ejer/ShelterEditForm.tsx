@@ -156,7 +156,7 @@ export function ShelterEditForm({ shelter, sharedContent, shelterDbId }: Props) 
         </div>
 
         {saveError && (
-          <div className="rounded-xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-600">{saveError}</div>
+          <div className="rounded-xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-700">{saveError}</div>
         )}
         {saveSuccess && (
           <div className="rounded-xl bg-green-50 border border-green-100 px-4 py-3 text-sm text-green-700">Gemt ✓</div>
@@ -164,7 +164,7 @@ export function ShelterEditForm({ shelter, sharedContent, shelterDbId }: Props) 
 
         <button
           type="submit" disabled={saving}
-          className="rounded-xl px-5 py-2.5 text-sm font-semibold bg-accent text-white hover:bg-[#b8923f] disabled:opacity-50 transition-colors"
+          className="rounded-xl px-5 py-2.5 text-sm font-semibold bg-accent-dark text-white hover:bg-accent-dark/90 disabled:opacity-50 transition-colors"
         >
           {saving ? "Gemmer…" : "Gem ændringer"}
         </button>
@@ -192,12 +192,12 @@ export function ShelterEditForm({ shelter, sharedContent, shelterDbId }: Props) 
                 type="button"
                 onClick={handleSavePhotoOrder}
                 disabled={photoSaving}
-                className="rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-white hover:bg-[#b8923f] disabled:opacity-50 transition-colors"
+                className="rounded-xl bg-accent-dark px-5 py-3 text-sm font-semibold text-white hover:bg-accent-dark/90 disabled:opacity-50 transition-colors"
               >
                 {photoSaving ? "Gemmer…" : "Gem billeder"}
               </button>
               {photoSaveMsg && (
-                <p className={`text-sm ${photoSaveMsg.ok ? "text-emerald-700" : "text-red-600"}`}>
+                <p className={`text-sm ${photoSaveMsg.ok ? "text-emerald-700" : "text-red-700"}`}>
                   {photoSaveMsg.text}
                 </p>
               )}

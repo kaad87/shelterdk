@@ -34,7 +34,7 @@ export default async function TakPage({ searchParams }: Props) {
           {guestToken && (
             <a
               href={`/min-booking/${encodeURIComponent(guestToken)}`}
-              className="inline-block mt-5 bg-[#c5a059] text-white text-sm font-semibold px-5 py-3 rounded-xl hover:bg-[#b38f48] transition-colors"
+              className="inline-block mt-5 bg-accent-dark text-white text-sm font-semibold px-5 py-3 rounded-xl hover:bg-accent-dark/90 transition-colors"
             >
               Se og administrér din booking
             </a>

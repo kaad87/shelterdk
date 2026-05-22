@@ -83,7 +83,7 @@ function ProductVariant({ product, className }: { product: AffiliateProduct; cla
   return (
     <div className={`relative overflow-hidden rounded-xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] flex flex-row md:flex-col ${className ?? ""}`}>
       {product.discount_pct != null && (
-        <div className="absolute right-3 top-3 z-10 rounded-full bg-accent px-2.5 py-1 md:px-3 md:py-1.5 text-xs font-bold text-white">
+        <div className="absolute right-3 top-3 z-10 rounded-full bg-accent-dark px-2.5 py-1 md:px-3 md:py-1.5 text-xs font-bold text-white">
           –{product.discount_pct}%
         </div>
       )}

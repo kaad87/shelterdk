@@ -621,7 +621,7 @@ export function AdminPhotoReview({
             />
             <button
               type="submit"
-              className="w-full rounded-xl bg-accent py-3 text-white font-semibold hover:bg-accent/90 transition-colors shadow-sm"
+              className="w-full rounded-xl bg-accent-dark py-3 text-white font-semibold hover:bg-accent-dark/90 transition-colors shadow-sm"
             >
               Log ind
             </button>
@@ -706,7 +706,7 @@ export function AdminPhotoReview({
               {count > 0 && (
                 <span
                   className={`min-w-[18px] rounded-full px-1.5 py-0.5 text-xs font-semibold leading-none ${
-                    isActive ? "bg-accent text-white" : "bg-primary/10 text-primary/60"
+                    isActive ? "bg-accent-dark text-white" : "bg-primary/10 text-primary/60"
                   }`}
                 >
                   {count}
@@ -737,7 +737,7 @@ export function AdminPhotoReview({
                   {count > 0 && (
                     <span
                       className={`min-w-[18px] rounded-full px-1.5 py-0.5 text-xs font-semibold leading-none ${
-                        isActive ? "bg-accent text-white" : "bg-primary/10 text-primary/60"
+                        isActive ? "bg-accent-dark text-white" : "bg-primary/10 text-primary/60"
                       }`}
                     >
                       {count}
@@ -928,7 +928,7 @@ export function AdminPhotoReview({
                 type="button"
                 onClick={() => igSubmit(newIgUrl)}
                 disabled={actingId === "ig-new" || !newIgUrl.trim()}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-accent text-white font-semibold px-5 py-2.5 text-sm hover:bg-accent/90 disabled:opacity-40 transition-colors shadow-sm"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-accent-dark text-white font-semibold px-5 py-2.5 text-sm hover:bg-accent-dark/90 disabled:opacity-40 transition-colors shadow-sm"
               >
                 {actingId === "ig-new" ? <Loader2 className="animate-spin" size={16} /> : <Plus size={16} />}
                 Tilføj
@@ -1766,7 +1766,7 @@ export function AdminPhotoReview({
                 )}
                 <div className="sm:col-span-2">
                   <button type="submit" disabled={shelterCreating}
-                    className="rounded-lg bg-accent text-white px-5 py-2 text-sm font-semibold hover:bg-accent/90 disabled:opacity-50 transition-colors">
+                    className="rounded-lg bg-accent-dark text-white px-5 py-2 text-sm font-semibold hover:bg-accent-dark/90 disabled:opacity-50 transition-colors">
                     {shelterCreating ? "Opretter…" : "Opret shelter"}
                   </button>
                 </div>

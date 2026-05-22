@@ -520,7 +520,7 @@ export function ShelterSubmissionForm() {
               <span className="font-bold text-primary text-sm">
                 5. Aktiver digitalt bookingsystem
               </span>
-              <span className="bg-accent text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+              <span className="bg-accent-dark text-white text-xs font-semibold px-2 py-0.5 rounded-full">
                 Anbefalet
               </span>
               <span className="text-xs text-accent font-semibold">Gratis</span>
@@ -626,7 +626,7 @@ export function ShelterSubmissionForm() {
       <button
         type="submit"
         disabled={submitting}
-        className="w-full rounded-xl bg-accent text-white py-3 font-semibold text-sm hover:bg-accent/90 transition-colors disabled:opacity-50"
+        className="w-full rounded-xl bg-accent-dark text-white py-3 font-semibold text-sm hover:bg-accent-dark/90 transition-colors disabled:opacity-50"
       >
         {submitting ? "Sender..." : "Send ansøgning"}
       </button>

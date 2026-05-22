@@ -247,7 +247,7 @@ export function ShelterAvailabilityPanel({
             <p className="text-xs text-primary/40">Henter ledighed…</p>
           </div>
         ) : error ? (
-          <div className="flex items-start gap-2.5 rounded-xl border border-red-100 bg-red-50 px-4 py-3.5 text-sm text-red-600">
+          <div className="flex items-start gap-2.5 rounded-xl border border-red-100 bg-red-50 px-4 py-3.5 text-sm text-red-700">
             <AlertCircle size={15} className="shrink-0 mt-0.5" />
             <div>
               <p className="font-medium text-red-700">Ledighed ikke tilgængelig</p>

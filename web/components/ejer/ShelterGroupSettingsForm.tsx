@@ -370,7 +370,7 @@ export function ShelterGroupSettingsForm({
               type="button"
               onClick={handleSavePhotoOrder}
               disabled={contentSaving}
-              className="rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-white hover:bg-[#b8923f] disabled:opacity-50 transition-colors"
+              className="rounded-xl bg-accent-dark px-5 py-3 text-sm font-semibold text-white hover:bg-accent-dark/90 disabled:opacity-50 transition-colors"
             >
               {contentSaving ? "Gemmer…" : "Gem billeder"}
             </button>
@@ -486,7 +486,7 @@ export function ShelterGroupSettingsForm({
             type="button"
             onClick={saveSharedContent}
             disabled={contentSaving}
-            className="rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-white hover:bg-[#b8923f] disabled:opacity-50 transition-colors"
+            className="rounded-xl bg-accent-dark px-5 py-3 text-sm font-semibold text-white hover:bg-accent-dark/90 disabled:opacity-50 transition-colors"
           >
             {contentSaving ? "Gemmer…" : "Gem fælles indhold"}
           </button>
@@ -578,7 +578,7 @@ export function ShelterGroupSettingsForm({
             type="button"
             onClick={saveSharedSettings}
             disabled={settingsSaving}
-            className="rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-white hover:bg-[#b8923f] disabled:opacity-50 transition-colors"
+            className="rounded-xl bg-accent-dark px-5 py-3 text-sm font-semibold text-white hover:bg-accent-dark/90 disabled:opacity-50 transition-colors"
           >
             {settingsSaving ? "Gemmer…" : "Gem fælles indstillinger"}
           </button>
@@ -711,7 +711,7 @@ export function ShelterGroupSettingsForm({
                 type="button"
                 onClick={handleMsgSave}
                 disabled={msgSaving}
-                className="rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-white hover:bg-[#b8923f] disabled:opacity-50 transition-colors"
+                className="rounded-xl bg-accent-dark px-5 py-3 text-sm font-semibold text-white hover:bg-accent-dark/90 disabled:opacity-50 transition-colors"
               >
                 {msgSaving ? "Gemmer…" : msgForceConfirm ? "Erstat alle beskeder" : "Gem beskeder"}
               </button>

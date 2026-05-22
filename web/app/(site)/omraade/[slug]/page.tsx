@@ -163,7 +163,7 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
               </span>
               <Link
                 href="#alle-shelters"
-                className="rounded-full bg-accent px-4 py-2 font-medium text-white hover:bg-accent/90 transition-colors"
+                className="rounded-full bg-accent-dark px-4 py-2 font-medium text-white hover:bg-accent-dark/90 transition-colors"
               >
                 Se alle shelters
               </Link>

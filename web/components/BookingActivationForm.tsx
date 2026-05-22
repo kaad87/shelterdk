@@ -210,7 +210,7 @@ export function BookingActivationForm() {
       <button
         type="submit"
         disabled={submitting}
-        className="w-full rounded-xl bg-accent text-white py-3 font-semibold text-sm hover:opacity-90 transition-colors disabled:opacity-50 shadow"
+        className="w-full rounded-xl bg-accent-dark text-white py-3 font-semibold text-sm hover:opacity-90 transition-colors disabled:opacity-50 shadow"
       >
         {submitting
           ? "Sender..."

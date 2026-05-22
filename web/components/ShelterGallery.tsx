@@ -250,7 +250,7 @@ export function ShelterGallery({
           aria-label="Billedvisning"
         >
           {/* Close button */}
-          <span className="absolute top-4 right-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20 cursor-pointer z-20">
+          <span className="absolute top-4 right-4 inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-full bg-white/10 text-white hover:bg-white/20 cursor-pointer z-20">
             <X size={24} />
           </span>
 

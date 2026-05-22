@@ -122,6 +122,15 @@ export function BookingForm({
   const [submitting, setSubmitting] = useState(false);
   const submittingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
+  const errorRef = useRef<HTMLDivElement | null>(null);
+
+  // Scroll the error into view + move focus so screen readers announce it
+  useEffect(() => {
+    if (error && errorRef.current) {
+      errorRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+      errorRef.current.focus();
+    }
+  }, [error]);
 
   const loadAvailability = useCallback(async (opts?: { silent?: boolean }) => {
     // Don't clobber dateRange via silent refresh while user is submitting.
@@ -273,7 +282,7 @@ export function BookingForm({
               </div>
             ) : availabilityError ? (
               <div className="flex flex-col items-center justify-center py-12 gap-4 text-center">
-                <p className="max-w-sm text-sm text-red-600">{availabilityError}</p>
+                <p className="max-w-sm text-sm text-red-700">{availabilityError}</p>
                 <button
                   type="button"
                   onClick={() => void loadAvailability()}
@@ -383,10 +392,11 @@ export function BookingForm({
               {/* Name + email */}
               <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1.5">
+                  <label htmlFor="bf-guest-name" className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1.5">
                     Navn *
                   </label>
                   <input
+                    id="bf-guest-name"
                     type="text" required maxLength={100}
                     name="guest_name"
                     autoComplete="name"
@@ -397,10 +407,11 @@ export function BookingForm({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1.5">
+                  <label htmlFor="bf-guest-email" className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1.5">
                     Email *
                   </label>
                   <input
+                    id="bf-guest-email"
                     type="email" required
                     name="guest_email"
                     autoComplete="email"
@@ -415,40 +426,47 @@ export function BookingForm({
 
               {/* Antal personer */}
               <div>
-                <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1.5">
+                <label id="bf-guest-count-label" className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1.5">
                   Antal personer *
                   <span className="normal-case font-normal text-primary/35 ml-1">maks {maxPersons}</span>
                 </label>
-                <div className="flex items-center gap-0 rounded-xl border border-primary/15 overflow-hidden w-fit">
+                <div
+                  className="flex items-center gap-0 rounded-xl border border-primary/15 overflow-hidden w-fit"
+                  role="group"
+                  aria-labelledby="bf-guest-count-label"
+                >
                   <button
                     type="button"
+                    aria-label="Færre personer"
                     onClick={() => setForm((f) => ({ ...f, guest_count: Math.max(1, f.guest_count - 1) }))}
                     disabled={form.guest_count <= 1}
                     className="w-11 h-11 flex items-center justify-center text-primary/50 hover:text-primary hover:bg-primary/5 transition-colors disabled:opacity-30 border-r border-primary/10"
                   >
-                    <span className="text-lg leading-none mb-0.5">−</span>
+                    <span className="text-lg leading-none mb-0.5" aria-hidden>−</span>
                   </button>
-                  <span className="w-12 text-center text-sm font-semibold text-primary tabular-nums">
+                  <span aria-live="polite" className="w-12 text-center text-sm font-semibold text-primary tabular-nums">
                     {form.guest_count}
                   </span>
                   <button
                     type="button"
+                    aria-label="Flere personer"
                     onClick={() => setForm((f) => ({ ...f, guest_count: Math.min(maxPersons, f.guest_count + 1) }))}
                     disabled={form.guest_count >= maxPersons}
                     className="w-11 h-11 flex items-center justify-center text-primary/50 hover:text-primary hover:bg-primary/5 transition-colors disabled:opacity-30 border-l border-primary/10"
                   >
-                    <span className="text-lg leading-none mb-0.5">+</span>
+                    <span className="text-lg leading-none mb-0.5" aria-hidden>+</span>
                   </button>
                 </div>
               </div>
 
               {/* Besked */}
               <div>
-                <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1.5">
+                <label htmlFor="bf-message" className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1.5">
                   Besked til ejer
                   <span className="normal-case font-normal text-primary/35 ml-1">valgfri</span>
                 </label>
                 <textarea
+                  id="bf-message"
                   maxLength={500} rows={3}
                   name="message"
                   autoComplete="off"
@@ -460,8 +478,18 @@ export function BookingForm({
               </div>
 
               {error && (
-                <div className="rounded-xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-600">
-                  {error}
+                <div
+                  ref={errorRef}
+                  role="alert"
+                  aria-live="polite"
+                  tabIndex={-1}
+                  className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 flex items-start gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" className="mt-0.5 shrink-0">
+                    <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
+                    <path d="M8 4.5v4M8 11h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  </svg>
+                  <span><span className="font-semibold">Fejl:</span> {error}</span>
                 </div>
               )}
 
@@ -491,8 +519,8 @@ export function BookingForm({
                 type="submit"
                 disabled={submitting || !dateRange || loadingAvailability || Boolean(availabilityError)}
                 className="w-full rounded-xl py-3.5 text-sm font-semibold transition-all duration-200
-                  bg-accent text-white shadow-sm
-                  hover:bg-[#b8923f] hover:shadow-md active:scale-[0.98]
+                  bg-accent-dark text-white shadow-sm
+                  hover:bg-accent-dark/90 hover:shadow-md active:scale-[0.98]
                   disabled:bg-primary/10 disabled:text-primary/30 disabled:shadow-none disabled:cursor-not-allowed"
               >
                 {submitting ? (

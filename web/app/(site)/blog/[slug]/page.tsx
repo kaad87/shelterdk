@@ -126,7 +126,7 @@ export default async function BlogPostPage({ params }: PageProps) {
           <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/50 to-transparent" />
           <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-10 md:p-16">
             <div className="max-w-3xl">
-              <span className="inline-block bg-accent text-white text-xs font-medium px-3 py-1 rounded-full mb-3">
+              <span className="inline-block bg-accent-dark text-white text-xs font-medium px-3 py-1 rounded-full mb-3">
                 <Link
                   href={`/blog/kategori/${slugifySegment(post.category)}`}
                   className="hover:text-white/90 transition-colors"
@@ -235,7 +235,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
                         sizes="(max-width: 640px) 100vw, 33vw"
                       />
-                      <span className="absolute top-2 left-2 bg-accent text-white text-[10px] font-medium px-2 py-0.5 rounded-full">
+                      <span className="absolute top-2 left-2 bg-accent-dark text-white text-[10px] font-medium px-2 py-0.5 rounded-full">
                         {related.category}
                       </span>
                     </div>

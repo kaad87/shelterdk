@@ -330,7 +330,7 @@ function AdminSheltersContent() {
             )}
             <button
               type="submit" disabled={creatingUser || newUserShelterIds.size === 0}
-              className="rounded-lg bg-accent text-white px-6 py-2.5 text-sm font-semibold hover:bg-accent/90 disabled:opacity-50 transition-colors"
+              className="rounded-lg bg-accent-dark text-white px-6 py-2.5 text-sm font-semibold hover:bg-accent-dark/90 disabled:opacity-50 transition-colors"
             >
               {creatingUser ? "Opretter konto…" : "Opret konto og kopiér password"}
             </button>
@@ -493,7 +493,7 @@ function AdminSheltersContent() {
             <div className="sm:col-span-2">
               <button
                 type="submit" disabled={creating}
-                className="rounded-lg bg-accent text-white px-6 py-2.5 text-sm font-semibold hover:bg-accent/90 disabled:opacity-50 transition-colors"
+                className="rounded-lg bg-accent-dark text-white px-6 py-2.5 text-sm font-semibold hover:bg-accent-dark/90 disabled:opacity-50 transition-colors"
               >
                 {creating ? "Opretter…" : "Opret shelter"}
               </button>
@@ -701,7 +701,7 @@ function AdminSheltersContent() {
                       <button
                         onClick={() => handleRowAction(s.id, "send_invite")}
                         disabled={rowActionState[s.id]?.loading}
-                        className="rounded-lg bg-accent text-white px-4 py-2 text-sm font-medium hover:bg-accent/90 disabled:opacity-50"
+                        className="rounded-lg bg-accent-dark text-white px-4 py-2 text-sm font-medium hover:bg-accent-dark/90 disabled:opacity-50"
                       >
                         Send invite
                       </button>

@@ -193,7 +193,7 @@ export function AdminInstagramModeration() {
         <button
           type="button"
           onClick={() => setSecret(inputSecret)}
-          className="w-full bg-accent text-white font-medium py-2 rounded-lg hover:bg-accent/90"
+          className="w-full bg-accent-dark text-white font-medium py-2 rounded-lg hover:bg-accent-dark/90"
         >
           Fortsæt
         </button>
@@ -260,7 +260,7 @@ export function AdminInstagramModeration() {
             type="button"
             onClick={submitNew}
             disabled={actingId === "new" || !newUrl.trim()}
-            className="inline-flex items-center justify-center gap-2 bg-accent text-white font-medium px-4 py-2 rounded-lg hover:bg-accent/90 disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-2 bg-accent-dark text-white font-medium px-4 py-2 rounded-lg hover:bg-accent-dark/90 disabled:opacity-50"
           >
             {actingId === "new" ? <Loader2 className="animate-spin" size={18} /> : null}
             Tilføj

@@ -287,7 +287,7 @@ export default async function GuidePage({ params }: PageProps) {
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
                       sizes="(max-width: 640px) 100vw, 50vw"
                     />
-                    <span className="absolute top-2 left-2 bg-accent text-white text-[10px] font-medium px-2 py-0.5 rounded-full">
+                    <span className="absolute top-2 left-2 bg-accent-dark text-white text-[10px] font-medium px-2 py-0.5 rounded-full">
                       {related.category}
                     </span>
                   </div>

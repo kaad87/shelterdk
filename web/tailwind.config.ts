@@ -11,6 +11,9 @@ const config: Config = {
       colors: {
         primary: "#2C3E50",
         accent: "#C5A059",
+        // Darker gold for CTAs + body links — WCAG AA compliant on white (5.05:1).
+        // Keeps the brand gold feel but readable as text or CTA background.
+        "accent-dark": "#8A6A26",
         background: "#F9FAFB",
         "muted-foreground": "#6B7280",
       },

@@ -259,7 +259,7 @@ export default async function BetalPage({ params, searchParams }: Props) {
 
               <a
                 href={checkoutUrl}
-                className="block w-full text-center bg-[#c5a059] text-white font-semibold py-3 rounded-xl hover:bg-[#b38f48] transition-colors"
+                className="block w-full text-center bg-accent-dark text-white font-semibold py-3 rounded-xl hover:bg-accent-dark/90 transition-colors"
               >
                 {wasCancelled ? "Fortsæt betaling" : "Gå til betaling"}
               </a>

@@ -54,7 +54,7 @@ export function RouteDetail({ route, shelters, onBack, onDownloadGpx, onShare }:
         {shelters.map((shelter, i) => (
           <div key={shelter.id} className="flex items-center justify-between py-3">
             <div className="flex items-center gap-3">
-              <span className="w-6 h-6 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center shrink-0">
+              <span className="w-6 h-6 rounded-full bg-accent-dark text-white text-xs font-bold flex items-center justify-center shrink-0">
                 {i + 1}
               </span>
               <div>
@@ -83,7 +83,7 @@ export function RouteDetail({ route, shelters, onBack, onDownloadGpx, onShare }:
       <div className="flex gap-3 mt-6">
         <button
           onClick={onDownloadGpx}
-          className="flex-1 py-2.5 rounded-xl bg-accent text-white font-medium text-sm hover:bg-accent/90 transition-colors flex items-center justify-center gap-2"
+          className="flex-1 py-2.5 rounded-xl bg-accent-dark text-white font-medium text-sm hover:bg-accent-dark/90 transition-colors flex items-center justify-center gap-2"
         >
           <Download size={16} />
           Download GPX

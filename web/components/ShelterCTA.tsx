@@ -19,7 +19,7 @@ export function ShelterCTA({ variant = "inline" }: ShelterCTAProps) {
           </p>
           <Link
             href="/soeg"
-            className="inline-flex items-center gap-2 bg-accent text-white px-6 py-3 rounded-full font-medium hover:bg-accent/90 transition-colors"
+            className="inline-flex items-center gap-2 bg-accent-dark text-white px-6 py-3 rounded-full font-medium hover:bg-accent-dark/90 transition-colors"
           >
             Søg shelters
             <ArrowRight size={16} />
@@ -45,7 +45,7 @@ export function ShelterCTA({ variant = "inline" }: ShelterCTAProps) {
           </p>
           <Link
             href="/soeg"
-            className="inline-flex items-center gap-2 bg-accent text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-accent/90 transition-colors"
+            className="inline-flex items-center gap-2 bg-accent-dark text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-accent-dark/90 transition-colors"
           >
             Søg shelters
             <ArrowRight size={14} />

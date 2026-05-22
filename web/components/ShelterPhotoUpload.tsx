@@ -93,7 +93,7 @@ export function ShelterPhotoUpload({
           <button
             type="submit"
             disabled={!file || status === "uploading"}
-            className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent/90 disabled:opacity-50 disabled:pointer-events-none"
+            className="inline-flex items-center gap-2 rounded-lg bg-accent-dark px-4 py-2 text-sm font-medium text-white hover:bg-accent-dark/90 disabled:opacity-50 disabled:pointer-events-none"
           >
             {status === "uploading" ? (
               <Loader2 size={18} className="animate-spin" />
@@ -163,7 +163,7 @@ export function ShelterPhotoUpload({
         <button
           type="submit"
           disabled={!file || status === "uploading"}
-          className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent/90 disabled:opacity-50 disabled:pointer-events-none"
+          className="inline-flex items-center gap-2 rounded-lg bg-accent-dark px-4 py-2 text-sm font-medium text-white hover:bg-accent-dark/90 disabled:opacity-50 disabled:pointer-events-none"
         >
           {status === "uploading" ? (
             <>

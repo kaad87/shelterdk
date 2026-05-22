@@ -131,7 +131,7 @@ export default async function TilbudPage({ searchParams }: PageProps) {
           rel="nofollow"
           className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${
             !params.category
-              ? "border-accent bg-accent text-white"
+              ? "border-accent bg-accent-dark text-white"
               : "border-primary/15 bg-white text-primary/70 hover:border-accent/30 hover:text-accent"
           }`}
         >
@@ -146,7 +146,7 @@ export default async function TilbudPage({ searchParams }: PageProps) {
             rel="nofollow"
             className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${
               params.category === cat
-                ? "border-accent bg-accent text-white"
+                ? "border-accent bg-accent-dark text-white"
                 : "border-primary/15 bg-white text-primary/70 hover:border-accent/30 hover:text-accent"
             }`}
           >
@@ -258,7 +258,7 @@ export default async function TilbudPage({ searchParams }: PageProps) {
             </p>
             <Link
               href="/guides/pakkeliste-til-sheltertur"
-              className="inline-block rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-accent transition-colors"
+              className="inline-block rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-accent-dark transition-colors"
             >
               Se pakkelisten
             </Link>
