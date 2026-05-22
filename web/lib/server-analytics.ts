@@ -13,6 +13,9 @@ interface SendGa4EventOptions {
   title?: string;
   referrer?: string;
   skipIfConsentAccept?: boolean;
+  /** Used for server-confirmed backend events (e.g. Stripe webhook purchase)
+   * where there is no request cookie context available. */
+  bypassConsentCheck?: boolean;
 }
 
 function getCookieMap(headers: Headers): Map<string, string> {
@@ -113,15 +116,18 @@ export async function sendGa4Event({
   title,
   referrer,
   skipIfConsentAccept = false,
+  bypassConsentCheck = false,
 }: SendGa4EventOptions): Promise<boolean> {
   const measurementId = process.env.GA4_MEASUREMENT_ID;
   const apiSecret = process.env.GA4_API_SECRET;
   if (!measurementId || !apiSecret) return false;
 
   const consent = getConsent(headers);
-  const hasAnalyticsConsent = consent === "analytics" || consent === "marketing";
-  if (!hasAnalyticsConsent) return false;
-  if (skipIfConsentAccept && consent === "marketing") return false;
+  if (!bypassConsentCheck) {
+    const hasAnalyticsConsent = consent === "analytics" || consent === "marketing";
+    if (!hasAnalyticsConsent) return false;
+    if (skipIfConsentAccept && consent === "marketing") return false;
+  }
 
   const fallbackIdentity = buildFallbackIdentity(headers, identityKey);
   const clientId = extractGaClientId(headers) ?? fallbackIdentity.clientId;

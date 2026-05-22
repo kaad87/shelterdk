@@ -76,6 +76,7 @@ export async function POST(req: NextRequest) {
           await sendGa4Event({
             eventName: "payment_completed",
             identityKey: `payment:${payment.booking_id}`,
+            bypassConsentCheck: true,
             eventParams: {
               booking_id: payment.booking_id,
               payment_mode: paymentMode,
@@ -87,6 +88,7 @@ export async function POST(req: NextRequest) {
           await sendGa4Event({
             eventName: "purchase",
             identityKey: `payment:${payment.booking_id}`,
+            bypassConsentCheck: true,
             eventParams: {
               transaction_id: payment.booking_id,
               currency: "DKK",

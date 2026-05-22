@@ -276,15 +276,20 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
         <>
           {bookingFallbackHint === "naturstyrelsen" ? (
             <>
-              <a
+              <TrackedExternalLink
                 href="https://book.naturstyrelsen.dk"
-                target="_blank"
-                rel="noopener noreferrer"
+                eventLabel="Book på Naturstyrelsen"
+                bookContext={{
+                  shelterId: shelter.id,
+                  shelterSlug: slug,
+                  bookingType: "naturstyrelsen_fallback",
+                  position: "main_card",
+                }}
                 className="flex items-center justify-center gap-2 w-full bg-accent-dark text-white font-semibold px-6 py-4 rounded-xl hover:bg-accent-dark/90 transition-colors"
               >
                 <ExternalLink size={20} />
                 Book på Naturstyrelsen
-              </a>
+              </TrackedExternalLink>
               <p className="text-center text-primary/60 text-xs mt-3">
                 Søg efter &quot;{shelter.title}&quot; på book.naturstyrelsen.dk
               </p>
