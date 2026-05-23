@@ -28,6 +28,7 @@ const mockCancelPendingBooking = vi.fn();
 const mockCancelBooking = vi.fn();
 const mockRecordBookingMonitorEvent = vi.fn();
 const mockRecordBookingMonitorError = vi.fn();
+const mockSendGa4Event = vi.fn();
 
 vi.mock("@/lib/stripe", () => ({
   constructWebhookEvent: mockConstructWebhookEvent,
@@ -59,7 +60,7 @@ vi.mock("@/lib/booking-db", () => ({
 }));
 
 vi.mock("@/lib/server-analytics", () => ({
-  sendGa4Event: vi.fn().mockResolvedValue(undefined),
+  sendGa4Event: mockSendGa4Event,
 }));
 
 vi.mock("@/lib/booking-monitor", () => ({
@@ -104,6 +105,7 @@ vi.mock("@/utils/supabase/server-admin", () => ({
 describe("POST /api/stripe/webhook", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSendGa4Event.mockResolvedValue(true);
     mockUpdateBookingStatus.mockResolvedValue(true);
     mockExpireSiblingPendingPayments.mockResolvedValue(undefined);
     mockMarkPaymentFailed.mockResolvedValue(undefined);
@@ -142,6 +144,29 @@ describe("POST /api/stripe/webhook", () => {
         ownerEmail: "owner@test.dk",
         shelterTitle: "Test Shelter",
         amountTotalDkk: 225,
+      })
+    );
+    expect(mockSendGa4Event).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventName: "payment_completed",
+        identityKey: "payment:booking-1",
+        bypassConsentCheck: true,
+        eventParams: expect.objectContaining({
+          booking_id: "booking-1",
+          amount_total_dkk: 225,
+        }),
+      })
+    );
+    expect(mockSendGa4Event).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventName: "purchase",
+        identityKey: "payment:booking-1",
+        bypassConsentCheck: true,
+        eventParams: expect.objectContaining({
+          transaction_id: "booking-1",
+          currency: "DKK",
+          value: 225,
+        }),
       })
     );
   });
