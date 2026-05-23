@@ -135,9 +135,8 @@ export function buildSeoTitle(shelter: Shelter): string {
   const nameHasCity = byLower ? nameLower.includes(byLower) : false;
 
   const bookable = isBookable(shelter);
-  const payment = getPayment(shelter);
-  const isFree =
-    !payment || (typeof payment === "string" && payment.toLowerCase().includes("nej"));
+  // payment-data er upålideligt — droppet fra title-generation. Bring
+  // tilbage som "Book {name} – Gratis overnatning"-variant når data er bedre.
 
   // Hjælper: vælg første variant der holder sig under MAX_LEN (ellers sidste).
   const firstFitting = (candidates: string[]): string => {
@@ -146,14 +145,6 @@ export function buildSeoTitle(shelter: Shelter): string {
     }
     return candidates[candidates.length - 1] + suffix;
   };
-
-  if (bookable && isFree) {
-    return firstFitting([
-      `Book ${name} – Gratis overnatning`,
-      `Book ${name} – Gratis`,
-      `Book ${name}`,
-    ]);
-  }
 
   if (bookable) {
     if (by && !nameHasCity) {
@@ -301,12 +292,9 @@ export function getFeatures(shelter: Shelter): ShelterFeature[] {
   if (wheelchair === true) out.push({ label: "Handicaptilgængelig" });
   if (wheelchair === false) out.push({ label: "Ikke handicapvenlig" });
 
-  const payment = getPayment(shelter);
-  if (payment) {
-    const p = payment.toLowerCase();
-    if (p.includes("nej")) out.push({ label: "Gratis" });
-    else out.push({ label: "Betaling", value: payment });
-  }
+  // "Gratis" / "Betaling" badges droppet fra features — payment-data er
+  // upålideligt. Bring tilbage når data er bedre. (Bevidst ingen brug af
+  // getPayment her, ellers ville lint klage over ubrugt import.)
 
   const toilet = getToilet(shelter);
   if (toilet === "flush") out.push({ label: "Toilet" });
