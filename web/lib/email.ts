@@ -526,9 +526,24 @@ export async function sendAdminReplyEmail(opts: {
 export function buildShelterApprovedEmailHtml(opts: {
   shelterName: string;
   shelterSlug: string;
+  /** Hvis sat, vises et CTA-block der inviterer ejeren til ejer-portalen. */
+  claimUrl?: string | null;
 }): string {
-  const { shelterName, shelterSlug } = opts;
+  const { shelterName, shelterSlug, claimUrl } = opts;
   const shelterUrl = `https://shelterdk.dk/shelter/${shelterSlug}`;
+  const claimBlock = claimUrl
+    ? `
+      <div style="margin:20px 0;padding:14px 16px;background:#f0faf4;border-left:3px solid #16a34a;border-radius:0 6px 6px 0;">
+        <p style="font-size:13px;color:#333;line-height:1.6;margin:0 0 10px;font-weight:600;">
+          Vil du modtage bookings direkte?
+        </p>
+        <p style="font-size:12px;color:#555;line-height:1.55;margin:0 0 12px;">
+          Opret en gratis ejer-konto, så får du en email hver gang nogen vil booke dit shelter. Du kan acceptere eller afvise med ét klik, blokere datoer og se kommende ophold.
+        </p>
+        <a href="${escapeHtml(claimUrl)}" style="display:inline-block;background:#16a34a;color:white;text-decoration:none;padding:10px 20px;border-radius:6px;font-size:13px;font-weight:600;">Opret ejer-konto</a>
+        <p style="font-size:11px;color:#999;margin:10px 0 0;">Linket virker i 7 dage. Vil du springe over? Vi kontakter dig manuelt ved bookings.</p>
+      </div>`
+    : "";
   return renderEmail({
     title: "Dit shelter er nu på ShelterDK 🏕️",
     preheader: `${escapeHtml(shelterName)} er godkendt og live på ShelterDK!`,
@@ -540,6 +555,7 @@ export function buildShelterApprovedEmailHtml(opts: {
         Du kan se dit shelter her:<br>
         <a href="${shelterUrl}" style="color:#c5a059;text-decoration:none;">${shelterUrl}</a>
       </p>
+      ${claimBlock}
       <p style="font-size:13px;color:#333;line-height:1.65;margin:0 0 16px;">
         Du er velkommen til at svare på denne mail med spørgsmål.
       </p>
@@ -589,9 +605,23 @@ export async function sendShelterApprovedEmail(opts: {
   shelterName: string;
   shelterSlug: string;
   submissionId: string;
+  /**
+   * Owner claim-token genereret samtidig med godkendelsen. Når token er
+   * tilstede, indeholder emailen et CTA der inviterer ejeren til at
+   * oprette en konto og administrere bookings i ejer-portalen.
+   * Token har 7-dages TTL — emailen forklarer det.
+   */
+  claimToken?: string | null;
 }) {
-  const html = buildShelterApprovedEmailHtml(opts);
-  const text = `Tillykke! Dit shelter "${opts.shelterName}" er nu godkendt og live på ShelterDK.\n\nhttps://shelterdk.dk/shelter/${opts.shelterSlug}\n\nDu er velkommen til at svare på denne mail med spørgsmål.\n\nMed venlig hilsen,\nChristian\nShelterDK · shelterdk.dk`;
+  const claimUrl = opts.claimToken
+    ? `https://shelterdk.dk/ejer/signup?claim=${encodeURIComponent(opts.claimToken)}`
+    : null;
+  const html = buildShelterApprovedEmailHtml({ ...opts, claimUrl });
+  const baseText = `Tillykke! Dit shelter "${opts.shelterName}" er nu godkendt og live på ShelterDK.\n\nhttps://shelterdk.dk/shelter/${opts.shelterSlug}`;
+  const claimBlock = claimUrl
+    ? `\n\nOpret en ejer-konto for at modtage og administrere bookings:\n${claimUrl}\n(Linket virker i 7 dage)`
+    : "";
+  const text = `${baseText}${claimBlock}\n\nDu er velkommen til at svare på denne mail med spørgsmål.\n\nMed venlig hilsen,\nChristian\nShelterDK · shelterdk.dk`;
   await sendLoggedEmail({
     to: opts.toEmail,
     subject: "Dit shelter er nu på ShelterDK 🏕️",
@@ -600,7 +630,11 @@ export async function sendShelterApprovedEmail(opts: {
     context: {
       category: "contact",
       emailType: "shelter_approved",
-      metadata: { submissionId: opts.submissionId, shelterName: opts.shelterName },
+      metadata: {
+        submissionId: opts.submissionId,
+        shelterName: opts.shelterName,
+        claimTokenIssued: Boolean(opts.claimToken),
+      },
     },
   });
 }

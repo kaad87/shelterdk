@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 import { createAdminClient } from "@/utils/supabase/server-admin";
 import { slugifySegment } from "@/lib/slug";
 import { sendShelterApprovedEmail } from "@/lib/email";
+import { createOwnerClaimToken } from "@/lib/owner-claim";
 
 export const dynamic = "force-dynamic";
 
@@ -223,14 +224,31 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // Send approval email
+  // Send approval email — INKLUSIV claim-token så ejeren kan oprette
+  // konto og administrere bookings selv (bro fra public submission til
+  // /ejer/dashboard). Token har 7-dages TTL; ejeren skal bruge det inden
+  // det udløber. Hvis token-creation fejler, sender vi stadig approval-
+  // emailen (uden link) — shelter er already live + admin kan generere
+  // nyt token manuelt.
   if (submission.contact_email) {
+    let claimToken: string | null = null;
+    try {
+      const claim = await createOwnerClaimToken(
+        newShelterId,
+        submission.contact_email.trim().toLowerCase()
+      );
+      claimToken = claim?.token ?? null;
+    } catch (tokenErr) {
+      console.error("Owner claim-token creation failed:", tokenErr);
+    }
+
     try {
       await sendShelterApprovedEmail({
         toEmail: submission.contact_email,
         shelterName: submission.shelter_name,
         shelterSlug: slug,
         submissionId,
+        claimToken,
       });
     } catch (emailErr) {
       console.error("Approval email failed:", emailErr);
