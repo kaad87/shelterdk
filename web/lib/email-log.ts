@@ -54,7 +54,10 @@ export async function recordEmailLog(input: EmailLogInput) {
       status: input.status,
       provider: input.provider ?? "resend",
       provider_message_id: input.providerMessageId ?? null,
-      to_email: input.toEmail,
+      // Normalise to_email so the Resend webhook can match by lowercased
+      // address (Resend reports recipients in their original casing, but our
+      // own lookups go through .trim().toLowerCase()).
+      to_email: input.toEmail.trim().toLowerCase(),
       subject: input.subject,
       preview_text: input.previewText ?? null,
       booking_id: input.bookingId ?? null,

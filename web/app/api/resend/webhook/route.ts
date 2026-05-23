@@ -66,7 +66,9 @@ function verifySignature(req: NextRequest, rawBody: string): boolean {
 function recipientsOf(event: ResendWebhookEvent): string[] {
   const to = event.data?.to;
   if (!to) return [];
-  return Array.isArray(to) ? to : [to];
+  return (Array.isArray(to) ? to : [to])
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean);
 }
 
 export async function POST(req: NextRequest) {
@@ -97,7 +99,7 @@ export async function POST(req: NextRequest) {
     };
     const newStatus = statusByEvent[event.type];
     if (newStatus) {
-      await supabase
+      const updateQuery = supabase
         .from("email_logs")
         .update({
           status: newStatus,
@@ -105,6 +107,12 @@ export async function POST(req: NextRequest) {
           delivery_metadata: event.data ?? null,
         })
         .eq("provider_message_id", messageId);
+
+      if (recipients.length > 0) {
+        await updateQuery.in("to_email", recipients);
+      } else {
+        await updateQuery;
+      }
     }
   }
 
