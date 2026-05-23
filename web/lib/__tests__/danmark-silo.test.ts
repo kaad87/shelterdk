@@ -75,7 +75,7 @@ describe("buildDistinctByLandingPages", () => {
     );
   });
 
-  it("redirects municipality pages when the by page has the exact same shelter set", () => {
+  it("redirects municipality pages when the by page covers the same shelter set", () => {
     expect(
       shouldRedirectMunicipalityToByPage(
         "Billund",
@@ -85,12 +85,22 @@ describe("buildDistinctByLandingPages", () => {
     ).toBe(true);
   });
 
-  it("keeps municipality pages when the by page covers a different shelter set", () => {
+  it("redirects municipality pages when the by page is a safe superset", () => {
+    expect(
+      shouldRedirectMunicipalityToByPage(
+        "Aarhus",
+        [{ id: "1" }, { id: "2" }, { id: "3" }],
+        [{ id: "1" }, { id: "2" }, { id: "3" }, { id: "4" }]
+      )
+    ).toBe(true);
+  });
+
+  it("keeps municipality pages when the by page misses municipality shelters", () => {
     expect(
       shouldRedirectMunicipalityToByPage(
         "Billund",
         [{ id: "1" }, { id: "2" }, { id: "3" }],
-        [{ id: "1" }, { id: "2" }]
+        [{ id: "1" }, { id: "2" }, { id: "4" }]
       )
     ).toBe(false);
   });

@@ -20,7 +20,9 @@ import { faqToJsonLd } from "@/lib/faq";
 import type { SoegFilters } from "@/lib/soeg-db";
 import { LastVerifiedBadge } from "@/components/LastVerifiedBadge";
 import { SpeakableSchema } from "@/components/seo/SpeakableSchema";
+import { CityDestinationSchema } from "@/components/seo/CityDestinationSchema";
 import { newestIsoDate } from "@/lib/content-dates";
+import { getCityEditorial } from "@/lib/city-editorial";
 
 interface PageProps {
   params: Promise<{ by_slug: string }>;
@@ -86,10 +88,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const count = shelters.length;
   const bookable = shelters.filter((s) => !!s.booking_url && String(s.booking_url).trim() !== "").length;
   const withWater = shelters.filter((s) => getWater(s) === true).length;
+  const freeCount = shelters.filter((s) => !s.booking_url || String(s.booking_url).trim() === "").length;
   const locationLabel = usesMunicipalityExpansion ? `i og omkring ${placeName}` : `i ${placeName}`;
 
+  const titleBits: string[] = [];
+  if (count > 0) titleBits.push(`${count} pladser`);
+  if (freeCount > 0) titleBits.push(`${freeCount} gratis`);
+  if (bookable > 0) titleBits.push(`${bookable} bookbare`);
   const title = count > 0
-    ? `Shelter i ${placeName} – ${count} shelters, kort og faciliteter | ShelterDK`
+    ? `Shelter i ${placeName} ${new Date().getFullYear()} – ${titleBits.join(", ")} | ShelterDK`
     : `Shelter i ${placeName} – kort og faciliteter | ShelterDK`;
   const statParts: string[] = [];
   if (bookable > 0) statParts.push(`${bookable} kan bookes`);
@@ -108,14 +115,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title,
       description,
       url: canonicalPath,
-      images: [
-        {
-          url: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&q=80&auto=format&fit=crop",
-          width: 1200,
-          height: 630,
-          alt: `Shelter ${placeName}`,
-        },
-      ],
+      // OG image is generated dynamically by ./opengraph-image.tsx so each
+      // city gets a card with its actual shelter count + booking breakdown.
     },
     ...(count === 0 && { robots: { index: false, follow: true } }),
   };
@@ -222,6 +223,7 @@ export default async function ByPage({ params, searchParams }: PageProps) {
   const withWater = shelters.filter((s) => getWater(s) === true).length;
   const bookable = shelters.filter((s) => !!s.booking_url && String(s.booking_url).trim() !== "").length;
   const freeCount = shelters.filter((s) => !s.booking_url || String(s.booking_url).trim() === "").length;
+  const cityEditorial = getCityEditorial(placeName);
 
   // Build unique kommune links for contextual linking
   const kommuneMap = new Map<string, { name: string; slug: string; regionSlug: string }>();
@@ -266,6 +268,17 @@ export default async function ByPage({ params, searchParams }: PageProps) {
           return shelterHref(full?.region, full?.kommune, s.slug);
         }}
       />
+      <CityDestinationSchema
+        placeName={placeName}
+        citySlug={by_slug}
+        shelters={shelters}
+        hrefFn={(s) => {
+          const full = shelters.find((x) => x.id === s.id);
+          return shelterHref(full?.region, full?.kommune, s.slug);
+        }}
+        description={cityEditorial?.summary}
+        nearbyPois={cityEditorial?.nearbyPois}
+      />
       <div className="min-h-screen bg-background">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
           <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-primary/70 py-2">
@@ -304,6 +317,23 @@ export default async function ByPage({ params, searchParams }: PageProps) {
               Siden er lavet til lokale spørgsmål som “shelter i {placeName}”, “kan man booke shelter i {placeName}” og “findes der shelter med toilet eller vand {usesMunicipalityExpansion ? `i området` : `i byen`}”.
             </p>
           </section>
+
+          {cityEditorial ? (
+            <section className="mb-8 rounded-2xl border border-primary/10 bg-white p-6 shadow-sm">
+              <h2 className="font-serif text-2xl font-bold text-primary mb-3">
+                Om shelter-livet i {placeName}
+              </h2>
+              <p className="text-primary/85 leading-relaxed">
+                {cityEditorial.summary}
+              </p>
+              <p className="mt-3 text-sm text-primary/70">
+                I området omkring {placeName} er det især relevant at kigge mod {cityEditorial.nearbyPois.join(", ")}.
+              </p>
+              <p className="mt-3 text-sm text-primary/60">
+                Brug by-siden som hurtig lokal indgang, og klik videre til den enkelte shelterplads for billeder, booking og praktiske detaljer.
+              </p>
+            </section>
+          ) : null}
 
           <ByShelterExplorer
             placeName={placeName}

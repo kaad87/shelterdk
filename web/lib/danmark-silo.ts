@@ -682,7 +682,7 @@ export function shouldRedirectMunicipalityToByPage(
 ): boolean {
   if (!PRIORITY_BY_CITY_NAME_SET.has(municipalityName)) return false;
   if (municipalityShelters.length === 0 || byShelters.length === 0) return false;
-  if (municipalityShelters.length !== byShelters.length) return false;
+  if (byShelters.length < municipalityShelters.length) return false;
 
   const byIds = new Set(byShelters.map((shelter) => shelter.id));
   return municipalityShelters.every((shelter) => byIds.has(shelter.id));
