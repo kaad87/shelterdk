@@ -3,11 +3,16 @@ const BASE_URL = "https://shelterdk.dk";
 /**
  * JSON-LD WebSite + Organization schema for the homepage.
  *
- * - WebSite: with SearchAction so Google can render the in-SERP search box
- *   (sitelinks searchbox feature).
+ * - WebSite: minimal declaration so Google can link entities together.
+ *   We deliberately do NOT include a SearchAction:
+ *     1. Google deprecated the Sitelinks Searchbox feature in Nov 2024,
+ *        so the markup no longer renders in SERPs.
+ *     2. Our search target (/soeg) is robots:noindex by design — sending
+ *        Google an action that points at a noindex page is a contradictory
+ *        signal even if technically allowed.
  * - Organization: brand entity declaration for knowledge-panel / logo-in-SERP
- *   eligibility. `sameAs` is intentionally empty for now — add the brand's
- *   actual social URLs (Instagram, Facebook, LinkedIn) when they exist.
+ *   eligibility. `sameAs` is intentionally absent — add the brand's actual
+ *   social URLs (Instagram, Facebook, LinkedIn) when they exist.
  */
 export function WebSiteSchema() {
   const website = {
@@ -20,15 +25,6 @@ export function WebSiteSchema() {
     description:
       "Find og udforsk shelters i hele Danmark. Se billeder, anmeldelser og praktisk info for overnatning i naturen.",
     publisher: { "@id": `${BASE_URL}#organization` },
-    potentialAction: {
-      "@type": "SearchAction",
-      target: {
-        "@type": "EntryPoint",
-        urlTemplate: `${BASE_URL}/soeg?q={search_term_string}`,
-      },
-      // schema.org requires this exact spelling — Google validates it.
-      "query-input": "required name=search_term_string",
-    },
   };
 
   const organization = {
