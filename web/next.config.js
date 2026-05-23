@@ -180,4 +180,30 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+// Sentry-integration: wrap config med withSentryConfig så source maps
+// uploades til Sentry på build (kun når SENTRY_AUTH_TOKEN er sat, dvs.
+// i CI/Netlify build env). Lokal dev kører uberørt.
+const { withSentryConfig } = require("@sentry/nextjs");
+
+module.exports = process.env.SENTRY_AUTH_TOKEN
+  ? withSentryConfig(nextConfig, {
+      // Sentry CLI-options. org + project skal matche jeres Sentry-projekt.
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+
+      // Skjul source-map filer fra production bundle så de ikke serveres
+      // direkte fra /_next/static/ — kun Sentry får dem.
+      hideSourceMaps: true,
+
+      // Wider source-map upload (langsommere build, men bedre stack-traces).
+      widenClientFileUpload: true,
+
+      // Disable Sentry's egen telemetri til Sentry — vi behøver ikke at
+      // sende build-meta-data ud over hvad source maps bidrager med.
+      telemetry: false,
+
+      // Silent: undgå spam i build-loggen når SENTRY_AUTH_TOKEN findes.
+      silent: !process.env.CI,
+    })
+  : nextConfig;
