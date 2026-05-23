@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const shelter = await getBookableShelterBySlug(slug);
   if (!shelter) return {};
   return {
-    title: `Book ${shelter.title} | ShelterDK`,
+    title: `Book ${shelter.title}`,
     description: shelter.description ?? `Send en bookingforespørgsel til ${shelter.title}. Gratis og uforpligtende.`,
     robots: { index: false, follow: false },
   };
