@@ -41,16 +41,23 @@ interface ResendWebhookEvent {
 }
 
 function verifySignature(req: NextRequest, rawBody: string): boolean {
-  const secret = process.env.RESEND_WEBHOOK_SECRET;
-  if (!secret) return false; // Refuse to process without signing key.
+  const rawSecret = process.env.RESEND_WEBHOOK_SECRET;
+  if (!rawSecret) return false; // Refuse to process without signing key.
   const signatureHeader = req.headers.get("svix-signature") ?? "";
   const timestamp = req.headers.get("svix-timestamp") ?? "";
   const id = req.headers.get("svix-id") ?? "";
   if (!signatureHeader || !timestamp || !id) return false;
 
+  // Svix signing secrets are stored as `whsec_<base64>`. The base64 part
+  // decodes to the binary key used for the HMAC — passing the encoded
+  // string directly produces a different signature and every event is
+  // rejected with "invalid signature". Strip the prefix and decode.
+  const base64Secret = rawSecret.replace(/^whsec_/, "");
+  const secretBytes = Buffer.from(base64Secret, "base64");
+
   // Resend signs via Svix: HMAC-SHA256(id.timestamp.body) base64.
   const signed = `${id}.${timestamp}.${rawBody}`;
-  const expected = createHmac("sha256", secret).update(signed).digest("base64");
+  const expected = createHmac("sha256", secretBytes).update(signed).digest("base64");
 
   // Header may contain multiple "v1,<sig>" pairs separated by spaces.
   for (const part of signatureHeader.split(" ")) {
