@@ -16,7 +16,12 @@ function errorResponse(status: number, message: string) {
 function cacheHeaders(contentType: string) {
   return {
     "Content-Type": contentType,
-    "Cache-Control": "private, max-age=604800, stale-while-revalidate=2592000",
+    // `public` så Netlify Edge cacher billedet på tværs af brugere — det
+    // er ikke user-specifikke billeder, så samme URL = samme image for alle.
+    // `private` (tidligere) tvang en function-invokation per (URL × user)
+    // hvilket var unødigt dyrt. Sammenlign med /api/google-photo der
+    // korrekt bruger public.
+    "Cache-Control": "public, max-age=604800, stale-while-revalidate=2592000",
   };
 }
 
