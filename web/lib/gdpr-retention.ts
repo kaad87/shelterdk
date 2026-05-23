@@ -14,7 +14,8 @@ import { createAdminClient } from "@/utils/supabase/server-admin";
  *  - Cancelled/rejected bookings have their PII scrubbed after 90 days.
  *  - Contact messages older than 12 months are deleted.
  *  - Rejected community submissions older than 60 days are deleted.
- *  - Unsubscribed newsletter rows older than 30 days are deleted.
+ *  - Newsletter unsubscribes are handled by hard-delete in the unsubscribe
+ *    route, so no retention cleanup is needed here.
  *
  * The functions return counts so the calling cron-job can log progress
  * and trigger alerts if numbers look wrong.
@@ -29,7 +30,6 @@ export interface RetentionRunResult {
   scrubbedOldBookings: number;
   deletedContactMessages: number;
   deletedRejectedSubmissions: number;
-  deletedUnsubscribedNewsletter: number;
   errors: string[];
 }
 
@@ -39,6 +39,26 @@ function daysAgoIso(days: number): string {
   return d.toISOString();
 }
 
+/**
+ * Stringify any thrown value into a useful log line.
+ * Supabase errors are plain objects with `.message` + `.code` (not Error
+ * instances), so naive `String(err)` gives `[object Object]`.
+ */
+function describeError(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (err && typeof err === "object") {
+    const e = err as { message?: string; code?: string; details?: string; hint?: string };
+    const parts = [e.message, e.code, e.details, e.hint].filter(Boolean);
+    if (parts.length > 0) return parts.join(" | ");
+    try {
+      return JSON.stringify(err);
+    } catch {
+      return "[unserialisable error]";
+    }
+  }
+  return String(err);
+}
+
 export async function runRetentionCleanup(): Promise<RetentionRunResult> {
   const supabase = createAdminClient();
   const result: RetentionRunResult = {
@@ -46,7 +66,6 @@ export async function runRetentionCleanup(): Promise<RetentionRunResult> {
     scrubbedOldBookings: 0,
     deletedContactMessages: 0,
     deletedRejectedSubmissions: 0,
-    deletedUnsubscribedNewsletter: 0,
     errors: [],
   };
 
@@ -67,9 +86,7 @@ export async function runRetentionCleanup(): Promise<RetentionRunResult> {
     if (error) throw error;
     result.scrubbedCancelledBookings = data?.length ?? 0;
   } catch (err) {
-    result.errors.push(
-      `scrubbedCancelledBookings: ${err instanceof Error ? err.message : String(err)}`
-    );
+    result.errors.push(`scrubbedCancelledBookings: ${describeError(err)}`);
   }
 
   // 2. Scrub confirmed/completed bookings older than 24 months.
@@ -89,9 +106,7 @@ export async function runRetentionCleanup(): Promise<RetentionRunResult> {
     if (error) throw error;
     result.scrubbedOldBookings = data?.length ?? 0;
   } catch (err) {
-    result.errors.push(
-      `scrubbedOldBookings: ${err instanceof Error ? err.message : String(err)}`
-    );
+    result.errors.push(`scrubbedOldBookings: ${describeError(err)}`);
   }
 
   // 3. Delete contact_messages older than 12 months.
@@ -105,9 +120,7 @@ export async function runRetentionCleanup(): Promise<RetentionRunResult> {
     if (error) throw error;
     result.deletedContactMessages = data?.length ?? 0;
   } catch (err) {
-    result.errors.push(
-      `deletedContactMessages: ${err instanceof Error ? err.message : String(err)}`
-    );
+    result.errors.push(`deletedContactMessages: ${describeError(err)}`);
   }
 
   // 4. Delete rejected community submissions older than 60 days.
@@ -122,27 +135,12 @@ export async function runRetentionCleanup(): Promise<RetentionRunResult> {
     if (error) throw error;
     result.deletedRejectedSubmissions = data?.length ?? 0;
   } catch (err) {
-    result.errors.push(
-      `deletedRejectedSubmissions: ${err instanceof Error ? err.message : String(err)}`
-    );
+    result.errors.push(`deletedRejectedSubmissions: ${describeError(err)}`);
   }
 
-  // 5. Delete unsubscribed newsletter rows older than 30 days.
-  try {
-    const cutoff = daysAgoIso(30);
-    const { data, error } = await supabase
-      .from("newsletter_subscribers")
-      .delete()
-      .eq("status", "unsubscribed")
-      .lt("updated_at", cutoff)
-      .select("id");
-    if (error) throw error;
-    result.deletedUnsubscribedNewsletter = data?.length ?? 0;
-  } catch (err) {
-    result.errors.push(
-      `deletedUnsubscribedNewsletter: ${err instanceof Error ? err.message : String(err)}`
-    );
-  }
+  // Note: newsletter_subscribers don't need retention cleanup here — the
+  // unsubscribe API route hard-deletes rows immediately, so nothing
+  // lingers past the retention window.
 
   return result;
 }
