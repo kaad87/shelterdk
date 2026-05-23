@@ -56,10 +56,8 @@ export function generateFilterPageFaq(filterKey: string, data: FilterPageFaqData
       question: `Hvilken region har flest shelters med ${label}?`,
       answer: `${data.topRegion} har flest med ${data.topRegionCount} ${labelLong}.`,
     },
-    {
-      question: `Er shelters med ${label} gratis?`,
-      answer: `${data.freeCount} ud af ${data.totalCount} ${labelLong} er gratis (f\u00f8rst-til-m\u00f8lle). De resterende kan have et mindre gebyr eller kr\u00e6ve booking.`,
-    },
+    // "Er shelters med X gratis?" FAQ er fjernet bevidst \u2014 payment-data
+    // er for up\u00e5lideligt til at vises som tal.
     {
       question: `Kan man booke shelter med ${label}?`,
       answer: `Ja, ${data.bookableCount} ${labelLong} kan bookes p\u00e5 forh\u00e5nd via udinaturen.dk eller Naturstyrelsen.`,
@@ -100,10 +98,8 @@ export function generateRegionPageFaq(
       question: `Kan man have hund med i shelter ${inRegion}?`,
       answer: `${data.facilityCounts.hund} shelters ${inRegion} tillader hund.`,
     },
-    {
-      question: `Er der gratis shelters ${inRegion}?`,
-      answer: `Ja, ${data.freeCount} ud af ${data.totalCount} shelters ${inRegion} er gratis (f\u00f8rst-til-m\u00f8lle).`,
-    },
+    // "Er der gratis shelters?" FAQ er fjernet bevidst \u2014 payment-data
+    // er for up\u00e5lideligt til at vises som tal.
     {
       question: `Hvad er den bedst bed\u00f8mte shelter ${inRegion}?`,
       answer: data.topShelterName
@@ -133,10 +129,8 @@ export function generateMunicipalityPageFaq(
       question: `Hvilke faciliteter har shelters i ${municipalityName}?`,
       answer: `${data.toiletCount} shelters har toilet og ${data.waterCount} har vand i ${municipalityName}.`,
     },
-    {
-      question: `Er der gratis shelters i ${municipalityName}?`,
-      answer: `Ja, ${data.freeCount} ud af ${data.totalCount} shelters i ${municipalityName} er gratis.`,
-    },
+    // "Er der gratis shelters?" FAQ er fjernet bevidst — payment-data
+    // er for upålideligt til at vises som tal.
   ];
 }
 
@@ -171,10 +165,8 @@ export function generatePlacePageFaq(
       question: `Har shelters i ${placeName} toilet eller vand?`,
       answer: `${data.toiletCount} shelters har toilet og ${data.waterCount} har adgang til vand i ${placeName}.`,
     },
-    {
-      question: `Er der gratis shelters i ${placeName}?`,
-      answer: `Ja, ${data.freeCount} ud af ${data.totalCount} shelter${data.totalCount !== 1 ? "s" : ""} i ${placeName} er gratis.`,
-    },
+    // "Er der gratis shelters?" FAQ er fjernet bevidst — payment-data er
+    // for upålideligt. Bring tilbage når data er bedre.
   ];
 }
 
@@ -199,10 +191,8 @@ export function generateCrossPageFaq(
       question: `Hvor mange ${labelLong} er der ${inRegion}?`,
       answer: `Der er ${data.count} ${labelLong} ${inRegion} registreret p\u00e5 ShelterDK.`,
     },
-    {
-      question: `Er ${labelLong} ${inRegion} gratis?`,
-      answer: `${data.freeCount} ud af ${data.count} ${labelLong} ${inRegion} er gratis.`,
-    },
+    // "Er X gratis?" FAQ er fjernet bevidst \u2014 payment-data
+    // er for up\u00e5lideligt til at vises som tal.
     {
       question: `Hvad er den bedst bed\u00f8mte shelter med ${label} ${inRegion}?`,
       answer: data.topShelterName

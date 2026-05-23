@@ -142,10 +142,11 @@ export function ShelterSchema({
   if (locality) addressObj.addressLocality = locality;
   if (region && region !== "Danmark") addressObj.addressRegion = region;
 
-  // priceRange: "0" when free (Google-friendly)
-  const isFree =
-    !payment || (typeof payment === "string" && payment.toLowerCase().includes("nej"));
-  const priceRange = isFree ? "0" : undefined;
+  // priceRange er fjernet bevidst — payment-data er for upålideligt til at
+  // vise i strukturdata. Forkert priceRange="0" på betalbare shelters er
+  // mere skadeligt end et manglende felt. Bring tilbage når data er bedre.
+  const priceRange: string | undefined = undefined;
+  void payment; // keep import & avoid unused-var lint until data fixed
 
   const containedInPlace: Record<string, unknown>[] = [];
   if (region && region !== "Danmark") {

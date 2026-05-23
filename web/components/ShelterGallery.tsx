@@ -293,7 +293,10 @@ export function ShelterGallery({
           <div
             ref={lightboxScrollRef}
             className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-hide"
-            style={{ scrollbarWidth: "none", touchAction: "pan-y pinch-zoom" }}
+            // `pan-y pinch-zoom` blokerede horisontal swipe så brugeren ikke
+            // kunne skifte billede med fingeren. `pan-x pan-y pinch-zoom`
+            // tillader både swipe og scroll/zoom.
+            style={{ scrollbarWidth: "none", touchAction: "pan-x pan-y pinch-zoom" }}
             onClick={(e) => e.stopPropagation()}
           >
             {visibleUrls.map((url, i) => (

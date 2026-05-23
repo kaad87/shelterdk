@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { MapPin, Star, CheckCircle, Droplets, Dog, Flame, Users } from "lucide-react";
 import type { Shelter } from "@/types/shelter";
-import { getCity, getResolvedPhotoUrls, isShelterPlace, isValidImageUrl, getWater, getToilet, getPetsAllowed, isBookable, getPayment } from "@/lib/shelter-detail";
+import { getCity, getResolvedPhotoUrls, isShelterPlace, isValidImageUrl, getWater, getToilet, getPetsAllowed, isBookable } from "@/lib/shelter-detail";
 import { ShelterPlaceholder } from "@/components/ShelterPlaceholder";
 import { getProxiedImageSrc, isUnoptimizedImageUrl } from "@/lib/image-proxy";
 import { ImageCarousel } from "@/components/ImageCarousel";
@@ -168,22 +168,17 @@ export function ShelterCard({ shelter, onImageError, href, priority, availabilit
       )}
       {/* Capacity + price quick-scan row */}
       {(() => {
-        const payment = getPayment(shelter);
-        const isFree =
-          !payment || (typeof payment === "string" && payment.toLowerCase().includes("nej"));
+        // "Gratis" badge er fjernet bevidst — payment-feltet er for upålideligt
+        // (mange shelters har manglende eller forkerte payment-værdier) til at
+        // vises som badge. Bring tilbage når data-kvaliteten er bedre.
         const showCapacity = shelter.capacity != null && shelter.capacity > 0;
-        if (!showCapacity && !isFree) return null;
+        if (!showCapacity) return null;
         return (
           <div className="mt-1 flex items-center gap-2.5 text-xs text-primary/65">
-            {showCapacity && (
-              <span className="flex items-center gap-1">
-                <Users size={12} aria-hidden="true" />
-                {shelter.capacity} pladser
-              </span>
-            )}
-            {isFree && (
-              <span className="font-semibold text-green-700">Gratis</span>
-            )}
+            <span className="flex items-center gap-1">
+              <Users size={12} aria-hidden="true" />
+              {shelter.capacity} pladser
+            </span>
           </div>
         );
       })()}

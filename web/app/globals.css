@@ -11,6 +11,16 @@
   --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+html,
+body {
+  /* Forhindrer horisontal sidescroll når et indre element ved et uheld
+     bliver bredere end viewport (typisk en lang URL, et kortpanel der
+     overflowes, eller fixed-positioned widget). Uden dette kan brugeren
+     scrolle sidelæns, og den sticky bookings-CTA "hænger ud" til højre
+     selvom den selv er korrekt full-width. */
+  overflow-x: clip;
+}
+
 body {
   background-color: var(--background);
   padding-bottom: var(--safe-area-inset-bottom);

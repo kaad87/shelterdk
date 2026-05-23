@@ -88,12 +88,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const count = shelters.length;
   const bookable = shelters.filter((s) => !!s.booking_url && String(s.booking_url).trim() !== "").length;
   const withWater = shelters.filter((s) => getWater(s) === true).length;
-  const freeCount = shelters.filter((s) => !s.booking_url || String(s.booking_url).trim() === "").length;
   const locationLabel = usesMunicipalityExpansion ? `i og omkring ${placeName}` : `i ${placeName}`;
 
+  // "Gratis"-tal fjernet bevidst — payment-data er for upålideligt.
+  // Title bygges på shelter-tal + bookbare i stedet, som er pålideligt.
   const titleBits: string[] = [];
   if (count > 0) titleBits.push(`${count} pladser`);
-  if (freeCount > 0) titleBits.push(`${freeCount} gratis`);
   if (bookable > 0) titleBits.push(`${bookable} bookbare`);
   const title = count > 0
     ? `Shelter i ${placeName} ${new Date().getFullYear()} – ${titleBits.join(", ")} | ShelterDK`
@@ -222,7 +222,10 @@ export default async function ByPage({ params, searchParams }: PageProps) {
   }).length;
   const withWater = shelters.filter((s) => getWater(s) === true).length;
   const bookable = shelters.filter((s) => !!s.booking_url && String(s.booking_url).trim() !== "").length;
-  const freeCount = shelters.filter((s) => !s.booking_url || String(s.booking_url).trim() === "").length;
+  // freeCount er beholdt som 0-fallback fordi byFaq/ByProse stadig accepterer
+  // det som prop — vi sender bare 0 så de tilhørende sætninger om "X gratis"
+  // ikke rendres mens payment-data er upålideligt.
+  const freeCount = 0;
   const cityEditorial = getCityEditorial(placeName);
 
   // Build unique kommune links for contextual linking

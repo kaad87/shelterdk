@@ -43,7 +43,7 @@ const FILTER_OPTIONS: {
   { key: "toilet", label: "Toilet", icon: <Droplets size={15} /> },
   { key: "baalplads", label: "Bålplads", icon: <Flame size={15} /> },
   { key: "bookbar", label: "Bookbar", icon: <CheckCircle size={15} /> },
-  { key: "gratis", label: "Gratis", icon: <Gift size={15} /> },
+  // "Gratis"-filter er fjernet bevidst — payment-data er for upålideligt.
   { key: "vand", label: "Vand", icon: <Droplets size={15} /> },
   { key: "hund", label: "Hund tilladt", icon: <Dog size={15} /> },
   { key: "strand", label: "Strand", icon: <Umbrella size={15} /> },

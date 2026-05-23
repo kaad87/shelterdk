@@ -1,14 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { MapPin, CheckCircle, Flame, Gift, Bath } from "lucide-react";
+import { MapPin, CheckCircle, Flame, Bath, Dog } from "lucide-react";
 import { HomepageDatePicker } from "@/components/HomepageDatePicker";
 
 const PILLS = [
   { label: "Nær mig", href: "/shelter-naer-mig", icon: MapPin, accent: true },
   { label: "Book shelter", href: "/shelter-booking", icon: CheckCircle, accent: false },
   { label: "Med bål", href: "/shelter-med-baalplads", icon: Flame, accent: false },
-  { label: "Gratis", href: "/soeg?gratis=1", icon: Gift, accent: false },
+  // "Gratis"-pill er fjernet bevidst — payment-data er for upålideligt.
+  // Erstattet med "Med hund" som er højere-volumen og pålideligt data.
+  { label: "Med hund", href: "/shelter-med-hund", icon: Dog, accent: false },
   { label: "Med toilet", href: "/shelter-med-toilet", icon: Bath, accent: false },
 ] as const;
 
