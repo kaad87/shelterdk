@@ -6,13 +6,12 @@ export const dynamic = "force-dynamic";
 /**
  * GDPR retention cleanup endpoint.
  *
- * Protected by a shared secret (`CRON_SECRET` env var). Call via:
+ * Protected by a shared secret (`CRON_SECRET` env var). Accepts either:
+ *   - `x-cron-secret: $CRON_SECRET` header (used by Netlify Scheduled Function)
+ *   - `Authorization: Bearer $CRON_SECRET` header (convenient for manual curl)
  *
- *   curl -H "Authorization: Bearer $CRON_SECRET" \
- *     https://shelterdk.dk/api/cron/gdpr-retention
- *
- * Schedule once per day via Vercel Cron, GitHub Actions, or any external
- * scheduler. Idempotent — safe to call multiple times.
+ * Scheduled daily via `netlify/functions/gdpr-retention-cron.ts`.
+ * Idempotent — safe to call multiple times.
  */
 export async function GET(req: NextRequest) {
   const secret = process.env.CRON_SECRET;
@@ -23,9 +22,10 @@ export async function GET(req: NextRequest) {
     );
   }
 
+  const xCronSecret = req.headers.get("x-cron-secret") ?? "";
   const authHeader = req.headers.get("authorization") ?? "";
-  const provided = authHeader.replace(/^Bearer\s+/i, "").trim();
-  if (provided !== secret) {
+  const bearer = authHeader.replace(/^Bearer\s+/i, "").trim();
+  if (xCronSecret !== secret && bearer !== secret) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
