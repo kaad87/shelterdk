@@ -143,6 +143,11 @@ export function SoegContent({
 
   // Sorting
   const [sortMode, setSortMode] = useState<SortMode>("standard");
+
+  // "Mente du..." — populeres når søgning giver 0 resultater og bruger har
+  // skrevet noget i søgefeltet. Henter forslag via samme autocomplete-endpoint
+  // som SearchBar bruger, så typer som "kobenhavn" foreslår "København".
+  const [didYouMean, setDidYouMean] = useState<{ name: string; type: string }[]>([]);
   const prevSortMode = useRef<SortMode>("standard");
 
   // Helper: build API params for current filters/sort/view (URL filters win in prod to fix cache)
@@ -164,6 +169,38 @@ export function SoegContent({
     if (sortMode !== "standard") params.sort = sortMode;
     return params;
   }, [view, initialRegion, initialQuery, initialArea, effectiveFilters, sortMode]);
+
+  // Hent "Mente du..."-forslag når søgning giver 0 resultater. Vi genbruger
+  // autocomplete-endpoint'et (/api/soeg/byer) som allerede gør Danish-variant
+  // expansion, så "kobenhavn" foreslår "København" automatisk.
+  useEffect(() => {
+    if (loading) return;
+    if (shelters.length > 0 || !initialQuery || initialQuery.trim().length < 2) {
+      if (didYouMean.length > 0) setDidYouMean([]);
+      return;
+    }
+    const controller = new AbortController();
+    fetch(`/api/soeg/byer?q=${encodeURIComponent(initialQuery.trim())}`, {
+      signal: controller.signal,
+    })
+      .then((r) => (r.ok ? r.json() : []))
+      .then((arr: unknown) => {
+        if (!Array.isArray(arr)) return;
+        const items = (arr as Record<string, unknown>[])
+          .slice(0, 5)
+          .map((s) => ({
+            name: String(s?.name ?? ""),
+            type: String(s?.type ?? "by"),
+          }))
+          .filter((s) => s.name.trim().length > 0 && s.name.toLowerCase() !== initialQuery.trim().toLowerCase());
+        setDidYouMean(items);
+      })
+      .catch(() => {
+        // ignore aborted/network errors silently
+      });
+    return () => controller.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shelters.length, initialQuery, loading]);
 
   // Fetch page 1 from API and replace shelters
   const fetchPage1 = useCallback((params: Record<string, string>) => {
@@ -417,6 +454,23 @@ export function SoegContent({
           <p className="text-primary/70 text-lg mb-4">
             Ingen shelters matcher din søgning. Prøv at justere dine filtre eller søg på noget andet.
           </p>
+          {didYouMean.length > 0 && (
+            <div className="mb-6">
+              <p className="text-sm text-primary/60 mb-3">Mente du:</p>
+              <div className="flex flex-wrap gap-2 justify-center">
+                {didYouMean.map((s) => (
+                  <a
+                    key={`${s.type}:${s.name}`}
+                    href={`/soeg?q=${encodeURIComponent(s.name)}`}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/5 px-4 py-2 text-sm text-accent hover:bg-accent/15 transition-colors"
+                  >
+                    {s.name}
+                    <span className="text-primary/40 text-xs">({s.type})</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
           {hasActiveFilters && (
             <a
               href={basePath ?? (initialRegion ? `/soeg?region=${encodeURIComponent(initialRegion)}` : "/soeg")}

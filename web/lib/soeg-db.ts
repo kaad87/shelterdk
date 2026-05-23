@@ -5,6 +5,7 @@ import { getLocationCoords, getDisplayScore, hasAnyImage } from "@/lib/shelter-d
 import { findPostnummerSuggestions } from "@/lib/postnummer";
 import { haversineKm } from "@/lib/haversine";
 import { SEARCH_SYNONYMS } from "@/lib/search-synonyms";
+import { expandDanishVariants } from "@/lib/search-normalize";
 
 /** Sorter shelters: featured boost først, derefter billede, derefter score, derefter titel. */
 function sortByImageAndScore(a: Shelter, b: Shelter): number {
@@ -279,30 +280,51 @@ export async function getSheltersPage(
     const term = q.trim().replace(/"/g, '""');
 
     {
-      const pattern = `"%${term}%"`;
+      // Expand til alle plausible danske staver (Aarhus/Århus, kobenhavn/
+      // København etc.) så ilike fanger uanset om brugeren har æøå med.
+      const variants = expandDanishVariants(term);
+      const patternFor = (v: string) => `"%${v.replace(/"/g, '""')}%"`;
 
-      // Find area_slugs der matcher søgetermen (fx "Nationalpark Thy" → "nationalpark-thy")
-      const { data: matchingAreas } = await supabase
-        .from("areas")
-        .select("slug")
-        .ilike("name", `%${term}%`)
-        .limit(5);
-
-      let orParts = `title.ilike.${pattern},region.ilike.${pattern},kommune.ilike.${pattern},place.ilike.${pattern}`;
-      if (matchingAreas && matchingAreas.length > 0) {
-        const areaSlugs = matchingAreas.map((a: { slug: string }) => `area_slug.eq.${a.slug}`).join(",");
-        orParts += `,${areaSlugs}`;
+      // Find area_slugs der matcher søgetermen (fx "Nationalpark Thy" → "nationalpark-thy").
+      // Slår op med ALLE varianter så "soenderjylland" også finder areas-navne
+      // skrevet med ø.
+      const areaResults = await Promise.all(
+        variants.map((v) =>
+          supabase
+            .from("areas")
+            .select("slug")
+            .ilike("name", `%${v}%`)
+            .limit(5)
+        )
+      );
+      const matchingAreaSlugs = new Set<string>();
+      for (const res of areaResults) {
+        for (const a of (res.data as { slug: string }[]) ?? []) {
+          if (a.slug) matchingAreaSlugs.add(a.slug);
+        }
       }
 
-      // Geografiske synonymer: fx "Sønderjylland" → kommuner i det område
-      const synonymKey = term.toLowerCase();
-      const synonymKommuner = SEARCH_SYNONYMS[synonymKey];
-      if (synonymKommuner) {
-        const kommuneParts = synonymKommuner.map((k) => `kommune.eq.${k}`).join(",");
-        orParts += `,${kommuneParts}`;
+      const orPartsArr: string[] = [];
+      for (const v of variants) {
+        const p = patternFor(v);
+        orPartsArr.push(`title.ilike.${p}`, `region.ilike.${p}`, `kommune.ilike.${p}`, `place.ilike.${p}`);
+      }
+      for (const slug of matchingAreaSlugs) {
+        orPartsArr.push(`area_slug.eq.${slug}`);
       }
 
-      query = query.or(orParts);
+      // Geografiske synonymer: fx "Sønderjylland" → kommuner i det område.
+      // Slår op på hver variant så "soenderjylland" også triggerer mapping.
+      for (const v of variants) {
+        const synonymKommuner = SEARCH_SYNONYMS[v];
+        if (synonymKommuner) {
+          for (const k of synonymKommuner) {
+            orPartsArr.push(`kommune.eq.${k}`);
+          }
+        }
+      }
+
+      query = query.or(orPartsArr.join(","));
     }
   }
   if (filters?.billede) {
@@ -404,24 +426,38 @@ export async function getSheltersPage(
       fallbackQuery = fallbackQuery.eq("area_slug", areaSlug.trim());
     }
     if (q && q.trim()) {
-      const term = q.trim().replace(/"/g, '""');
-      const pattern = `"%${term}%"`;
-      // Genbrug matchingAreas fra den primære query hvis tilgængelig
-      const { data: fbAreas } = await supabase
-        .from("areas")
-        .select("slug")
-        .ilike("name", `%${term}%`)
-        .limit(5);
-      let fbOrParts = `title.ilike.${pattern},region.ilike.${pattern},kommune.ilike.${pattern}`;
-      if (fbAreas && fbAreas.length > 0) {
-        fbOrParts += `,${fbAreas.map((a: { slug: string }) => `area_slug.eq.${a.slug}`).join(",")}`;
+      // Samme variant-expansion som primary query — så fallback-resultaterne
+      // også fanger Aarhus/Århus, kobenhavn/København etc.
+      const variants = expandDanishVariants(q.trim());
+      const patternFor = (v: string) => `"%${v.replace(/"/g, '""')}%"`;
+
+      const fbAreaResults = await Promise.all(
+        variants.map((v) =>
+          supabase.from("areas").select("slug").ilike("name", `%${v}%`).limit(5)
+        )
+      );
+      const fbAreaSlugs = new Set<string>();
+      for (const res of fbAreaResults) {
+        for (const a of (res.data as { slug: string }[]) ?? []) {
+          if (a.slug) fbAreaSlugs.add(a.slug);
+        }
       }
-      const fbSynonymKey = term.toLowerCase();
-      const fbSynonymKommuner = SEARCH_SYNONYMS[fbSynonymKey];
-      if (fbSynonymKommuner) {
-        fbOrParts += `,${fbSynonymKommuner.map((k) => `kommune.eq.${k}`).join(",")}`;
+
+      const fbOrPartsArr: string[] = [];
+      for (const v of variants) {
+        const p = patternFor(v);
+        fbOrPartsArr.push(`title.ilike.${p}`, `region.ilike.${p}`, `kommune.ilike.${p}`);
       }
-      fallbackQuery = fallbackQuery.or(fbOrParts);
+      for (const slug of fbAreaSlugs) {
+        fbOrPartsArr.push(`area_slug.eq.${slug}`);
+      }
+      for (const v of variants) {
+        const synonymKommuner = SEARCH_SYNONYMS[v];
+        if (synonymKommuner) {
+          for (const k of synonymKommuner) fbOrPartsArr.push(`kommune.eq.${k}`);
+        }
+      }
+      fallbackQuery = fallbackQuery.or(fbOrPartsArr.join(","));
     }
     if (filters?.billede) {
       fallbackQuery = fallbackQuery.not("image_url", "is", null).neq("image_url", "");
@@ -525,38 +561,57 @@ export async function getSuggestions(prefix: string): Promise<SearchSuggestion[]
   if (term.length < 2) return [];
 
   const supabase = createPublicClient();
-  const pattern = `${term.replace(/%/g, "\\%").replace(/_/g, "\\_")}%`;
-  const containsPattern = `%${term.replace(/%/g, "\\%").replace(/_/g, "\\_")}%`;
+  const escapePct = (s: string) => s.replace(/%/g, "\\%").replace(/_/g, "\\_");
 
-  // Hent kommuner, steder, navngivne areas og shelter-titler parallelt
-  const [kommuneRes, placeRes, areaRes, shelterTitleRes] = await Promise.all([
-    supabase
-      .from("shelters")
-      .select("kommune")
-      .is("duplicate_of_shelter_id", null)
-      .not("kommune", "is", null)
-      .ilike("kommune", pattern)
-      .limit(80),
-    supabase
-      .from("shelters")
-      .select("place")
-      .is("duplicate_of_shelter_id", null)
-      .not("place", "is", null)
-      .ilike("place", containsPattern)
-      .limit(80),
-    supabase
-      .from("areas")
-      .select("name")
-      .ilike("name", containsPattern)
-      .limit(20),
-    supabase
-      .from("shelters")
-      .select("title")
-      .is("duplicate_of_shelter_id", null)
-      .not("title", "is", null)
-      .ilike("title", pattern)
-      .limit(5),
+  // Expand til alle plausible danske staver (Aarhus/Århus, kobenhavn/
+  // København, soenderborg/Sønderborg etc.) så autocomplete fanger
+  // uanset om brugeren skriver med æøå eller uden.
+  const variants = expandDanishVariants(term);
+  const prefixPatterns = variants.map((v) => `${escapePct(v)}%`);
+  const containsPatterns = variants.map((v) => `%${escapePct(v)}%`);
+
+  // Hjælpefunktion: kør én ilike-query per variant, parallelt, og smelt
+  // resultaterne sammen i én Map (deduper på lowercased value).
+  type RowMap = Map<string, string>;
+  const fetchUnion = async (
+    column: "kommune" | "place" | "title" | "name",
+    table: "shelters" | "areas",
+    patterns: string[],
+    limitPerQuery: number,
+    withDupFilter: boolean
+  ): Promise<RowMap> => {
+    const out: RowMap = new Map();
+    const queries = patterns.map((p) => {
+      let q = supabase.from(table).select(column).ilike(column, p).limit(limitPerQuery);
+      if (table === "shelters") {
+        q = q.is("duplicate_of_shelter_id", null).not(column, "is", null);
+        // (withDupFilter er altid true for shelters — kept for symmetry)
+        void withDupFilter;
+      }
+      return q;
+    });
+    const results = await Promise.all(queries);
+    for (const res of results) {
+      for (const row of (res.data as Record<string, string>[]) ?? []) {
+        const v = (row[column] || "").trim();
+        if (v) out.set(v.toLowerCase(), v);
+      }
+    }
+    return out;
+  };
+
+  const [kommuneMap, placeMap, areaMap, shelterTitleMap] = await Promise.all([
+    fetchUnion("kommune", "shelters", prefixPatterns, 80, true),
+    fetchUnion("place", "shelters", containsPatterns, 80, true),
+    fetchUnion("name", "areas", containsPatterns, 20, false),
+    fetchUnion("title", "shelters", prefixPatterns, 5, true),
   ]);
+
+  // Bagudkompatibel form til den eksisterende for-loop nedenunder
+  const kommuneRes = { data: [...kommuneMap.values()].map((kommune) => ({ kommune })), error: null as Error | null };
+  const placeRes = { data: [...placeMap.values()].map((place) => ({ place })), error: null as Error | null };
+  const areaRes = { data: [...areaMap.values()].map((name) => ({ name })), error: null as Error | null };
+  const shelterTitleRes = { data: [...shelterTitleMap.values()].map((title) => ({ title })), error: null as Error | null };
 
   if (kommuneRes.error) console.error("Supabase error (kommune suggestions):", kommuneRes.error);
   if (placeRes.error) console.error("Supabase error (place suggestions):", placeRes.error);
@@ -580,26 +635,26 @@ export async function getSuggestions(prefix: string): Promise<SearchSuggestion[]
     return results.slice(0, SUGGEST_LIMIT);
   }
 
-  const lowerTerm2 = term.toLowerCase();
-
-  // Regioner (Jylland, Sjælland, Fyn, Bornholm) – prefix-match
+  // Regioner (Jylland, Sjælland, Fyn, Bornholm) – prefix-match med varianter,
+  // så "Sjaelland" også matcher "Sjælland" og omvendt.
   for (const r of REGION_SUGGESTIONS) {
-    if (r.name.toLowerCase().startsWith(lowerTerm2)) {
-      if (!seen.has(r.name.toLowerCase())) {
-        seen.add(r.name.toLowerCase());
-        results.push(r);
-      }
+    const rNameLower = r.name.toLowerCase();
+    const rKey = rNameLower;
+    if (seen.has(rKey)) continue;
+    if (variants.some((v) => rNameLower.startsWith(v))) {
+      seen.add(rKey);
+      results.push(r);
     }
   }
 
-  // Geografiske synonymer som forslag (fx "Sønderjylland", "Nordjylland") – prefix-match
+  // Geografiske synonymer som forslag (fx "Sønderjylland", "Nordjylland") –
+  // prefix-match mod hver variant så ASCII-input også finder æøå-keys.
   for (const key of Object.keys(SEARCH_SYNONYMS)) {
-    if (key.startsWith(lowerTerm2)) {
+    if (seen.has(key)) continue;
+    if (variants.some((v) => key.startsWith(v))) {
       const displayName = key.charAt(0).toUpperCase() + key.slice(1);
-      if (!seen.has(key)) {
-        seen.add(key);
-        results.push({ name: displayName, type: "område" });
-      }
+      seen.add(key);
+      results.push({ name: displayName, type: "område" });
     }
   }
 
