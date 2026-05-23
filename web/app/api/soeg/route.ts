@@ -31,7 +31,10 @@ export async function GET(request: NextRequest) {
   if (searchParams.get("toilet") === "1") filters.toilet = true;
   if (searchParams.get("hund") === "1") filters.hund = true;
   if (searchParams.get("baalplads") === "1") filters.baalplads = true;
-  if (searchParams.get("gratis") === "1") filters.gratis = true;
+  // `gratis` parses bevidst IKKE — payment-data er for upålideligt og
+  // chip'en er fjernet fra UI. At lade URL'en stadig styre filteret ville
+  // efterlade /soeg?gratis=1 i en usynlig filtreret tilstand (ingen chip,
+  // intet "ryd filtre"). Bring tilbage når data er bedre.
   if (searchParams.get("handicap") === "1") filters.handicap = true;
   if (searchParams.get("bord_baenk") === "1") filters.bord_baenk = true;
   if (searchParams.get("strand") === "1") filters.strand = true;

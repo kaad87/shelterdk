@@ -30,9 +30,12 @@ import { slugifySegment } from "@/lib/slug";
 type ViewMode = "list" | "map" | "split";
 type SortMode = "standard" | "rating" | "reviews";
 
+// `gratis` er bevidst udeladt — payment-data er for upålideligt og
+// chip'en er fjernet fra FILTER_OPTIONS. At have den her ville få
+// activeFilterCount til at tælle et usynligt filter.
 const FILTER_KEYS: (keyof SoegFilters)[] = [
   "billede", "anmeldelser", "bookbar", "vand", "toilet", "hund",
-  "baalplads", "bord_baenk", "strand", "bruser", "gratis", "handicap",
+  "baalplads", "bord_baenk", "strand", "bruser", "handicap",
 ];
 
 const FILTER_OPTIONS: {
@@ -83,7 +86,9 @@ function matchesFilters(shelter: Shelter, filters: SoegFilters): boolean {
 
   const raw = (shelter.geofa_raw || {}) as Record<string, unknown>;
   if (filters.baalplads && !isTruthyJa(raw.baalplads)) return false;
-  if (filters.gratis && raw.betaling !== "Nej") return false;
+  // `filters.gratis` håndteres bevidst IKKE — feltet er fjernet fra alle
+  // parsers så det aldrig burde være true her. Defensiv no-op for at
+  // forhindre skjult state-leak hvis det alligevel kommer ind ad bagdøren.
   if (filters.handicap) {
     const handicap = raw.handicap;
     if (handicap !== "Handicapegnet" && handicap !== "Delvist handicapegnet") return false;

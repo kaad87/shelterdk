@@ -11,9 +11,12 @@ import type { SoegFilters } from "@/lib/soeg-db";
 import { filterSheltersByRegion } from "@/lib/soeg-filters";
 import { getLocationCoords } from "@/lib/shelter-detail";
 
+// `gratis` er bevidst udeladt — chip'en er fjernet fra UI og parsers
+// ignorerer den, så den må heller ikke deltage i activeFilterCount eller
+// re-serialiseres fra URLSearchParams her.
 const FILTER_KEYS: (keyof SoegFilters)[] = [
   "billede", "anmeldelser", "bookbar", "vand", "toilet", "hund",
-  "baalplads", "bord_baenk", "strand", "bruser", "gratis", "handicap",
+  "baalplads", "bord_baenk", "strand", "bruser", "handicap",
 ];
 
 function parseFiltersFromParams(sp: URLSearchParams): SoegFilters {

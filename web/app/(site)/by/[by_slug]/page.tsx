@@ -62,7 +62,7 @@ function parseFilters(params: Awaited<PageProps["searchParams"]>): SoegFilters {
   if (params.bord_baenk === "1") filters.bord_baenk = true;
   if (params.strand === "1") filters.strand = true;
   if (params.bruser === "1") filters.bruser = true;
-  if (params.gratis === "1") filters.gratis = true;
+  // `gratis` parses bevidst IKKE — se kommentar i app/api/soeg/route.ts.
   if (params.handicap === "1") filters.handicap = true;
   const minPladser = parseInt(params.min_pladser ?? "0", 10);
   if (minPladser > 0) filters.min_pladser = minPladser;

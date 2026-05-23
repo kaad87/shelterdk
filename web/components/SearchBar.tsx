@@ -147,7 +147,7 @@ export function SearchBar({
   useEffect(() => {
     setFilters(initialFilters);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialFilters.billede, initialFilters.anmeldelser, initialFilters.bookbar, initialFilters.vand, initialFilters.toilet, initialFilters.hund, initialFilters.baalplads, initialFilters.bord_baenk, initialFilters.strand, initialFilters.bruser, initialFilters.gratis, initialFilters.handicap, initialFilters.min_pladser, initialFilters.date, initialFilters.date_to, initialFilters.confirmed_available]);
+  }, [initialFilters.billede, initialFilters.anmeldelser, initialFilters.bookbar, initialFilters.vand, initialFilters.toilet, initialFilters.hund, initialFilters.baalplads, initialFilters.bord_baenk, initialFilters.strand, initialFilters.bruser, initialFilters.handicap, initialFilters.min_pladser, initialFilters.date, initialFilters.date_to, initialFilters.confirmed_available]);
 
   const resolveBasePath = useCallback(
     (targetRegion: string) => {
@@ -186,7 +186,8 @@ export function SearchBar({
       if (active.bord_baenk) params.set("bord_baenk", "1");
       if (active.strand) params.set("strand", "1");
       if (active.bruser) params.set("bruser", "1");
-      if (active.gratis) params.set("gratis", "1");
+      // `gratis` skrives bevidst IKKE — chip'en er fjernet og parser
+      // ignorerer den (se app/api/soeg/route.ts). Vil kun lægge støj i URL.
       if (active.handicap) params.set("handicap", "1");
       if (active.min_pladser && active.min_pladser > 0) params.set("min_pladser", String(active.min_pladser));
       if (active.date && /^\d{4}-\d{2}-\d{2}$/.test(active.date)) params.set("date", active.date);
