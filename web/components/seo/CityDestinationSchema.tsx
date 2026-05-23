@@ -29,8 +29,6 @@ interface CityDestinationSchemaProps {
   hrefFn: (shelter: { id: number | string; slug: string }) => string;
   /** Optional editorial summary for the destination description. */
   description?: string;
-  /** Optional POI names (e.g. nearby skove, søer) — added as touristType. */
-  nearbyPois?: string[];
 }
 
 export function CityDestinationSchema({
@@ -39,7 +37,6 @@ export function CityDestinationSchema({
   shelters,
   hrefFn,
   description,
-  nearbyPois,
 }: CityDestinationSchemaProps) {
   if (!shelters.length) return null;
 
@@ -65,9 +62,6 @@ export function CityDestinationSchema({
     name: `Shelter i ${placeName}`,
     url: `${BASE_URL}/by/${citySlug}`,
     ...(description ? { description } : {}),
-    ...(nearbyPois && nearbyPois.length > 0
-      ? { touristType: nearbyPois }
-      : {}),
     address: {
       "@type": "PostalAddress",
       addressLocality: placeName,

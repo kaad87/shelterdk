@@ -1,0 +1,56 @@
+# ShelterDK
+
+> ShelterDK er Danmarks samlede oversigt over shelters og overnatningspladser i naturen. Vi indekserer offentlige shelters fra Naturstyrelsen, udinaturen.dk og GeoFA, samt private shelters tilføjet af ejere selv. Sitet kombinerer kort, faciliteter, billeder, anmeldelser og bookingmuligheder ét sted.
+
+ShelterDK er et dansk-sproget site bygget til friluftsfolk, vandrere, cyklister og familier, der vil overnatte i naturen. Indholdet er målrettet danske brugere; sitet serverer ikke engelsk indhold.
+
+## Hovedindgange
+
+- [Forside](https://shelterdk.dk/): Søg shelters, se anbefalede destinationer, find inspiration
+- [Søg shelters](https://shelterdk.dk/soeg): Kort + liste med filtre på faciliteter, region, og bookbarhed
+- [Byer med shelters](https://shelterdk.dk/by): Lokal indgang per dansk by (Aarhus, København, Aalborg, Odense, Silkeborg m.fl.)
+- [Regioner](https://shelterdk.dk/danmark): Oversigt per dansk region (Jylland, Fyn, Sjælland m.fl.)
+- [Områder](https://shelterdk.dk/omraade): Tematiske områder (nationalparker, naturparker, særlige landskaber)
+- [Ruteplanner](https://shelterdk.dk/ruteplanner): Foreslåede vandre- og cykelruter med shelters undervejs
+
+## Faciliteter (cross-filter pages)
+
+- [Shelters med toilet](https://shelterdk.dk/shelter-med-toilet)
+- [Shelters med vand](https://shelterdk.dk/shelter-med-vand)
+- [Shelters med bålplads](https://shelterdk.dk/shelter-med-baalplads)
+- [Shelters med hund tilladt](https://shelterdk.dk/shelter-med-hund)
+- [Shelters med strand](https://shelterdk.dk/shelter-med-strand)
+- [Shelters med bruser](https://shelterdk.dk/shelter-med-bruser)
+- [Handicapvenlige shelters](https://shelterdk.dk/handicapvenlige-shelters)
+- [Bookbare shelters](https://shelterdk.dk/shelter-booking)
+- [Shelters nær mig](https://shelterdk.dk/shelter-naer-mig)
+- [Shelters nær vand](https://shelterdk.dk/shelter-naer-vand)
+- [Shelters til cykeltur](https://shelterdk.dk/shelter-til-cykeltur)
+- [Shelters til familier](https://shelterdk.dk/shelter-til-familier)
+
+## Faktasider
+
+- [Shelters i Danmark — statistik](https://shelterdk.dk/fakta/shelters-i-danmark)
+- [Bedste shelters](https://shelterdk.dk/fakta/bedste-shelters)
+- [Gratis shelters](https://shelterdk.dk/fakta/gratis-shelters)
+- [Shelters med faciliteter](https://shelterdk.dk/fakta/shelters-med-faciliteter)
+- [Shelters i nationalparker](https://shelterdk.dk/fakta/shelters-i-nationalparker)
+
+## Information & support
+
+- [Om ShelterDK](https://shelterdk.dk/om-os)
+- [FAQ](https://shelterdk.dk/faq)
+- [Ordliste over shelter-begreber](https://shelterdk.dk/ordliste)
+- [Datakilder og opdateringer](https://shelterdk.dk/data-kilder)
+- [Kontakt](https://shelterdk.dk/kontakt)
+- [Privatlivspolitik](https://shelterdk.dk/privacy)
+- [Vilkår](https://shelterdk.dk/vilkaar)
+
+## For shelter-ejere
+
+- [Registrér dit shelter](https://shelterdk.dk/registrer-shelter): Tilmeld dit shelter gratis så det vises på ShelterDK
+
+## Yderligere kontekst
+
+- [llms-full.txt](https://shelterdk.dk/llms-full.txt): Mere detaljeret oversigt over indholdsstruktur og data-kilder
+- [sitemap.xml](https://shelterdk.dk/sitemap.xml): Komplet sitemap (alle by-, region-, og shelter-detalje-sider)

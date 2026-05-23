@@ -1,0 +1,104 @@
+# ShelterDK — Detaljeret kontekst
+
+> ShelterDK er Danmarks samlede oversigt over shelters og overnatningspladser i naturen, drevet som et uafhængigt non-corporate projekt. Indholdet kombinerer offentlige datakilder (Naturstyrelsen, udinaturen.dk, GeoFA, kommunale registreringer) med bruger-bidragede shelter-oplysninger og ejer-registrerede pladser, så friluftsfolk har én indgang til hele Danmark.
+
+Sprog: dansk (da-DK). Geografi: udelukkende Danmark — Hovedstaden, Sjælland, Fyn, Sydjylland, Midtjylland, Nordjylland. Sitet serverer ikke andre sprog.
+
+## Vigtige terminologiske afklaringer
+
+- **Shelter**: En åben eller halvåben overnatningskonstruktion i træ eller stål, typisk uden vinduer, der bruges til at sove ude i naturen. Skal ikke forveksles med teltpladser eller hytter.
+- **Shelterplads**: Et område med én eller flere shelters, ofte med fælles bålplads, vand og evt. toilet.
+- **Booking-shelter**: Et shelter der skal bookes i forvejen (typisk via Naturstyrelsens udinaturen.dk eller direkte gennem ejeren).
+- **Gratis shelter / først-til-mølle**: Et shelter der ikke kræver booking — fri benyttelse efter "først-til-mølle"-princippet.
+
+## Indholdstyper
+
+### Shelter-detaljesider
+URL-mønster: `/danmark/{region}/{kommune}/{shelter-slug}` (kanonisk for shelters med region-data) eller `/shelter/{slug}` (for shelters uden region-data — disse permanent-redirecter til det kanoniske mønster når region kendes).
+
+Hver shelter-side indeholder:
+- Titel, beskrivelse, region, kommune
+- Faciliteter (toilet, vand, bålplads, plads til hund, handicapvenlig, bord/bænk)
+- Kapacitet (antal sovepladser)
+- Booking-status og direkte booking-link når tilgængeligt
+- Geografisk lokation (GPS-koordinater)
+- Vejrudsigt for området
+- Google-anmeldelser når der er en kobling til et Google Place
+- Billeder (egne uploads, Google Places, eller bruger-bidragede)
+- Nærliggende shelters indenfor 10 km radius
+
+### By-sider (`/by/{by-slug}`)
+Lokal indgang per dansk by med shelter-fokus. Dækker både shelters inden for byens kommune-grænse og shelters i omegnen (municipality expansion). Hver by har:
+- Hurtigt svar-sektion designet til at blive citeret af LLM'er
+- Editorial intro med lokale POIs og praktiske noter (for prioritetsbyer som Aarhus, København, Odense, Aalborg, Silkeborg, Vejle m.fl.)
+- Interaktiv kort + liste over shelters
+- Faciliteter-statistik (antal med toilet, vand, bookbare, gratis)
+- Lokal FAQ
+- Schema.org TouristDestination strukturdata
+
+### Region-sider (`/danmark/{region}`)
+Oversigtsside per dansk region med:
+- Shelter-statistik for regionen
+- Liste over kommuner i regionen
+- Liste over byer med shelters
+
+### Kommune-sider (`/danmark/{region}/{kommune}`)
+Detaljeret oversigt per kommune. For prioritetsbyer redirecter denne automatisk til den tilsvarende by-side når data dækker (consolidering af autoritet).
+
+### Område-sider (`/omraade/{slug}`)
+Tematiske områder såsom nationalparker, naturparker og særlige landskaber.
+
+### Cross-filter sider
+Kombinerer en facilitet med en region, fx:
+- `/shelter-med-toilet/{region}` — Shelters med toilet i en specifik region
+- `/shelter-med-vand/{region}` — Shelters med adgang til vand
+- `/shelter-med-baalplads/{region}` — Shelters med bålplads
+- `/shelter-med-hund/{region}` — Shelters hvor hunde er tilladt
+- `/shelter-med-strand/{region}` — Shelters tæt på strand
+- `/shelter-med-bruser/{region}` — Shelters med bruser
+- `/shelter-booking/{region}` — Shelters der kan bookes online
+- `/handicapvenlige-shelters/{region}` — Tilgængelige shelters
+
+### Ruteplanner (`/ruteplanner`)
+Foreslåede vandre- og cykelruter med shelters undervejs. Hver rute har:
+- Beskrivelse, distance, sværhedsgrad
+- Liste over shelters langs ruten
+- GPX-eksport til navigation-app
+
+### Blog (`/blog`)
+Redaktionelle artikler om friluftsliv, shelterture, udstyr, sæsoner. Kategoriseret efter emne.
+
+### Guides (`/guides`)
+Praktiske vejledninger (hvordan booker man, hvad pakker man, etc.). Kategoriseret efter emne.
+
+### FAQ + Ordliste
+- `/faq` — Hyppige spørgsmål
+- `/ordliste` — Definitioner af shelter-relaterede begreber
+
+## Datakilder
+
+- **Naturstyrelsen**: Hovedkilde for offentlige shelters, særligt bookbare pladser via udinaturen.dk
+- **GeoFA**: Geografisk dataregister for danske kommuner — bidrager med kommunale shelters
+- **Google Places**: Ratings og anmeldelser når et shelter er koblet til en Google Place
+- **Ejer-registreringer**: Private shelter-ejere kan tilmelde deres pladser via `/registrer-shelter`
+- **Bruger-bidrag**: Billeder, anmeldelser, "tilføj shelter"-forslag fra friluftsfolk
+
+Data opdateres dagligt for de fleste kilder. Hver shelter-side viser "sidst verificeret"-dato.
+
+## Booking-modeller
+
+ShelterDK bruger forskellige booking-modeller per shelter:
+1. **Direct booking**: ShelterDK-platformen — gæsten booker direkte, ejeren godkender
+2. **Naturstyrelsen-redirect**: Vi linker direkte til udinaturen.dk's bookingside
+3. **Ejer-kontakt**: Vi viser ejerens email/telefon, gæsten kontakter direkte
+4. **Først-til-mølle**: Ingen booking nødvendig
+
+## Adgang for AI-agenter
+
+- robots.txt: Tillader alle user-agents at crawle indhold på `/` undtagen `/admin/`, `/api/`, `/embed/`, `/owner/`, `/min-booking/`, `/booking/`, `/book/`
+- Strukturdata: Vi bruger Schema.org markup på alle indholdssider (Campground, TouristDestination, FAQPage, BreadcrumbList, ItemList, SpeakableSpecification, WebPage, Organization, WebSite)
+- Sitemap: `/sitemap.xml` lister ~3.000 URLs (forside, region/kommune/by-sider, individuelle shelters, blog, guides)
+
+## Kontakt
+
+Spørgsmål om indhold, dataanvendelse eller AI-integration: hej@shelterdk.dk

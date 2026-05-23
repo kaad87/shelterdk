@@ -93,6 +93,10 @@ const nextConfig = {
       { source: "/danmark/jylland/ny-hammersholt", destination: "/danmark/jylland", permanent: true },
       { source: "/danmark/jylland/fons", destination: "/danmark/jylland", permanent: true },
       { source: "/danmark/fyn/dybbol", destination: "/danmark/fyn", permanent: true },
+      // /opret-shelter er en ældre intern formular der ikke længere linkes
+      // til fra navigation. /registrer-shelter er den nuværende offentlige
+      // landing page. Konsoliderer eksterne links og bookmarks.
+      { source: "/opret-shelter", destination: "/registrer-shelter", permanent: true },
     ];
   },
   images: {
