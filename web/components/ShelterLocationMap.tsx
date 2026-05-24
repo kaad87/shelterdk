@@ -31,6 +31,20 @@ const LocationMapInner = dynamic(
       return null;
     }
 
+    /**
+     * Annullér pending Leaflet-transitions ved unmount — se kommentar i
+     * ShelterMap.tsx (samme race-condition i alle vores Leaflet-kort).
+     */
+    function MapCleanup() {
+      const map = useMap();
+      useEffect(() => {
+        return () => {
+          try { map.stop(); } catch { /* already destroyed */ }
+        };
+      }, [map]);
+      return null;
+    }
+
     return function Inner({
       lat,
       lon,
@@ -50,6 +64,7 @@ const LocationMapInner = dynamic(
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
+          <MapCleanup />
           <SetView lat={lat} lon={lon} />
           <Marker position={[lat, lon]} icon={icon} />
         </MapContainer>

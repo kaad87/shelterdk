@@ -132,6 +132,36 @@ const MapInner = dynamic(
       return null;
     }
 
+    /**
+     * Annullér Leaflets pending zoom/pan-transitions ved unmount.
+     *
+     * react-leaflet kalder map.remove() når MapContainer unmountes, men
+     * Leaflets zoom-transitions queues via setTimeout — de fyrer altså
+     * efter map er destroyed og rammer:
+     *
+     *   TypeError: Cannot read properties of undefined (reading '_leaflet_pos')
+     *     at e._getMapPanePos
+     *     at e._onZoomTransitionEnd
+     *     [mechanism: auto.browser.browserapierrors.setTimeout]
+     *
+     * map.stop() flusher animations + cancellar pending transitions så
+     * deres callbacks tjekker isAlive før de prøver at læse pane-position.
+     * Fanget via Sentry-issue JAVASCRIPT-2 (24. maj 2026).
+     */
+    function MapCleanup() {
+      const map = useMap();
+      useEffect(() => {
+        return () => {
+          try {
+            map.stop();
+          } catch {
+            // Map kan allerede være destroyed — defensiv no-op.
+          }
+        };
+      }, [map]);
+      return null;
+    }
+
     function BoundsReporter({
       onBoundsChange,
     }: {
@@ -201,6 +231,7 @@ const MapInner = dynamic(
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
+          <MapCleanup />
           <FitBounds items={points} fixedBounds={initialFitBounds} />
           <BoundsReporter onBoundsChange={onBoundsChange} />
           {sheltersWithCoords.map((shelter) => (

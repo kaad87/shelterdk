@@ -67,6 +67,20 @@ interface Props {
   uploadedShelters?: ShelterWithDistance[];
 }
 
+/**
+ * Annullér pending Leaflet-transitions ved unmount — se kommentar i
+ * ShelterMap.tsx (samme race-condition i alle vores Leaflet-kort).
+ */
+function MapCleanup() {
+  const map = useMap();
+  useEffect(() => {
+    return () => {
+      try { map.stop(); } catch { /* already destroyed */ }
+    };
+  }, [map]);
+  return null;
+}
+
 /** Zoom to selected route bounds. */
 function FitBounds({ routeData }: { routeData: CuratedRouteData }) {
   const map = useMap();
@@ -318,6 +332,9 @@ export default function CuratedRoutesMap({
 
         {/* Reset view when deselecting (only when no uploaded route) */}
         <ResetView active={!selectedSlug && !uploadedRoute} />
+
+        {/* Stop pending Leaflet-transitions ved unmount */}
+        <MapCleanup />
       </MapContainer>
 
       {!selectedSlug && !allRouteData && (
