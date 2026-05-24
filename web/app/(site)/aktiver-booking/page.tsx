@@ -4,7 +4,9 @@ import Link from "next/link";
 import { BookingActivationForm } from "@/components/BookingActivationForm";
 
 export const metadata: Metadata = {
-  title: "Aktiver bookingsystem | ShelterDK",
+  // `absolute` så root layout's title-template ikke appender et ekstra
+  // " | ShelterDK"-suffix oveni det vi allerede har skrevet.
+  title: { absolute: "Aktiver bookingsystem | ShelterDK" },
   description:
     "Tilmeld dit shelter til ShelterDKs bookingsystem. Gratis for shelter-ejere — gæsterne booker online, du slipper for dobbeltbookinger og administration.",
   robots: "noindex",

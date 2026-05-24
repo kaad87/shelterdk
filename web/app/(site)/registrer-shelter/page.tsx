@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { RegistrerShelterForm } from "./RegistrerShelterForm";
 
 export const metadata: Metadata = {
-  title: "Registrér dit shelter på ShelterDK",
+  // Plain-string title så root layout's template appender " | ShelterDK".
+  // Vi droppede "på ShelterDK" fra selve titlen for at undgå awkward
+  // "Registrér dit shelter på ShelterDK | ShelterDK"-rendering.
+  title: "Registrér dit shelter",
   description:
     "Er du ejer eller operatør af et shelter? Tilmeld det gratis og nå tusindvis af friluftsentusiaster på Danmarks største shelterguide.",
   robots: { index: true, follow: true },
