@@ -400,7 +400,7 @@ export async function getSheltersPage(
   let { data, error } = await query.range(from, toInclusive);
 
   if (!error && data && useBbox && bbox) {
-    const list: Shelter[] = [];
+    let list: Shelter[] = [];
     for (const row of data as Shelter[]) {
       const coords = getLocationCoords(row);
       if (!coords) continue;
@@ -412,6 +412,9 @@ export async function getSheltersPage(
       ) {
         list.push(row);
       }
+    }
+    if (bookbarFilterActive) {
+      list = list.filter((s) => isStructuredBookable(s));
     }
     list.sort(sortByImageAndScore);
     return { shelters: list, hasMore: false, ...(dateAvailability ? { availabilityMap: dateAvailability.availabilityMap } : {}) };
@@ -524,14 +527,14 @@ export async function getSheltersPage(
           coords.lon <= bbox.maxLon
         );
       });
+      if (bookbarFilterActive) {
+        list = list.filter((s) => isStructuredBookable(s));
+      }
       list.sort(sortByImageAndScore);
       const pruned = prunePlaceOutliersForExactQuery(list, q);
-      const bookbarSlice = bookbarFilterActive
-        ? sliceBookableResults(pruned, page, pageSize)
-        : { shelters: pruned, hasMore: false };
       return {
-        shelters: bookbarSlice.shelters,
-        hasMore: bookbarSlice.hasMore,
+        shelters: pruned,
+        hasMore: false,
         ...(dateAvailability ? { availabilityMap: dateAvailability.availabilityMap } : {}),
       };
     }
