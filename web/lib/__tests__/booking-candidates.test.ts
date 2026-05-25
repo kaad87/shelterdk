@@ -62,6 +62,18 @@ describe("analyzeBookingCandidate", () => {
       expect.arrayContaining(["reservation", "mobilepay"])
     );
   });
+
+  it("tager brede bookingspor med som svagere leads", () => {
+    const candidate = analyzeBookingCandidate(
+      mk({
+        description:
+          "<p>Læs mere om booking og praktisk info på kommunens side.</p>",
+      })
+    );
+
+    expect(candidate).not.toBeNull();
+    expect(candidate?.positiveSignals).toContain("booking");
+  });
 });
 
 describe("inferManualBookingUpdate", () => {

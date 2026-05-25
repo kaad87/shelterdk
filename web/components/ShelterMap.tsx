@@ -226,6 +226,9 @@ const MapInner = dynamic(
           zoom={zoom}
           className={embedMode ? "h-full w-full z-0" : "h-full w-full rounded-xl z-0 min-h-[400px]"}
           scrollWheelZoom
+          zoomAnimation={false}
+          fadeAnimation={false}
+          markerZoomAnimation={false}
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

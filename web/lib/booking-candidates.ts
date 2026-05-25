@@ -27,7 +27,7 @@ export interface BookingCandidate {
   review: BookingCandidateReviewRow | null;
 }
 
-const POSITIVE_PATTERNS: Array<{ label: string; pattern: RegExp }> = [
+const STRONG_POSITIVE_PATTERNS: Array<{ label: string; pattern: RegExp }> = [
   { label: "kan bookes", pattern: /\bkan\s+bookes\b/i },
   { label: "bookes her", pattern: /\bbookes\s+her\b/i },
   { label: "bookes via", pattern: /\bbookes\s+via\b/i },
@@ -41,6 +41,15 @@ const POSITIVE_PATTERNS: Array<{ label: string; pattern: RegExp }> = [
   { label: "naturstyrelsen", pattern: /\bbook\.naturstyrelsen\.dk\b/i },
   { label: "bookenshelter", pattern: /\bbookenshelter\.dk\b/i },
   { label: "shelterbooking", pattern: /\bshelterbooking\b/i },
+];
+
+const WEAK_POSITIVE_PATTERNS: Array<{ label: string; pattern: RegExp }> = [
+  { label: "booking", pattern: /\bbooking\b/i },
+  { label: "book", pattern: /\bbook[a-zæøå-]*\b/i },
+  { label: "bestil", pattern: /\bbestil(?:les|ling)?\b/i },
+  { label: "kontakt for booking", pattern: /\bkontakt\b.{0,40}\bbook[a-zæøå-]*\b/i },
+  { label: "overnatning mod betaling", pattern: /\b(?:overnatning|ophold)\b.{0,40}\bbetal(?:es|ing)?\b/i },
+  { label: "organiserede grupper", pattern: /\borganiserede?\s+grupper\b/i },
 ];
 
 const NEGATIVE_PATTERNS: Array<{ label: string; pattern: RegExp }> = [
@@ -127,23 +136,28 @@ export function analyzeBookingCandidate(shelter: Shelter): BookingCandidate | nu
   const text = stripHtml(descriptionHtml);
   const urls = extractUrls(descriptionHtml);
   const foundBookingUrls = urls.filter(looksLikeBookingUrl);
-  const positiveSignals = POSITIVE_PATTERNS.filter(({ pattern }) => pattern.test(text)).map(({ label }) => label);
+  const strongSignals = STRONG_POSITIVE_PATTERNS.filter(({ pattern }) => pattern.test(text)).map(({ label }) => label);
+  const weakSignals = WEAK_POSITIVE_PATTERNS.filter(({ pattern }) => pattern.test(text)).map(({ label }) => label);
   const negativeSignals = NEGATIVE_PATTERNS.filter(({ pattern }) => pattern.test(text)).map(({ label }) => label);
+  const positiveSignals = [...strongSignals, ...weakSignals];
 
-  const positiveScore = foundBookingUrls.length * 5 + positiveSignals.length * 2;
+  const hasLead = foundBookingUrls.length > 0 || strongSignals.length > 0 || weakSignals.length > 0;
+  if (!hasLead) return null;
+  if (negativeSignals.length > 0 && foundBookingUrls.length === 0 && strongSignals.length === 0) {
+    return null;
+  }
+
+  const positiveScore = foundBookingUrls.length * 6 + strongSignals.length * 3 + weakSignals.length;
   const negativeScore = negativeSignals.length * 4;
   const score = positiveScore - negativeScore;
-
-  const likelyBookable =
-    foundBookingUrls.length > 0 ||
-    (positiveSignals.length > 0 && !(negativeSignals.length > 0 && foundBookingUrls.length === 0));
-
-  if (!likelyBookable) return null;
 
   return {
     shelter,
     score,
-    likelyBookable,
+    likelyBookable:
+      foundBookingUrls.length > 0 ||
+      strongSignals.length > 0 ||
+      (weakSignals.length > 1 && negativeSignals.length === 0),
     suggestedBookingUrl: foundBookingUrls[0] ?? null,
     foundBookingUrls,
     positiveSignals,

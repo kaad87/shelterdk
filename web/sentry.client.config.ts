@@ -54,6 +54,22 @@ if (dsn) {
       // Drop events fra crawlere / bots
       const ua = event.request?.headers?.["user-agent"];
       if (ua && /bot|crawl|spider|google|bing/i.test(ua)) return null;
+
+      // Mobile Safari + Google Tag/GTM kan sporadisk trigge en browser-level
+      // SecurityError om replaceState-rate limits, uden at appen reelt er i et
+      // navigationsloop. Vi filtrerer kun den meget specifikke variant, når
+      // stacken faktisk peger på Google-taggen.
+      const exception = event.exception?.values?.[0];
+      const isHistoryRateLimitError =
+        exception?.type === "SecurityError" &&
+        exception.value?.includes("history.replaceState() more than 100 times per 10 seconds");
+      const hasGoogleTagFrame = exception?.stacktrace?.frames?.some((frame) =>
+        /gtag\/js|googletagmanager|google-analytics/i.test(
+          `${frame.filename ?? ""} ${frame.module ?? ""}`
+        )
+      );
+      if (isHistoryRateLimitError && hasGoogleTagFrame) return null;
+
       return event;
     },
   });
