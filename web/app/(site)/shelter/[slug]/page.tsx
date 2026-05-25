@@ -79,7 +79,11 @@ function getCanonicalShelterPath(shelter: Shelter, slug: string): string {
       ? String(shelter.kommune).trim()
       : null;
 
-  if (!region) return `/shelter/${slug}`;
+  // Behold /shelter/[slug] som canonical hvis region er tom ELLER er den
+  // generiske "Danmark"-værdi. "Danmark" som region gav tidligere grimme
+  // URL'er som /danmark/danmark/ukendt-kommune/X — manglet specificitet
+  // svarer reelt til ingen region for canonical-formål.
+  if (!region || region.toLowerCase() === "danmark") return `/shelter/${slug}`;
 
   const regionSlug = slugifySegment(region);
   const municipalitySlug = kommune ? slugifySegment(kommune) : NO_KOMMUNE_SLUG;
