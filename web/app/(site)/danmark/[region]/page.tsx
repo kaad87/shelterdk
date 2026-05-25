@@ -23,7 +23,6 @@ interface PageProps {
   searchParams: Promise<{
     q?: string;
     view?: string;
-    billede?: string;
     anmeldelser?: string;
     bookbar?: string;
     vand?: string;
@@ -59,7 +58,7 @@ function resolveCanonicalRegionSlug(regionName: string, fallbackSlug: string): s
 
 function parseFilters(params: Awaited<PageProps["searchParams"]>): SoegFilters {
   const filters: SoegFilters = {};
-  if (params.billede === "1") filters.billede = true;
+  // `billede` parses bevidst IKKE — chip'en er fjernet.
   if (params.anmeldelser === "1") filters.anmeldelser = true;
   if (params.bookbar === "1") filters.bookbar = true;
   if (params.vand === "1") filters.vand = true;

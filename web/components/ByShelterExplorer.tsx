@@ -34,7 +34,7 @@ type SortMode = "standard" | "rating" | "reviews";
 // chip'en er fjernet fra FILTER_OPTIONS. At have den her ville få
 // activeFilterCount til at tælle et usynligt filter.
 const FILTER_KEYS: (keyof SoegFilters)[] = [
-  "billede", "anmeldelser", "bookbar", "vand", "toilet", "hund",
+  "anmeldelser", "bookbar", "vand", "toilet", "hund",
   "baalplads", "bord_baenk", "strand", "bruser", "handicap",
 ];
 
@@ -53,7 +53,6 @@ const FILTER_OPTIONS: {
   { key: "bruser", label: "Bruser/bad", icon: <ShowerHead size={15} /> },
   { key: "handicap", label: "Handicapegnet", icon: <Accessibility size={15} /> },
   { key: "bord_baenk", label: "Bord/bænke", icon: <Armchair size={15} /> },
-  { key: "billede", label: "Med billede", icon: <ImageIcon size={15} /> },
   { key: "anmeldelser", label: "Anmeldelser", icon: <Star size={15} /> },
 ];
 
@@ -74,7 +73,6 @@ function isTruthyJa(value: unknown): boolean {
 }
 
 function matchesFilters(shelter: Shelter, filters: SoegFilters): boolean {
-  if (filters.billede && !hasAnyImage(shelter)) return false;
   if (filters.anmeldelser && !((shelter.google_user_ratings_total ?? 0) > 0)) return false;
   if (filters.bookbar && !isBookable(shelter)) return false;
   if (filters.vand && getWater(shelter) !== true) return false;

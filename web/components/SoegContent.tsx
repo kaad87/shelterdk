@@ -15,7 +15,7 @@ import { getLocationCoords } from "@/lib/shelter-detail";
 // ignorerer den, så den må heller ikke deltage i activeFilterCount eller
 // re-serialiseres fra URLSearchParams her.
 const FILTER_KEYS: (keyof SoegFilters)[] = [
-  "billede", "anmeldelser", "bookbar", "vand", "toilet", "hund",
+  "anmeldelser", "bookbar", "vand", "toilet", "hund",
   "baalplads", "bord_baenk", "strand", "bruser", "handicap",
 ];
 

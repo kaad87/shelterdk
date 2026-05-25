@@ -35,7 +35,6 @@ export interface SoegPageResult {
 }
 
 export interface SoegFilters {
-  billede?: boolean;
   anmeldelser?: boolean;
   bookbar?: boolean;
   vand?: boolean;
@@ -349,9 +348,6 @@ export async function getSheltersPage(
       query = query.or(orPartsArr.join(","));
     }
   }
-  if (filters?.billede) {
-    query = query.not("image_url", "is", null).neq("image_url", "");
-  }
   if (filters?.anmeldelser) {
     query = query.not("google_user_ratings_total", "is", null).gt("google_user_ratings_total", 0);
   }
@@ -480,9 +476,6 @@ export async function getSheltersPage(
         }
       }
       fallbackQuery = fallbackQuery.or(fbOrPartsArr.join(","));
-    }
-    if (filters?.billede) {
-      fallbackQuery = fallbackQuery.not("image_url", "is", null).neq("image_url", "");
     }
     if (filters?.anmeldelser) {
       fallbackQuery = fallbackQuery.not("google_user_ratings_total", "is", null).gt("google_user_ratings_total", 0);

@@ -110,10 +110,9 @@ describe("GET /api/soeg", () => {
   });
 
   it("sender filtre til getSheltersPage", async () => {
-    const req = mockRequest("http://localhost/api/soeg?billede=1&anmeldelser=1&bookbar=1");
+    const req = mockRequest("http://localhost/api/soeg?anmeldelser=1&bookbar=1");
     await GET(req);
     expect(mockGetSheltersPage).toHaveBeenCalledWith(null, null, 1, 24, {
-      billede: true,
       anmeldelser: true,
       bookbar: true,
     }, undefined, null, undefined);

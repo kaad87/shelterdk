@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Accessibility,
   Armchair,
+  CalendarCheck,
   CalendarDays,
   ChevronDown,
   Clock,
@@ -12,7 +13,6 @@ import {
   Droplets,
   Flame,
   Gift,
-  Image as ImageIcon,
   LayoutGrid,
   List,
   Map,
@@ -20,8 +20,8 @@ import {
   Navigation2,
   Search,
   ShowerHead,
+  SlidersHorizontal,
   Star,
-  CheckCircle,
   Tent,
   TreePine,
   TrendingUp,
@@ -30,6 +30,28 @@ import {
   X,
   ArrowRight,
 } from "lucide-react";
+
+/** Inline toilet/WC icon — lucide v0.294 has no Toilet icon. */
+function ToiletIcon({ size = 15, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <path d="M5 3h14v6a5 5 0 0 1-5 5h-4a5 5 0 0 1-5-5V3z" />
+      <path d="M9 14v2l-2 5h10l-2-5v-2" />
+    </svg>
+  );
+}
 import type { SoegFilters, SearchSuggestion } from "@/lib/soeg-db";
 import { slugifySegment } from "@/lib/slug";
 import { normalizeRegionFilter } from "@/lib/soeg-filters";
@@ -47,24 +69,28 @@ const REGIONS = [
 
 type ViewMode = "list" | "map" | "split";
 
-const FILTER_OPTIONS: {
+type FilterOption = {
   key: keyof SoegFilters;
   label: string;
   icon: React.ReactNode;
-}[] = [
-  { key: "toilet", label: "Toilet", icon: <Droplets size={15} /> },
-  { key: "baalplads", label: "Bålplads", icon: <Flame size={15} /> },
-  { key: "bookbar", label: "Bookbar", icon: <CheckCircle size={15} /> },
-  // "Gratis"-filter er fjernet bevidst — payment-data er for upålideligt.
-  // Bring tilbage når data-kvaliteten er bedre.
-  { key: "vand", label: "Vand", icon: <Droplets size={15} /> },
-  { key: "hund", label: "Hund tilladt", icon: <Dog size={15} /> },
-  { key: "strand", label: "Strand", icon: <Umbrella size={15} /> },
-  { key: "bruser", label: "Bruser/bad", icon: <ShowerHead size={15} /> },
-  { key: "handicap", label: "Handicapegnet", icon: <Accessibility size={15} /> },
-  { key: "bord_baenk", label: "Bord/bænke", icon: <Armchair size={15} /> },
-  { key: "billede", label: "Med billede", icon: <ImageIcon size={15} /> },
-  { key: "anmeldelser", label: "Anmeldelser", icon: <Star size={15} /> },
+  /** "Primær" = vises altid på mobil (uden bottom-sheet) */
+  group: "primaer" | "faciliteter" | "kvalitet";
+};
+
+const FILTER_OPTIONS: FilterOption[] = [
+  // Primære (afgørende beslutninger)
+  { key: "bookbar", label: "Bookbar", icon: <CalendarCheck size={15} />, group: "primaer" },
+  // Faciliteter
+  { key: "toilet", label: "Toilet", icon: <ToiletIcon size={15} />, group: "faciliteter" },
+  { key: "vand", label: "Vand", icon: <Droplets size={15} />, group: "faciliteter" },
+  { key: "baalplads", label: "Bålplads", icon: <Flame size={15} />, group: "faciliteter" },
+  { key: "hund", label: "Hund tilladt", icon: <Dog size={15} />, group: "faciliteter" },
+  { key: "strand", label: "Strand", icon: <Umbrella size={15} />, group: "faciliteter" },
+  { key: "bruser", label: "Bruser/bad", icon: <ShowerHead size={15} />, group: "faciliteter" },
+  { key: "handicap", label: "Handicapegnet", icon: <Accessibility size={15} />, group: "faciliteter" },
+  { key: "bord_baenk", label: "Bord/bænke", icon: <Armchair size={15} />, group: "faciliteter" },
+  // Kvalitet
+  { key: "anmeldelser", label: "Anmeldelser", icon: <Star size={15} />, group: "kvalitet" },
 ];
 
 function SuggestionIcon({ type }: { type: SearchSuggestion["type"] }) {
@@ -134,6 +160,7 @@ export function SearchBar({
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [pendingDate, setPendingDate] = useState<string>("");
   const [pendingDateTo, setPendingDateTo] = useState<string>("");
+  const [pendingConfirmedAvailable, setPendingConfirmedAvailable] = useState<boolean>(false);
   const [isSunday, setIsSunday] = useState(false);
   const [todayStr, setTodayStr] = useState("");
   const datePickerRef = useRef<HTMLDivElement>(null);
@@ -147,7 +174,7 @@ export function SearchBar({
   useEffect(() => {
     setFilters(initialFilters);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialFilters.billede, initialFilters.anmeldelser, initialFilters.bookbar, initialFilters.vand, initialFilters.toilet, initialFilters.hund, initialFilters.baalplads, initialFilters.bord_baenk, initialFilters.strand, initialFilters.bruser, initialFilters.handicap, initialFilters.min_pladser, initialFilters.date, initialFilters.date_to, initialFilters.confirmed_available]);
+  }, [initialFilters.anmeldelser, initialFilters.bookbar, initialFilters.vand, initialFilters.toilet, initialFilters.hund, initialFilters.baalplads, initialFilters.bord_baenk, initialFilters.strand, initialFilters.bruser, initialFilters.handicap, initialFilters.min_pladser, initialFilters.date, initialFilters.date_to, initialFilters.confirmed_available]);
 
   const resolveBasePath = useCallback(
     (targetRegion: string) => {
@@ -176,7 +203,6 @@ export function SearchBar({
       if (q.trim()) params.set("q", q.trim());
       if (v) params.set("view", v);
       const active = f ?? filters;
-      if (active.billede) params.set("billede", "1");
       if (active.anmeldelser) params.set("anmeldelser", "1");
       if (active.bookbar) params.set("bookbar", "1");
       if (active.vand) params.set("vand", "1");
@@ -296,6 +322,8 @@ export function SearchBar({
   );
 
   const activeFilterCount = FILTER_OPTIONS.filter(({ key }) => filters[key]).length + (filters.date ? 1 : 0);
+  const totalActiveFilters =
+    activeFilterCount + (filters.min_pladser && filters.min_pladser > 0 ? 1 : 0);
 
   // Detect today's local date and day-of-week on mount (avoids SSR/client mismatch)
   useEffect(() => {
@@ -322,8 +350,9 @@ export function SearchBar({
     if (datePickerOpen) {
       setPendingDate(filters.date ?? "");
       setPendingDateTo(filters.date_to ?? "");
+      setPendingConfirmedAvailable(Boolean(filters.confirmed_available));
     }
-  }, [datePickerOpen, filters.date, filters.date_to]);
+  }, [datePickerOpen, filters.date, filters.date_to, filters.confirmed_available]);
 
   function formatShortDate(iso: string): string {
     const d = new Date(iso + "T12:00:00");
@@ -353,10 +382,13 @@ export function SearchBar({
   }
 
   function applyDateFilter(date: string, dateTo: string) {
+    const hasDate = Boolean(date);
     const next: SoegFilters = {
       ...filters,
       date: date || undefined,
       date_to: (dateTo && dateTo >= date) ? dateTo : undefined,
+      // confirmed_available kræver en dato; ryd hvis dato fjernes
+      confirmed_available: hasDate && pendingConfirmedAvailable ? true : undefined,
     };
     setFilters(next);
     setDatePickerOpen(false);
@@ -365,10 +397,16 @@ export function SearchBar({
   }
 
   function clearDateFilter() {
-    const next: SoegFilters = { ...filters, date: undefined, date_to: undefined };
+    const next: SoegFilters = {
+      ...filters,
+      date: undefined,
+      date_to: undefined,
+      confirmed_available: undefined,
+    };
     setFilters(next);
     setPendingDate("");
     setPendingDateTo("");
+    setPendingConfirmedAvailable(false);
     setDatePickerOpen(false);
     const url = buildSoegUrl(region, query, mode === "search" ? view : "split", next, resolveBasePath(region));
     router.push(url, { scroll: false });
@@ -573,6 +611,23 @@ export function SearchBar({
       {/* Filter chips — shown on search page */}
       {mode === "search" && (
         <div className="space-y-2">
+          {/* Header med aktiv count + Ryd */}
+          <div className="flex items-center justify-between min-h-[20px]">
+            <div className="text-[11px] uppercase tracking-[0.06em] font-semibold text-primary/45">
+              Filtre
+            </div>
+            {totalActiveFilters > 0 && (
+              <button
+                type="button"
+                onClick={clearAllFilters}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium text-primary/65 hover:text-primary hover:bg-primary/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+                aria-label="Ryd alle filtre"
+              >
+                <X size={12} />
+                {totalActiveFilters} aktiv{totalActiveFilters === 1 ? "" : "e"} · Ryd
+              </button>
+            )}
+          </div>
           <div className="flex md:flex-wrap items-center gap-2 overflow-x-auto md:overflow-x-visible scrollbar-hide flex-nowrap" role="group" aria-label="Filtrer efter faciliteter">
             {FILTER_OPTIONS.map(({ key, label, icon }) => {
               const active = Boolean(filters[key]);
@@ -583,12 +638,12 @@ export function SearchBar({
                   onClick={() => toggleFilter(key)}
                   className={`flex items-center gap-1.5 px-3 py-1.5 md:px-3.5 md:py-2 rounded-full text-[13px] md:text-sm font-medium whitespace-nowrap shrink-0 transition-all duration-200 touch-manipulation border ${
                     active
-                      ? "bg-primary text-white border-primary shadow-sm"
+                      ? "bg-primary/10 text-primary border-primary/40"
                       : "bg-white text-primary/70 border-primary/15 hover:border-primary/30 hover:text-primary hover:shadow-sm"
                   } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2`}
                   aria-pressed={active}
                 >
-                  <span className={active ? "text-white" : "text-primary/50"}>{icon}</span>
+                  <span className={active ? "text-primary" : "text-primary/50"}>{icon}</span>
                   {label}
                 </button>
               );
@@ -621,15 +676,15 @@ export function SearchBar({
               <button
                 type="button"
                 onClick={() => setDatePickerOpen((o) => !o)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[13px] font-medium whitespace-nowrap transition-all touch-manipulation ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 md:px-3.5 md:py-2 rounded-full border text-[13px] md:text-sm font-medium whitespace-nowrap transition-all touch-manipulation ${
                   filters.date
-                    ? "bg-primary text-white border-primary shadow-sm"
+                    ? "bg-primary/10 text-primary border-primary/40"
                     : "bg-white text-primary/70 border-primary/15 hover:border-primary/30 hover:text-primary"
                 } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50`}
                 aria-expanded={datePickerOpen}
                 aria-haspopup="dialog"
               >
-                <CalendarDays size={14} className="shrink-0" />
+                <CalendarDays size={14} className={filters.date ? "text-primary shrink-0" : "text-primary/50 shrink-0"} />
                 {getDateLabel()}
                 {filters.date && (
                   <span
@@ -637,7 +692,7 @@ export function SearchBar({
                     tabIndex={0}
                     onClick={(e) => { e.stopPropagation(); clearDateFilter(); }}
                     onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); clearDateFilter(); } }}
-                    className="ml-0.5 text-white/80 hover:text-white cursor-pointer"
+                    className="ml-0.5 text-primary/55 hover:text-primary cursor-pointer"
                     aria-label="Fjern datofilter"
                   >
                     <X size={12} />
@@ -685,7 +740,7 @@ export function SearchBar({
                   </div>
 
                   {/* Hurtige genveje */}
-                  <div className="flex gap-2 mb-4">
+                  <div className="flex gap-2 mb-3">
                     {[1, 2].map((weeksAhead) => {
                       const { sat, sun } = getNextWeekendDates(weeksAhead);
                         const label = weeksAhead === 1
@@ -699,7 +754,7 @@ export function SearchBar({
                           onClick={() => { setPendingDate(sat); setPendingDateTo(sun); }}
                           className={`flex-1 text-xs font-medium rounded-lg px-2 py-1.5 border transition-colors ${
                             isActive
-                              ? "bg-primary text-white border-primary"
+                              ? "bg-primary/10 text-primary border-primary/40"
                               : "border-primary/15 text-primary/70 hover:border-primary/30 hover:text-primary"
                           }`}
                         >
@@ -708,6 +763,23 @@ export function SearchBar({
                       );
                     })}
                   </div>
+
+                  {/* Kun bekræftet ledig — toggle */}
+                  <label className="flex items-start gap-2.5 mb-3 rounded-lg border border-primary/10 bg-primary/[0.02] px-3 py-2.5 cursor-pointer hover:bg-primary/5 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={pendingConfirmedAvailable}
+                      onChange={(e) => setPendingConfirmedAvailable(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 rounded border-primary/30 text-accent-dark focus:ring-accent/40 cursor-pointer"
+                      aria-describedby="confirmed-available-desc"
+                    />
+                    <span className="flex-1 text-xs leading-snug">
+                      <span className="font-semibold text-primary block">Kun bekræftet ledig</span>
+                      <span id="confirmed-available-desc" className="text-primary/55">
+                        Vis kun shelters med live ledighedsdata, der ikke er optaget i perioden.
+                      </span>
+                    </span>
+                  </label>
 
                   {/* Handlingsknapper */}
                   <div className="flex gap-2">
@@ -732,17 +804,6 @@ export function SearchBar({
               )}
             </div>
 
-            {(activeFilterCount > 0 || (filters.min_pladser && filters.min_pladser > 0)) && (
-              <button
-                type="button"
-                onClick={clearAllFilters}
-                className="flex items-center gap-1 px-3 py-1.5 md:py-2 rounded-full text-[13px] md:text-sm font-medium text-primary/60 hover:text-primary hover:bg-primary/5 whitespace-nowrap shrink-0 transition-colors touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2"
-                aria-label="Ryd alle filtre"
-              >
-                <X size={14} />
-                Ryd filtre
-              </button>
-            )}
           </div>
         </div>
       )}

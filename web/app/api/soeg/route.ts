@@ -14,7 +14,7 @@ function parseNum(s: string | null): number | null {
 }
 
 /**
- * GET /api/soeg?page=2&region=...&q=...&billede=1&anmeldelser=1&bookbar=1
+ * GET /api/soeg?page=2&region=...&q=...&anmeldelser=1&bookbar=1
  * Eller med kort-bbox: minLat=&maxLat=&minLon=&maxLon= (finder shelters i det synlige område).
  */
 export async function GET(request: NextRequest) {
@@ -24,7 +24,8 @@ export async function GET(request: NextRequest) {
   const q = searchParams.get("q")?.trim() ?? null;
   const area = searchParams.get("area")?.trim() ?? null;
   const filters: SoegFilters = {};
-  if (searchParams.get("billede") === "1") filters.billede = true;
+  // `billede` parses bevidst IKKE — chip'en er fjernet (næsten alle shelters
+  // har et billede så filteret havde ingen effekt).
   if (searchParams.get("anmeldelser") === "1") filters.anmeldelser = true;
   if (searchParams.get("bookbar") === "1") filters.bookbar = true;
   if (searchParams.get("vand") === "1") filters.vand = true;

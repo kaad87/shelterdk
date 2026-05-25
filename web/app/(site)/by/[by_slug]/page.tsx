@@ -29,7 +29,6 @@ interface PageProps {
   params: Promise<{ by_slug: string }>;
   searchParams: Promise<{
     view?: string;
-    billede?: string;
     anmeldelser?: string;
     bookbar?: string;
     vand?: string;
@@ -53,7 +52,7 @@ type ViewMode = "list" | "map" | "split";
 
 function parseFilters(params: Awaited<PageProps["searchParams"]>): SoegFilters {
   const filters: SoegFilters = {};
-  if (params.billede === "1") filters.billede = true;
+  // `billede` parses bevidst IKKE — chip'en er fjernet.
   if (params.anmeldelser === "1") filters.anmeldelser = true;
   if (params.bookbar === "1") filters.bookbar = true;
   if (params.vand === "1") filters.vand = true;

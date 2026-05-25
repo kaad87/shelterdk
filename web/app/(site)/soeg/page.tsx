@@ -92,12 +92,12 @@ export async function generateMetadata(props: {
 type ViewMode = "list" | "map" | "split";
 
 interface SoegPageProps {
-  searchParams: Promise<{ region?: string; q?: string; view?: string; area?: string; billede?: string; anmeldelser?: string; bookbar?: string; vand?: string; toilet?: string; hund?: string; baalplads?: string; gratis?: string; handicap?: string; bord_baenk?: string; strand?: string; bruser?: string; min_pladser?: string; date?: string; date_to?: string; confirmed_available?: string }>;
+  searchParams: Promise<{ region?: string; q?: string; view?: string; area?: string; anmeldelser?: string; bookbar?: string; vand?: string; toilet?: string; hund?: string; baalplads?: string; gratis?: string; handicap?: string; bord_baenk?: string; strand?: string; bruser?: string; min_pladser?: string; date?: string; date_to?: string; confirmed_available?: string }>;
 }
 
 function parseFilters(params: SoegPageProps["searchParams"] extends Promise<infer P> ? P : never) {
   const filters: SoegFilters = {};
-  if (params.billede === "1") filters.billede = true;
+  // `billede` parses bevidst IKKE — chip'en er fjernet.
   if (params.anmeldelser === "1") filters.anmeldelser = true;
   if (params.bookbar === "1") filters.bookbar = true;
   if (params.vand === "1") filters.vand = true;
