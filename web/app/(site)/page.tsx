@@ -29,6 +29,7 @@ const FRONT_PAGE_MAP_SHELTER_LIMIT = 40; // antal shelters til initiale pins på
 /** Udvalgte shelters på forsiden (i denne rækkefølge). */
 const FEATURED_SHELTER_SLUGS = [
   "shelterplads-ved-solvognens-fundsted-11573",
+  "shelter-pa-syddjursland-metholm",
   "shelter-og-stjernekiggertarn-ved-slaggardbanke-97136",
   "shelter-i-true-skov-10055",
   "logismose-10073",

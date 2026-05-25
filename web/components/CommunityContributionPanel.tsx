@@ -69,13 +69,37 @@ export function CommunityContributionPanel({
 
   useEffect(() => {
     let mounted = true;
-    const supabase = createBrowserSupabaseClient();
+    let unsubscribe: (() => void) | null = null;
     setLoadingAuth(true);
-    supabase.auth
-      .getSession()
-      .then(({ data }) => {
-        if (!mounted) return;
-        const session = data.session;
+    try {
+      const supabase = createBrowserSupabaseClient();
+      supabase.auth
+        .getSession()
+        .then(({ data }) => {
+          if (!mounted) return;
+          const session = data.session;
+          setAuth({
+            accessToken: session?.access_token ?? null,
+            userEmail: session?.user?.email ?? null,
+            userName:
+              (session?.user?.user_metadata?.full_name as string | undefined) ??
+              (session?.user?.user_metadata?.name as string | undefined) ??
+              null,
+          });
+        })
+        .catch(() => {
+          if (!mounted) return;
+          setAuth({
+            accessToken: null,
+            userEmail: null,
+            userName: null,
+          });
+        })
+        .finally(() => mounted && setLoadingAuth(false));
+
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((_event, session) => {
         setAuth({
           accessToken: session?.access_token ?? null,
           userEmail: session?.user?.email ?? null,
@@ -84,25 +108,22 @@ export function CommunityContributionPanel({
             (session?.user?.user_metadata?.name as string | undefined) ??
             null,
         });
-      })
-      .finally(() => mounted && setLoadingAuth(false));
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setAuth({
-        accessToken: session?.access_token ?? null,
-        userEmail: session?.user?.email ?? null,
-        userName:
-          (session?.user?.user_metadata?.full_name as string | undefined) ??
-          (session?.user?.user_metadata?.name as string | undefined) ??
-          null,
       });
-    });
+      unsubscribe = () => subscription.unsubscribe();
+    } catch {
+      if (mounted) {
+        setAuth({
+          accessToken: null,
+          userEmail: null,
+          userName: null,
+        });
+        setLoadingAuth(false);
+      }
+    }
 
     return () => {
       mounted = false;
-      subscription.unsubscribe();
+      unsubscribe?.();
     };
   }, []);
 
