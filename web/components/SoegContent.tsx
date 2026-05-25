@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { List, LayoutGrid, MapPin } from "lucide-react";
+import { ArrowUpDown, ChevronDown, List, LayoutGrid, MapPin } from "lucide-react";
 import { SearchBar } from "@/components/SearchBar";
 import { ShelterCard } from "@/components/ShelterCard";
 import { ShelterMap, type MapBounds } from "@/components/ShelterMap";
@@ -36,6 +36,36 @@ function parseFiltersFromParams(sp: URLSearchParams): SoegFilters {
 
 type ViewMode = "list" | "map" | "split";
 type SortMode = "standard" | "rating" | "reviews";
+
+const SORT_LABELS: Record<SortMode, string> = {
+  standard: "Anbefalede",
+  rating: "Bedst bedømt",
+  reviews: "Flest anmeldelser",
+};
+
+/** Tydeligere sort-knap end et nøgent <select>. Native select bevares for a11y. */
+function SortSelect({ value, onChange }: { value: SortMode; onChange: (mode: SortMode) => void }) {
+  return (
+    <label className="relative inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-white pl-3 pr-7 py-1.5 md:py-2 text-sm hover:border-primary/40 transition-colors focus-within:ring-2 focus-within:ring-accent/50 cursor-pointer">
+      <ArrowUpDown size={14} className="text-primary/55 shrink-0" aria-hidden />
+      <span className="text-primary/65 font-medium hidden sm:inline">Sortér:</span>
+      <span className="font-semibold text-primary">{SORT_LABELS[value]}</span>
+      <ChevronDown size={14} className="text-primary/55 absolute right-2.5 pointer-events-none" aria-hidden />
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value as SortMode)}
+        aria-label="Sortér shelters"
+        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+      >
+        {(Object.entries(SORT_LABELS) as [SortMode, string][]).map(([k, label]) => (
+          <option key={k} value={k}>
+            {label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
 
 function FloatingViewToggle({
   view,
@@ -491,16 +521,7 @@ export function SoegContent({
                   ? `Shelters ${initialRegion?.trim() ? `${prepositionForRegionName(initialRegion)} ${initialRegion.trim()}` : "i Danmark"} · scroll for flere`
                   : `${visibleShelters.length} shelter${visibleShelters.length !== 1 ? "s" : ""} ${initialRegion?.trim() ? `${prepositionForRegionName(initialRegion)} ${initialRegion.trim()}` : "i Danmark"}`}
             </p>
-            <select
-              value={sortMode}
-              onChange={(e) => setSortMode(e.target.value as SortMode)}
-              aria-label="Sortér shelters"
-              className="text-sm border border-primary/20 rounded-lg px-2 py-1 bg-white text-primary/80 focus:outline-none focus:ring-1 focus:ring-accent"
-            >
-              <option value="standard">Standard</option>
-              <option value="rating">Bedst bedømt</option>
-              <option value="reviews">Flest anmeldelser</option>
-            </select>
+            <SortSelect value={sortMode} onChange={setSortMode} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6">
               {sortedShelters.slice(0, listDisplayCount).map((shelter) => (
@@ -552,16 +573,7 @@ export function SoegContent({
               Viser {shelters.length} shelter{shelters.length !== 1 ? "s" : ""}
               {hasMore && " (scroll for at indlæse flere)"}
             </p>
-            <select
-              value={sortMode}
-              onChange={(e) => setSortMode(e.target.value as SortMode)}
-              aria-label="Sortér shelters"
-              className="text-sm border border-primary/20 rounded-lg px-2 py-1 bg-white text-primary/80 focus:outline-none focus:ring-1 focus:ring-accent"
-            >
-              <option value="standard">Standard</option>
-              <option value="rating">Bedst bedømt</option>
-              <option value="reviews">Flest anmeldelser</option>
-            </select>
+            <SortSelect value={sortMode} onChange={setSortMode} />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {sortedAllShelters.map((shelter) => (
