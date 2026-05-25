@@ -3,15 +3,9 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  Accessibility,
-  Armchair,
-  CalendarCheck,
   CalendarDays,
   ChevronDown,
   Clock,
-  Dog,
-  Droplets,
-  Flame,
   Gift,
   LayoutGrid,
   List,
@@ -19,39 +13,16 @@ import {
   MapPin,
   Navigation2,
   Search,
-  ShowerHead,
   SlidersHorizontal,
-  Star,
   Tent,
   TreePine,
   TrendingUp,
-  Umbrella,
   Users,
   X,
   ArrowRight,
 } from "lucide-react";
-
-/** Inline toilet/WC icon — lucide v0.294 has no Toilet icon. */
-function ToiletIcon({ size = 15, className = "" }: { size?: number; className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden
-    >
-      <path d="M5 3h14v6a5 5 0 0 1-5 5h-4a5 5 0 0 1-5-5V3z" />
-      <path d="M9 14v2l-2 5h10l-2-5v-2" />
-    </svg>
-  );
-}
+import { FILTER_OPTIONS, PRIMARY_FILTER_KEYS } from "@/lib/soeg-filter-options";
+import { SoegFilterBottomSheet } from "@/components/SoegFilterBottomSheet";
 import type { SoegFilters, SearchSuggestion } from "@/lib/soeg-db";
 import { slugifySegment } from "@/lib/slug";
 import { normalizeRegionFilter } from "@/lib/soeg-filters";
@@ -69,29 +40,6 @@ const REGIONS = [
 
 type ViewMode = "list" | "map" | "split";
 
-type FilterOption = {
-  key: keyof SoegFilters;
-  label: string;
-  icon: React.ReactNode;
-  /** "Primær" = vises altid på mobil (uden bottom-sheet) */
-  group: "primaer" | "faciliteter" | "kvalitet";
-};
-
-const FILTER_OPTIONS: FilterOption[] = [
-  // Primære (afgørende beslutninger)
-  { key: "bookbar", label: "Bookbar", icon: <CalendarCheck size={15} />, group: "primaer" },
-  // Faciliteter
-  { key: "toilet", label: "Toilet", icon: <ToiletIcon size={15} />, group: "faciliteter" },
-  { key: "vand", label: "Vand", icon: <Droplets size={15} />, group: "faciliteter" },
-  { key: "baalplads", label: "Bålplads", icon: <Flame size={15} />, group: "faciliteter" },
-  { key: "hund", label: "Hund tilladt", icon: <Dog size={15} />, group: "faciliteter" },
-  { key: "strand", label: "Strand", icon: <Umbrella size={15} />, group: "faciliteter" },
-  { key: "bruser", label: "Bruser/bad", icon: <ShowerHead size={15} />, group: "faciliteter" },
-  { key: "handicap", label: "Handicapegnet", icon: <Accessibility size={15} />, group: "faciliteter" },
-  { key: "bord_baenk", label: "Bord/bænke", icon: <Armchair size={15} />, group: "faciliteter" },
-  // Kvalitet
-  { key: "anmeldelser", label: "Anmeldelser", icon: <Star size={15} />, group: "kvalitet" },
-];
 
 function SuggestionIcon({ type }: { type: SearchSuggestion["type"] }) {
   const cls = "w-4 h-4 shrink-0";
@@ -158,6 +106,7 @@ export function SearchBar({
   const [filters, setFilters] = useState<SoegFilters>(() => initialFilters);
   const [suggestIndex, setSuggestIndex] = useState(-1);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const [pendingDate, setPendingDate] = useState<string>("");
   const [pendingDateTo, setPendingDateTo] = useState<string>("");
   const [pendingConfirmedAvailable, setPendingConfirmedAvailable] = useState<boolean>(false);
@@ -321,9 +270,26 @@ export function SearchBar({
     [filters, region, query, view, mode, buildSoegUrl, router, resolveBasePath]
   );
 
+  const setMinPladser = useCallback(
+    (value: number | undefined) => {
+      const next = { ...filters, min_pladser: value && value > 0 ? value : undefined };
+      setFilters(next);
+      const url = resolveBasePath(region)
+        ? buildSoegUrl(region, query, mode === "search" ? view : "split", next, resolveBasePath(region))
+        : buildSoegUrl(region, query, mode === "search" ? view : "split", next);
+      router.push(url, { scroll: false });
+    },
+    [filters, region, query, view, mode, buildSoegUrl, router, resolveBasePath]
+  );
+
   const activeFilterCount = FILTER_OPTIONS.filter(({ key }) => filters[key]).length + (filters.date ? 1 : 0);
   const totalActiveFilters =
     activeFilterCount + (filters.min_pladser && filters.min_pladser > 0 ? 1 : 0);
+  // Count for "Filtre"-knap på mobil — alt der ligger i bottom-sheet
+  // (faciliteter/kvalitet + min_pladser), uden bookbar og dato (vises som chips).
+  const facilityActiveCount =
+    FILTER_OPTIONS.filter(({ key, group }) => group !== "primaer" && filters[key]).length +
+    (filters.min_pladser && filters.min_pladser > 0 ? 1 : 0);
 
   // Detect today's local date and day-of-week on mount (avoids SSR/client mismatch)
   useEffect(() => {
@@ -629,14 +595,15 @@ export function SearchBar({
             )}
           </div>
           <div className="flex md:flex-wrap items-center gap-2 overflow-x-auto md:overflow-x-visible scrollbar-hide flex-nowrap" role="group" aria-label="Filtrer efter faciliteter">
-            {FILTER_OPTIONS.map(({ key, label, icon }) => {
+            {/* Primære chips (vises altid) */}
+            {FILTER_OPTIONS.filter((o) => PRIMARY_FILTER_KEYS.has(o.key)).map(({ key, label, icon }) => {
               const active = Boolean(filters[key]);
               return (
                 <button
                   key={key}
                   type="button"
                   onClick={() => toggleFilter(key)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 md:px-3.5 md:py-2 rounded-full text-[13px] md:text-sm font-medium whitespace-nowrap shrink-0 transition-all duration-200 touch-manipulation border ${
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 md:px-3.5 md:py-2 rounded-full text-[13px] md:text-sm font-medium whitespace-nowrap shrink-0 transition-all duration-200 touch-manipulation border ${
                     active
                       ? "bg-primary/10 text-primary border-primary/40"
                       : "bg-white text-primary/70 border-primary/15 hover:border-primary/30 hover:text-primary hover:shadow-sm"
@@ -648,30 +615,8 @@ export function SearchBar({
                 </button>
               );
             })}
-            {/* Min. pladser input */}
-            <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-primary/15 bg-white text-sm">
-              <Users size={15} className="text-primary/50 shrink-0" />
-              <span className="text-primary/70 whitespace-nowrap">Min.</span>
-              <input
-                type="number"
-                min={0}
-                max={50}
-                placeholder="–"
-                value={filters.min_pladser ?? ""}
-                onChange={(e) => {
-                  const val = parseInt(e.target.value);
-                  const next = { ...filters, min_pladser: val > 0 ? val : undefined };
-                  setFilters(next);
-                  const url = buildSoegUrl(region, query, view, next);
-                  router.push(url, { scroll: false });
-                }}
-                className="w-8 bg-transparent text-center text-primary font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 rounded [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                aria-label="Minimum antal pladser"
-              />
-              <span className="text-primary/70 whitespace-nowrap">pladser</span>
-            </div>
 
-            {/* Dato-filter med popover */}
+            {/* Dato-filter med popover (altid synlig) */}
             <div className="relative shrink-0" ref={datePickerRef}>
               <button
                 type="button"
@@ -804,9 +749,75 @@ export function SearchBar({
               )}
             </div>
 
+            {/* Mobile-only: "Filtre"-knap der åbner bottom-sheet med faciliteter + min. pladser */}
+            <button
+              type="button"
+              onClick={() => setMobileSheetOpen(true)}
+              className={`md:hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[13px] font-medium whitespace-nowrap shrink-0 transition-all touch-manipulation ${
+                facilityActiveCount > 0
+                  ? "bg-primary/10 text-primary border-primary/40"
+                  : "bg-white text-primary/70 border-primary/15 hover:border-primary/30 hover:text-primary"
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50`}
+              aria-label={`Åbn filterpanel${facilityActiveCount > 0 ? ` (${facilityActiveCount} aktive)` : ""}`}
+              aria-haspopup="dialog"
+            >
+              <SlidersHorizontal size={14} className={facilityActiveCount > 0 ? "text-primary" : "text-primary/50"} />
+              Filtre{facilityActiveCount > 0 ? ` (${facilityActiveCount})` : ""}
+            </button>
+
+            {/* Desktop: min. pladser inline */}
+            <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 md:px-3.5 md:py-2 rounded-full border border-primary/15 bg-white text-sm">
+              <Users size={15} className="text-primary/50 shrink-0" />
+              <span className="text-primary/70 whitespace-nowrap">Min.</span>
+              <input
+                type="number"
+                min={0}
+                max={50}
+                placeholder="–"
+                value={filters.min_pladser ?? ""}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value, 10);
+                  setMinPladser(val > 0 ? val : undefined);
+                }}
+                className="w-8 bg-transparent text-center text-primary font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 rounded [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                aria-label="Minimum antal pladser"
+              />
+              <span className="text-primary/70 whitespace-nowrap">pladser</span>
+            </div>
+
+            {/* Desktop: ikke-primære chips (faciliteter + kvalitet) */}
+            {FILTER_OPTIONS.filter((o) => !PRIMARY_FILTER_KEYS.has(o.key)).map(({ key, label, icon }) => {
+              const active = Boolean(filters[key]);
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => toggleFilter(key)}
+                  className={`hidden md:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-medium whitespace-nowrap shrink-0 transition-all duration-200 touch-manipulation border ${
+                    active
+                      ? "bg-primary/10 text-primary border-primary/40"
+                      : "bg-white text-primary/70 border-primary/15 hover:border-primary/30 hover:text-primary hover:shadow-sm"
+                  } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2`}
+                  aria-pressed={active}
+                >
+                  <span className={active ? "text-primary" : "text-primary/50"}>{icon}</span>
+                  {label}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
+
+      {/* Mobile bottom-sheet */}
+      <SoegFilterBottomSheet
+        open={mobileSheetOpen}
+        filters={filters}
+        onToggle={toggleFilter}
+        onSetMinPladser={setMinPladser}
+        onClearAll={clearAllFilters}
+        onClose={() => setMobileSheetOpen(false)}
+      />
     </div>
   );
 }
