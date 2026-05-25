@@ -847,7 +847,7 @@ Det er en god idé at kombinere denne guide med [Pakkeliste til sheltertur – d
     excerpt:
       "Lær hvornår og hvordan du booker shelter i Danmark. Se hvilke platforme der bruges, hvad det koster, og hvornår det er nødvendigt at booke på forhånd.",
     coverImage:
-      "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1200&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1464037866556-6812c9d1c72e?w=1200&q=80&auto=format&fit=crop",
     category: "Begynder",
     publishedAt: "2025-11-14",
     updatedAt: "2026-04-05",
