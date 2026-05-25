@@ -7,6 +7,17 @@ function bookingLink(guestToken: string): string {
   return `${SITE_URL}/min-booking/${guestToken}`;
 }
 
+function bookingNotificationRecipients(): string[] {
+  const raw =
+    process.env.BOOKING_NOTIFICATION_EMAIL?.trim() ||
+    process.env.BOOKING_ALERT_EMAIL?.trim() ||
+    "";
+  return raw
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
 function bookingReference(bookingId?: string | null): string | null {
   if (!bookingId) return null;
   return `BK-${bookingId.slice(0, 8).toUpperCase()}`;
@@ -538,7 +549,51 @@ export async function sendPaymentConfirmed(opts: {
   paymentId?: string;
 }) {
   const reference = bookingReference(opts.bookingId);
-  const [guestResult, ownerResult] = await Promise.allSettled([
+  const notifyRecipients = bookingNotificationRecipients();
+  const notificationPromise =
+    notifyRecipients.length > 0
+      ? sendLoggedEmail({
+          to: notifyRecipients,
+          subject: `Ny booking: ${esc(opts.shelterTitle)} (${formatDate(opts.checkIn)} → ${formatDate(opts.checkOut)})`,
+          html: renderEmail({
+            title: "Ny booking på ShelterDK",
+            preheader: `${opts.guestName} har booket ${opts.shelterTitle} for ${opts.amountTotalDkk} kr.`,
+            bodyHtml: `
+              <p style="font-size:13px;color:#333;line-height:1.65;margin:0 0 10px;"><strong>${esc(opts.guestName)}</strong> (${esc(opts.guestEmail)}) har gennemført en booking på <strong>${esc(opts.shelterTitle)}</strong>.</p>
+              <div style="background:#f0fdf4;border-left:3px solid #16a34a;border-radius:0 6px 6px 0;padding:9px 13px;margin:12px 0;">
+                <p style="font-size:10px;color:#999;margin:0 0 2px;text-transform:uppercase;letter-spacing:0.5px;">Bekræftet ophold</p>
+                <p style="font-size:13px;font-weight:600;color:#2C3E50;margin:0 0 2px;">${esc(opts.shelterTitle)}</p>
+                <p style="font-size:12px;color:#666;margin:0;">${esc(formatDate(opts.checkIn))} → ${esc(formatDate(opts.checkOut))}</p>
+              </div>
+              ${reference ? `<p style="font-size:12px;color:#666;margin:0 0 8px;"><strong>Bookingreference:</strong> ${esc(reference)}</p>` : ""}
+              <p style="font-size:12px;color:#666;margin:0 0 4px;"><strong>Betalt:</strong> ${opts.amountTotalDkk} kr</p>
+              <p style="font-size:12px;color:#666;margin:0 0 16px;"><strong>Ejer:</strong> ${esc(opts.ownerEmail)}</p>
+              <a href="${bookingLink(opts.guestToken)}" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">Åbn booking på ShelterDK</a>
+            `,
+          }),
+          text: renderEmailText({
+            title: "Ny booking på ShelterDK",
+            lines: [
+              `${opts.guestName} (${opts.guestEmail}) har booket ${opts.shelterTitle}.`,
+              `Datoer: ${formatDate(opts.checkIn)} → ${formatDate(opts.checkOut)}`,
+              `Betalt: ${opts.amountTotalDkk} kr`,
+              `Ejer: ${opts.ownerEmail}`,
+              ...(reference ? [`Bookingreference: ${reference}`] : []),
+            ],
+            url: bookingLink(opts.guestToken),
+          }),
+          context: {
+            category: "monitor",
+            emailType: "booking_confirmed_internal",
+            bookingId: opts.bookingId ?? null,
+            shelterId: opts.shelterId ?? null,
+            paymentId: opts.paymentId ?? null,
+            metadata: { amountTotalDkk: opts.amountTotalDkk, ownerEmail: opts.ownerEmail },
+          },
+        })
+      : Promise.resolve();
+
+  const [guestResult, ownerResult, notificationResult] = await Promise.allSettled([
     sendLoggedEmail({
       to: opts.guestEmail,
       subject: "Betaling modtaget – booking bekræftet!",
@@ -609,10 +664,15 @@ export async function sendPaymentConfirmed(opts: {
         metadata: { amountTotalDkk: opts.amountTotalDkk },
       },
     }),
+    notificationPromise,
   ]);
 
   if (ownerResult.status === "rejected") {
     console.error("Email-fejl (betaling ejer):", ownerResult.reason);
+  }
+
+  if (notificationResult.status === "rejected") {
+    console.error("Email-fejl (intern booking-notifikation):", notificationResult.reason);
   }
 
   if (guestResult.status === "rejected") {
