@@ -15,6 +15,7 @@ import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 import { segmentSlugToName } from "@/lib/slug";
 import { ByShelterExplorer } from "@/components/ByShelterExplorer";
 import { getWater, getToilet } from "@/lib/shelter-detail";
+import { isStructuredBookable } from "@shared/lib/shelter-detail";
 import { generatePlacePageFaq } from "@/lib/fakta-faq";
 import { faqToJsonLd } from "@/lib/faq";
 import type { SoegFilters } from "@/lib/soeg-db";
@@ -86,7 +87,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const { shelters, usesMunicipalityExpansion } = await getByLandingData(placeName);
   const count = shelters.length;
-  const bookable = shelters.filter((s) => !!s.booking_url && String(s.booking_url).trim() !== "").length;
+  const bookable = shelters.filter((s) => isStructuredBookable(s)).length;
   const withWater = shelters.filter((s) => getWater(s) === true).length;
   const locationLabel = usesMunicipalityExpansion ? `i og omkring ${placeName}` : `i ${placeName}`;
 
@@ -221,7 +222,7 @@ export default async function ByPage({ params, searchParams }: PageProps) {
     return t && t !== "none" && t !== "unknown";
   }).length;
   const withWater = shelters.filter((s) => getWater(s) === true).length;
-  const bookable = shelters.filter((s) => !!s.booking_url && String(s.booking_url).trim() !== "").length;
+  const bookable = shelters.filter((s) => isStructuredBookable(s)).length;
   // freeCount er beholdt som 0-fallback fordi byFaq/ByProse stadig accepterer
   // det som prop — vi sender bare 0 så de tilhørende sætninger om "X gratis"
   // ikke rendres mens payment-data er upålideligt.

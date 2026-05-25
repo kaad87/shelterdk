@@ -18,6 +18,7 @@ import { segmentSlugToName } from "@/lib/slug";
 import { prepositionForRegionName } from "@/lib/area-db";
 import { ShelterCard } from "@/components/ShelterCard";
 import { getWater, getToilet, getPetsAllowed } from "@/lib/shelter-detail";
+import { isStructuredBookable } from "@shared/lib/shelter-detail";
 import { generateMunicipalityPageFaq } from "@/lib/fakta-faq";
 import { faqToJsonLd } from "@/lib/faq";
 import type { Shelter } from "@/types/shelter";
@@ -81,7 +82,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     municipalityName === "Ukendt kommune" ? null : municipalityName
   );
   const count = shelters.length;
-  const bookable = shelters.filter((s) => !!s.booking_url && String(s.booking_url).trim() !== "").length;
+  const bookable = shelters.filter((s) => isStructuredBookable(s)).length;
   const withWater = shelters.filter((s) => getWater(s) === true).length;
   const title = count > 0
     ? `Shelter i ${municipalityName} Kommune – ${count} shelters, kort og faciliteter | ShelterDK`
@@ -145,7 +146,7 @@ function MunicipalityProse({
   }).length;
   const withWater = shelters.filter((s) => getWater(s) === true).length;
   const withPets = shelters.filter((s) => getPetsAllowed(s) === true).length;
-  const bookable = shelters.filter((s) => !!s.booking_url).length;
+  const bookable = shelters.filter((s) => isStructuredBookable(s)).length;
   const rated = shelters.filter((s) => s.google_rating && s.google_rating > 0);
   const avgRating = rated.length > 0
     ? (rated.reduce((sum, s) => sum + (s.google_rating ?? 0), 0) / rated.length).toFixed(1)
@@ -256,9 +257,7 @@ export default async function DanmarkMunicipalityPage({ params }: PageProps) {
     return t && t !== "none" && t !== "unknown";
   }).length;
   const withWater = shelters.filter((s) => getWater(s) === true).length;
-  const freeCount = shelters.filter(
-    (s) => !s.booking_url || String(s.booking_url).trim() === ""
-  ).length;
+  const freeCount = shelters.filter((s) => !isStructuredBookable(s)).length;
 
   const municipalityFaq = generateMunicipalityPageFaq(displayName, {
     totalCount: shelters.length,

@@ -41,9 +41,9 @@ const BY_LANDING_SEARCH_SYNONYM_KEYS: Partial<Record<(typeof PRIORITY_BY_CITY_NA
 };
 
 const SHELTER_SELECT =
-  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, water, toilet, capacity, geofa_raw, display_score, featured_sort_boost, bookable_shelters(id), created_at, updated_at, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
+  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, booking_link_mode, duplicate_of_shelter_id, region, kommune, place, water, toilet, capacity, geofa_raw, display_score, featured_sort_boost, bookable_shelters(id), created_at, updated_at, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
 const BY_PAGE_SHELTER_SELECT =
-  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, water, toilet, capacity, geofa_raw, display_score, featured_sort_boost, bookable_shelters(id), created_at, updated_at, blur_data_url";
+  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, booking_link_mode, duplicate_of_shelter_id, region, kommune, place, water, toilet, capacity, geofa_raw, display_score, featured_sort_boost, bookable_shelters(id), created_at, updated_at, blur_data_url";
 
 const SHELTER_SELECT_DETAIL =
   "id, title, slug, seo_title, description, seo_description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, booking_provider, booking_link_mode, booking_lookup_key, booking_url_verified_at, booking_confidence, availability_provider, availability_mode, availability_lookup_key, availability_url, availability_verified_at, availability_confidence, duplicate_of_shelter_id, region, kommune, place, toilet, water, geofa_raw, area_slug, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";

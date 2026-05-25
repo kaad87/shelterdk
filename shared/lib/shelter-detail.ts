@@ -440,7 +440,7 @@ function trimUrl(value: string | null | undefined): string | null {
   return url && /^https?:\/\//i.test(url) ? url : null;
 }
 
-function inferProviderFromUrl(url: string | null): ShelterBookingProvider | null {
+export function inferProviderFromUrl(url: string | null): ShelterBookingProvider | null {
   if (!url) return null;
   const normalized = url.toLowerCase();
   if (normalized.includes("shelterdk.dk")) return "shelterdk";
@@ -480,7 +480,7 @@ function inferStoredConfidence(shelter: Shelter): ShelterBookingConfidence | nul
   return confidence || null;
 }
 
-function getBookingLookupKeyFromUrl(url: string | null): string | null {
+export function getBookingLookupKeyFromUrl(url: string | null): string | null {
   if (!url) return null;
   const lower = url.toLowerCase();
   if (!lower.includes("book.naturstyrelsen.dk/sted/")) return null;
@@ -563,6 +563,19 @@ export function isBookable(
   opts: { hasShelterDkBooking?: boolean } = {}
 ): boolean {
   return getResolvedBookingModel(shelter, opts).requiresBooking;
+}
+
+export function isStructuredBookable(
+  shelter: Shelter,
+  opts: { hasShelterDkBooking?: boolean } = {}
+): boolean {
+  const bookingUrl = trimUrl(shelter.booking_url);
+  const hasShelterDkBooking =
+    opts.hasShelterDkBooking === true ||
+    (Array.isArray(shelter.bookable_shelters) && shelter.bookable_shelters.length > 0);
+  if (hasShelterDkBooking) return true;
+  const storedMode = inferStoredLinkMode(shelter);
+  return Boolean(bookingUrl || (storedMode && storedMode !== "first_come"));
 }
 
 const GEOFA_PHOTO_KEYS = [

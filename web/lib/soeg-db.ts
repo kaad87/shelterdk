@@ -2,6 +2,7 @@ import { createPublicClient } from "@/utils/supabase/server-public";
 import { createAdminClient } from "@/utils/supabase/server-admin";
 import type { Shelter } from "@/types/shelter";
 import { getLocationCoords, getDisplayScore, hasAnyImage } from "@/lib/shelter-detail";
+import { isStructuredBookable } from "@shared/lib/shelter-detail";
 import { findPostnummerSuggestions } from "@/lib/postnummer";
 import { haversineKm } from "@/lib/haversine";
 import { SEARCH_SYNONYMS } from "@/lib/search-synonyms";
@@ -20,9 +21,9 @@ function sortByImageAndScore(a: Shelter, b: Shelter): number {
 }
 
 const SHELTER_SELECT =
-  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, water, toilet, capacity, display_score, featured_sort_boost, bookable_shelters(id), google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
+  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, booking_link_mode, duplicate_of_shelter_id, region, kommune, place, water, toilet, capacity, display_score, featured_sort_boost, bookable_shelters(id), google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
 const SHELTER_SELECT_FALLBACK =
-  "id, title, slug, description, location, image_url, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, water, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
+  "id, title, slug, description, location, image_url, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, booking_link_mode, duplicate_of_shelter_id, region, water, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
 
 export const SOEG_PAGE_SIZE = 24;
 
@@ -216,6 +217,20 @@ async function getDateAvailabilityData(
   return { bookedIds: [...bookedIdSet], availabilityMap, trackedIds: [...trackedIdSet] };
 }
 
+function sliceBookableResults(
+  shelters: Shelter[],
+  page: number,
+  pageSize: number
+): { shelters: Shelter[]; hasMore: boolean } {
+  const filtered = shelters.filter((shelter) => isStructuredBookable(shelter));
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize;
+  return {
+    shelters: filtered.slice(from, to),
+    hasMore: filtered.length > to,
+  };
+}
+
 /**
  * Hent én side shelters med valgfri region, søgetekst, area_slug, filtre og bbox.
  * Ved bbox hentes op til BBOX_FETCH_LIMIT og filtreres efter koordinater (location).
@@ -233,9 +248,10 @@ export async function getSheltersPage(
   sort?: SoegSort | null
 ): Promise<SoegPageResult> {
   const supabase = createPublicClient();
+  const bookbarFilterActive = Boolean(filters?.bookbar);
   const useBbox = bbox && [bbox.minLat, bbox.maxLat, bbox.minLon, bbox.maxLon].every((n) => Number.isFinite(n));
-  const from = useBbox ? 0 : (page - 1) * pageSize;
-  const toInclusive = useBbox ? BBOX_FETCH_LIMIT - 1 : from + pageSize - 1;
+  const from = useBbox || bookbarFilterActive ? 0 : (page - 1) * pageSize;
+  const toInclusive = useBbox || bookbarFilterActive ? BBOX_FETCH_LIMIT - 1 : from + pageSize - 1;
 
   const isValidDate = (d?: string): d is string => Boolean(d && /^\d{4}-\d{2}-\d{2}$/.test(d));
   if (filters?.confirmed_available && !isValidDate(filters.date)) {
@@ -332,9 +348,6 @@ export async function getSheltersPage(
   }
   if (filters?.anmeldelser) {
     query = query.not("google_user_ratings_total", "is", null).gt("google_user_ratings_total", 0);
-  }
-  if (filters?.bookbar) {
-    query = query.not("booking_url", "is", null).neq("booking_url", "");
   }
   if (filters?.vand) {
     query = query.eq("water", true);
@@ -465,9 +478,6 @@ export async function getSheltersPage(
     if (filters?.anmeldelser) {
       fallbackQuery = fallbackQuery.not("google_user_ratings_total", "is", null).gt("google_user_ratings_total", 0);
     }
-    if (filters?.bookbar) {
-      fallbackQuery = fallbackQuery.not("booking_url", "is", null).neq("booking_url", "");
-    }
     if (filters?.vand) {
       fallbackQuery = fallbackQuery.eq("water", true);
     }
@@ -509,13 +519,24 @@ export async function getSheltersPage(
         );
       });
       list.sort(sortByImageAndScore);
-      return { shelters: prunePlaceOutliersForExactQuery(list, q), hasMore: false, ...(dateAvailability ? { availabilityMap: dateAvailability.availabilityMap } : {}) };
+      const pruned = prunePlaceOutliersForExactQuery(list, q);
+      const bookbarSlice = bookbarFilterActive
+        ? sliceBookableResults(pruned, page, pageSize)
+        : { shelters: pruned, hasMore: false };
+      return {
+        shelters: bookbarSlice.shelters,
+        hasMore: bookbarSlice.hasMore,
+        ...(dateAvailability ? { availabilityMap: dateAvailability.availabilityMap } : {}),
+      };
     }
-    list = prunePlaceOutliersForExactQuery(list, q).slice(0, pageSize);
+    list = prunePlaceOutliersForExactQuery(list, q);
     list.sort(sortByImageAndScore);
+    const paged = bookbarFilterActive
+      ? sliceBookableResults(list, page, pageSize)
+      : { shelters: list.slice(0, pageSize), hasMore: list.length >= pageSize };
     return {
-      shelters: list,
-      hasMore: list.length >= pageSize,
+      shelters: paged.shelters,
+      hasMore: paged.hasMore,
       ...(dateAvailability ? { availabilityMap: dateAvailability.availabilityMap } : {}),
     };
   }
@@ -525,15 +546,18 @@ export async function getSheltersPage(
     return { shelters: [], hasMore: false };
   }
 
-  let list = ((data as Shelter[]) ?? []).slice(0, pageSize);
+  let list = ((data as Shelter[]) ?? []);
   list = prunePlaceOutliersForExactQuery(list, q);
   // Only apply default client sort when using standard sort (server already sorted)
   if (!sort || sort === "standard") {
     list = [...list].sort(sortByImageAndScore);
   }
+  const paged = bookbarFilterActive
+    ? sliceBookableResults(list, page, pageSize)
+    : { shelters: list.slice(0, pageSize), hasMore: list.length >= pageSize };
   return {
-    shelters: list,
-    hasMore: list.length >= pageSize,
+    shelters: paged.shelters,
+    hasMore: paged.hasMore,
     ...(dateAvailability ? { availabilityMap: dateAvailability.availabilityMap } : {}),
   };
 }

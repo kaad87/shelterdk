@@ -4,6 +4,7 @@ import {
 } from "@/lib/danmark-silo";
 import { segmentSlugToName } from "@/lib/slug";
 import { createEditorialOgImage, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/editorial-og";
+import { isStructuredBookable } from "@shared/lib/shelter-detail";
 
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
@@ -31,9 +32,7 @@ export default async function OpenGraphImage({
 
   const { shelters, usesMunicipalityExpansion } = await getByLandingData(placeName);
   const count = shelters.length;
-  const bookable = shelters.filter(
-    (s) => !!s.booking_url && String(s.booking_url).trim() !== ""
-  ).length;
+  const bookable = shelters.filter((s) => isStructuredBookable(s)).length;
   const free = count - bookable;
 
   const subtitleParts: string[] = [];

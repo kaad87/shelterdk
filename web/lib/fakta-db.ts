@@ -3,12 +3,45 @@ import type { Shelter } from "@/types/shelter";
 import { getLocationCoords } from "@/lib/shelter-detail";
 import { classifyShelterToParks, NATIONAL_PARKS } from "@/lib/national-parks";
 import { fetchAllShelterRows } from "@/lib/supabase-pagination";
+import { isStructuredBookable } from "@shared/lib/shelter-detail";
 
 const SHELTER_SELECT_LIST =
-  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, duplicate_of_shelter_id, region, kommune, place, toilet, water, capacity, display_score, google_places!shelters_google_place_id_fkey(photo_references)";
+  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, booking_link_mode, duplicate_of_shelter_id, region, kommune, place, toilet, water, capacity, display_score, bookable_shelters(id), google_places!shelters_google_place_id_fkey(photo_references)";
 
 const SHELTER_SELECT_WITH_GEOFA =
   SHELTER_SELECT_LIST + ", geofa_raw";
+
+const BOOKABLE_SELECT_LIGHT =
+  "id, booking_url, booking_link_mode, region, kommune, bookable_shelters(id)";
+
+async function listStructuredBookableShelters(region?: string): Promise<Shelter[]> {
+  try {
+    return await fetchAllShelterRows<Shelter>(BOOKABLE_SELECT_LIGHT, (query) => {
+      const base = query.is("duplicate_of_shelter_id", null);
+      return region ? base.eq("region", region) : base;
+    });
+  } catch (error) {
+    console.error("fakta-db: listStructuredBookableShelters", error);
+    return [];
+  }
+}
+
+async function listStructuredBookablePaidStatusShelters(
+  region: string,
+  betaling: "Ja" | "Nej"
+): Promise<Shelter[]> {
+  try {
+    return await fetchAllShelterRows<Shelter>(BOOKABLE_SELECT_LIGHT, (query) =>
+      query
+        .is("duplicate_of_shelter_id", null)
+        .eq("region", region)
+        .filter("geofa_raw->>betaling", "eq", betaling)
+    );
+  } catch (error) {
+    console.error("fakta-db: listStructuredBookablePaidStatusShelters", error);
+    return [];
+  }
+}
 
 /** Total shelter count (non-duplicate). */
 export async function getTotalShelterCount(): Promise<number> {
@@ -70,7 +103,7 @@ export async function getFacilityCounts(): Promise<FacilityCounts> {
       .select("id", { count: "exact", head: true })
       .is("duplicate_of_shelter_id", null);
 
-  const [toilet, water, baalplads, hund, strand, bruser, bookbar, gratis, handicap] =
+  const [toilet, water, baalplads, hund, strand, bruser, gratis, handicap, bookableShelters] =
     await Promise.all([
       base().in("toilet", ["flush", "mulch"]),
       base().eq("water", true),
@@ -78,9 +111,9 @@ export async function getFacilityCounts(): Promise<FacilityCounts> {
       base().filter("geofa_raw->>hunde_tilladt", "ilike", "%ja%"),
       base().filter("geofa_raw->>strand_naerhed", "eq", "Ja"),
       base().filter("geofa_raw->>bruser_bad", "eq", "Ja"),
-      base().not("booking_url", "is", null).neq("booking_url", ""),
       base().filter("geofa_raw->>betaling", "eq", "Nej"),
       base().or("geofa_raw->>handicap.eq.Handicapegnet,geofa_raw->>handicap.eq.Delvist handicapegnet"),
+      listStructuredBookableShelters(),
     ]);
 
   return {
@@ -90,7 +123,7 @@ export async function getFacilityCounts(): Promise<FacilityCounts> {
     hund: hund.count ?? 0,
     strand: strand.count ?? 0,
     bruser: bruser.count ?? 0,
-    bookbar: bookbar.count ?? 0,
+    bookbar: bookableShelters.filter((shelter) => isStructuredBookable(shelter)).length,
     gratis: gratis.count ?? 0,
     handicap: handicap.count ?? 0,
   };
@@ -108,7 +141,7 @@ export async function getFacilityCountsForRegion(
       .is("duplicate_of_shelter_id", null)
       .eq("region", region);
 
-  const [toilet, water, baalplads, hund, strand, bruser, bookbar, gratis, handicap] =
+  const [toilet, water, baalplads, hund, strand, bruser, gratis, handicap, bookableShelters] =
     await Promise.all([
       base().in("toilet", ["flush", "mulch"]),
       base().eq("water", true),
@@ -116,9 +149,9 @@ export async function getFacilityCountsForRegion(
       base().filter("geofa_raw->>hunde_tilladt", "ilike", "%ja%"),
       base().filter("geofa_raw->>strand_naerhed", "eq", "Ja"),
       base().filter("geofa_raw->>bruser_bad", "eq", "Ja"),
-      base().not("booking_url", "is", null).neq("booking_url", ""),
       base().filter("geofa_raw->>betaling", "eq", "Nej"),
       base().or("geofa_raw->>handicap.eq.Handicapegnet,geofa_raw->>handicap.eq.Delvist handicapegnet"),
+      listStructuredBookableShelters(region),
     ]);
 
   return {
@@ -128,7 +161,7 @@ export async function getFacilityCountsForRegion(
     hund: hund.count ?? 0,
     strand: strand.count ?? 0,
     bruser: bruser.count ?? 0,
-    bookbar: bookbar.count ?? 0,
+    bookbar: bookableShelters.filter((shelter) => isStructuredBookable(shelter)).length,
     gratis: gratis.count ?? 0,
     handicap: handicap.count ?? 0,
   };
@@ -207,7 +240,6 @@ export async function getFreeCountForFilterRegion(
       query = query.filter("geofa_raw->>bruser_bad", "eq", "Ja");
       break;
     case "booking":
-      query = query.not("booking_url", "is", null).neq("booking_url", "");
       break;
     case "handicap":
       query = query.or(
@@ -216,6 +248,11 @@ export async function getFreeCountForFilterRegion(
       break;
     default:
       return 0;
+  }
+
+  if (filterKey === "booking") {
+    const shelters = await listStructuredBookablePaidStatusShelters(region, "Nej");
+    return shelters.filter((shelter) => isStructuredBookable(shelter)).length;
   }
 
   const { count, error } = await query;
@@ -255,7 +292,6 @@ export async function getFilterRegionCount(
       query = query.filter("geofa_raw->>bruser_bad", "eq", "Ja");
       break;
     case "booking":
-      query = query.not("booking_url", "is", null).neq("booking_url", "");
       break;
     case "handicap":
       query = query.or(
@@ -264,6 +300,11 @@ export async function getFilterRegionCount(
       break;
     default:
       return 0;
+  }
+
+  if (filterKey === "booking") {
+    const shelters = await listStructuredBookableShelters(region);
+    return shelters.filter((shelter) => isStructuredBookable(shelter)).length;
   }
 
   const { count, error } = await query;
@@ -313,7 +354,6 @@ export async function getSheltersForFilterRegion(
       query = query.filter("geofa_raw->>bruser_bad", "eq", "Ja");
       break;
     case "booking":
-      query = query.not("booking_url", "is", null).neq("booking_url", "");
       break;
     case "handicap":
       query = query.or(
@@ -322,6 +362,17 @@ export async function getSheltersForFilterRegion(
       break;
     default:
       return [];
+  }
+
+  if (filterKey === "booking") {
+    const shelters = await fetchAllShelterRows<Shelter>(SHELTER_SELECT_LIST, (baseQuery) =>
+      baseQuery
+        .is("duplicate_of_shelter_id", null)
+        .eq("region", region)
+        .order("display_score", { ascending: false, nullsFirst: false })
+        .order("title", { ascending: true })
+    );
+    return shelters.filter((shelter) => isStructuredBookable(shelter)).slice(0, limit);
   }
 
   const { data, error } = await query;
@@ -485,7 +536,6 @@ export async function getKommuneBreakdownForFilterRegion(
       query = query.filter("geofa_raw->>bruser_bad", "eq", "Ja");
       break;
     case "booking":
-      query = query.not("booking_url", "is", null).neq("booking_url", "");
       break;
     case "handicap":
       query = query.or(
@@ -494,6 +544,19 @@ export async function getKommuneBreakdownForFilterRegion(
       break;
     default:
       return [];
+  }
+
+  if (filterKey === "booking") {
+    const shelters = await listStructuredBookableShelters(region);
+    const counts = new Map<string, number>();
+    for (const shelter of shelters) {
+      if (!isStructuredBookable(shelter)) continue;
+      const kommune = (shelter.kommune || "Ukendt").trim();
+      counts.set(kommune, (counts.get(kommune) ?? 0) + 1);
+    }
+    return Array.from(counts.entries())
+      .map(([kommune, count]) => ({ kommune, count }))
+      .sort((a, b) => b.count - a.count);
   }
 
   const { data, error } = await query;
