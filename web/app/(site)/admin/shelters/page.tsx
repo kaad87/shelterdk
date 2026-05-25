@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { BookingCandidateReviewQueue } from "@/components/BookingCandidateReviewQueue";
 
 interface BookableShelter {
   id: string;
@@ -501,9 +500,6 @@ function AdminSheltersContent() {
             </div>
           </form>
         </section>
-
-        {/* Booking candidate queue */}
-        <BookingCandidateReviewQueue secret={secret} />
 
         {/* Shelter list */}
         <section>

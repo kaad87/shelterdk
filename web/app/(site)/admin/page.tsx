@@ -15,6 +15,7 @@ import {
   Send,
   Camera,
   Star,
+  Search,
 } from "lucide-react";
 import { AdminPhotoReview, type AdminSummaryCounts } from "@/components/AdminPhotoReview";
 import type { TabKey } from "@/components/AdminPhotoReview";
@@ -65,6 +66,7 @@ const NAV_GROUPS: AdminNavGroup[] = [
     label: "Booking & drift",
     items: [
       { href: "/admin/shelters", icon: Tent, title: "Bookable shelters", desc: "Administrér shelters med booking" },
+      { href: "/admin/booking-kandidater", icon: Search, title: "Bookingkandidater", desc: "Find shelters der mangler bookinglink" },
       { href: "/admin/bookinger", icon: BookOpen, title: "Bookinger", desc: "Oversigt over alle bookings" },
       { href: "/admin/payments", icon: CreditCard, title: "Betalinger", desc: "Betalingsstatus og Stripe" },
       { href: "/admin/email-log", icon: Mail, title: "Email-log", desc: "Sendte e-mails og leveringsstatus" },
