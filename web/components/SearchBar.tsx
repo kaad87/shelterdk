@@ -23,6 +23,9 @@ import {
 } from "lucide-react";
 import { FILTER_OPTIONS, PRIMARY_FILTER_KEYS } from "@/lib/soeg-filter-options";
 import { SoegFilterBottomSheet } from "@/components/SoegFilterBottomSheet";
+import { SaveSearchModal } from "@/components/SaveSearchModal";
+import { describeSavedSearch } from "@/lib/saved-searches";
+import { Bell } from "lucide-react";
 import type { SoegFilters, SearchSuggestion } from "@/lib/soeg-db";
 import { slugifySegment } from "@/lib/slug";
 import { normalizeRegionFilter } from "@/lib/soeg-filters";
@@ -107,6 +110,7 @@ export function SearchBar({
   const [suggestIndex, setSuggestIndex] = useState(-1);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
+  const [saveSearchOpen, setSaveSearchOpen] = useState(false);
   const [pendingDate, setPendingDate] = useState<string>("");
   const [pendingDateTo, setPendingDateTo] = useState<string>("");
   const [pendingConfirmedAvailable, setPendingConfirmedAvailable] = useState<boolean>(false);
@@ -290,6 +294,19 @@ export function SearchBar({
   const facilityActiveCount =
     FILTER_OPTIONS.filter(({ key, group }) => group !== "primaer" && filters[key]).length +
     (filters.min_pladser && filters.min_pladser > 0 ? 1 : 0);
+  // Vis "Gem søgning"-knap kun når der er noget at gemme. At alerte på
+  // "alle shelters i Danmark" giver ingen mening og spammer brugeren.
+  const hasSearchCriteria = Boolean(
+    (region && region.trim()) ||
+      (query && query.trim()) ||
+      totalActiveFilters > 0
+  );
+  const saveSearchSummary = describeSavedSearch({
+    region: region || null,
+    q: query || null,
+    area: initialArea || null,
+    filters,
+  });
 
   // Detect today's local date and day-of-week on mount (avoids SSR/client mismatch)
   useEffect(() => {
@@ -577,22 +594,35 @@ export function SearchBar({
       {/* Filter chips — shown on search page */}
       {mode === "search" && (
         <div className="space-y-2">
-          {/* Header med aktiv count + Ryd */}
-          <div className="flex items-center justify-between min-h-[20px]">
+          {/* Header med aktiv count + Ryd + Gem søgning */}
+          <div className="flex items-center justify-between min-h-[20px] gap-2">
             <div className="text-[11px] uppercase tracking-[0.06em] font-semibold text-primary/45">
               Filtre
             </div>
-            {totalActiveFilters > 0 && (
-              <button
-                type="button"
-                onClick={clearAllFilters}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium text-primary/65 hover:text-primary hover:bg-primary/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
-                aria-label="Ryd alle filtre"
-              >
-                <X size={12} />
-                {totalActiveFilters} aktiv{totalActiveFilters === 1 ? "" : "e"} · Ryd
-              </button>
-            )}
+            <div className="flex items-center gap-1">
+              {hasSearchCriteria && (
+                <button
+                  type="button"
+                  onClick={() => setSaveSearchOpen(true)}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium text-accent-dark hover:text-accent-dark hover:bg-accent/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+                  aria-label="Gem søgning og få besked om nye matches"
+                >
+                  <Bell size={12} />
+                  Gem søgning
+                </button>
+              )}
+              {totalActiveFilters > 0 && (
+                <button
+                  type="button"
+                  onClick={clearAllFilters}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium text-primary/65 hover:text-primary hover:bg-primary/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+                  aria-label="Ryd alle filtre"
+                >
+                  <X size={12} />
+                  {totalActiveFilters} aktiv{totalActiveFilters === 1 ? "" : "e"} · Ryd
+                </button>
+              )}
+            </div>
           </div>
           <div className="flex md:flex-wrap items-center gap-2 overflow-x-auto md:overflow-x-visible scrollbar-hide flex-nowrap" role="group" aria-label="Filtrer efter faciliteter">
             {/* Primære chips (vises altid) */}
@@ -817,6 +847,17 @@ export function SearchBar({
         onSetMinPladser={setMinPladser}
         onClearAll={clearAllFilters}
         onClose={() => setMobileSheetOpen(false)}
+      />
+
+      {/* Gem søgning */}
+      <SaveSearchModal
+        open={saveSearchOpen}
+        onClose={() => setSaveSearchOpen(false)}
+        region={region || null}
+        q={query || null}
+        area={initialArea || null}
+        filters={filters}
+        summary={saveSearchSummary}
       />
     </div>
   );
