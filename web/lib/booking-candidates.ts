@@ -52,6 +52,16 @@ const WEAK_POSITIVE_PATTERNS: Array<{ label: string; pattern: RegExp }> = [
   { label: "organiserede grupper", pattern: /\borganiserede?\s+grupper\b/i },
 ];
 
+const BROAD_DISCOVERY_PATTERNS: Array<{ label: string; pattern: RegExp }> = [
+  { label: "booking (bredt)", pattern: /booking/i },
+  { label: "book (bredt)", pattern: /book/i },
+  { label: "reservation (bredt)", pattern: /reserv/i },
+  { label: "betaling (bredt)", pattern: /betal/i },
+  { label: "mobilepay (bredt)", pattern: /mobilepay/i },
+  { label: "udinaturen (bredt)", pattern: /udinaturen/i },
+  { label: "naturstyrelsen (bredt)", pattern: /naturstyrelsen/i },
+];
+
 const NEGATIVE_PATTERNS: Array<{ label: string; pattern: RegExp }> = [
   { label: "kan ikke bookes", pattern: /\bkan\s+ikke\s+bookes\b/i },
   { label: "kan ikke reserveres", pattern: /\bkan\s+ikke\s+reserveres\b/i },
@@ -114,7 +124,22 @@ function buildExcerpt(text: string, signals: string[]): string {
   const anchor = signals[0]?.toLowerCase() ?? "";
   const index = anchor ? text.toLowerCase().indexOf(anchor) : -1;
   if (index === -1) return text.slice(0, 320).trim();
-  const start = Math.max(0, index - 100);
+
+  // If the booking signal appears reasonably early, show the beginning of the
+  // description instead of clipping into the middle of the first sentence.
+  if (index < 180) return text.slice(0, 320).trim();
+
+  const rawStart = Math.max(0, index - 120);
+  const boundaryPatterns = [". ", "! ", "? ", ": ", "; "];
+  let start = rawStart;
+
+  for (const boundary of boundaryPatterns) {
+    const boundaryIndex = text.lastIndexOf(boundary, index);
+    if (boundaryIndex >= rawStart) {
+      start = Math.max(start, boundaryIndex + boundary.length);
+    }
+  }
+
   const end = Math.min(text.length, index + 220);
   return text.slice(start, end).trim();
 }
@@ -138,16 +163,40 @@ export function analyzeBookingCandidate(shelter: Shelter): BookingCandidate | nu
   const foundBookingUrls = urls.filter(looksLikeBookingUrl);
   const strongSignals = STRONG_POSITIVE_PATTERNS.filter(({ pattern }) => pattern.test(text)).map(({ label }) => label);
   const weakSignals = WEAK_POSITIVE_PATTERNS.filter(({ pattern }) => pattern.test(text)).map(({ label }) => label);
+  const broadSignals = BROAD_DISCOVERY_PATTERNS.filter(({ pattern }) => pattern.test(text)).map(({ label }) => label);
   const negativeSignals = NEGATIVE_PATTERNS.filter(({ pattern }) => pattern.test(text)).map(({ label }) => label);
-  const positiveSignals = [...strongSignals, ...weakSignals];
+  const positiveSignals = [...new Set([...strongSignals, ...weakSignals, ...broadSignals])];
+  const hasAffirmativeWeakSignal = weakSignals.some(
+    (label) => label !== "booking" && label !== "book"
+  );
+  const hasAffirmativeBroadSignal = broadSignals.some(
+    (label) =>
+      label !== "booking (bredt)" &&
+      label !== "book (bredt)" &&
+      label !== "reservation (bredt)"
+  );
 
-  const hasLead = foundBookingUrls.length > 0 || strongSignals.length > 0 || weakSignals.length > 0;
+  const hasLead =
+    foundBookingUrls.length > 0 ||
+    strongSignals.length > 0 ||
+    weakSignals.length > 0 ||
+    broadSignals.length > 0;
   if (!hasLead) return null;
-  if (negativeSignals.length > 0 && foundBookingUrls.length === 0 && strongSignals.length === 0) {
+  if (
+    negativeSignals.length > 0 &&
+    foundBookingUrls.length === 0 &&
+    strongSignals.length === 0 &&
+    !hasAffirmativeWeakSignal &&
+    !hasAffirmativeBroadSignal
+  ) {
     return null;
   }
 
-  const positiveScore = foundBookingUrls.length * 6 + strongSignals.length * 3 + weakSignals.length;
+  const positiveScore =
+    foundBookingUrls.length * 6 +
+    strongSignals.length * 3 +
+    weakSignals.length +
+    Math.min(2, broadSignals.length);
   const negativeScore = negativeSignals.length * 4;
   const score = positiveScore - negativeScore;
 

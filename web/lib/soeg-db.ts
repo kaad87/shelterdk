@@ -26,6 +26,7 @@ const SHELTER_SELECT_FALLBACK =
   "id, title, slug, description, location, image_url, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, booking_link_mode, duplicate_of_shelter_id, region, water, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
 
 export const SOEG_PAGE_SIZE = 24;
+const BOOKBAR_FETCH_LIMIT = 5000;
 
 export interface SoegPageResult {
   shelters: Shelter[];
@@ -251,7 +252,12 @@ export async function getSheltersPage(
   const bookbarFilterActive = Boolean(filters?.bookbar);
   const useBbox = bbox && [bbox.minLat, bbox.maxLat, bbox.minLon, bbox.maxLon].every((n) => Number.isFinite(n));
   const from = useBbox || bookbarFilterActive ? 0 : (page - 1) * pageSize;
-  const toInclusive = useBbox || bookbarFilterActive ? BBOX_FETCH_LIMIT - 1 : from + pageSize - 1;
+  const bulkFetchLimit = useBbox
+    ? BBOX_FETCH_LIMIT
+    : bookbarFilterActive
+      ? BOOKBAR_FETCH_LIMIT
+      : 0;
+  const toInclusive = bulkFetchLimit > 0 ? bulkFetchLimit - 1 : from + pageSize - 1;
 
   const isValidDate = (d?: string): d is string => Boolean(d && /^\d{4}-\d{2}-\d{2}$/.test(d));
   if (filters?.confirmed_available && !isValidDate(filters.date)) {

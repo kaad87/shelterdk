@@ -164,13 +164,16 @@ const MapInner = dynamic(
 
     function BoundsReporter({
       onBoundsChange,
+      reportOnMount,
     }: {
       onBoundsChange?: (bounds: MapBounds) => void;
+      reportOnMount?: boolean;
     }) {
       const map = useMap();
       useEffect(() => {
         if (!onBoundsChange) return;
         let timeout: ReturnType<typeof setTimeout> | null = null;
+        let mountTimeout: ReturnType<typeof setTimeout> | null = null;
         const handler = () => {
           if (timeout) clearTimeout(timeout);
           timeout = setTimeout(() => {
@@ -188,12 +191,22 @@ const MapInner = dynamic(
         };
         map.on("moveend", handler);
         map.on("zoomend", handler);
+
+        if (reportOnMount) {
+          // Forsidemap: vis få initiale pins hurtigt, og hent derefter flere
+          // i det aktuelle viewport når Leaflet har afsluttet fitBounds.
+          mountTimeout = setTimeout(() => {
+            handler();
+          }, 700);
+        }
+
         return () => {
           if (timeout) clearTimeout(timeout);
+          if (mountTimeout) clearTimeout(mountTimeout);
           map.off("moveend", handler);
           map.off("zoomend", handler);
         };
-      }, [map, onBoundsChange]);
+      }, [map, onBoundsChange, reportOnMount]);
       return null;
     }
 
@@ -205,6 +218,7 @@ const MapInner = dynamic(
       initialFitBounds,
       getHref,
       embedMode,
+      reportBoundsOnMount,
     }: {
       sheltersWithCoords: ShelterWithCoords[];
       onBoundsChange?: (bounds: MapBounds) => void;
@@ -213,6 +227,7 @@ const MapInner = dynamic(
       initialFitBounds?: { north: number; south: number; east: number; west: number };
       getHref: (s: Shelter) => string;
       embedMode?: boolean;
+      reportBoundsOnMount?: boolean;
     }) {
       const points = useMemo(
         () => sheltersWithCoords.map((s) => s._coords),
@@ -236,7 +251,7 @@ const MapInner = dynamic(
           />
           <MapCleanup />
           <FitBounds items={points} fixedBounds={initialFitBounds} />
-          <BoundsReporter onBoundsChange={onBoundsChange} />
+          <BoundsReporter onBoundsChange={onBoundsChange} reportOnMount={reportBoundsOnMount} />
           {sheltersWithCoords.map((shelter) => (
             <Marker
               key={shelter.id}
@@ -315,6 +330,8 @@ interface ShelterMapProps {
   initialRegion?: string | null;
   /** Ved load: fit til hele Danmark inkl. Bornholm (fx forsiden på mobil). */
   fitWholeDenmarkOnLoad?: boolean;
+  /** Hent shelters for det aktuelle viewport lige efter første render. */
+  loadViewportOnMount?: boolean;
   /** Embed-tilstand: simpelt popup med "Se detaljer & book" (target _blank til /shelter/slug). */
   embedMode?: boolean;
   /** Override center (bruges til at tvinge specifikt view fra parent). */
@@ -329,6 +346,7 @@ export function ShelterMap({
   onBoundsChange,
   initialRegion,
   fitWholeDenmarkOnLoad,
+  loadViewportOnMount,
   embedMode,
   overrideCenter,
   overrideZoom,
@@ -376,6 +394,7 @@ export function ShelterMap({
         initialCenter={initialCenter}
         initialZoom={initialZoom}
         initialFitBounds={(!overrideCenter && fitWholeDenmarkOnLoad) ? DENMARK_BOUNDS : undefined}
+        reportBoundsOnMount={loadViewportOnMount}
         getHref={getHref}
         embedMode={embedMode}
       />

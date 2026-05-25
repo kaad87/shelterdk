@@ -41,6 +41,7 @@ export function MapComponent({ shelters: initialShelters, className }: MapCompon
       className={className}
       onBoundsChange={handleBoundsChange}
       fitWholeDenmarkOnLoad
+      loadViewportOnMount
     />
   );
 }

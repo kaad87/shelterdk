@@ -48,6 +48,21 @@ describe("analyzeBookingCandidate", () => {
     expect(candidate).toBeNull();
   });
 
+  it("tager stadig brede rå leads med selv om teksten også nævner først-til-mølle", () => {
+    const candidate = analyzeBookingCandidate(
+      mk({
+        description:
+          "<p>Læs mere på Udinaturen. Hvis shelteret ikke er booket, gælder først-til-mølle.</p>",
+      })
+    );
+
+    expect(candidate).not.toBeNull();
+    expect(candidate?.positiveSignals).toEqual(
+      expect.arrayContaining(["udinaturen", "udinaturen (bredt)"])
+    );
+    expect(candidate?.negativeSignals).toContain("først-til-mølle");
+  });
+
   it("finder sandsynlige manuelle bookingkandidater uden direkte link", () => {
     const candidate = analyzeBookingCandidate(
       mk({
@@ -73,6 +88,18 @@ describe("analyzeBookingCandidate", () => {
 
     expect(candidate).not.toBeNull();
     expect(candidate?.positiveSignals).toContain("booking");
+  });
+
+  it("starter excerpt fra begyndelsen når signalet kommer tidligt i teksten", () => {
+    const candidate = analyzeBookingCandidate(
+      mk({
+        description:
+          "<p>Laden er åben for alle både til overnatning og hygge om bålet. Brug og ophold er gratis. Shelterne kan bookes af organiserede grupper på 15 personer eller mere via linket her https://udinaturen.dk/shelter/142854/.</p>",
+      })
+    );
+
+    expect(candidate).not.toBeNull();
+    expect(candidate?.excerpt.startsWith("Laden er åben for alle")).toBe(true);
   });
 });
 
