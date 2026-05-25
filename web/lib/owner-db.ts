@@ -84,22 +84,24 @@ export async function getSheltersByAuthUser(
   if (!shelters?.length) return [];
 
   const today = new Date().toISOString().slice(0, 10);
+  const shelterIds = shelters.map((s) => s.id);
 
-  const counts = await Promise.all(
-    shelters.map(async (s) => {
-      const { count } = await supabase
-        .from("shelter_bookings")
-        .select("id", { count: "exact", head: true })
-        .eq("bookable_shelter_id", s.id)
-        .eq("status", "confirmed")
-        .gte("check_out", today);
-      return { id: s.id, count: count ?? 0 };
-    })
-  );
+  // Single batched query instead of N individual count queries.
+  const { data: bookingRows } = await supabase
+    .from("shelter_bookings")
+    .select("bookable_shelter_id")
+    .in("bookable_shelter_id", shelterIds)
+    .eq("status", "confirmed")
+    .gte("check_out", today);
+
+  const countMap: Record<string, number> = {};
+  for (const row of bookingRows ?? []) {
+    countMap[row.bookable_shelter_id] = (countMap[row.bookable_shelter_id] ?? 0) + 1;
+  }
 
   return shelters.map((s) => ({
     ...s,
-    active_booking_count: counts.find((c) => c.id === s.id)?.count ?? 0,
+    active_booking_count: countMap[s.id] ?? 0,
   }));
 }
 

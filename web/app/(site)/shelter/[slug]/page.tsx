@@ -127,7 +127,7 @@ export async function generateMetadata({
     : embeddedPlaces?.photo_references;
   const photoRef = Array.isArray(embeddedRefs) ? (embeddedRefs?.[0] ?? null) : null;
   const photoUrls = getResolvedPhotoUrls(shelter, photoRef);
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://shelterdk.dk";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://shelterdk.dk";
   const ogImageRaw =
     photoUrls.length > 0 && (photoUrls[0].startsWith("/") || isValidImageUrl(photoUrls[0]))
       ? photoUrls[0]
