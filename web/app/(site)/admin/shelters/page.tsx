@@ -181,6 +181,34 @@ function AdminSheltersContent() {
     setRowActionState((prev) => ({ ...prev, [id]: next }));
   };
 
+  const handleLoginAsOwner = async (shelterId: string, title: string, ownerEmail: string) => {
+    const confirmed = window.confirm(
+      `Du logges ind som ${ownerEmail} (${title}) i en ny fane.\n\n` +
+        "Bemærk: hvis du selv har en Supabase-session i denne browser, bliver " +
+        "den overskrevet. Brug evt. inkognito for at undgå konflikt.\n\n" +
+        "Fortsæt?"
+    );
+    if (!confirmed) return;
+    setRowStatus(shelterId, { loading: true, message: null, ok: false });
+    try {
+      const res = await fetch(`/api/admin/owner-login-link`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders },
+        body: JSON.stringify({ bookable_shelter_id: shelterId }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.url) {
+        setRowStatus(shelterId, { loading: false, message: data.error ?? "Kunne ikke generere login-link", ok: false });
+        return;
+      }
+      // Åbn i ny fane så admin'ens eget vindue ikke umiddelbart skifter session
+      window.open(data.url, "_blank", "noopener,noreferrer");
+      setRowStatus(shelterId, { loading: false, message: `Login-link åbnet i ny fane (gælder 1 time)`, ok: true });
+    } catch {
+      setRowStatus(shelterId, { loading: false, message: "Kunne ikke kontakte serveren", ok: false });
+    }
+  };
+
   const handleRowAction = async (
     id: string,
     action: "update_owner_email" | "update_payment_settings" | "send_invite" | "link_existing_user" | "unlink_owner",
@@ -528,12 +556,24 @@ function AdminSheltersContent() {
                         </span>
                       </div>
                     </div>
-                    <button
-                      onClick={() => handleDelete(s.id, s.title)}
-                      className="text-xs text-red-500 hover:text-red-700 shrink-0 mt-0.5"
-                    >
-                      Slet
-                    </button>
+                    <div className="flex items-center gap-3 shrink-0 mt-0.5">
+                      {s.auth_user_id && (
+                        <button
+                          onClick={() => handleLoginAsOwner(s.id, s.title, s.owner_email)}
+                          disabled={rowActionState[s.id]?.loading}
+                          className="text-xs text-accent-dark hover:underline disabled:opacity-50"
+                          title="Generér engangs-login-link til ejer (åbnes i ny fane)"
+                        >
+                          Log ind som ejer
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleDelete(s.id, s.title)}
+                        className="text-xs text-red-500 hover:text-red-700"
+                      >
+                        Slet
+                      </button>
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
