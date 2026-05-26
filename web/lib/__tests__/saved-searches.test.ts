@@ -139,3 +139,15 @@ describe("matchesSavedSearch", () => {
     ).toBe(false);
   });
 });
+
+describe("buildSavedSearchUrl edge cases", () => {
+  it("dropper tomme strenge", () => {
+    const url = buildSavedSearchUrl("https://shelterdk.dk", {
+      region: "",
+      q: "",
+      area: "",
+      filters: {},
+    });
+    expect(url).toBe("https://shelterdk.dk/soeg");
+  });
+});

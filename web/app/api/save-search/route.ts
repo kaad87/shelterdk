@@ -78,14 +78,16 @@ export async function POST(req: NextRequest) {
 
   // Hvis brugeren allerede har en bekræftet søgning der ligner denne, så
   // overskriv vi ikke. Send blot en venlig "du er allerede tilmeldt".
-  const { data: existing } = await admin
+  // BEMÆRK: PostgREST `.eq("col", null)` matcher IKKE null-rækker (SQL
+  // null-semantik). Vi skal bruge `.is("col", null)` for tomme felter.
+  let dupQuery = admin
     .from("saved_searches")
     .select("id, token, confirmed_at, region, q, area, filters")
-    .eq("email", email)
-    .eq("region", region ?? "")
-    .eq("q", q ?? "")
-    .eq("area", area ?? "")
-    .limit(5);
+    .eq("email", email);
+  dupQuery = region === null ? dupQuery.is("region", null) : dupQuery.eq("region", region);
+  dupQuery = q === null ? dupQuery.is("q", null) : dupQuery.eq("q", q);
+  dupQuery = area === null ? dupQuery.is("area", null) : dupQuery.eq("area", area);
+  const { data: existing } = await dupQuery.limit(5);
   if (existing) {
     for (const row of existing as Array<{
       id: string;

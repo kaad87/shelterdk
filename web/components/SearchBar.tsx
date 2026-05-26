@@ -294,13 +294,20 @@ export function SearchBar({
   const facilityActiveCount =
     FILTER_OPTIONS.filter(({ key, group }) => group !== "primaer" && filters[key]).length +
     (filters.min_pladser && filters.min_pladser > 0 ? 1 : 0);
-  // Vis "Gem søgning"-knap kun når der er noget at gemme. At alerte på
-  // "alle shelters i Danmark" giver ingen mening og spammer brugeren.
+  // Vis "Gem søgning"-knap kun når der er noget GEMBART at gemme.
+  // Dato/confirmed_available gemmes IKKE i alerts (alerts er om nye
+  // shelters generelt, ikke dato-specifik ledighed), så de tæller ikke
+  // som "savable" — ellers viser vi knappen falsk og dropper data silent.
+  const savableActiveFilters =
+    FILTER_OPTIONS.filter(({ key }) => filters[key]).length +
+    (filters.min_pladser && filters.min_pladser > 0 ? 1 : 0);
   const hasSearchCriteria = Boolean(
     (region && region.trim()) ||
       (query && query.trim()) ||
-      totalActiveFilters > 0
+      savableActiveFilters > 0
   );
+  // Til modalen: er der et dato-filter der bliver droppet?
+  const hasDateFilterDropped = Boolean(filters.date);
   const saveSearchSummary = describeSavedSearch({
     region: region || null,
     q: query || null,
@@ -858,6 +865,7 @@ export function SearchBar({
         area={initialArea || null}
         filters={filters}
         summary={saveSearchSummary}
+        dateFilterDropped={hasDateFilterDropped}
       />
     </div>
   );

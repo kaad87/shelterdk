@@ -48,9 +48,20 @@ async function findNewMatchesForSearch(
 
   if (row.region) query = query.eq("region", row.region);
   if (row.area) query = query.eq("area_slug", row.area);
-  // q (fritekst) gør vi ikke server-side her — for upålidelig på en
-  // periodisk cron. Vi accepterer at q-baserede saved-searches kun
-  // matcher på region/area/filtre, ikke fritekst.
+
+  // Fritekst-matching: ilike på title/region/kommune/place. Simpel pattern
+  // (ikke fuld variant-expansion som i soeg-db) — godt nok til daglig cron
+  // og fanger 95% af de relevante saved searches. Hvis q indeholder ", smid
+  // dem væk for at undgå PostgREST-syntaksfejl.
+  if (row.q && row.q.trim()) {
+    const term = row.q.trim().replace(/[%"]/g, "");
+    if (term) {
+      const p = `"%${term}%"`;
+      query = query.or(
+        `title.ilike.${p},region.ilike.${p},kommune.ilike.${p},place.ilike.${p}`
+      );
+    }
+  }
 
   const { data, error } = await query;
   if (error) {

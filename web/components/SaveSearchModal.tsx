@@ -13,6 +13,12 @@ interface Props {
   filters: SoegFilters;
   /** Læsbar oversigt vist øverst — typisk "Bookbar i Jylland med toilet, vand". */
   summary: string;
+  /**
+   * Brugeren har et dato-/ledighedsfilter aktivt der IKKE gemmes i alerten
+   * (alerts er om nye shelters generelt, ikke datospecifik ledighed). Vises
+   * som en note så brugeren ikke bliver overrasket.
+   */
+  dateFilterDropped?: boolean;
 }
 
 type SubmitState =
@@ -21,7 +27,16 @@ type SubmitState =
   | { status: "success"; alreadyConfirmed: boolean }
   | { status: "error"; message: string };
 
-export function SaveSearchModal({ open, onClose, region, q, area, filters, summary }: Props) {
+export function SaveSearchModal({
+  open,
+  onClose,
+  region,
+  q,
+  area,
+  filters,
+  summary,
+  dateFilterDropped = false,
+}: Props) {
   const [email, setEmail] = useState("");
   const [website, setWebsite] = useState(""); // honeypot
   const [accepted, setAccepted] = useState(false);
@@ -149,6 +164,13 @@ export function SaveSearchModal({ open, onClose, region, q, area, filters, summa
                 </div>
                 <p className="text-sm text-primary leading-snug font-medium">{summary}</p>
               </div>
+
+              {dateFilterDropped && (
+                <p className="text-xs leading-snug text-primary/65 px-1">
+                  <strong>Bemærk:</strong> dit dato-/ledighedsfilter gemmes ikke i alerten.
+                  Vi sender dig besked om <em>nye shelters</em> der matcher dine øvrige kriterier — ikke om ledighed på specifikke datoer.
+                </p>
+              )}
 
               <div>
                 <label htmlFor="save-search-email" className="block text-xs font-semibold text-primary/60 mb-1">
