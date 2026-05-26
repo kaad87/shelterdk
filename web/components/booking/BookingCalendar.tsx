@@ -4,7 +4,7 @@ import { useState } from "react";
 import { DayPicker, type DateRange } from "react-day-picker";
 import { da } from "react-day-picker/locale";
 import { BOOKING_WINDOW_DAYS } from "@/lib/booking-config";
-import { isPastSameDayDeadline } from "@/lib/booking-deadline";
+import { getNowInTimeZone, isPastSameDayDeadline } from "@/lib/booking-deadline";
 
 interface BookingCalendarProps {
   unavailableDates: Record<string, "pending" | "confirmed" | "blocked">;
@@ -29,9 +29,11 @@ export function BookingCalendar({ unavailableDates, onRangeSelect, sameDayBookin
   const latestBookableDate = new Date(Date.now() + BOOKING_WINDOW_DAYS * 24 * 60 * 60 * 1000);
   latestBookableDate.setHours(0, 0, 0, 0);
   // Hvis ejeren har sat en tidsfrist og vi har passeret den i Europe/
-  // Copenhagen tid, skal "i dag" disables som check-in.
-  const todayIso = toIso(today);
-  const isTodayBlockedByDeadline = isPastSameDayDeadline(todayIso, sameDayBookingDeadline ?? null);
+  // Copenhagen tid, skal "i dag" disables som check-in. Vi bruger CPH-dato
+  // (ikke browserens lokale) så klienten og /api/book er enige om hvilken
+  // dag der tælles som "i dag" — vigtigt for gæster i andre tidszoner.
+  const todayIsoCph = getNowInTimeZone(new Date()).date;
+  const isTodayBlockedByDeadline = isPastSameDayDeadline(todayIsoCph, sameDayBookingDeadline ?? null);
 
   // When a check-in is selected but check-out isn't yet, find the first
   // unavailable night after the check-in so we can block everything from
@@ -102,7 +104,7 @@ export function BookingCalendar({ unavailableDates, onRangeSelect, sameDayBookin
           // Tidsfrist for samme-dag-booking: hvis vi er efter ejerens deadline,
           // kan i dag ikke vælges som ny check-in. Eksisterende selection (hvor
           // i dag allerede er check-in) håndteres af phase-2-blokken nedenfor.
-          if (isTodayBlockedByDeadline && iso === todayIso && !range?.from) {
+          if (isTodayBlockedByDeadline && iso === todayIsoCph && !range?.from) {
             return true;
           }
 
