@@ -154,6 +154,10 @@ export function SearchBar({
         params.set("region", normalizedRegion);
       }
       if (q.trim()) params.set("q", q.trim());
+      // Bevar `area` på tværs af filter/view-skift. Hvis det udelades her,
+      // falder det ud af URL'en så snart brugeren toggler en chip — og
+      // resultaterne udvides silent fra "i området X" til "i hele Danmark".
+      if (initialArea && initialArea.trim()) params.set("area", initialArea.trim());
       if (v) params.set("view", v);
       const active = f ?? filters;
       if (active.anmeldelser) params.set("anmeldelser", "1");
@@ -175,7 +179,7 @@ export function SearchBar({
       const s = params.toString();
       return basePage + (s ? `?${s}` : "");
     },
-    [filters]
+    [filters, initialArea]
   );
 
   const navigate = useCallback(
@@ -304,6 +308,7 @@ export function SearchBar({
   const hasSearchCriteria = Boolean(
     (region && region.trim()) ||
       (query && query.trim()) ||
+      (initialArea && initialArea.trim()) ||
       savableActiveFilters > 0
   );
   // Til modalen: er der et dato-filter der bliver droppet?
