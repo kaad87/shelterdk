@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     type: "magiclink",
     email: shelter.owner_email,
     options: {
-      redirectTo: `${SITE_ORIGIN}/ejer`,
+      redirectTo: `${SITE_ORIGIN}/ejer/dashboard`,
     },
   });
 
