@@ -109,10 +109,10 @@ export async function getFacilityCounts(): Promise<FacilityCounts> {
       base().eq("water", true),
       base().filter("geofa_raw->>baalplads", "ilike", "%ja%"),
       base().filter("geofa_raw->>hunde_tilladt", "ilike", "%ja%"),
-      base().filter("geofa_raw->>strand_naerhed", "eq", "Ja"),
-      base().filter("geofa_raw->>bruser_bad", "eq", "Ja"),
+      base().filter("geofa_raw->>strand_naerhed", "ilike", "%ja%"),
+      base().filter("geofa_raw->>bruser_bad", "ilike", "%ja%"),
       base().filter("geofa_raw->>betaling", "eq", "Nej"),
-      base().or("geofa_raw->>handicap.eq.Handicapegnet,geofa_raw->>handicap.eq.Delvist handicapegnet"),
+      base().or("geofa_raw->>handicap.ilike.Handicapegnet,geofa_raw->>handicap.ilike.Delvist handicapegnet"),
       listStructuredBookableShelters(),
     ]);
 
@@ -147,10 +147,10 @@ export async function getFacilityCountsForRegion(
       base().eq("water", true),
       base().filter("geofa_raw->>baalplads", "ilike", "%ja%"),
       base().filter("geofa_raw->>hunde_tilladt", "ilike", "%ja%"),
-      base().filter("geofa_raw->>strand_naerhed", "eq", "Ja"),
-      base().filter("geofa_raw->>bruser_bad", "eq", "Ja"),
+      base().filter("geofa_raw->>strand_naerhed", "ilike", "%ja%"),
+      base().filter("geofa_raw->>bruser_bad", "ilike", "%ja%"),
       base().filter("geofa_raw->>betaling", "eq", "Nej"),
-      base().or("geofa_raw->>handicap.eq.Handicapegnet,geofa_raw->>handicap.eq.Delvist handicapegnet"),
+      base().or("geofa_raw->>handicap.ilike.Handicapegnet,geofa_raw->>handicap.ilike.Delvist handicapegnet"),
       listStructuredBookableShelters(region),
     ]);
 
@@ -234,16 +234,16 @@ export async function getFreeCountForFilterRegion(
       query = query.filter("geofa_raw->>hunde_tilladt", "ilike", "%ja%");
       break;
     case "strand":
-      query = query.filter("geofa_raw->>strand_naerhed", "eq", "Ja");
+      query = query.filter("geofa_raw->>strand_naerhed", "ilike", "%ja%");
       break;
     case "bruser":
-      query = query.filter("geofa_raw->>bruser_bad", "eq", "Ja");
+      query = query.filter("geofa_raw->>bruser_bad", "ilike", "%ja%");
       break;
     case "booking":
       break;
     case "handicap":
       query = query.or(
-        "geofa_raw->>handicap.eq.Handicapegnet,geofa_raw->>handicap.eq.Delvist handicapegnet"
+        "geofa_raw->>handicap.ilike.Handicapegnet,geofa_raw->>handicap.ilike.Delvist handicapegnet"
       );
       break;
     default:
@@ -286,16 +286,16 @@ export async function getFilterRegionCount(
       query = query.filter("geofa_raw->>hunde_tilladt", "ilike", "%ja%");
       break;
     case "strand":
-      query = query.filter("geofa_raw->>strand_naerhed", "eq", "Ja");
+      query = query.filter("geofa_raw->>strand_naerhed", "ilike", "%ja%");
       break;
     case "bruser":
-      query = query.filter("geofa_raw->>bruser_bad", "eq", "Ja");
+      query = query.filter("geofa_raw->>bruser_bad", "ilike", "%ja%");
       break;
     case "booking":
       break;
     case "handicap":
       query = query.or(
-        "geofa_raw->>handicap.eq.Handicapegnet,geofa_raw->>handicap.eq.Delvist handicapegnet"
+        "geofa_raw->>handicap.ilike.Handicapegnet,geofa_raw->>handicap.ilike.Delvist handicapegnet"
       );
       break;
     default:
@@ -348,16 +348,16 @@ export async function getSheltersForFilterRegion(
       query = query.filter("geofa_raw->>hunde_tilladt", "ilike", "%ja%");
       break;
     case "strand":
-      query = query.filter("geofa_raw->>strand_naerhed", "eq", "Ja");
+      query = query.filter("geofa_raw->>strand_naerhed", "ilike", "%ja%");
       break;
     case "bruser":
-      query = query.filter("geofa_raw->>bruser_bad", "eq", "Ja");
+      query = query.filter("geofa_raw->>bruser_bad", "ilike", "%ja%");
       break;
     case "booking":
       break;
     case "handicap":
       query = query.or(
-        "geofa_raw->>handicap.eq.Handicapegnet,geofa_raw->>handicap.eq.Delvist handicapegnet"
+        "geofa_raw->>handicap.ilike.Handicapegnet,geofa_raw->>handicap.ilike.Delvist handicapegnet"
       );
       break;
     default:
@@ -390,7 +390,7 @@ export async function getStrandShelters(limit: number = 50): Promise<Shelter[]> 
     .from("shelters")
     .select(SHELTER_SELECT_LIST)
     .is("duplicate_of_shelter_id", null)
-    .filter("geofa_raw->>strand_naerhed", "eq", "Ja")
+    .filter("geofa_raw->>strand_naerhed", "ilike", "%ja%")
     .order("display_score", { ascending: false, nullsFirst: false })
     .order("title", { ascending: true })
     .limit(limit);
@@ -428,7 +428,7 @@ export async function getHandicapShelters(limit: number = 50): Promise<Shelter[]
     .from("shelters")
     .select(SHELTER_SELECT_LIST)
     .is("duplicate_of_shelter_id", null)
-    .or("geofa_raw->>handicap.eq.Handicapegnet,geofa_raw->>handicap.eq.Delvist handicapegnet")
+    .or("geofa_raw->>handicap.ilike.Handicapegnet,geofa_raw->>handicap.ilike.Delvist handicapegnet")
     .order("display_score", { ascending: false, nullsFirst: false })
     .order("title", { ascending: true })
     .limit(limit);
@@ -530,16 +530,16 @@ export async function getKommuneBreakdownForFilterRegion(
       query = query.filter("geofa_raw->>hunde_tilladt", "ilike", "%ja%");
       break;
     case "strand":
-      query = query.filter("geofa_raw->>strand_naerhed", "eq", "Ja");
+      query = query.filter("geofa_raw->>strand_naerhed", "ilike", "%ja%");
       break;
     case "bruser":
-      query = query.filter("geofa_raw->>bruser_bad", "eq", "Ja");
+      query = query.filter("geofa_raw->>bruser_bad", "ilike", "%ja%");
       break;
     case "booking":
       break;
     case "handicap":
       query = query.or(
-        "geofa_raw->>handicap.eq.Handicapegnet,geofa_raw->>handicap.eq.Delvist handicapegnet"
+        "geofa_raw->>handicap.ilike.Handicapegnet,geofa_raw->>handicap.ilike.Delvist handicapegnet"
       );
       break;
     default:

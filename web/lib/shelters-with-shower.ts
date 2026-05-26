@@ -25,7 +25,7 @@ export async function getSheltersWithShower(limit: number = 50): Promise<Shelter
     .from("shelters")
     .select(SHELTER_SELECT)
     .is("duplicate_of_shelter_id", null)
-    .filter("geofa_raw->>bruser_bad", "eq", "Ja")
+    .filter("geofa_raw->>bruser_bad", "ilike", "%ja%")
     .order("display_score", { ascending: false, nullsFirst: false })
     .order("title", { ascending: true })
     .limit(limit);

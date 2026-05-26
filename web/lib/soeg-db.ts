@@ -367,16 +367,16 @@ export async function getSheltersPage(
     query = query.filter("geofa_raw->>betaling", "eq", "Nej");
   }
   if (filters?.handicap) {
-    query = query.or("geofa_raw->>handicap.eq.Handicapegnet,geofa_raw->>handicap.eq.Delvist handicapegnet");
+    query = query.or("geofa_raw->>handicap.ilike.Handicapegnet,geofa_raw->>handicap.ilike.Delvist handicapegnet");
   }
   if (filters?.bord_baenk) {
-    query = query.filter("geofa_raw->>bord_baenk", "eq", "Ja");
+    query = query.filter("geofa_raw->>bord_baenk", "ilike", "%ja%");
   }
   if (filters?.strand) {
-    query = query.filter("geofa_raw->>strand_naerhed", "eq", "Ja");
+    query = query.filter("geofa_raw->>strand_naerhed", "ilike", "%ja%");
   }
   if (filters?.bruser) {
-    query = query.filter("geofa_raw->>bruser_bad", "eq", "Ja");
+    query = query.filter("geofa_raw->>bruser_bad", "ilike", "%ja%");
   }
   if (filters?.min_pladser && filters.min_pladser > 0) {
     query = query.gte("capacity", filters.min_pladser);
@@ -496,16 +496,16 @@ export async function getSheltersPage(
       fallbackQuery = fallbackQuery.filter("geofa_raw->>betaling", "eq", "Nej");
     }
     if (filters?.handicap) {
-      fallbackQuery = fallbackQuery.or("geofa_raw->>handicap.eq.Handicapegnet,geofa_raw->>handicap.eq.Delvist handicapegnet");
+      fallbackQuery = fallbackQuery.or("geofa_raw->>handicap.ilike.Handicapegnet,geofa_raw->>handicap.ilike.Delvist handicapegnet");
     }
     if (filters?.bord_baenk) {
-      fallbackQuery = fallbackQuery.filter("geofa_raw->>bord_baenk", "eq", "Ja");
+      fallbackQuery = fallbackQuery.filter("geofa_raw->>bord_baenk", "ilike", "%ja%");
     }
     if (filters?.strand) {
-      fallbackQuery = fallbackQuery.filter("geofa_raw->>strand_naerhed", "eq", "Ja");
+      fallbackQuery = fallbackQuery.filter("geofa_raw->>strand_naerhed", "ilike", "%ja%");
     }
     if (filters?.bruser) {
-      fallbackQuery = fallbackQuery.filter("geofa_raw->>bruser_bad", "eq", "Ja");
+      fallbackQuery = fallbackQuery.filter("geofa_raw->>bruser_bad", "ilike", "%ja%");
     }
     const { data: fallbackData } = await fallbackQuery.range(from, toInclusive);
     let list = (fallbackData as Shelter[]) ?? [];

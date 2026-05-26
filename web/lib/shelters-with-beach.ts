@@ -25,7 +25,7 @@ export async function getSheltersWithBeach(limit: number = 50): Promise<Shelter[
     .from("shelters")
     .select(SHELTER_SELECT)
     .is("duplicate_of_shelter_id", null)
-    .filter("geofa_raw->>strand_naerhed", "eq", "Ja")
+    .filter("geofa_raw->>strand_naerhed", "ilike", "%ja%")
     .order("display_score", { ascending: false, nullsFirst: false })
     .order("title", { ascending: true })
     .limit(limit);

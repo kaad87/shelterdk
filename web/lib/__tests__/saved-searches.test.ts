@@ -140,21 +140,25 @@ describe("matchesSavedSearch", () => {
   });
 });
 
-describe("matchesSavedSearch case-sensitivity (must mirror DB strict-eq)", () => {
-  it("strand kræver præcis 'Ja' (DB bruger strict eq)", () => {
+describe("matchesSavedSearch case-insensitive ja/nej matching", () => {
+  it("strand matcher case-insensitivt på 'ja' (robust mod casing-drift)", () => {
     expect(matchesSavedSearch(mkShelter({ geofa_raw: { strand_naerhed: "Ja" } }), { strand: true })).toBe(true);
-    expect(matchesSavedSearch(mkShelter({ geofa_raw: { strand_naerhed: "ja" } }), { strand: true })).toBe(false);
+    expect(matchesSavedSearch(mkShelter({ geofa_raw: { strand_naerhed: "ja" } }), { strand: true })).toBe(true);
+    expect(matchesSavedSearch(mkShelter({ geofa_raw: { strand_naerhed: "JA" } }), { strand: true })).toBe(true);
     expect(matchesSavedSearch(mkShelter({ geofa_raw: { strand_naerhed: "Nej" } }), { strand: true })).toBe(false);
+    expect(matchesSavedSearch(mkShelter({ geofa_raw: {} }), { strand: true })).toBe(false);
   });
-  it("bruser kræver præcis 'Ja'", () => {
+  it("bruser matcher case-insensitivt", () => {
     expect(matchesSavedSearch(mkShelter({ geofa_raw: { bruser_bad: "Ja" } }), { bruser: true })).toBe(true);
-    expect(matchesSavedSearch(mkShelter({ geofa_raw: { bruser_bad: "ja" } }), { bruser: true })).toBe(false);
+    expect(matchesSavedSearch(mkShelter({ geofa_raw: { bruser_bad: "ja" } }), { bruser: true })).toBe(true);
+    expect(matchesSavedSearch(mkShelter({ geofa_raw: { bruser_bad: "Nej" } }), { bruser: true })).toBe(false);
   });
-  it("bord_baenk kræver præcis 'Ja'", () => {
+  it("bord_baenk matcher case-insensitivt", () => {
     expect(matchesSavedSearch(mkShelter({ geofa_raw: { bord_baenk: "Ja" } }), { bord_baenk: true })).toBe(true);
-    expect(matchesSavedSearch(mkShelter({ geofa_raw: { bord_baenk: "ja" } }), { bord_baenk: true })).toBe(false);
+    expect(matchesSavedSearch(mkShelter({ geofa_raw: { bord_baenk: "ja" } }), { bord_baenk: true })).toBe(true);
+    expect(matchesSavedSearch(mkShelter({ geofa_raw: { bord_baenk: "Nej" } }), { bord_baenk: true })).toBe(false);
   });
-  it("handicap kræver én af de to præcise værdier", () => {
+  it("handicap accepterer både præcise værdier og casing-varianter", () => {
     expect(
       matchesSavedSearch(mkShelter({ geofa_raw: { handicap: "Handicapegnet" } }), { handicap: true })
     ).toBe(true);
@@ -163,13 +167,14 @@ describe("matchesSavedSearch case-sensitivity (must mirror DB strict-eq)", () =>
     ).toBe(true);
     expect(
       matchesSavedSearch(mkShelter({ geofa_raw: { handicap: "delvist handicapegnet" } }), { handicap: true })
-    ).toBe(false);
+    ).toBe(true);
     expect(
       matchesSavedSearch(mkShelter({ geofa_raw: { handicap: "Nej" } }), { handicap: true })
     ).toBe(false);
   });
-  it("gratis kræver præcis 'Nej' i betaling", () => {
+  it("gratis matcher case-insensitivt på 'nej' i betaling", () => {
     expect(matchesSavedSearch(mkShelter({ geofa_raw: { betaling: "Nej" } }), { gratis: true })).toBe(true);
+    expect(matchesSavedSearch(mkShelter({ geofa_raw: { betaling: "nej" } }), { gratis: true })).toBe(true);
     expect(matchesSavedSearch(mkShelter({ geofa_raw: { betaling: "Ja" } }), { gratis: true })).toBe(false);
   });
 });

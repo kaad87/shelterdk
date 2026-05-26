@@ -173,10 +173,10 @@ export function ShelterSchema({
     if (String(geofa.hunde_tilladt ?? "").toLowerCase().includes("ja")) {
       additionalProperties.push({ "@type": "PropertyValue", name: "Hund tilladt", value: "Ja" });
     }
-    if (String(geofa.strand_naerhed ?? "") === "Ja") {
+    if (String(geofa.strand_naerhed ?? "").toLowerCase().includes("ja")) {
       additionalProperties.push({ "@type": "PropertyValue", name: "Nær strand", value: "Ja" });
     }
-    if (String(geofa.bord_baenk ?? "") === "Ja") {
+    if (String(geofa.bord_baenk ?? "").toLowerCase().includes("ja")) {
       additionalProperties.push({ "@type": "PropertyValue", name: "Bord/bænk", value: "Ja" });
     }
   }

@@ -120,27 +120,23 @@ export function matchesSavedSearch(shelter: Shelter, filters: SoegFilters | null
     if (t !== "flush" && t !== "mulch") return false;
   }
   // For geofa-baserede filtre matcher vi præcis som DB-queryen i soeg-db.ts
-  // gør. Hvis vi var mere lempelige her, ville cron'en sende alerts om
-  // shelters som UI-filteret ikke viser — forvirrende for brugeren.
+  // gør. Konventionen er ilike "%ja%" (case-insensitive substring) for alle
+  // Ja/Nej-flag — robust mod casing- og whitespace-drift i GEOFA-data.
   const geofa = (shelter as Shelter & { geofa_raw?: Record<string, unknown> }).geofa_raw ?? {};
-  const geofaRaw = (key: string): string => String(geofa?.[key] ?? "");
-  const geofaLower = (key: string): string => geofaRaw(key).toLowerCase();
-  // hund + baalplads: DB bruger ilike "%ja%" (case-insensitive substring)
+  const geofaLower = (key: string): string => String(geofa?.[key] ?? "").toLowerCase();
   if (filters.hund && !geofaLower("hunde_tilladt").includes("ja")) return false;
   if (filters.baalplads && !geofaLower("baalplads").includes("ja")) return false;
-  // strand/bruser/bord_baenk: DB bruger eq "Ja" (strikt, stor J)
-  if (filters.bord_baenk && geofaRaw("bord_baenk") !== "Ja") return false;
-  if (filters.strand && geofaRaw("strand_naerhed") !== "Ja") return false;
-  if (filters.bruser && geofaRaw("bruser_bad") !== "Ja") return false;
-  // handicap: DB bruger or() med to strikte eq-værdier
+  if (filters.bord_baenk && !geofaLower("bord_baenk").includes("ja")) return false;
+  if (filters.strand && !geofaLower("strand_naerhed").includes("ja")) return false;
+  if (filters.bruser && !geofaLower("bruser_bad").includes("ja")) return false;
+  // handicap: DB bruger or() med to specifikke værdier; matchesSavedSearch
+  // bruger case-insensitive prefix-match for at fange casing-drift.
   if (filters.handicap) {
-    const h = geofaRaw("handicap");
-    if (h !== "Handicapegnet" && h !== "Delvist handicapegnet") return false;
+    const h = geofaLower("handicap");
+    if (!h.includes("handicapegnet") && !h.includes("delvist")) return false;
   }
-  // gratis: DB bruger eq "Nej" (strikt). Selvom chip'en er fjernet fra UI'et
-  // er feltet stadig en del af SoegFilters, og fremtidige re-introduktioner
-  // skal matche DB konsistent.
-  if (filters.gratis && geofaRaw("betaling") !== "Nej") return false;
+  // gratis: DB bruger eq "Nej" — case-insensitive her for samme robusthed.
+  if (filters.gratis && geofaLower("betaling") !== "nej") return false;
   if (filters.anmeldelser) {
     const reviews = shelter.google_user_ratings_total ?? 0;
     if (reviews <= 0) return false;
