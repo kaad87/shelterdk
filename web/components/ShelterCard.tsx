@@ -22,6 +22,13 @@ interface ShelterCardProps {
   availabilityState?: "available" | "booked" | "partial" | null;
   /** Aktiv søgedato (ISO YYYY-MM-DD) – bruges i badge-tekst. */
   activeDate?: string | null;
+  /**
+   * Deaktiver image-carousel selv hvis shelteret har flere billeder.
+   * Bruges i horisontalt-scrollende kontekster (forsidens "Populære
+   * shelters"-strip) hvor en indre swipe-gesture kæmper mod den ydre
+   * scroll og frustrerer brugeren. Vi viser blot første billede her.
+   */
+  disableCarousel?: boolean;
 }
 
 const IMAGE_LOAD_TIMEOUT_MS = 2500;
@@ -90,7 +97,7 @@ function formatDanishDate(iso: string): string {
   return new Intl.DateTimeFormat("da-DK", { day: "numeric", month: "long" }).format(d);
 }
 
-export function ShelterCard({ shelter, onImageError, href, priority, availabilityState, activeDate }: ShelterCardProps) {
+export function ShelterCard({ shelter, onImageError, href, priority, availabilityState, activeDate, disableCarousel = false }: ShelterCardProps) {
   const embeddedPlaces = shelter.google_places;
   const embeddedRefs = Array.isArray(embeddedPlaces)
     ? embeddedPlaces?.[0]?.photo_references
@@ -152,8 +159,11 @@ export function ShelterCard({ shelter, onImageError, href, priority, availabilit
 
   const linkHref = href ?? `/shelter/${shelter.slug}`;
 
-  // Mobile carousel for multi-image shelters
-  const useCarousel = isMobile && proxiedSrcs.length >= 2 && !gaveUp;
+  // Mobile carousel for multi-image shelters.
+  // disableCarousel slukker carousel'en selv ved multi-image — bruges når
+  // kortet sidder i en horisontalt-scrollende parent (forsidens
+  // "Populære shelters") for at undgå nested swipe-gesture-konflikt.
+  const useCarousel = isMobile && proxiedSrcs.length >= 2 && !gaveUp && !disableCarousel;
 
   const cardBody = (
     <div className="p-4">
