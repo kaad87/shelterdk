@@ -11,6 +11,9 @@ import type { SoegFilters } from "@/lib/soeg-db";
 
 export const dynamic = "force-dynamic";
 
+// `gratis` står IKKE her — chip'en er fjernet fra UI'et og parses ikke i
+// soeg-routerne. At tillade den her ville lade en payload skrive en
+// usynlig tilstand til DB som UI'et aldrig kan vise eller toggle.
 const ALLOWED_FILTER_KEYS = new Set<keyof SoegFilters>([
   "anmeldelser",
   "bookbar",
@@ -18,7 +21,6 @@ const ALLOWED_FILTER_KEYS = new Set<keyof SoegFilters>([
   "toilet",
   "hund",
   "baalplads",
-  "gratis",
   "handicap",
   "bord_baenk",
   "strand",

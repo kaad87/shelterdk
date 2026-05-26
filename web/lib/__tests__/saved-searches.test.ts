@@ -140,6 +140,40 @@ describe("matchesSavedSearch", () => {
   });
 });
 
+describe("matchesSavedSearch case-sensitivity (must mirror DB strict-eq)", () => {
+  it("strand kræver præcis 'Ja' (DB bruger strict eq)", () => {
+    expect(matchesSavedSearch(mkShelter({ geofa_raw: { strand_naerhed: "Ja" } }), { strand: true })).toBe(true);
+    expect(matchesSavedSearch(mkShelter({ geofa_raw: { strand_naerhed: "ja" } }), { strand: true })).toBe(false);
+    expect(matchesSavedSearch(mkShelter({ geofa_raw: { strand_naerhed: "Nej" } }), { strand: true })).toBe(false);
+  });
+  it("bruser kræver præcis 'Ja'", () => {
+    expect(matchesSavedSearch(mkShelter({ geofa_raw: { bruser_bad: "Ja" } }), { bruser: true })).toBe(true);
+    expect(matchesSavedSearch(mkShelter({ geofa_raw: { bruser_bad: "ja" } }), { bruser: true })).toBe(false);
+  });
+  it("bord_baenk kræver præcis 'Ja'", () => {
+    expect(matchesSavedSearch(mkShelter({ geofa_raw: { bord_baenk: "Ja" } }), { bord_baenk: true })).toBe(true);
+    expect(matchesSavedSearch(mkShelter({ geofa_raw: { bord_baenk: "ja" } }), { bord_baenk: true })).toBe(false);
+  });
+  it("handicap kræver én af de to præcise værdier", () => {
+    expect(
+      matchesSavedSearch(mkShelter({ geofa_raw: { handicap: "Handicapegnet" } }), { handicap: true })
+    ).toBe(true);
+    expect(
+      matchesSavedSearch(mkShelter({ geofa_raw: { handicap: "Delvist handicapegnet" } }), { handicap: true })
+    ).toBe(true);
+    expect(
+      matchesSavedSearch(mkShelter({ geofa_raw: { handicap: "delvist handicapegnet" } }), { handicap: true })
+    ).toBe(false);
+    expect(
+      matchesSavedSearch(mkShelter({ geofa_raw: { handicap: "Nej" } }), { handicap: true })
+    ).toBe(false);
+  });
+  it("gratis kræver præcis 'Nej' i betaling", () => {
+    expect(matchesSavedSearch(mkShelter({ geofa_raw: { betaling: "Nej" } }), { gratis: true })).toBe(true);
+    expect(matchesSavedSearch(mkShelter({ geofa_raw: { betaling: "Ja" } }), { gratis: true })).toBe(false);
+  });
+});
+
 describe("buildSavedSearchUrl edge cases", () => {
   it("dropper tomme strenge", () => {
     const url = buildSavedSearchUrl("https://shelterdk.dk", {
