@@ -160,6 +160,7 @@ export default async function BookShelterPage({ params }: Props) {
           shelterPriceDkk={shelter.shelter_price_dkk ?? 0}
           platformFeePct={shelter.platform_fee_pct}
           platformFeeMinDkk={shelter.platform_fee_min_dkk}
+          sameDayBookingDeadline={shelter.same_day_booking_deadline}
         />
       </div>
     </div>

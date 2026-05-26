@@ -22,6 +22,7 @@ export default async function EmbedBookPage({ params }: Props) {
           platformFeePct={shelter.platform_fee_pct}
           platformFeeMinDkk={shelter.platform_fee_min_dkk}
           successPath={`/embed/book/${shelter.slug}/tak`}
+          sameDayBookingDeadline={shelter.same_day_booking_deadline}
         />
       </div>
     </div>

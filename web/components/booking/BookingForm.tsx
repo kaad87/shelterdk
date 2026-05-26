@@ -20,6 +20,8 @@ interface BookingFormProps {
   shelterPriceDkk?: number;
   platformFeePct?: number;
   platformFeeMinDkk?: number;
+  /** TIME-streng fra DB (fx "17:00:00"). Null/undefined = ingen tidsfrist. */
+  sameDayBookingDeadline?: string | null;
 }
 
 function fmt(iso: string) {
@@ -110,6 +112,7 @@ export function BookingForm({
   hideTrustDetails = false,
   paymentMode = "after_confirmation", shelterPriceDkk = 0,
   platformFeePct = 5, platformFeeMinDkk = 25,
+  sameDayBookingDeadline = null,
 }: BookingFormProps) {
   const router = useRouter();
   const [availability, setAvailability] = useState<Record<string, "pending" | "confirmed" | "blocked">>({});
@@ -294,6 +297,7 @@ export function BookingForm({
             ) : (
               <BookingCalendar
                 unavailableDates={availability}
+                sameDayBookingDeadline={sameDayBookingDeadline}
                 onRangeSelect={(range) => {
                   setError(null);
                   setDateRange(range);

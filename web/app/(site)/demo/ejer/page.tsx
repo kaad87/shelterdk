@@ -31,6 +31,7 @@ const DEMO_SHELTER: BookableShelter = {
   platform_fee_min_dkk: 25,
   payment_mode: "after_confirmation",
   cancellation_cutoff_hours: 48,
+  same_day_booking_deadline: null,
   created_at: "2025-01-01T00:00:00Z",
 };
 

@@ -4,11 +4,14 @@ import { useState } from "react";
 import { DayPicker, type DateRange } from "react-day-picker";
 import { da } from "react-day-picker/locale";
 import { BOOKING_WINDOW_DAYS } from "@/lib/booking-config";
+import { isPastSameDayDeadline } from "@/lib/booking-deadline";
 
 interface BookingCalendarProps {
   unavailableDates: Record<string, "pending" | "confirmed" | "blocked">;
   onRangeSelect: (range: { checkIn: string; checkOut: string } | null) => void;
   maxPersons: number;
+  /** TIME-streng fra DB (fx "17:00:00"). Null/undefined = ingen tidsfrist. */
+  sameDayBookingDeadline?: string | null;
 }
 
 function toIso(d: Date): string {
@@ -18,13 +21,17 @@ function toIso(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
-export function BookingCalendar({ unavailableDates, onRangeSelect }: BookingCalendarProps) {
+export function BookingCalendar({ unavailableDates, onRangeSelect, sameDayBookingDeadline }: BookingCalendarProps) {
   const [range, setRange] = useState<DateRange | undefined>(undefined);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const latestBookableDate = new Date(Date.now() + BOOKING_WINDOW_DAYS * 24 * 60 * 60 * 1000);
   latestBookableDate.setHours(0, 0, 0, 0);
+  // Hvis ejeren har sat en tidsfrist og vi har passeret den i Europe/
+  // Copenhagen tid, skal "i dag" disables som check-in.
+  const todayIso = toIso(today);
+  const isTodayBlockedByDeadline = isPastSameDayDeadline(todayIso, sameDayBookingDeadline ?? null);
 
   // When a check-in is selected but check-out isn't yet, find the first
   // unavailable night after the check-in so we can block everything from
@@ -92,6 +99,12 @@ export function BookingCalendar({ unavailableDates, onRangeSelect }: BookingCale
         disabled={(d) => {
           if (d < today) return true;
           const iso = toIso(d);
+          // Tidsfrist for samme-dag-booking: hvis vi er efter ejerens deadline,
+          // kan i dag ikke vælges som ny check-in. Eksisterende selection (hvor
+          // i dag allerede er check-in) håndteres af phase-2-blokken nedenfor.
+          if (isTodayBlockedByDeadline && iso === todayIso && !range?.from) {
+            return true;
+          }
 
           // Phase 2: checkout-selection mode — check-in chosen, checkout not yet.
           if (range?.from && !range?.to) {

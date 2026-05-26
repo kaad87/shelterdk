@@ -16,6 +16,12 @@ export interface BookableShelter {
   platform_fee_min_dkk: number;
   payment_mode: "after_confirmation" | "upfront";
   cancellation_cutoff_hours: number; // default 48
+  /**
+   * Tidsfrist for samme-dag-booking i Europe/Copenhagen tid ("HH:MM:SS"
+   * fra Postgres TIME). Null = ingen tidsfrist (default). Bookings til
+   * fremtidige datoer berøres ikke.
+   */
+  same_day_booking_deadline: string | null;
   created_at: string;
 }
 

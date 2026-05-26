@@ -31,7 +31,7 @@ export async function PATCH(
         photo_order?: string[] | null;
       }
     | undefined;
-  const updates: Record<string, number> = {};
+  const updates: Record<string, number | string | null> = {};
 
   if ("cancellation_cutoff_hours" in body) {
     const cutoffHours = Number(body.cancellation_cutoff_hours);
@@ -39,6 +39,22 @@ export async function PATCH(
       return NextResponse.json({ error: "Ugyldig aflysningsfrist" }, { status: 400 });
     }
     updates.cancellation_cutoff_hours = cutoffHours;
+  }
+
+  if ("same_day_booking_deadline" in body) {
+    const raw = body.same_day_booking_deadline;
+    if (raw === null || raw === "") {
+      updates.same_day_booking_deadline = null;
+    } else if (typeof raw === "string" && /^([01]\d|2[0-3]):([0-5]\d)(?::[0-5]\d)?$/.test(raw.trim())) {
+      // Normaliser til HH:MM:SS som Postgres TIME forventer
+      const m = raw.trim().match(/^(\d{2}):(\d{2})(?::(\d{2}))?$/)!;
+      updates.same_day_booking_deadline = `${m[1]}:${m[2]}:${m[3] ?? "00"}`;
+    } else {
+      return NextResponse.json(
+        { error: "Ugyldig tidsfrist — brug formatet TT:MM (fx 17:00)" },
+        { status: 400 }
+      );
+    }
   }
 
   if ("shared_description" in body) {

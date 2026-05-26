@@ -58,6 +58,16 @@ export function ShelterGroupSettingsForm({
 }) {
   const [description, setDescription] = useState(sharedDescription);
   const [cutoffHours, setCutoffHours] = useState<string>(String(shelters[0].cancellation_cutoff_hours));
+  // Tidsfrist for samme-dag-booking. Vi læser fra første shelter — UI'et
+  // skriver til alle i gruppen via PATCH-endpointet.
+  const initialDeadline = (() => {
+    const raw = shelters[0].same_day_booking_deadline;
+    if (!raw) return "";
+    // Postgres TIME serialiseres som "HH:MM:SS"; vi viser kun HH:MM i UI.
+    const m = String(raw).match(/^(\d{2}):(\d{2})/);
+    return m ? `${m[1]}:${m[2]}` : "";
+  })();
+  const [sameDayDeadline, setSameDayDeadline] = useState<string>(initialDeadline);
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [settingsMsg, setSettingsMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -219,6 +229,7 @@ export function ShelterGroupSettingsForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           cancellation_cutoff_hours: Number(cutoffHours),
+          same_day_booking_deadline: sameDayDeadline ? sameDayDeadline : null,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -557,19 +568,50 @@ export function ShelterGroupSettingsForm({
 
       <section className="rounded-2xl border border-primary/8 bg-white shadow-sm p-6 space-y-6">
         <div>
-          <h2 className="font-serif text-xl font-bold text-primary">Aflysningspolitik</h2>
+          <h2 className="font-serif text-xl font-bold text-primary">Booking-regler</h2>
           <p className="text-sm text-primary/50 mt-1">
             Gælder for alle shelters på pladsen. Pris, gebyr og betalingsopsætning styres af ShelterDK i admin.
           </p>
-          <div className="mt-4 max-w-xs">
-            <label className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1.5">Frist (timer)</label>
-            <input
-              type="number"
-              min={0}
-              value={cutoffHours}
-              onChange={(e) => setCutoffHours(e.target.value)}
-              className="w-full rounded-xl border border-primary/15 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent/35"
-            />
+
+          <div className="mt-5 grid sm:grid-cols-2 gap-5">
+            <div>
+              <label htmlFor="cancellation-cutoff" className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1.5">
+                Aflysningsfrist (timer før check-in)
+              </label>
+              <input
+                id="cancellation-cutoff"
+                type="number"
+                min={0}
+                value={cutoffHours}
+                onChange={(e) => setCutoffHours(e.target.value)}
+                className="w-full rounded-xl border border-primary/15 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent/35"
+              />
+              <p className="mt-1.5 text-xs text-primary/50">
+                Hvor mange timer før check-in en gæst senest kan aflyse og få refusion.
+              </p>
+            </div>
+
+            <div>
+              <label htmlFor="same-day-deadline" className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1.5">
+                Tidsfrist for samme-dag-booking
+              </label>
+              <select
+                id="same-day-deadline"
+                value={sameDayDeadline}
+                onChange={(e) => setSameDayDeadline(e.target.value)}
+                className="w-full rounded-xl border border-primary/15 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent/35"
+              >
+                <option value="">Ingen tidsfrist (gæster kan booke døgnet rundt)</option>
+                <option value="12:00">Senest kl. 12:00 (middag)</option>
+                <option value="15:00">Senest kl. 15:00</option>
+                <option value="17:00">Senest kl. 17:00</option>
+                <option value="18:00">Senest kl. 18:00</option>
+                <option value="20:00">Senest kl. 20:00</option>
+              </select>
+              <p className="mt-1.5 text-xs text-primary/50">
+                Efter denne tid kan gæster ikke booke til samme dag. Bookings til i morgen og frem berøres ikke.
+              </p>
+            </div>
           </div>
         </div>
 

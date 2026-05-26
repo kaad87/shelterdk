@@ -22,6 +22,7 @@ import { sendGa4Event } from "@/lib/server-analytics";
 import { BOOKING_WINDOW_DAYS } from "@/lib/booking-config";
 import { recordBookingMonitorError, recordBookingMonitorEvent } from "@/lib/booking-monitor";
 import { enforcePublicRateLimit } from "@/lib/public-rate-limit";
+import { formatDeadlineLabel, isPastSameDayDeadline } from "@/lib/booking-deadline";
 
 export const dynamic = "force-dynamic";
 
@@ -100,6 +101,18 @@ export async function POST(
     return NextResponse.json(
       { error: `Du kan højst booke ${BOOKING_WINDOW_DAYS} dage frem.` },
       { status: 400 }
+    );
+  }
+  // Tidsfrist for samme-dag-booking: hvis ejeren har sat en deadline og
+  // aktuel tid (Europe/Copenhagen) har passeret den, blokerer vi nye
+  // bookings til i dag. Bookings til fremtidige datoer berøres ikke.
+  if (isPastSameDayDeadline(check_in, shelter.same_day_booking_deadline)) {
+    const label = formatDeadlineLabel(shelter.same_day_booking_deadline) ?? "i dag";
+    return NextResponse.json(
+      {
+        error: `Booking til i dag er lukket efter ${label}. Vælg en dato fra i morgen og frem.`,
+      },
+      { status: 422 }
     );
   }
   if (!accepted_terms)
