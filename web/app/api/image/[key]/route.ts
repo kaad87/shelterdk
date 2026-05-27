@@ -1,4 +1,4 @@
-import { handleImageRequest } from "./_shared";
+import { handleImageRequest } from "../_shared";
 
 export const runtime = "nodejs";
 

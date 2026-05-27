@@ -120,7 +120,9 @@ export function ShelterCard({ shelter, onImageError, href, priority, availabilit
     const lower = u.toLowerCase();
     return !BROKEN_PATTERNS.some((pat) => lower.includes(pat));
   });
-  const proxiedSrcs = displayableUrls.map((u) => getProxiedImageSrc(u, { q: 70 }));
+  // Card-billeder er en af de mest sete flader på sitet. Giv proxyen en fast
+  // thumbnail-bredde, så vi ikke sender store originals rundt til lister.
+  const proxiedSrcs = displayableUrls.map((u) => getProxiedImageSrc(u, { q: 70, w: 720 }));
 
   const [cardImageIndex, setCardImageIndex] = useState(0);
   const [gaveUp, setGaveUp] = useState(false);

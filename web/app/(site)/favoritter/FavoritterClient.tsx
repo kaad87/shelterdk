@@ -14,7 +14,7 @@ export function FavoritterClient() {
     () =>
       (items ?? []).map((item) => {
         const imageSrc = item.imageUrl
-          ? getProxiedImageSrc(item.imageUrl, { q: 70, w: 320 })
+          ? getProxiedImageSrc(item.imageUrl, { q: 65, w: 240 })
           : null;
         return {
           ...item,

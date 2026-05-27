@@ -35,15 +35,59 @@ export function isHttpUrl(value: string): boolean {
 }
 
 /** Hosts vi springer proxy over for (fx signed URLs der kun virker i browser). */
-const SKIP_PROXY_HOSTS = new Set(["lh3.googleusercontent.com"]);
+const STATIC_SKIP_PROXY_HOSTS = new Set([
+  "lh3.googleusercontent.com",
+  "images.unsplash.com",
+  "plus.unsplash.com",
+  "unsplash.com",
+  "mapcentia-www.s3-eu-west-1.amazonaws.com",
+  "dynamic-media-cdn.tripadvisor.com",
+  "cdn.campanyon.com",
+  "media.glampinghub.com",
+  "placehold.co",
+]);
+
+function getSkipProxyHosts(): Set<string> {
+  const hosts = new Set(STATIC_SKIP_PROXY_HOSTS);
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (typeof supabaseUrl === "string" && supabaseUrl.trim()) {
+    try {
+      hosts.add(new URL(supabaseUrl).hostname);
+    } catch {
+      // ignore malformed env value
+    }
+  }
+  return hosts;
+}
+
+function isAlreadyProxiedUrl(url: string): boolean {
+  return url.startsWith("/api/image/") || url.includes("/api/image?url=");
+}
+
+export function computeImageProxyKey(
+  url: string,
+  opts?: { q?: number; w?: number },
+): string {
+  const input = `${url.trim()}|q:${opts?.q ?? ""}|w:${opts?.w ?? ""}`;
+  let hash = 2166136261;
+  for (let i = 0; i < input.length; i += 1) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(16).padStart(8, "0");
+}
 
 export function isUnoptimizedImageUrl(url: string): boolean {
   if (!url || typeof url !== "string") return false;
   const u = url.trim();
+  // Når et billede allerede går gennem vores egen /api/image-proxy, skal det
+  // ikke bagefter igennem Netlifys /_next/image-optimering også. Ellers får
+  // vi et dyrt dobbelt-hop: upstream -> /api/image -> /_next/image -> browser.
+  if (isAlreadyProxiedUrl(u)) return true;
   if (u.startsWith("/api/google-photo")) return true;
   if (!isHttpUrl(u)) return false;
   try {
-    return SKIP_PROXY_HOSTS.has(new URL(u).hostname);
+    return getSkipProxyHosts().has(new URL(u).hostname);
   } catch {
     return false;
   }
@@ -63,16 +107,20 @@ export function getProxiedImageSrc(
   ].join("");
 
   // Already proxied — just append opts
+  if (u.startsWith("/api/image/")) {
+    if (!suffix) return u;
+    return `${u}${u.includes("?") ? "&" : "?"}${suffix.slice(1)}`;
+  }
   if (u.includes("/api/image?url=")) return u + suffix;
   if (u.startsWith("/api/google-photo")) return u;
 
   if (!isHttpUrl(u)) return u;
   try {
     const host = new URL(u).hostname;
-    if (SKIP_PROXY_HOSTS.has(host)) return u;
+    if (getSkipProxyHosts().has(host)) return u;
   } catch {
     // invalid URL, proxy anyway
   }
-  return `/api/image?url=${encodeURIComponent(u)}${suffix}`;
+  const key = computeImageProxyKey(u, opts);
+  return `/api/image/${key}?url=${encodeURIComponent(u)}${suffix}`;
 }
-

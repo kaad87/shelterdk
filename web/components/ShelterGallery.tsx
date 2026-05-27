@@ -40,7 +40,7 @@ export function ShelterGallery({
   const proxiedUrls = urls
     .map((u) => {
       const p = getProxiedImageSrc(u);
-      if (p.includes("/api/image?url=")) return `${p}&w=${HERO_W}`;
+      if (p.startsWith("/api/image/")) return `${p}${p.includes("?") ? "&" : "?"}w=${HERO_W}`;
       return p;
     })
     .filter((p) => p.trim().length > 0);
@@ -213,8 +213,10 @@ export function ShelterGallery({
             {toShow.map((url, i) => {
               const thumbUrl = url.startsWith("/api/google-photo")
                 ? url.replace(/([?&])maxwidth=\d+/i, `$1maxwidth=${THUMB_W}`)
-                : url.includes("/api/image?url=")
-                  ? url.replace(/([?&])w=\d+/i, `$1w=${THUMB_W}`)
+                : url.startsWith("/api/image/")
+                  ? url.includes("&w=") || url.includes("?w=")
+                    ? url.replace(/([?&])w=\d+/i, `$1w=${THUMB_W}`)
+                    : `${url}${url.includes("?") ? "&" : "?"}w=${THUMB_W}`
                   : url;
               return (
                 <button
