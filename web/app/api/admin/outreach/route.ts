@@ -66,6 +66,34 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient();
 
+  // Håndhæv "ingen double-mail" server-side også. UI'et skjuler allerede
+  // typisk sendte kandidater, men replayede requests eller status=all må
+  // ikke kunne sende samme outreach igen ved et uheld.
+  const { data: existingReview, error: existingReviewErr } = await admin
+    .from("outreach_review")
+    .select("status, sent_at, recipient_email")
+    .eq("shelter_id", shelterId)
+    .maybeSingle();
+
+  if (existingReviewErr) {
+    return NextResponse.json(
+      { error: `Kunne ikke tjekke outreach-status: ${existingReviewErr.message}` },
+      { status: 500 }
+    );
+  }
+
+  if (existingReview?.status === "sent") {
+    return NextResponse.json(
+      {
+        error:
+          existingReview.sent_at
+            ? `Der er allerede sendt outreach til dette shelter (${existingReview.recipient_email ?? "ukendt modtager"}) den ${new Date(existingReview.sent_at).toLocaleDateString("da-DK")}.`
+            : "Der er allerede sendt outreach til dette shelter.",
+      },
+      { status: 409 }
+    );
+  }
+
   // Hent shelter + template
   const [shelterRes, templateRes] = await Promise.all([
     admin

@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { OutreachReviewQueue } from "@/components/OutreachReviewQueue";
 
 const STORAGE_KEY = "shelterdk-admin-secret";
 
 function OutreachContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const urlSecret = searchParams.get("secret") ?? "";
   const [secret] = useState(() => {
@@ -16,6 +17,14 @@ function OutreachContent() {
     }
     return sessionStorage.getItem(STORAGE_KEY) ?? "";
   });
+
+  useEffect(() => {
+    if (!urlSecret) return;
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("secret");
+    const next = params.toString();
+    router.replace(next ? `?${next}` : "/admin/outreach", { scroll: false });
+  }, [router, searchParams, urlSecret]);
 
   if (!secret) {
     return (
