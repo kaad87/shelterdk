@@ -10,7 +10,7 @@ export type EmailLogStatus =
   | "delivered"
   | "bounced"
   | "complained";
-export type EmailLogCategory = "booking" | "owner_portal" | "monitor" | "contact" | "newsletter";
+export type EmailLogCategory = "booking" | "owner_portal" | "monitor" | "contact" | "newsletter" | "outreach";
 
 export interface EmailLogInput {
   category?: EmailLogCategory;
