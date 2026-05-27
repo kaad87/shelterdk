@@ -48,16 +48,12 @@ const STATIC_SKIP_PROXY_HOSTS = new Set([
 ]);
 
 function getSkipProxyHosts(): Set<string> {
-  const hosts = new Set(STATIC_SKIP_PROXY_HOSTS);
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (typeof supabaseUrl === "string" && supabaseUrl.trim()) {
-    try {
-      hosts.add(new URL(supabaseUrl).hostname);
-    } catch {
-      // ignore malformed env value
-    }
-  }
-  return hosts;
+  // BEMÆRK: Supabase storage er IKKE en image-CDN — den leverer rå filer
+  // uden transformation. Vi MÅ ikke skippe proxy for Supabase, ellers
+  // sendes 3-5 MB owner-uploadede iPhone-fotos direkte til browseren
+  // til 200px thumbnails. Skip-listen er kun til hosts der allerede
+  // leverer optimerede billeder (Unsplash, Tripadvisor, Glamping Hub osv).
+  return STATIC_SKIP_PROXY_HOSTS;
 }
 
 function isAlreadyProxiedUrl(url: string): boolean {
