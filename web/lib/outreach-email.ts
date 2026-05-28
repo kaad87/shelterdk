@@ -13,6 +13,20 @@ interface SendOutreachOpts {
   /** Plain text body — kommer fra brugerredigerbar template. */
   body: string;
   shelterId?: string | null;
+  /** Sæt true for testmails — så admin ikke får en BCC-kopi af sin egen test. */
+  skipBcc?: boolean;
+}
+
+/**
+ * BCC-modtagere af outreach-mails. Sættes via OUTREACH_BCC_EMAIL i env
+ * (komma-separeret for flere). Tom = ingen BCC. Usynlig for modtageren.
+ */
+function outreachBccRecipients(): string[] {
+  const raw = process.env.OUTREACH_BCC_EMAIL?.trim() ?? "";
+  return raw
+    .split(",")
+    .map((v) => v.trim())
+    .filter(Boolean);
 }
 
 const LINK_STYLE = "color:#8A6A26;text-decoration:underline;word-break:break-all";
@@ -71,12 +85,14 @@ export async function sendOutreachEmail(opts: SendOutreachOpts): Promise<void> {
       ${bodyToHtml(opts.body)}
     </div>
   `;
+  const bcc = opts.skipBcc ? [] : outreachBccRecipients();
   await sendLoggedEmail({
     to: opts.toEmail,
     subject: opts.subject,
     html,
     text: opts.body,
     replyTo: "hej@shelterdk.dk",
+    ...(bcc.length > 0 ? { bcc } : {}),
     context: {
       category: "outreach",
       emailType: "outreach_owner_invite",

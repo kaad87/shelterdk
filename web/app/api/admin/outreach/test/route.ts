@@ -92,6 +92,7 @@ export async function POST(req: NextRequest) {
       subject: `[TEST] ${rendered.subject}`,
       body: rendered.body,
       shelterId: shelterId || null,
+      skipBcc: true,
     });
   } catch (err) {
     return NextResponse.json(

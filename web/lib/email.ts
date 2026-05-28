@@ -60,6 +60,8 @@ export async function sendLoggedEmail(opts: {
   html: string;
   text: string;
   replyTo?: string;
+  /** Optional BCC — fx en intern kopi til admin. Usynlig for hovedmodtageren. */
+  bcc?: string | string[];
   /** Optional List-Unsubscribe URL — included for newsletter / promotional sends. */
   unsubscribeUrl?: string;
   context: SendLoggedEmailContext;
@@ -115,9 +117,13 @@ export async function sendLoggedEmail(opts: {
 
   let failureLogged = false;
   try {
+    const bccList = (Array.isArray(opts.bcc) ? opts.bcc : opts.bcc ? [opts.bcc] : [])
+      .map((b) => b.trim())
+      .filter(Boolean);
     const result = await getResend().emails.send({
       from: FROM_EMAIL,
       to: recipients,
+      ...(bccList.length > 0 ? { bcc: bccList } : {}),
       ...(opts.replyTo ? { replyTo: opts.replyTo } : {}),
       ...(Object.keys(headers).length > 0 ? { headers } : {}),
       subject: opts.subject,
