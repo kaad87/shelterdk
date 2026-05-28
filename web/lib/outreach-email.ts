@@ -15,17 +15,53 @@ interface SendOutreachOpts {
   shelterId?: string | null;
 }
 
-function bodyToHtml(body: string): string {
-  // Konverter ren tekst til HTML: split på dobbelt-newline = paragraf,
-  // single newline = <br/>. Auto-linkifyer http(s)-URLs.
-  const escaped = escapeHtml(body);
-  const withLinks = escaped.replace(
+const LINK_STYLE = "color:#8A6A26;text-decoration:underline;word-break:break-all";
+const P_STYLE = "font-size:15px;line-height:1.65;color:#2C3E50;margin:0 0 16px 0";
+const LIST_STYLE = "font-size:15px;line-height:1.65;color:#2C3E50;margin:0 0 16px 0;padding-left:22px";
+const LI_STYLE = "margin:0 0 7px 0";
+
+/** Inline-formatering på allerede HTML-escaped tekst: **fed** + auto-links. */
+function inlineFormat(text: string): string {
+  // **fed** → <strong> (gør det før links, så bold ikke spiser URL'er)
+  let out = text.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  out = out.replace(
     /(https?:\/\/[^\s<]+)/g,
-    (url) => `<a href="${url}" style="color:#8A6A26;text-decoration:underline;word-break:break-all">${url}</a>`
+    (url) => `<a href="${url}" style="${LINK_STYLE}">${url}</a>`
   );
-  const paragraphs = withLinks.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
-  return paragraphs
-    .map((p) => `<p style="font-size:15px;line-height:1.65;color:#2C3E50;margin:0 0 16px 0">${p.replace(/\n/g, "<br/>")}</p>`)
+  return out;
+}
+
+/**
+ * Konverter brugerredigerbar plain-text/markdown-lite til pæn HTML:
+ * - blank linje = nyt afsnit
+ * - linjer der starter med "- " (eller "•") = punktliste
+ * - linjer der starter med "1. ", "2. " = nummereret liste
+ * - **fed** = bold, http(s)-URLs auto-linkes
+ */
+export function bodyToHtml(body: string): string {
+  const escaped = escapeHtml(body);
+  const blocks = escaped.split(/\n\s*\n/).map((b) => b.trim()).filter(Boolean);
+
+  return blocks
+    .map((block) => {
+      const lines = block.split("\n").map((l) => l.trim()).filter(Boolean);
+      const allBullets = lines.length > 0 && lines.every((l) => /^[-•]\s+/.test(l));
+      const allNumbered = lines.length > 0 && lines.every((l) => /^\d+\.\s+/.test(l));
+
+      if (allBullets) {
+        const items = lines
+          .map((l) => `<li style="${LI_STYLE}">${inlineFormat(l.replace(/^[-•]\s+/, ""))}</li>`)
+          .join("");
+        return `<ul style="${LIST_STYLE}">${items}</ul>`;
+      }
+      if (allNumbered) {
+        const items = lines
+          .map((l) => `<li style="${LI_STYLE}">${inlineFormat(l.replace(/^\d+\.\s+/, ""))}</li>`)
+          .join("");
+        return `<ol style="${LIST_STYLE}">${items}</ol>`;
+      }
+      return `<p style="${P_STYLE}">${inlineFormat(lines.join("<br/>"))}</p>`;
+    })
     .join("");
 }
 

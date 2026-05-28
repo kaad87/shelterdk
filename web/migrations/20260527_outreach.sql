@@ -54,21 +54,21 @@ Ejer-dashboardet (din side): https://shelterdk.dk/demo/ejer
 
 Du kan klikke rundt i begge links og se præcis, hvad en gæst oplever, og hvad du som ejer ser.
 
-Her er hvad systemet gør for jer i praksis:
+**Her er hvad systemet gør for jer i praksis:**
 
-- Gæsten booker via system: Gennem vores system kan brugere booke shelteret ud i fremtiden.
-- Du godkender eller afviser: Du beholder fuld kontrol. Systemet sender bare besked og lukker datoerne automatisk.
-- Eller: Hvis man foretrækker det, kan systemet også sættes op, så gæsten booker med det samme uden at vente på godkendelse. Det er allerede indbygget — vi vælger bare, hvad der passer jer bedst.
-- Kalendersynkronisering: Bookinger fra systemet opdaterer automatisk jeres kalender, hvis det ønskes, og manuelle bookinger I selv laver blokerer datoerne online.
-- Besked-system: Mulighed for at kommunikere med den besøgende ved at sende beskeder frem og tilbage på en fast platform.
-- Autogenerede beskeder: Systemet sender autogenerede beskeder baseret på dit shelter og specifikke ønsker i beskeden.
+- **Gæsten booker via system:** Gennem vores system kan brugere booke shelteret ud i fremtiden.
+- **Du godkender eller afviser:** Du beholder fuld kontrol. Systemet sender bare besked og lukker datoerne automatisk.
+- **Eller book med det samme:** Hvis man foretrækker det, kan systemet også sættes op, så gæsten booker uden at vente på godkendelse. Det er allerede indbygget — vi vælger bare, hvad der passer jer bedst.
+- **Kalendersynkronisering:** Bookinger fra systemet opdaterer automatisk jeres kalender, hvis det ønskes, og manuelle bookinger I selv laver blokerer datoerne online.
+- **Besked-system:** Mulighed for at kommunikere med den besøgende ved at sende beskeder frem og tilbage på en fast platform.
+- **Autogenerede beskeder:** Systemet sender autogenerede beskeder baseret på dit shelter og specifikke ønsker i beskeden.
 
 Systemet er også fleksibelt i forhold til, hvor bookingen skal ligge. Vil I have det på jeres egen hjemmeside, sætter vi det ind der som et lille vindue — gæsten behøver aldrig forlade jeres side. Foretrækker I at bookingen ligger på ShelterDK.dk, kan vi også det. Begge løsninger er allerede bygget og klar.
 
 For at systemet kan køre rundt, er det skruet sådan sammen, at det koster brugeren et lille bookinggebyr. Det gør vi af to årsager:
 
-1. Det dækker mine udgifter til at udvikle og drive det bagvedliggende IT-system.
-2. Det minimerer "no-shows". Erfaringen viser, at hvis bookinger er 100 % gratis, har folk en tendens til at booke mange weekender langt ud i fremtiden "bare for at være sikre" — for derefter ikke at dukke op. Det er lige nu et kæmpe problem. Et lille gebyr gør bookingen forpligtende, så jeres shelter ikke står tomt til gene for andre.
+1. **Det dækker driften:** Mine udgifter til at udvikle og drive det bagvedliggende IT-system.
+2. **Det minimerer "no-shows":** Erfaringen viser, at hvis bookinger er 100 % gratis, har folk en tendens til at booke mange weekender langt ud i fremtiden "bare for at være sikre" — for derefter ikke at dukke op. Et lille gebyr gør bookingen forpligtende, så jeres shelter ikke står tomt til gene for andre.
 
 For at gøre det hele så enkelt som muligt for jeres gæster arbejder jeg på at producere fysiske skilte til de shelters, der er med i systemet. Skiltet hænges op på shelteret og fortæller besøgende, at stedet skal bookes med en QR-kode der tager dem direkte til booking-siden. På den måde undgår vi situationen, hvor en gæst der har booket og rejst langt, ankommer til et shelter der allerede er optaget af nogen, som ikke var klar over at stedet skal bookes på forhånd.
 
