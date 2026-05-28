@@ -365,14 +365,39 @@ export async function getSheltersForFilterRegion(
   }
 
   if (filterKey === "booking") {
-    const shelters = await fetchAllShelterRows<Shelter>(SHELTER_SELECT_LIST, (baseQuery) =>
-      baseQuery
-        .is("duplicate_of_shelter_id", null)
-        .eq("region", region)
-        .order("display_score", { ascending: false, nullsFirst: false })
-        .order("title", { ascending: true })
+    // Booking kan ikke filtreres rent i DB (isStructuredBookable er sammensat
+    // logik). FØR hentede vi ALLE region-shelters med google_places-join og
+    // filtrerede i memory — men ~700 rækker med join ramte Postgres'
+    // statement timeout (57014) under static build. I stedet:
+    //   1) let scan (ingen join) for at finde de bookbare + sortere
+    //   2) tung display-fetch for KUN top-N der faktisk vises
+    const lightRows = await fetchAllShelterRows<Shelter>(
+      "id, booking_url, booking_link_mode, display_score, title, bookable_shelters(id)",
+      (baseQuery) => baseQuery.is("duplicate_of_shelter_id", null).eq("region", region)
     );
-    return shelters.filter((shelter) => isStructuredBookable(shelter)).slice(0, limit);
+    const topIds = lightRows
+      .filter((shelter) => isStructuredBookable(shelter))
+      .sort((a, b) => {
+        const ds = (b.display_score ?? 0) - (a.display_score ?? 0);
+        return ds !== 0 ? ds : (a.title || "").localeCompare(b.title || "", "da");
+      })
+      .slice(0, limit)
+      .map((s) => s.id);
+    if (topIds.length === 0) return [];
+
+    const { data, error } = await supabase
+      .from("shelters")
+      .select(SHELTER_SELECT_LIST)
+      .in("id", topIds);
+    if (error || !data) {
+      console.error("fakta-db: getSheltersForFilterRegion booking detail", error);
+      return [];
+    }
+    // Bevar sorteringen fra light-scanningen (én ID-rækkefølge).
+    const order = new Map(topIds.map((id, i) => [id, i]));
+    return (data as Shelter[]).sort(
+      (a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0)
+    );
   }
 
   const { data, error } = await query;
