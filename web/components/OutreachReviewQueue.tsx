@@ -97,6 +97,8 @@ export function OutreachReviewQueue({ secret }: Props) {
   const [templateOpen, setTemplateOpen] = useState(false);
   const [templateSaving, setTemplateSaving] = useState(false);
   const [templateMsg, setTemplateMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [testEmail, setTestEmail] = useState("");
+  const [testSending, setTestSending] = useState(false);
 
   // Preview-modal
   const [previewFor, setPreviewFor] = useState<OutreachCandidate | null>(null);
@@ -161,6 +163,29 @@ export function OutreachReviewQueue({ secret }: Props) {
       setTemplateMsg({ ok: false, text: "Netværksfejl" });
     } finally {
       setTemplateSaving(false);
+    }
+  };
+
+  const sendTestEmail = async () => {
+    if (!testEmail.includes("@")) {
+      setTemplateMsg({ ok: false, text: "Indtast en gyldig e-mail til testmailen" });
+      return;
+    }
+    setTestSending(true);
+    setTemplateMsg(null);
+    try {
+      const res = await fetch(`/api/admin/outreach/test`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders },
+        body: JSON.stringify({ email: testEmail }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) setTemplateMsg({ ok: false, text: json.error ?? "Kunne ikke sende testmail" });
+      else setTemplateMsg({ ok: true, text: `Testmail sendt til ${testEmail}` });
+    } catch {
+      setTemplateMsg({ ok: false, text: "Netværksfejl" });
+    } finally {
+      setTestSending(false);
     }
   };
 
@@ -318,6 +343,34 @@ export function OutreachReviewQueue({ secret }: Props) {
             {templateMsg && (
               <span className={`text-sm ${templateMsg.ok ? "text-emerald-700" : "text-red-600"}`}>{templateMsg.text}</span>
             )}
+          </div>
+
+          {/* Send testmail — se det faktiske HTML-output i din egen indbakke */}
+          <div className="flex flex-wrap items-end gap-2 pt-3 border-t border-primary/10">
+            <div className="flex-1 min-w-[200px]">
+              <label htmlFor="test-email" className="block text-xs font-semibold text-primary/60 uppercase tracking-wide mb-1">
+                Send testmail til
+              </label>
+              <input
+                id="test-email"
+                type="email"
+                value={testEmail}
+                onChange={(e) => setTestEmail(e.target.value)}
+                placeholder="din@email.dk"
+                className="w-full rounded-lg border border-primary/15 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/35"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={sendTestEmail}
+              disabled={testSending || !testEmail}
+              className="rounded-lg border border-primary/20 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/5 disabled:opacity-50"
+            >
+              {testSending ? "Sender…" : "Send testmail"}
+            </button>
+            <span className="text-xs text-primary/45 w-full">
+              Sender den gemte template med eksempel-værdier. Markerer ikke noget shelter som kontaktet.
+            </span>
           </div>
         </div>
       </details>
