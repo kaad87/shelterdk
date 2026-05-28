@@ -95,13 +95,20 @@ function buildExcerpt(text: string, anchorLabels: string[]): string {
   return text.slice(start, end).trim();
 }
 
-function suggestRecipientName(shelter: Shelter): string {
-  // Default: kommunenavn, fx "Randers Kommune". Falder tilbage til
-  // shelter-titel hvis kommune mangler.
+// Signaler der indikerer at ejeren IKKE er en kommune (privat, forening,
+// spejdere, MobilePay) — så en "{Kommune} Kommune"-hilsen ville være forkert.
+const NON_KOMMUNE_SIGNALS = ["forening", "spejder", "lodsejer/privat", "mobilepay"];
+
+function suggestRecipientName(shelter: Shelter, signals: string[]): string {
+  // Hvis der er tegn på privat/forening-ejerskab, gætter vi IKKE på en
+  // kommune — så undgår vi at sende "Hej Randers Kommune" til en privat
+  // person. Bruger udfylder selv den rigtige hilsen (placeholder guider).
+  if (signals.some((s) => NON_KOMMUNE_SIGNALS.includes(s))) return "";
+  // Ellers: kommunenavn som et fornuftigt udgangspunkt.
   const kommune = (shelter.kommune ?? "").trim();
   if (kommune && !/kommune/i.test(kommune)) return `${kommune} Kommune`;
   if (kommune) return kommune;
-  return shelter.title || "Hej";
+  return "";
 }
 
 // ─── Hovedanalyse ───────────────────────────────────────────────────────────
@@ -160,7 +167,7 @@ export function analyzeOutreachCandidate(shelter: Shelter): OutreachCandidate | 
     score,
     category,
     recipientEmailSuggestion: detectedEmail,
-    recipientNameSuggestion: suggestRecipientName(shelter),
+    recipientNameSuggestion: suggestRecipientName(shelter, signals),
     signals,
     negativeSignals,
     excerpt: buildExcerpt(text, [...signals, detectedEmail ?? ""]),

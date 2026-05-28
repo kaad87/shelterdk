@@ -189,18 +189,24 @@ export function OutreachReviewQueue({ secret }: Props) {
     }
   };
 
-  const setOverride = (shelterId: string, patch: Partial<{ email: string; name: string }>) => {
-    setOverrides((prev) => ({
-      ...prev,
-      [shelterId]: { ...(prev[shelterId] ?? { email: "", name: "" }), ...patch },
-    }));
+  // Seeder override fra kandidatens forslag FØRSTE gang et felt redigeres,
+  // så redigering af ét felt (fx navn) ikke nulstiller det andet (email).
+  const setOverride = (c: OutreachCandidate, patch: Partial<{ email: string; name: string }>) => {
+    setOverrides((prev) => {
+      const base = prev[c.shelter.id] ?? {
+        email: c.recipientEmailSuggestion ?? "",
+        name: c.recipientNameSuggestion ?? "",
+      };
+      return { ...prev, [c.shelter.id]: { ...base, ...patch } };
+    });
   };
 
   const getRecipient = (c: OutreachCandidate): { email: string; name: string } => {
     const override = overrides[c.shelter.id];
+    if (override) return override;
     return {
-      email: override?.email ?? c.recipientEmailSuggestion ?? "",
-      name: override?.name ?? c.recipientNameSuggestion,
+      email: c.recipientEmailSuggestion ?? "",
+      name: c.recipientNameSuggestion ?? "",
     };
   };
 
@@ -208,6 +214,10 @@ export function OutreachReviewQueue({ secret }: Props) {
     const { email, name } = getRecipient(c);
     if (!email || !email.includes("@")) {
       setRowMessage((prev) => ({ ...prev, [c.shelter.id]: { ok: false, text: "Indtast modtager-email først" } }));
+      return;
+    }
+    if (!name.trim()) {
+      setRowMessage((prev) => ({ ...prev, [c.shelter.id]: { ok: false, text: "Udfyld modtagerens navn først" } }));
       return;
     }
     const confirmText = `Send outreach-mail til ${email}?\n\nShelter: ${c.shelter.title}\nModtager: ${name}\n\nMailen sendes fra hej@shelterdk.dk.`;
@@ -452,7 +462,7 @@ export function OutreachReviewQueue({ secret }: Props) {
                     id={`email-${c.shelter.id}`}
                     type="email"
                     value={recipient.email}
-                    onChange={(e) => setOverride(c.shelter.id, { email: e.target.value })}
+                    onChange={(e) => setOverride(c, { email: e.target.value })}
                     placeholder={c.recipientEmailSuggestion ?? "indtast email..."}
                     className="w-full rounded-lg border border-primary/15 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent/35"
                   />
@@ -465,7 +475,8 @@ export function OutreachReviewQueue({ secret }: Props) {
                     id={`name-${c.shelter.id}`}
                     type="text"
                     value={recipient.name}
-                    onChange={(e) => setOverride(c.shelter.id, { name: e.target.value })}
+                    onChange={(e) => setOverride(c, { name: e.target.value })}
+                    placeholder="Fx Betina, foreningen el. kommune"
                     className="w-full rounded-lg border border-primary/15 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent/35"
                   />
                 </div>
@@ -481,7 +492,8 @@ export function OutreachReviewQueue({ secret }: Props) {
                   <button
                     type="button"
                     onClick={() => handleSend(c)}
-                    disabled={isBusy || !recipient.email}
+                    disabled={isBusy || !recipient.email || !recipient.name.trim()}
+                    title={!recipient.name.trim() ? "Udfyld modtagerens navn først" : undefined}
                     className="rounded-lg bg-accent-dark px-3 py-1.5 text-xs font-semibold text-white hover:bg-accent-dark/90 disabled:opacity-50"
                   >
                     {isBusy ? "Sender…" : "Send"}
