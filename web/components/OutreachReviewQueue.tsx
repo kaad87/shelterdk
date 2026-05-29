@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
   OutreachCandidate,
+  OutreachReviewRow,
   OutreachReviewStatus,
 } from "@/lib/outreach-candidates";
 
@@ -103,9 +104,11 @@ export function OutreachReviewQueue({ secret }: Props) {
   // Preview-modal
   const [previewFor, setPreviewFor] = useState<OutreachCandidate | null>(null);
 
-  // Hent listen
-  const load = useCallback(async () => {
-    setLoading(true);
+  // Hent listen. `silent` bruges til baggrunds-resync efter en optimistisk
+  // opdatering — så vi ikke viser "Indlæser…" eller blanker listen mens den
+  // tunge kandidat-scanning kører.
+  const load = useCallback(async (opts?: { silent?: boolean }) => {
+    if (!opts?.silent) setLoading(true);
     setError(null);
     try {
       const res = await fetch(`/api/admin/outreach-candidates?status=${status}&page=${page}`, {
@@ -114,14 +117,14 @@ export function OutreachReviewQueue({ secret }: Props) {
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
         setError(json.error ?? "Kunne ikke hente kandidater");
-        setData(null);
+        if (!opts?.silent) setData(null);
       } else {
         setData(json as ApiResponse);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Netværksfejl");
+      if (!opts?.silent) setError(err instanceof Error ? err.message : "Netværksfejl");
     } finally {
-      setLoading(false);
+      if (!opts?.silent) setLoading(false);
     }
   }, [status, page, authHeaders]);
 
@@ -210,6 +213,49 @@ export function OutreachReviewQueue({ secret }: Props) {
     };
   };
 
+  // Optimistisk opdatering: når et shelter får ny status, fjernes kortet
+  // straks fra listen hvis den nye status ikke matcher det aktive filter
+  // (fx "Ikke relevant" på "Ikke kontaktet"-filteret). På "Alle"-filteret —
+  // eller hvis status matcher filteret — bliver kortet og får bare nyt badge.
+  // Tæller-tallene justeres lokalt; en let baggrunds-reload finaliserer dem.
+  const applyLocalStatus = useCallback(
+    (c: OutreachCandidate, newStatus: OutreachReviewStatus, patch?: Partial<OutreachReviewRow>) => {
+      setData((prev) => {
+        if (!prev) return prev;
+        const stays = status === "all" || status === newStatus;
+        const prevKey = c.review?.status ?? "pending";
+        const counts = { ...prev.counts } as Record<string, number>;
+        if (prevKey in counts) counts[prevKey] = Math.max(0, counts[prevKey] - 1);
+        if (newStatus in counts) counts[newStatus] += 1;
+
+        const nowIso = new Date().toISOString();
+        const items = stays
+          ? prev.items.map((it) =>
+              it.shelter.id === c.shelter.id
+                ? {
+                    ...it,
+                    review: {
+                      shelter_id: c.shelter.id,
+                      status: newStatus,
+                      recipient_email: patch?.recipient_email ?? it.review?.recipient_email ?? null,
+                      recipient_name: patch?.recipient_name ?? it.review?.recipient_name ?? null,
+                      notes: it.review?.notes ?? null,
+                      sent_at: patch?.sent_at ?? it.review?.sent_at ?? null,
+                      reviewed_at: nowIso,
+                    } satisfies OutreachReviewRow,
+                  }
+                : it
+            )
+          : prev.items.filter((it) => it.shelter.id !== c.shelter.id);
+
+        const total = stays ? prev.total : Math.max(0, prev.total - 1);
+        const totalPages = Math.max(1, Math.ceil(total / prev.pageSize));
+        return { ...prev, items, total, totalPages, counts: counts as ApiResponse["counts"] };
+      });
+    },
+    [status]
+  );
+
   const handleSend = async (c: OutreachCandidate) => {
     const { email, name } = getRecipient(c);
     if (!email || !email.includes("@")) {
@@ -239,7 +285,12 @@ export function OutreachReviewQueue({ secret }: Props) {
         setRowMessage((prev) => ({ ...prev, [c.shelter.id]: { ok: false, text: json.error ?? "Send fejlede" } }));
       } else {
         setRowMessage((prev) => ({ ...prev, [c.shelter.id]: { ok: true, text: json.warning ?? "Sendt ✓" } }));
-        await load();
+        applyLocalStatus(c, "sent", {
+          recipient_email: email,
+          recipient_name: name,
+          sent_at: new Date().toISOString(),
+        });
+        void load({ silent: true });
       }
     } catch {
       setRowMessage((prev) => ({ ...prev, [c.shelter.id]: { ok: false, text: "Netværksfejl" } }));
@@ -260,7 +311,8 @@ export function OutreachReviewQueue({ secret }: Props) {
       if (!res.ok) {
         setRowMessage((prev) => ({ ...prev, [c.shelter.id]: { ok: false, text: json.error ?? "Fejl" } }));
       } else {
-        await load();
+        applyLocalStatus(c, newStatus);
+        void load({ silent: true });
       }
     } catch {
       setRowMessage((prev) => ({ ...prev, [c.shelter.id]: { ok: false, text: "Netværksfejl" } }));
