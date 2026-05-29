@@ -1,7 +1,9 @@
+import { cache } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
+import { ShelterListSchema } from "@/components/seo/ShelterListSchema";
 import { AreaFaq } from "@/components/AreaFaq";
 import { ShelterCard } from "@/components/ShelterCard";
 import {
@@ -17,7 +19,13 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
+export const dynamicParams = false;
+
 export const revalidate = 86400;
+
+// Dedup'er område-shelter-forespørgslen mellem generateMetadata og selve
+// siden (begge kører i samme request).
+const getCachedAreaShelters = cache(getSheltersByAreaSlug);
 
 function getAreaDisplayParts(name: string) {
   const trimmed = name.trim();
@@ -55,21 +63,32 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const prep = prepositionForArea(area);
   const { primaryName, secondaryName } = getAreaDisplayParts(area.name);
   const canonicalPath = `/omraade/${slug}`;
+  const shelterCount = (await getCachedAreaShelters(slug)).length;
   const description =
     area.description?.trim() ||
     `Find shelters ${prep} ${primaryName}. Se billeder, overnatningsmuligheder og links videre til kort, booking og nærliggende shelters.${secondaryName ? ` Siden dækker også ${secondaryName}.` : ""}`;
 
+  // Hold titlen <60 tegn: drop den beskrivende hale for lange områdenavne
+  // (fx "Nationalpark Kongernes Nordsjælland") så Google ikke afkorter den.
+  const titleBase = `Shelter ${prep} ${primaryName}`;
+  const titleAbsolute =
+    titleBase.length + " – kort og overnatning | ShelterDK".length <= 60
+      ? `${titleBase} – kort og overnatning | ShelterDK`
+      : `${titleBase} | ShelterDK`;
+
   return {
     title: {
-      absolute: `Shelters ${prep} ${primaryName} – kort, billeder og overnatning | ShelterDK`,
+      absolute: titleAbsolute,
     },
     description,
     alternates: { canonical: `https://shelterdk.dk${canonicalPath}` },
     openGraph: {
-      title: `Shelters ${prep} ${primaryName} | ShelterDK`,
+      title: `Shelter ${prep} ${primaryName} | ShelterDK`,
       description,
       url: canonicalPath,
+      // OG-billedet genereres dynamisk af ./opengraph-image.tsx.
     },
+    ...(shelterCount === 0 && { robots: { index: false, follow: true } }),
   };
 }
 
@@ -78,7 +97,7 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
   const area = await getAreaBySlug(slug);
   if (!area) notFound();
 
-  const shelters = await getSheltersByAreaSlug(slug);
+  const shelters = await getCachedAreaShelters(slug);
   const prep = prepositionForArea(area);
   const { primaryName, secondaryName } = getAreaDisplayParts(area.name);
   const faqItems = getAreaFaqItems(primaryName, prep);
@@ -122,6 +141,16 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
           { label: primaryName },
         ]}
       />
+      {shelters.length > 0 && (
+        <ShelterListSchema
+          name={`Shelters ${prep} ${primaryName}`}
+          shelters={shelters}
+          hrefFn={(s) => {
+            const full = shelters.find((x) => x.id === s.id);
+            return shelterHref(full?.region ?? null, full?.kommune ?? null, s.slug);
+          }}
+        />
+      )}
       <main className="min-h-screen bg-background">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10 lg:py-14">
           <nav className="mb-8 text-sm text-primary/70" aria-label="Brødkrummesti">

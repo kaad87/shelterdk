@@ -84,9 +84,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const count = shelters.length;
   const bookable = shelters.filter((s) => isStructuredBookable(s)).length;
   const withWater = shelters.filter((s) => getWater(s) === true).length;
+  // Kort titel (<60 tegn) så den ikke afkortes i Google. Detaljerne ligger i
+  // description; titlen holder keyword + kommune + antal forrest.
   const title = count > 0
-    ? `Shelter i ${municipalityName} Kommune – ${count} shelters, kort og faciliteter | ShelterDK`
-    : `Shelter i ${municipalityName} Kommune – kort og faciliteter | ShelterDK`;
+    ? `Shelter i ${municipalityName} Kommune – ${count} pladser | ShelterDK`
+    : `Shelter i ${municipalityName} Kommune | ShelterDK`;
   const statParts: string[] = [];
   if (bookable > 0) statParts.push(`${bookable} kan bookes`);
   if (withWater > 0) statParts.push(`${withWater} med vand`);
@@ -105,14 +107,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title,
       description,
       url: canonicalPath,
-      images: [
-        {
-          url: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&q=80&auto=format&fit=crop",
-          width: 1200,
-          height: 630,
-          alt: `Shelters i ${municipalityName} Kommune, ${regionName}`,
-        },
-      ],
+      // OG-billedet genereres dynamisk af ./opengraph-image.tsx (branded kort
+      // med kommune + shelter-antal) i stedet for at hotlinke et generisk foto.
     },
     ...(shelters.length === 0 && { robots: { index: false, follow: true } }),
   };

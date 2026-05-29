@@ -102,14 +102,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title,
       description,
       url: canonicalPath,
-      images: [
-        {
-          url: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&q=80&auto=format&fit=crop",
-          width: 1200,
-          height: 630,
-          alt: `Shelters ${prep} ${regionName}`,
-        },
-      ],
+      // OG-billedet genereres dynamisk af ./opengraph-image.tsx (branded kort
+      // med region + shelter-antal) i stedet for at hotlinke et generisk foto.
     },
   };
 }
