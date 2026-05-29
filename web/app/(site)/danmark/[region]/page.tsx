@@ -9,6 +9,8 @@ import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 import { prepositionForRegionName } from "@/lib/area-db";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { ShelterListSchema } from "@/components/seo/ShelterListSchema";
+import { QuickAnswer } from "@/components/seo/QuickAnswer";
+import { buildQuickAnswer } from "@/lib/quick-answer";
 import { SoegContent } from "@/components/SoegContent";
 import { getRegionContent } from "@/data/region-content";
 import { DataSummaryBlock } from "@/components/DataSummaryBlock";
@@ -199,6 +201,14 @@ export default async function DanmarkRegionPage({ params, searchParams }: PagePr
     { label: regionName },
   ];
 
+  const capPrep = `${prep.charAt(0).toUpperCase()}${prep.slice(1)}`;
+  const quickAnswer = buildQuickAnswer(`${capPrep} ${regionName}`, {
+    count: totalCount,
+    bookable: facilityCounts.bookbar,
+    toilet: facilityCounts.toilet,
+    water: facilityCounts.water,
+  });
+
   return (
     <>
       <BreadcrumbSchema items={breadcrumbItems} />
@@ -232,6 +242,13 @@ export default async function DanmarkRegionPage({ params, searchParams }: PagePr
               Shelter efter område →
             </Link>
           </p>
+
+          <QuickAnswer
+            url={`https://shelterdk.dk/danmark/${canonicalRegionSlug}`}
+            heading={`Hurtigt svar om shelters ${prep} ${regionName}`}
+            answer={quickAnswer}
+            questionHint={`Siden besvarer spørgsmål som “shelter ${prep} ${regionName}”, “kan man booke shelter ${prep} ${regionName}” og “findes der shelter med toilet eller vand ${prep} ${regionName}”.`}
+          />
 
           <DataSummaryBlock
             headline={`${regionName} har ${totalCount} shelters. ${freeCount} er gratis, ${facilityCounts.toilet} har toilet.`}

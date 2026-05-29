@@ -2,10 +2,13 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { ShelterListSchema } from "@/components/seo/ShelterListSchema";
+import { QuickAnswer } from "@/components/seo/QuickAnswer";
 import { ShelterCard } from "@/components/ShelterCard";
 import { ShelterMap } from "@/components/ShelterMap";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
+import { buildQuickAnswer } from "@/lib/quick-answer";
 import { slugifySegment } from "@/lib/slug";
+import { isStructuredBookable } from "@shared/lib/shelter-detail";
 import type { Shelter } from "@/types/shelter";
 
 function shelterHref(region: string | null, kommune: string | null, slug: string): string {
@@ -70,6 +73,23 @@ export function CrossFilterRegionPage({
     return Math.round(avg * 10) / 10;
   })();
 
+  const facetNoun = filterLabel === "booking" ? "bookbare shelters" : `shelters med ${filterLabel}`;
+  const capPrep = `${preposition.charAt(0).toUpperCase()}${preposition.slice(1)}`;
+  // Facet-region-sider har altid >= MIN_SHELTERS (3+), så ental-bøjning
+  // trigger aldrig — facetNoun (flertal) kan trygt bruges til begge.
+  const quickAnswer = buildQuickAnswer(
+    `${capPrep} ${regionName}`,
+    {
+      count: shelters.length,
+      // "kan bookes" er redundant på selve booking-facetten.
+      ...(filterLabel !== "booking"
+        ? { bookable: shelters.filter((s) => isStructuredBookable(s)).length }
+        : {}),
+    },
+    facetNoun,
+    facetNoun
+  );
+
   return (
     <>
       <BreadcrumbSchema items={[
@@ -104,6 +124,13 @@ export function CrossFilterRegionPage({
               {avgRating && ` Gennemsnitlig bedømmelse: ${avgRating} ud af 5.`}
             </p>
           </header>
+
+          <QuickAnswer
+            url={`https://shelterdk.dk${parentFilterHref}/${regionSlug}`}
+            heading={`Hurtigt svar om ${facetNoun} ${inRegion}`}
+            answer={quickAnswer}
+            questionHint={`Siden besvarer spørgsmål som “${facetNoun} ${inRegion}” og “hvor mange ${facetNoun} findes der ${inRegion}”.`}
+          />
 
           {kommuneBreakdown.length > 0 && (
             <section className="mb-8">

@@ -4,6 +4,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { ShelterListSchema } from "@/components/seo/ShelterListSchema";
+import { QuickAnswer } from "@/components/seo/QuickAnswer";
+import { buildQuickAnswer } from "@/lib/quick-answer";
+import { getWater } from "@/lib/shelter-detail";
+import { isStructuredBookable } from "@shared/lib/shelter-detail";
 import { AreaFaq } from "@/components/AreaFaq";
 import { ShelterCard } from "@/components/ShelterCard";
 import {
@@ -102,6 +106,12 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
   const { primaryName, secondaryName } = getAreaDisplayParts(area.name);
   const faqItems = getAreaFaqItems(primaryName, prep);
   const faqJsonLd = JSON.stringify(faqToJsonLd(faqItems));
+  const capPrep = `${prep.charAt(0).toUpperCase()}${prep.slice(1)}`;
+  const quickAnswer = buildQuickAnswer(`${capPrep} ${primaryName}`, {
+    count: shelters.length,
+    bookable: shelters.filter((s) => isStructuredBookable(s)).length,
+    water: shelters.filter((s) => getWater(s) === true).length,
+  });
   const featuredShelters = shelters.slice(0, 12);
   const regionSlug = slugifySegment(area.region);
   const remainingShelters = shelters.slice(12);
@@ -204,6 +214,13 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
               </Link>
             </div>
           </header>
+
+          <QuickAnswer
+            url={`https://shelterdk.dk/omraade/${slug}`}
+            heading={`Hurtigt svar om shelter ${prep} ${primaryName}`}
+            answer={quickAnswer}
+            questionHint={`Siden besvarer spørgsmål som “shelter ${prep} ${primaryName}”, “kan man booke shelter ${prep} ${primaryName}” og “hvilke shelters ${prep} ${primaryName} har adgang til vand”.`}
+          />
 
           <section className="mb-12">
             <div className="max-w-4xl rounded-2xl border border-primary/10 bg-white p-6 shadow-sm">

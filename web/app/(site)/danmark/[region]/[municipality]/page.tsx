@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { ShelterListSchema } from "@/components/seo/ShelterListSchema";
+import { QuickAnswer } from "@/components/seo/QuickAnswer";
+import { buildQuickAnswer } from "@/lib/quick-answer";
 import { ChevronRight } from "lucide-react";
 import {
   getByLandingData,
@@ -253,7 +255,15 @@ export default async function DanmarkMunicipalityPage({ params }: PageProps) {
     return t && t !== "none" && t !== "unknown";
   }).length;
   const withWater = shelters.filter((s) => getWater(s) === true).length;
+  const bookable = shelters.filter((s) => isStructuredBookable(s)).length;
   const freeCount = shelters.filter((s) => !isStructuredBookable(s)).length;
+
+  const quickAnswer = buildQuickAnswer(`I ${displayName} Kommune`, {
+    count: shelters.length,
+    bookable,
+    toilet: withToilet,
+    water: withWater,
+  });
 
   const municipalityFaq = generateMunicipalityPageFaq(displayName, {
     totalCount: shelters.length,
@@ -313,6 +323,13 @@ export default async function DanmarkMunicipalityPage({ params }: PageProps) {
             </Link>
           </p>
         </header>
+
+        <QuickAnswer
+          url={`https://shelterdk.dk/danmark/${regionSlug}/${municipalitySlug}`}
+          heading={`Hurtigt svar om shelter i ${displayName} Kommune`}
+          answer={quickAnswer}
+          questionHint={`Siden besvarer spørgsmål som “shelter i ${displayName} Kommune”, “kan man booke shelter i ${displayName}” og “findes der shelter med toilet eller vand i ${displayName} Kommune”.`}
+        />
 
         <section className="mb-12">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
