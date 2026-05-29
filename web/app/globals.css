@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Pæn ampersand i serif-overskrifter.
+   Playfair Displays &-glyf er meget kalligrafisk og ser nærmest snørklet/
+   "fremmed" ud i fede overskrifter. Dette @font-face dækker KUN U+0026 (&),
+   så selve ampersand-tegnet renderes med en neutral serif (Georgia/Times),
+   mens al anden tekst forbliver Playfair. Aktiveres ved at sætte "Ampersand"
+   forrest i font-serif-stakken (se tailwind.config.ts). */
+@font-face {
+  font-family: "Ampersand";
+  src: local("Georgia"), local("Times New Roman");
+  unicode-range: U+0026;
+}
+
 :root {
   --primary: #2c3e50;
   --accent: #c5a059;

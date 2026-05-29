@@ -18,7 +18,9 @@ const config: Config = {
         "muted-foreground": "#6B7280",
       },
       fontFamily: {
-        serif: ["var(--font-playfair)", "Georgia", "serif"],
+        // "Ampersand" forrest gør at KUN &-tegnet bruger Georgia (se @font-face
+        // i globals.css med unicode-range U+0026) — resten forbliver Playfair.
+        serif: ["Ampersand", "var(--font-playfair)", "Georgia", "serif"],
         sans: ["var(--font-dm-sans)", "system-ui", "sans-serif"],
       },
       keyframes: {
