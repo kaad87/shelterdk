@@ -117,6 +117,11 @@ export default async function DanmarkRegionPage({ params, searchParams }: PagePr
   const regionName = resolveRegionName(regionSlug, regions);
   if (!regionName) notFound();
   const canonicalRegionSlug = resolveCanonicalRegionSlug(regionName, regionSlug);
+  // Kommune- og shelter-ruterne genereres under slugifySegment(regionName)
+  // (fx "sjaelland-og-oeerne"), IKKE den korte kanoniske region-slug
+  // ("sjaelland"). For ét-ords-regioner er de ens; kun "Sjælland og Øerne"
+  // afviger — og dér gav den korte slug 404 på alle kommune-links.
+  const childRegionSlug = slugifySegment(regionName);
 
   const prep = prepositionForRegionName(regionName);
   const q = urlParams.q?.trim() || null;
@@ -218,7 +223,7 @@ export default async function DanmarkRegionPage({ params, searchParams }: PagePr
         hrefFn={(s) => {
           const sh = initialShelters.find((x) => x.id === s.id);
           const m = sh?.kommune ? slugifySegment(sh.kommune) : NO_KOMMUNE_SLUG;
-          return `/danmark/${regionSlug}/${m}/${s.slug}`;
+          return `/danmark/${childRegionSlug}/${m}/${s.slug}`;
         }}
       />
       <div className="min-h-screen bg-background">
@@ -284,7 +289,7 @@ export default async function DanmarkRegionPage({ params, searchParams }: PagePr
                 {municipalities.map((m) => (
                   <Link
                     key={m.name}
-                    href={`/danmark/${regionSlug}/${slugifySegment(m.name)}`}
+                    href={`/danmark/${childRegionSlug}/${slugifySegment(m.name)}`}
                     className="flex items-center justify-between rounded-lg border border-primary/10 bg-white px-3 py-2.5 text-sm hover:border-accent/30 hover:shadow-sm transition-all group"
                   >
                     <span className="text-primary group-hover:text-accent transition-colors font-medium truncate">
