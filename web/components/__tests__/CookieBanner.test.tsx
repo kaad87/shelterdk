@@ -106,12 +106,18 @@ describe("CookieBanner", () => {
     expect(screen.getByTestId("script-stackadapt-events")).toBeInTheDocument();
   });
 
-  it("viser AdSense kun ved markedsføringssamtykke", () => {
-    process.env.NEXT_PUBLIC_ADSENSE_PUB_ID = "pub-123";
+  it("loader AdSense for alle når pub-ID er sat (Consent Mode v2 styrer personalisering)", () => {
+    process.env.NEXT_PUBLIC_ADSENSE_PUB_ID = "ca-pub-123";
     render(<CookieBanner />);
-    expect(screen.queryByTestId("script-adsense")).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: /acceptér alle/i }));
+    // AdSense-scriptet loader UDEN marketing-samtykke. Consent Mode v2
+    // (sat i layout.tsx + opdateret af banneret) sørger for at ads er
+    // ikke-personaliserede indtil brugeren accepterer marketing.
     expect(screen.getByTestId("script-adsense")).toBeInTheDocument();
+  });
+
+  it("loader IKKE AdSense når pub-ID mangler", () => {
+    render(<CookieBanner />); // NEXT_PUBLIC_ADSENSE_PUB_ID slettet i beforeEach
+    expect(screen.queryByTestId("script-adsense")).not.toBeInTheDocument();
   });
 
   it("viser IKKE StackAdapt ved analytics", () => {

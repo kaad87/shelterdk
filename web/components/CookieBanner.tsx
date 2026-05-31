@@ -108,8 +108,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         }}
       />
 
-      {/* AdSense — only loads after explicit marketing consent */}
-      {consent === "marketing" && process.env.NEXT_PUBLIC_ADSENSE_PUB_ID && (
+      {/* AdSense — loades for ALLE (ikke gated bag samtykke). Google Consent
+          Mode v2 (defaults sat i layout.tsx, opdateret via setGoogleConsent)
+          styrer personaliseringen: personaliserede annoncer når marketing-
+          samtykke er givet, ellers ikke-personaliserede/limited ads. GDPR-
+          konformt og giver annoncer til ALLE besøgende — modsat hard-gating,
+          der udelukkede ~halvdelen. StackAdapt nedenfor forbliver gated, da
+          det IKKE understøtter cookieless/Consent Mode. */}
+      {process.env.NEXT_PUBLIC_ADSENSE_PUB_ID && (
         <Script
           async
           id="adsense"
