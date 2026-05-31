@@ -11,18 +11,28 @@ const supabaseHost =
       })()
     : null;
 
+// Google AdSense (Auto Ads) + Funding Choices CMP kræver en del domæner.
+// Uden disse blokerer CSP'en adsbygoogle.js → ingen annoncer OG intet
+// CMP-samtykkebanner (CMP'en loades af AdSense-scriptet).
+const googleAdsScriptSrc =
+  "https://pagead2.googlesyndication.com https://*.googlesyndication.com https://partner.googleadservices.com https://*.googleadservices.com https://www.googletagservices.com https://adservice.google.com https://*.google.com https://fundingchoicesmessages.google.com https://*.adtrafficquality.google";
+const googleAdsFrameSrc =
+  "https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://*.safeframe.googlesyndication.com https://www.google.com https://fundingchoicesmessages.google.com https://*.adtrafficquality.google";
+const googleAdsConnectSrc =
+  "https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.google.com https://*.doubleclick.net https://fundingchoicesmessages.google.com https://*.adtrafficquality.google";
+
 const baseCsp = [
   "default-src 'self'",
   "base-uri 'self'",
   "object-src 'none'",
   "form-action 'self' https://checkout.stripe.com",
   "frame-ancestors 'self'",
-  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com https://www.instagram.com https://tags.srv.stackadapt.com",
-  "style-src 'self' 'unsafe-inline'",
+  `script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com https://www.instagram.com https://tags.srv.stackadapt.com ${googleAdsScriptSrc}`,
+  "style-src 'self' 'unsafe-inline' https://tags.srv.stackadapt.com",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  "connect-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com https://www.instagram.com https://*.supabase.co https://*.ingest.sentry.io https://*.ingest.de.sentry.io https://tags.srv.stackadapt.com https://*.stackadapt.com",
-  "frame-src 'self' https://checkout.stripe.com https://www.instagram.com",
+  `connect-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com https://www.instagram.com https://*.supabase.co https://*.ingest.sentry.io https://*.ingest.de.sentry.io https://tags.srv.stackadapt.com https://*.stackadapt.com ${googleAdsConnectSrc}`,
+  `frame-src 'self' https://checkout.stripe.com https://www.instagram.com ${googleAdsFrameSrc}`,
   "worker-src 'self' blob:",
   "manifest-src 'self'",
 ].join("; ");
