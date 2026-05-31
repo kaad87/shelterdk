@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Skjul Googles Funding Choices "consent reminder"-boble — den lille badge
+   nederst til venstre ("Indstillinger for privatliv og cookies / Administreret
+   af Google") der periodisk minder brugeren om at gennemse samtykke.
+   Vi beholder den on-demand consent-dialog (åbnes via footer-linket
+   "Cookieindstillinger" → googlefc.showRevocationMessage()), så brugere stadig
+   kan ændre/trække samtykke tilbage. Dvs. fuldt funktionelt + compliant, bare
+   uden den vedvarende påmindelse. */
+.fc-rollback-consent,
+.fc-rollback-consent-reminder {
+  display: none !important;
+}
+
 /* Pæn ampersand i serif-overskrifter.
    Playfair Displays &-glyf er meget kalligrafisk og ser nærmest snørklet/
    "fremmed" ud i fede overskrifter. Dette @font-face dækker KUN U+0026 (&),
