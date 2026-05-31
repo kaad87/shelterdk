@@ -20,6 +20,11 @@ const googleAdsFrameSrc =
   "https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://*.safeframe.googlesyndication.com https://www.google.com https://fundingchoicesmessages.google.com https://*.adtrafficquality.google";
 const googleAdsConnectSrc =
   "https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.google.com https://*.doubleclick.net https://fundingchoicesmessages.google.com https://*.adtrafficquality.google";
+// CMP-banneret + ad-UI loader CSS + fonte fra Googles asset-hosts.
+const googleAdsStyleSrc =
+  "https://fonts.googleapis.com https://*.gstatic.com https://*.googlesyndication.com https://fundingchoicesmessages.google.com";
+const googleAdsFontSrc =
+  "https://fonts.gstatic.com https://*.gstatic.com https://*.googlesyndication.com";
 
 const baseCsp = [
   "default-src 'self'",
@@ -28,9 +33,9 @@ const baseCsp = [
   "form-action 'self' https://checkout.stripe.com",
   "frame-ancestors 'self'",
   `script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com https://www.instagram.com https://tags.srv.stackadapt.com ${googleAdsScriptSrc}`,
-  "style-src 'self' 'unsafe-inline' https://tags.srv.stackadapt.com",
+  `style-src 'self' 'unsafe-inline' https://tags.srv.stackadapt.com ${googleAdsStyleSrc}`,
   "img-src 'self' data: blob: https:",
-  "font-src 'self' data:",
+  `font-src 'self' data: ${googleAdsFontSrc}`,
   `connect-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com https://www.instagram.com https://*.supabase.co https://*.ingest.sentry.io https://*.ingest.de.sentry.io https://tags.srv.stackadapt.com https://*.stackadapt.com ${googleAdsConnectSrc}`,
   `frame-src 'self' https://checkout.stripe.com https://www.instagram.com ${googleAdsFrameSrc}`,
   "worker-src 'self' blob:",
