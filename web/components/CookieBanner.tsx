@@ -1,45 +1,102 @@
 "use client";
 
 import Script from "next/script";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import {
+  CONSENT_COOKIE,
+  CONSENT_KEY,
+  CONSENT_UPDATED_EVENT,
+  type ConsentChoice,
+} from "@/lib/consent";
 
+const COOKIE_MAX_AGE_DAYS = 365;
 const GTM_ID = "GTM-MT8S798N";
 
-/**
- * Genåbner Googles CMP-samtykkedialog (Funding Choices). Bruges af
- * "administrér cookies"-knappen, nu hvor Googles certificerede CMP har
- * overtaget samtykke-UI'et fra det gamle hjemmelavede banner.
- */
-export function resetCookieConsent() {
-  const w = window as unknown as {
-    googlefc?: {
-      showRevocationMessage?: () => void;
-      callbackQueue?: { push: (cb: unknown) => void };
-    };
-  };
-  if (typeof w.googlefc?.showRevocationMessage === "function") {
-    w.googlefc.showRevocationMessage();
-  } else if (w.googlefc?.callbackQueue) {
-    // CMP'en er måske ikke loadet endnu — kø handlingen.
-    w.googlefc.callbackQueue.push({
-      CONSENT_DATA_READY: () => w.googlefc?.showRevocationMessage?.(),
-    });
+function getStoredConsent(): ConsentChoice | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const v = localStorage.getItem(CONSENT_KEY);
+    if (v === "marketing") return "marketing";
+    if (v === "analytics") return "analytics";
+    if (v === "necessary") return "necessary";
+    if (v === "accept") return "marketing";
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
+function setConsentStorage(choice: ConsentChoice) {
+  try {
+    localStorage.setItem(CONSENT_KEY, choice);
+    document.cookie = `${CONSENT_COOKIE}=${choice}; path=/; max-age=${COOKIE_MAX_AGE_DAYS * 24 * 60 * 60}; SameSite=Lax; Secure`;
+    window.dispatchEvent(new CustomEvent(CONSENT_UPDATED_EVENT, { detail: choice }));
+  } catch {
+    // ignore
   }
 }
 
-/**
- * Indlæser måle- og annonce-scripts. Selve samtykket håndteres nu af
- * Googles certificerede CMP (AdSense → Privatliv og beskeder) med Consent
- * Mode v2 slået til — så GTM og AdSense automatisk respekterer brugerens
- * valg (cookieless/ikke-personaliseret indtil samtykke).
- *
- * Komponenten har bevidst INGEN synlig banner-UI længere: Googles CMP er
- * det eneste samtykke-banner. Det gamle hjemmelavede banner + StackAdapt er
- * fjernet for at undgå to bannere og dobbelt samtykke-signal.
- */
+function updateGtagConsent(choice: ConsentChoice) {
+  const w = window as unknown as {
+    dataLayer: unknown[];
+    gtag?: (...args: unknown[]) => void;
+  };
+  w.dataLayer = w.dataLayer || [];
+  const analyticsState = choice === "analytics" || choice === "marketing" ? "granted" : "denied";
+  const adState = choice === "marketing" ? "granted" : "denied";
+  if (typeof w.gtag === "function") {
+    w.gtag("consent", "update", {
+      ad_storage: adState,
+      ad_user_data: adState,
+      ad_personalization: adState,
+      analytics_storage: analyticsState,
+    });
+    return;
+  }
+  w.dataLayer.push([
+    "consent",
+    "update",
+    {
+      ad_storage: adState,
+      ad_user_data: adState,
+      ad_personalization: adState,
+      analytics_storage: analyticsState,
+    },
+  ]);
+}
+
+/** Genåbner det hjemmelavede cookie-banner ved at rydde gemt samtykke. */
+export function resetCookieConsent() {
+  try {
+    localStorage.removeItem(CONSENT_KEY);
+    document.cookie = `${CONSENT_COOKIE}=; path=/; max-age=0`;
+    window.location.reload();
+  } catch {
+    // ignore
+  }
+}
+
 export function CookieBanner() {
+  const [consent, setConsent] = useState<ConsentChoice | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setConsent(getStoredConsent());
+    setMounted(true);
+  }, []);
+
+  const handleChoice = (choice: ConsentChoice) => {
+    setConsentStorage(choice);
+    setConsent(choice);
+    updateGtagConsent(choice);
+  };
+
+  const showBanner = mounted && consent === null;
+
   return (
     <>
-      {/* GTM — loader altid, respekterer Consent Mode v2 (cookieless når denied) */}
+      {/* GTM — always loads, respects Consent Mode v2 (cookieless pings when denied) */}
       <Script
         id="gtm"
         strategy="afterInteractive"
@@ -52,16 +109,50 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         }}
       />
 
-      {/* AdSense — loader for alle; Googles CMP + Consent Mode v2 styrer
-          personaliseringen (personaliseret ved samtykke, ellers limited ads). */}
-      {process.env.NEXT_PUBLIC_ADSENSE_PUB_ID && (
-        <Script
-          async
-          id="adsense"
-          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_PUB_ID}`}
-          crossOrigin="anonymous"
-          strategy="lazyOnload"
-        />
+      {showBanner && (
+        <div
+          role="dialog"
+          aria-label="Cookievalg"
+          className="fixed bottom-0 left-0 right-0 z-50 mx-auto max-w-4xl px-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] pt-2 sm:px-6 sm:pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]"
+        >
+          <div className="rounded-xl border border-primary/20 bg-white shadow-lg ring-1 ring-black/5">
+            <div className="p-4 sm:p-5">
+              <p className="text-sm text-primary leading-relaxed">
+                Vi bruger nødvendige cookies for at få siden til at fungere. Derudover kan du vælge
+                statistikcookies fra Google.{" "}
+                <Link
+                  href="/privacy"
+                  className="text-accent underline hover:no-underline focus:outline-none focus:ring-2 focus:ring-accent rounded"
+                >
+                  Læs mere om cookies
+                </Link>
+              </p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => handleChoice("marketing")}
+                  className="rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors"
+                >
+                  Acceptér alle
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleChoice("analytics")}
+                  className="rounded-lg border border-primary/30 bg-background px-4 py-2.5 text-sm font-medium text-primary hover:bg-primary/5 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors"
+                >
+                  Kun statistik
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleChoice("necessary")}
+                  className="rounded-lg border border-primary/30 bg-background px-4 py-2.5 text-sm font-medium text-primary hover:bg-primary/5 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors"
+                >
+                  Kun nødvendige
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );
