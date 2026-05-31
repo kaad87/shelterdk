@@ -1,101 +1,45 @@
 "use client";
 
 import Script from "next/script";
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import {
-  CONSENT_COOKIE,
-  CONSENT_KEY,
-  CONSENT_UPDATED_EVENT,
-  type ConsentChoice,
-} from "@/lib/consent";
 
-const COOKIE_MAX_AGE_DAYS = 365;
 const GTM_ID = "GTM-MT8S798N";
 
-function getStoredConsent(): ConsentChoice | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const v = localStorage.getItem(CONSENT_KEY);
-    if (v === "marketing") return "marketing";
-    if (v === "analytics") return "analytics";
-    if (v === "necessary") return "necessary";
-    if (v === "accept") return "marketing";
-  } catch {
-    // ignore
-  }
-  return null;
-}
-
-function setConsentStorage(choice: ConsentChoice) {
-  try {
-    localStorage.setItem(CONSENT_KEY, choice);
-    document.cookie = `${CONSENT_COOKIE}=${choice}; path=/; max-age=${COOKIE_MAX_AGE_DAYS * 24 * 60 * 60}; SameSite=Lax; Secure`;
-    window.dispatchEvent(new CustomEvent(CONSENT_UPDATED_EVENT, { detail: choice }));
-  } catch {
-    // ignore
-  }
-}
-
-function updateGtagConsent(choice: ConsentChoice) {
-  const w = window as unknown as {
-    dataLayer: unknown[];
-    gtag?: (...args: unknown[]) => void;
-  };
-  w.dataLayer = w.dataLayer || [];
-  const analyticsState = choice === "analytics" || choice === "marketing" ? "granted" : "denied";
-  const adState = choice === "marketing" ? "granted" : "denied";
-  if (typeof w.gtag === "function") {
-    w.gtag("consent", "update", {
-      ad_storage: adState,
-      ad_user_data: adState,
-      ad_personalization: adState,
-      analytics_storage: analyticsState,
-    });
-    return;
-  }
-  w.dataLayer.push([
-    "consent",
-    "update",
-    {
-      ad_storage: adState,
-      ad_user_data: adState,
-      ad_personalization: adState,
-      analytics_storage: analyticsState,
-    },
-  ]);
-}
-
+/**
+ * Genåbner Googles CMP-samtykkedialog (Funding Choices). Bruges af
+ * "administrér cookies"-knappen, nu hvor Googles certificerede CMP har
+ * overtaget samtykke-UI'et fra det gamle hjemmelavede banner.
+ */
 export function resetCookieConsent() {
-  try {
-    localStorage.removeItem(CONSENT_KEY);
-    document.cookie = `${CONSENT_COOKIE}=; path=/; max-age=0`;
-    window.location.reload();
-  } catch {
-    // ignore
+  const w = window as unknown as {
+    googlefc?: {
+      showRevocationMessage?: () => void;
+      callbackQueue?: { push: (cb: unknown) => void };
+    };
+  };
+  if (typeof w.googlefc?.showRevocationMessage === "function") {
+    w.googlefc.showRevocationMessage();
+  } else if (w.googlefc?.callbackQueue) {
+    // CMP'en er måske ikke loadet endnu — kø handlingen.
+    w.googlefc.callbackQueue.push({
+      CONSENT_DATA_READY: () => w.googlefc?.showRevocationMessage?.(),
+    });
   }
 }
 
+/**
+ * Indlæser måle- og annonce-scripts. Selve samtykket håndteres nu af
+ * Googles certificerede CMP (AdSense → Privatliv og beskeder) med Consent
+ * Mode v2 slået til — så GTM og AdSense automatisk respekterer brugerens
+ * valg (cookieless/ikke-personaliseret indtil samtykke).
+ *
+ * Komponenten har bevidst INGEN synlig banner-UI længere: Googles CMP er
+ * det eneste samtykke-banner. Det gamle hjemmelavede banner + StackAdapt er
+ * fjernet for at undgå to bannere og dobbelt samtykke-signal.
+ */
 export function CookieBanner() {
-  const [consent, setConsent] = useState<ConsentChoice | null>(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setConsent(getStoredConsent());
-    setMounted(true);
-  }, []);
-
-  const handleChoice = (choice: ConsentChoice) => {
-    setConsentStorage(choice);
-    setConsent(choice);
-    updateGtagConsent(choice);
-  };
-
-  const showBanner = mounted && consent === null;
-
   return (
     <>
-      {/* GTM — always loads, respects Consent Mode v2 (cookieless pings when denied) */}
+      {/* GTM — loader altid, respekterer Consent Mode v2 (cookieless når denied) */}
       <Script
         id="gtm"
         strategy="afterInteractive"
@@ -108,13 +52,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         }}
       />
 
-      {/* AdSense — loades for ALLE (ikke gated bag samtykke). Google Consent
-          Mode v2 (defaults sat i layout.tsx, opdateret via setGoogleConsent)
-          styrer personaliseringen: personaliserede annoncer når marketing-
-          samtykke er givet, ellers ikke-personaliserede/limited ads. GDPR-
-          konformt og giver annoncer til ALLE besøgende — modsat hard-gating,
-          der udelukkede ~halvdelen. StackAdapt nedenfor forbliver gated, da
-          det IKKE understøtter cookieless/Consent Mode. */}
+      {/* AdSense — loader for alle; Googles CMP + Consent Mode v2 styrer
+          personaliseringen (personaliseret ved samtykke, ellers limited ads). */}
       {process.env.NEXT_PUBLIC_ADSENSE_PUB_ID && (
         <Script
           async
@@ -123,60 +62,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           crossOrigin="anonymous"
           strategy="lazyOnload"
         />
-      )}
-
-      {/* StackAdapt — no cookieless mode, only loads on explicit marketing consent */}
-      {consent === "marketing" && (
-        <Script id="stackadapt-events" strategy="afterInteractive">
-          {`!function(s,a,e,v,n,t,z){if(s.saq)return;n=s.saq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!s._saq)s._saq=n;n.push=n;n.loaded=!0;n.version='1.0';n.queue=[];t=a.createElement(e);t.async=!0;t.src=v;z=a.getElementsByTagName(e)[0];z.parentNode.insertBefore(t,z)}(window,document,'script','https://tags.srv.stackadapt.com/events.js');saq('ts','2PGo6zJNYMlKgu4KYK8bjA');`}
-        </Script>
-      )}
-
-      {showBanner && (
-        <div
-          role="dialog"
-          aria-label="Cookievalg"
-          className="fixed bottom-0 left-0 right-0 z-50 mx-auto max-w-4xl px-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] pt-2 sm:px-6 sm:pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]"
-        >
-          <div className="rounded-xl border border-primary/20 bg-white shadow-lg ring-1 ring-black/5">
-            <div className="p-4 sm:p-5">
-              <p className="text-sm text-primary leading-relaxed">
-                Vi bruger nødvendige cookies for at få siden til at fungere. Derudover kan du vælge
-                statistikcookies fra Google eller også tillade markedsføringscookies fra Google og
-                StackAdapt.{" "}
-                <Link
-                  href="/privacy"
-                  className="text-accent underline hover:no-underline focus:outline-none focus:ring-2 focus:ring-accent rounded"
-                >
-                  Læs mere om cookies
-                </Link>
-              </p>
-              <div className="mt-4 flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  onClick={() => handleChoice("marketing")}
-                  className="rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors"
-                >
-                  Acceptér alle
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleChoice("analytics")}
-                  className="rounded-lg border border-primary/30 bg-background px-4 py-2.5 text-sm font-medium text-primary hover:bg-primary/5 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors"
-                >
-                  Kun statistik
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleChoice("necessary")}
-                  className="rounded-lg border border-primary/30 bg-background px-4 py-2.5 text-sm font-medium text-primary hover:bg-primary/5 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors"
-                >
-                  Kun nødvendige
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
       )}
     </>
   );
