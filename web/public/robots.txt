@@ -1,0 +1,31 @@
+# robots.txt for shelterdk.dk
+#
+# Content-Signal erklærer hvordan AI må bruge sitets indhold (contentsignals.org):
+#   search    = vis i (AI-)søgeresultater
+#   ai-input  = brug som kilde/grounding i AI-svar (ChatGPT, Perplexity, AI Overviews)
+#   ai-train  = brug til at træne AI-modeller
+# Alle sat til "yes" for maksimal synlighed. Ændr ai-train til "no" hvis du
+# ikke ønsker at indholdet bruges til model-træning.
+
+User-agent: *
+Content-Signal: search=yes, ai-input=yes, ai-train=yes
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /embed/
+Disallow: /owner/
+Disallow: /min-booking/
+Disallow: /booking/
+Disallow: /book/
+
+# Aggressive scrapers uden værdi for et dansk shelter-site (datacenter-crawlere
+# i Asien). AI-citations-crawlere (GPTBot, ClaudeBot, PerplexityBot, Google-
+# Extended) og SEO-værktøjer er bevidst IKKE blokeret.
+User-agent: Bytespider
+Disallow: /
+
+User-agent: PetalBot
+Disallow: /
+
+Sitemap: https://shelterdk.dk/sitemap.xml
+Host: https://shelterdk.dk
