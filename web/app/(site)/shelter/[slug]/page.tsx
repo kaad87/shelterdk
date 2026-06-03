@@ -162,7 +162,10 @@ export default async function ShelterPage({ params }: PageProps) {
   const region = (shelter.region ?? "").trim();
   const kommune = shelter.kommune && String(shelter.kommune).trim() ? String(shelter.kommune).trim() : null;
   const canonicalPath = getCanonicalShelterPath(shelter, slug);
-  if (region) {
+  // Redirect KUN hvis canonical er en ANDEN sti (rigtig region → /danmark/...).
+  // For region tom eller "Danmark" er canonical = /shelter/[slug] (samme sti),
+  // og en redirect ville give en uendelig selv-redirect-loop.
+  if (canonicalPath !== `/shelter/${slug}`) {
     permanentRedirect(canonicalPath);
   }
 
