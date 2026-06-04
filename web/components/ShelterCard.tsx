@@ -18,6 +18,12 @@ interface ShelterCardProps {
   href?: string;
   /** Sæt for above-the-fold kort (fx forsiden) for hurtigere LCP. */
   priority?: boolean;
+  /**
+   * Marker kortet med "Ny"-badge. Beregnes af parent (server-komponent) via
+   * isNewShelter() — holdes ude af klient-bundlen, da new-shelters.ts importerer
+   * server-only Supabase-klient.
+   */
+  isNew?: boolean;
   /** Ledighedsstatus for aktiv datosøgning. */
   availabilityState?: "available" | "booked" | "partial" | null;
   /** Aktiv søgedato (ISO YYYY-MM-DD) – bruges i badge-tekst. */
@@ -97,7 +103,7 @@ function formatDanishDate(iso: string): string {
   return new Intl.DateTimeFormat("da-DK", { day: "numeric", month: "long" }).format(d);
 }
 
-export function ShelterCard({ shelter, onImageError, href, priority, availabilityState, activeDate, disableCarousel = false }: ShelterCardProps) {
+export function ShelterCard({ shelter, onImageError, href, priority, availabilityState, activeDate, disableCarousel = false, isNew = false }: ShelterCardProps) {
   const embeddedPlaces = shelter.google_places;
   const embeddedRefs = Array.isArray(embeddedPlaces)
     ? embeddedPlaces?.[0]?.photo_references
@@ -267,6 +273,17 @@ export function ShelterCard({ shelter, onImageError, href, priority, availabilit
     </div>
   );
 
+  // "Ny"-badge top-venstre. Rykkes ned hvis ShelterDK-book-badgen også vises,
+  // så de to ikke overlapper.
+  const nyBadge = isNew && (
+    <div
+      className={`absolute left-3 ${isShelterDkBookable ? "top-12" : "top-3"} flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 text-xs font-bold text-white shadow-lg ring-2 ring-white/20 z-10`}
+    >
+      <span aria-hidden="true">✨</span>
+      Ny
+    </div>
+  );
+
   // Carousel path: outer is a real <Link> so Cmd/Ctrl-click and right-click work.
   // ImageCarousel handles swipe internally; on swipe it stopPropagation's the click
   // so the Link doesn't navigate. Normal clicks bubble up to Link and navigate.
@@ -285,6 +302,7 @@ export function ShelterCard({ shelter, onImageError, href, priority, availabilit
             priority={priority}
           />
           {bookBadge}
+          {nyBadge}
           {ratingBadge}
         </div>
         {cardBody}
@@ -332,6 +350,7 @@ export function ShelterCard({ shelter, onImageError, href, priority, availabilit
           />
         )}
         {bookBadge}
+        {nyBadge}
         {ratingBadge}
       </div>
       {cardBody}
