@@ -11,7 +11,7 @@ const DAY_MS = 86_400_000;
 
 /** Kolonner der skal bruges for at vurdere "ny" + "præsentabel" + bygge kort/links. */
 const NEW_SHELTERS_SELECT =
-  "id, title, slug, description, image_url, image_urls, user_image_urls, google_place_id, google_place_name, google_rating, google_user_ratings_total, region, kommune, capacity, created_at, blur_data_url, geofa_raw, bookable_shelters(id), google_places!shelters_google_place_id_fkey(photo_references)";
+  "id, title, slug, description, image_url, image_urls, user_image_urls, google_place_id, google_place_name, google_rating, google_user_ratings_total, region, kommune, place, capacity, booking_url, booking_link_mode, created_at, blur_data_url, geofa_raw, bookable_shelters(id), google_places!shelters_google_place_id_fkey(photo_references)";
 
 /** Er shelteret tilføjet til shelterdk inden for "ny"-vinduet (created_at)? */
 export function isNewShelter(shelter: Pick<Shelter, "created_at">, now: number = Date.now()): boolean {
