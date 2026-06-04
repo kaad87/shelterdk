@@ -14,6 +14,7 @@ import { InstagramFeed } from "@/components/InstagramFeed";
 import NewsletterSignup from "@/components/NewsletterSignup";
 import { MapComponent } from "@/components/MapComponent";
 import { WeekendCTACard } from "@/components/WeekendCTACard";
+import { NyeSheltersStrip } from "@/components/NyeSheltersStrip";
 import { createPublicClient } from "@/utils/supabase/server-public";
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 import { getDistinctPlacesWithCounts } from "@/lib/danmark-silo";
@@ -451,6 +452,10 @@ export default async function HomePage() {
           </div>
         </section>
       )}
+
+      <Suspense fallback={null}>
+        <NyeSheltersStrip />
+      </Suspense>
 
       <WeekendCTACard />
 
