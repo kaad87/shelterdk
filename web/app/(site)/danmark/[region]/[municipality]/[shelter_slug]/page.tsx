@@ -219,6 +219,8 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
     bookable: bookingModel.requiresBooking,
     bookingUrl,
     petsAllowed,
+    hasShelterDkBooking: bookingModel.hasShelterDkBooking,
+    bookingHint: bookingModel.fallbackHint === "naturstyrelsen" ? "naturstyrelsen" : null,
   });
   const shelterFaqJsonLd =
     shelterFaqItems.length > 0 ? JSON.stringify(faqToJsonLd(shelterFaqItems)) : undefined;

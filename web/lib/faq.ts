@@ -103,6 +103,10 @@ export function getShelterFaqItems(
     bookable: boolean;
     bookingUrl: string | null;
     petsAllowed: boolean | null;
+    /** True KUN hvis shelteret faktisk har ShelterDK-booking (bookable_shelters). */
+    hasShelterDkBooking?: boolean;
+    /** Hint om hvor ekstern booking sker, fx "naturstyrelsen". */
+    bookingHint?: "naturstyrelsen" | null;
   }
 ): FaqItem[] {
   const title = shelterTitle;
@@ -128,20 +132,33 @@ export function getShelterFaqItems(
     });
   }
 
-  // Booking
-  if (options.bookable && options.bookingUrl) {
+  // Booking. VIGTIGT: påstå kun "direkte på ShelterDK" når shelteret faktisk
+  // har ShelterDK-booking. Bookbare shelters uden gemt URL bookes typisk via
+  // forvalter/Naturstyrelsen — ikke på ShelterDK.
+  const bookingQuestion = `Kan man booke ${title}?`;
+  if (options.hasShelterDkBooking) {
     items.push({
-      question: `Kan man booke ${title}?`,
+      question: bookingQuestion,
+      answer: `Ja, ${title} kan bookes direkte på ShelterDK. Vælg en dato i bookingkalenderen på denne side.`,
+    });
+  } else if (options.bookable && options.bookingUrl) {
+    items.push({
+      question: bookingQuestion,
       answer: `Ja, ${title} kan bookes. Du kan reservere pladsen via linket på denne side (booking sker hos udinaturen.dk, Naturstyrelsen eller andre forvaltere).`,
+    });
+  } else if (options.bookable && options.bookingHint === "naturstyrelsen") {
+    items.push({
+      question: bookingQuestion,
+      answer: `Ja, ${title} kan bookes via Naturstyrelsen / udinaturen.dk — søg efter pladsen der. Den kan ikke bookes direkte på ShelterDK.`,
     });
   } else if (options.bookable) {
     items.push({
-      question: `Kan man booke ${title}?`,
-      answer: `Ja, ${title} kan bookes direkte på ShelterDK. Vælg en dato i bookingkalenderen på denne side.`,
+      question: bookingQuestion,
+      answer: `Ja, ${title} kan bookes — men ikke direkte på ShelterDK. Reservation sker via forvalteren eller den ansvarlige; se booking- og kontaktoplysninger på denne side.`,
     });
   } else {
     items.push({
-      question: `Kan man booke ${title}?`,
+      question: bookingQuestion,
       answer: `${title} er et først-til-mølle shelter og kan ikke bookes. Pladsen er fri til brug for den der kommer først.`,
     });
   }
