@@ -188,6 +188,9 @@ export function AdminPhotoReview({
   const [igPosts, setIgPosts] = useState<IgPost[]>([]);
   const [igSetupRequired, setIgSetupRequired] = useState(false);
   const [nlSubs, setNlSubs] = useState<NewsletterSub[]>([]);
+  const [testEmail, setTestEmail] = useState("");
+  const [testSending, setTestSending] = useState(false);
+  const [testResult, setTestResult] = useState<string | null>(null);
   const [contactMsgs, setContactMsgs] = useState<ContactMessage[]>([]);
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [shelterSubmissions, setShelterSubmissions] = useState<ShelterSubmission[]>([]);
@@ -1097,6 +1100,60 @@ export function AdminPhotoReview({
                 <Download size={14} />
                 Eksportér CSV
               </button>
+            )}
+          </div>
+
+          {/* Send "nye shelters"-ugebrevet som testmail til én adresse.
+              Rører ikke abonnenter. */}
+          <div className="rounded-xl border border-primary/10 bg-primary/[0.02] p-4">
+            <p className="text-sm font-medium text-primary mb-1">Test af ugebrev (nye shelters)</p>
+            <p className="text-xs text-primary/55 mb-3">
+              Sender en testmail med ugebrevets indhold til dig selv. Påvirker ikke abonnenter.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="email"
+                value={testEmail}
+                onChange={(e) => setTestEmail(e.target.value)}
+                placeholder="din@email.dk"
+                className="flex-1 rounded-lg border border-primary/15 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40"
+              />
+              <button
+                type="button"
+                disabled={testSending || !testEmail.trim()}
+                onClick={async () => {
+                  setTestSending(true);
+                  setTestResult(null);
+                  try {
+                    const res = await fetch("/api/admin/new-shelters-digest-test", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json", "x-admin-secret": secret },
+                      body: JSON.stringify({ email: testEmail.trim() }),
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.ok) {
+                      setTestResult(
+                        `✓ Sendt til ${data.sentTo} (${data.shelterCount} shelter${data.shelterCount !== 1 ? "s" : ""}${data.usedFallback ? ", nyeste — ingen i sidste 7 dage" : ""}).`
+                      );
+                    } else {
+                      setTestResult(`✗ ${data.error || data.reason || "Kunne ikke sende."}`);
+                    }
+                  } catch {
+                    setTestResult("✗ Netværksfejl.");
+                  } finally {
+                    setTestSending(false);
+                  }
+                }}
+                className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent/90 transition-colors disabled:opacity-50"
+              >
+                <Mail size={14} />
+                {testSending ? "Sender…" : "Send testmail"}
+              </button>
+            </div>
+            {testResult && (
+              <p className={`mt-2 text-xs ${testResult.startsWith("✓") ? "text-green-700" : "text-red-600"}`}>
+                {testResult}
+              </p>
             )}
           </div>
 
