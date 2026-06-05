@@ -107,9 +107,20 @@ export async function GET(request: NextRequest) {
   if (region && !effectiveBbox) shelters = filterSheltersByRegion(shelters, region);
   shelters = await enrichSheltersWithGooglePhotoRef(shelters);
 
+  // Guardrail: cache ALDRIG et tomt svar. getSheltersPage returnerer [] både
+  // ved ægte "ingen resultater" OG når base-queryen fejler (fx et kortvarigt
+  // Supabase cold-start/timeout). Ville vi cache det tomme svar, ville et
+  // sekund-langt blip blive forstærket til ~60s "ingen shelters" for alle
+  // brugere via edge-cachen. no-store sikrer at det forsvinder så snart DB er
+  // tilbage. Ikke-tomme svar caches som før.
+  const cacheControl =
+    shelters.length === 0
+      ? "no-store"
+      : "public, s-maxage=60, stale-while-revalidate=300";
+
   return Response.json({ shelters, hasMore, availabilityMap: availabilityMap ?? undefined }, {
     headers: {
-      "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+      "Cache-Control": cacheControl,
     },
   });
 }
