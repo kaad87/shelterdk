@@ -354,5 +354,38 @@ def main():
         print(f"  Fejl                        : {errors}")
     print("=" * 60)
 
+    # Netlifys durable cache rydes ikke af et deploy. Revalidér forside + /nye
+    # eksplicit, så de nye shelters dukker op med det samme (i stedet for at
+    # vente på ISR-vinduet). Kun relevant når der faktisk blev inserteret noget.
+    if inserted > 0:
+        revalidate_paths(["/", "/nye"])
+
+
+def revalidate_paths(paths):
+    """Kald /api/revalidate med ADMIN_SECRET så ISR-cachen ryddes for paths."""
+    site_url = (
+        os.environ.get("SITE_URL")
+        or os.environ.get("NEXT_PUBLIC_SITE_ORIGIN")
+        or "https://shelterdk.dk"
+    ).rstrip("/")
+    admin_secret = os.environ.get("ADMIN_SECRET")
+    if not admin_secret:
+        print("  (springer revalidering over — ADMIN_SECRET mangler i .env)")
+        return
+    try:
+        r = requests.post(
+            f"{site_url}/api/revalidate",
+            headers={"x-admin-secret": admin_secret, "Content-Type": "application/json"},
+            json={"paths": paths},
+            timeout=30,
+        )
+        if r.ok:
+            print(f"  Revalideret: {', '.join(paths)}")
+        else:
+            print(f"  Revalidering fejlede ({r.status_code}): {r.text[:200]}")
+    except Exception as e:
+        print(f"  Revalidering-fejl: {e}")
+
+
 if __name__ == "__main__":
     main()
