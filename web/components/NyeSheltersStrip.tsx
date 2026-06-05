@@ -8,7 +8,7 @@ import { getNewShelters, isNewShelter, newShelterHref } from "@/lib/new-shelters
  * Skjuler sig selv hvis der er færre end MIN_TO_SHOW — vi vil ikke vise en
  * halvtom "nyheds"-flade. Henter selv sine data (async server component).
  */
-const STRIP_LIMIT = 8;
+const STRIP_LIMIT = 4; // én ren række på desktop (4 kort)
 const MIN_TO_SHOW = 4;
 
 export async function NyeSheltersStrip() {
@@ -55,8 +55,8 @@ export async function NyeSheltersStrip() {
           ))}
         </div>
 
-        {/* Desktop: grid */}
-        <div className="hidden md:grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-5">
+        {/* Desktop: én række på 4 */}
+        <div className="hidden md:grid grid-cols-4 gap-4 lg:gap-5">
           {shelters.map((shelter) => (
             <ShelterCard
               key={shelter.id}

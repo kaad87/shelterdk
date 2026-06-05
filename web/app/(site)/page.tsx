@@ -453,11 +453,11 @@ export default async function HomePage() {
         </section>
       )}
 
+      <WeekendCTACard />
+
       <Suspense fallback={null}>
         <NyeSheltersStrip />
       </Suspense>
-
-      <WeekendCTACard />
 
       {/* ===== MOBILE REGION GRID (< md) ===== */}
       <section className="md:hidden py-6 bg-background" aria-labelledby="heading-region-mobile">
