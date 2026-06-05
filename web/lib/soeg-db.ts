@@ -132,6 +132,39 @@ export function prunePlaceOutliersForExactQuery(
 
 type AvailabilityState = "available" | "booked" | "partial";
 
+/**
+ * Aggregér bookede units op til plads-niveau.
+ *
+ * En plads (shelters.id) kan have flere individuelle shelters (units i
+ * bookable_shelters). Pladsen er kun "booked" hvis ALLE dens units er bookede;
+ * er kun nogle bookede, er pladsen "partial" (stadig ledig). Pladser uden
+ * bookede units optræder ikke i resultatet.
+ *
+ * @param unitRows  ALLE units for de berørte pladser ({shelter_id, id})
+ * @param bookedUnitIds  id'er på de units der er bookede i perioden
+ */
+export function aggregateUnitAvailability(
+  unitRows: { shelter_id: string | null; id: string }[],
+  bookedUnitIds: Set<string>
+): Map<string, "booked" | "partial"> {
+  const totalPerShelter = new Map<string, number>();
+  const bookedPerShelter = new Map<string, number>();
+  for (const row of unitRows) {
+    if (!row.shelter_id) continue;
+    totalPerShelter.set(row.shelter_id, (totalPerShelter.get(row.shelter_id) ?? 0) + 1);
+    if (bookedUnitIds.has(row.id)) {
+      bookedPerShelter.set(row.shelter_id, (bookedPerShelter.get(row.shelter_id) ?? 0) + 1);
+    }
+  }
+  const result = new Map<string, "booked" | "partial">();
+  for (const [shelterId, total] of totalPerShelter) {
+    const booked = bookedPerShelter.get(shelterId) ?? 0;
+    if (booked === 0) continue;
+    result.set(shelterId, booked >= total ? "booked" : "partial");
+  }
+  return result;
+}
+
 async function getDateAvailabilityData(
   date: string,
   dateTo?: string,
@@ -186,15 +219,49 @@ async function getDateAvailabilityData(
     ? await admin.from("bookable_shelters").select("shelter_id, id")
     : { data: null };
 
-  if (bookings && bookings.length > 0) {
-    const bsIds = [...new Set((bookings as { bookable_shelter_id: string }[]).map((b) => b.bookable_shelter_id))];
-    const bsData = fetchTrackedIds
-      ? (allBookableShelters ?? []).filter((r: { id: string }) => bsIds.includes(r.id))
-      : await admin.from("bookable_shelters").select("shelter_id").in("id", bsIds).then((r) => r.data ?? []);
-    for (const row of (bsData ?? []) as { shelter_id: string | null }[]) {
-      if (row.shelter_id && !bookedIdSet.has(row.shelter_id)) {
-        availabilityMap[row.shelter_id] = "booked";
-        bookedIdSet.add(row.shelter_id);
+  const bookedUnitIds = new Set(
+    ((bookings ?? []) as { bookable_shelter_id: string }[]).map((b) => b.bookable_shelter_id)
+  );
+
+  if (bookedUnitIds.size > 0) {
+    // En plads kan bestå af flere individuelle shelters (units) under samme
+    // shelters.id. Pladsen er kun OPTAGET hvis ALLE dens units er bookede i
+    // perioden — er kun nogle bookede, er pladsen stadig ledig (delvist).
+    // Vi skal derfor kende ALLE units pr. berørt plads, ikke kun de bookede.
+    let unitRows: { shelter_id: string | null; id: string }[];
+    if (fetchTrackedIds) {
+      unitRows = (allBookableShelters ?? []) as { shelter_id: string | null; id: string }[];
+    } else {
+      const { data: bookedUnitShelters } = await admin
+        .from("bookable_shelters")
+        .select("shelter_id")
+        .in("id", [...bookedUnitIds]);
+      const affectedShelterIds = [
+        ...new Set(
+          ((bookedUnitShelters ?? []) as { shelter_id: string | null }[])
+            .map((r) => r.shelter_id)
+            .filter((v): v is string => Boolean(v))
+        ),
+      ];
+      unitRows = affectedShelterIds.length
+        ? (((
+            await admin
+              .from("bookable_shelters")
+              .select("shelter_id, id")
+              .in("shelter_id", affectedShelterIds)
+          ).data) ?? []) as { shelter_id: string | null; id: string }[]
+        : [];
+    }
+
+    for (const [shelterId, state] of aggregateUnitAvailability(unitRows, bookedUnitIds)) {
+      if (state === "booked") {
+        if (!bookedIdSet.has(shelterId)) {
+          availabilityMap[shelterId] = "booked";
+          bookedIdSet.add(shelterId);
+        }
+      } else if (!bookedIdSet.has(shelterId) && !availabilityMap[shelterId]) {
+        // Delvist booket → pladsen er stadig ledig; markér "partial".
+        availabilityMap[shelterId] = "partial";
       }
     }
   }

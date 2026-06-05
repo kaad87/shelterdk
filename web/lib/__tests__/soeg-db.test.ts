@@ -1,6 +1,64 @@
 import { describe, expect, it } from "vitest";
 import type { Shelter } from "@/types/shelter";
-import { prunePlaceOutliersForExactQuery } from "@/lib/soeg-db";
+import { prunePlaceOutliersForExactQuery, aggregateUnitAvailability } from "@/lib/soeg-db";
+
+describe("aggregateUnitAvailability (multi-unit pladser)", () => {
+  // Solvognen: 6 units, 5 bookede, 1 fri → pladsen er STADIG ledig (delvist).
+  it("markerer plads som 'partial' når kun nogle units er bookede", () => {
+    const units = [
+      { shelter_id: "A", id: "u1" },
+      { shelter_id: "A", id: "u2" },
+      { shelter_id: "A", id: "u3" },
+      { shelter_id: "A", id: "u4" },
+      { shelter_id: "A", id: "u5" },
+      { shelter_id: "A", id: "u6" },
+    ];
+    const booked = new Set(["u2", "u3", "u4", "u5", "u6"]); // 5 af 6
+    const result = aggregateUnitAvailability(units, booked);
+    expect(result.get("A")).toBe("partial");
+  });
+
+  it("markerer plads som 'booked' kun når ALLE units er bookede", () => {
+    const units = [
+      { shelter_id: "A", id: "u1" },
+      { shelter_id: "A", id: "u2" },
+    ];
+    expect(aggregateUnitAvailability(units, new Set(["u1", "u2"])).get("A")).toBe("booked");
+  });
+
+  it("enkelt-unit plads: 1 booket → 'booked'", () => {
+    const units = [{ shelter_id: "S", id: "only" }];
+    expect(aggregateUnitAvailability(units, new Set(["only"])).get("S")).toBe("booked");
+  });
+
+  it("plads uden bookede units optræder slet ikke i resultatet", () => {
+    const units = [
+      { shelter_id: "S", id: "a" },
+      { shelter_id: "S", id: "b" },
+    ];
+    expect(aggregateUnitAvailability(units, new Set()).has("S")).toBe(false);
+  });
+
+  it("flere pladser samtidig vurderes uafhængigt", () => {
+    const units = [
+      { shelter_id: "full", id: "f1" },
+      { shelter_id: "full", id: "f2" },
+      { shelter_id: "some", id: "s1" },
+      { shelter_id: "some", id: "s2" },
+      { shelter_id: "none", id: "n1" },
+    ];
+    const booked = new Set(["f1", "f2", "s1"]);
+    const result = aggregateUnitAvailability(units, booked);
+    expect(result.get("full")).toBe("booked");
+    expect(result.get("some")).toBe("partial");
+    expect(result.has("none")).toBe(false);
+  });
+
+  it("ignorerer units uden shelter_id", () => {
+    const units = [{ shelter_id: null, id: "x" }];
+    expect(aggregateUnitAvailability(units, new Set(["x"])).size).toBe(0);
+  });
+});
 
 function mkShelter(
   id: string,
