@@ -36,7 +36,7 @@ Tre lag holder live-data (pris/lager) adskilt fra redaktion (rangering/vurdering
 - `editor_score NUMERIC NULL` (valgfri samlet redaktionel score 0-100, til intern sortering — vises ikke nødvendigvis).
 
 ### 3.2 `buying_guides` (ny tabel)
-`id, slug (unik), title, category (matcher category_mapped), intro (markdown/redaktionel), seo_title, seo_description, hero_image_url NULL, status ('draft'|'published'), last_reviewed_at TIMESTAMPTZ, created_at, updated_at`.
+`id, slug (unik), title, category (matcher category_mapped), intro (kort ingress), body_md (fuld købsguide-brødtekst i markdown — renderes via eksisterende lib/renderContent.tsx, så redaktøren kan embedde gear midt i teksten; dette er SEO-motoren), sources JSONB (array af {title, url} — eksterne tests/kilder vi har gennemgået, troværdighedssignal), seo_title, seo_description, hero_image_url NULL, status ('draft'|'published'), last_reviewed_at TIMESTAMPTZ, created_at, updated_at`.
 
 ### 3.3 `buying_guide_entries` (ny tabel)
 `id, guide_id FK, affiliate_product_id FK, rank INT, award_label TEXT NULL ('Bedst i test'|'Bedste budget'|'Bedste letvægt'|'Bedste til vinter'|…), editorial_note TEXT ("derfor anbefaler vi"), pros TEXT[], cons TEXT[]`.
@@ -49,12 +49,16 @@ RLS: tabeller læses offentligt for `status='published'`; skrivning kun service-
 
 Keyword-rig URL (`/bedste/sovepose`). Én genbrugelig server-rendered template (ISR), uafhængig af antal guider.
 
-- **H1** "Bedste sovepose 2026" + kort redaktionel intro + link til "Sådan vurderer vi" + **"Sidst opdateret"-dato**.
-- **Top-pick fremhævet**, derefter rangeret liste pr. entry: award-badge, redaktionel "derfor", **pros/cons**, spec-række, **live pris + "Se pris hos [retailer]"**-CTA (genbruger `GearCard` + `/api/track`-tracking).
-- **Sammenlignings-tabel** på tværs af shortlisten — sortérbar på pris, vægt, temperatur (data fra `specs`).
-- **"Bedst til X"-genveje** (budget/letvægt/vinter) via award_label-anchors.
-- **FAQ-sektion** (redaktionel, pr. guide eller delt) — fanger long-tail ("hvor varm sovepose til shelter?").
+Hero-formatet er **rangerede produktkort** (valideret mod friluftsfreak.dk + friluftsmagasinet.dk — begge rangerer uden sammenligningstabel):
+
+- **H1** "Bedste sovepose 2026" + kort ingress + link til "Sådan vurderer vi" + **"Sidst opdateret"-dato**.
+- **Rangeret liste** pr. entry: award-badge ("Bedste budget/letvægt/vinter"), redaktionel "derfor", **pros/cons**, kompakt spec-række, **live pris + "Se pris hos [retailer]"**-CTA (genbruger `GearCard` + `/api/track`).
+- **Købsguide-brødtekst** (`body_md`, renderet via `renderContent`) — den lange rådgivnings-sektion (fyld, kammer, komforttemperatur, størrelse, form, vægt). Dette er SEO-motoren.
+- **Kilder-blok** (`sources`) — "Tests og kilder vi har gennemgået" med eksterne links.
+- **FAQ-sektion** (redaktionel) — fanger long-tail ("hvor varm sovepose til shelter?").
 - **Schema.org:** `ItemList` (rangeringen) + `Product` (pr. produkt, m. `offers`/pris) + `FAQPage`. Breadcrumb-schema. Dynamisk OG-kort.
+
+**Sammenlignings-tabel** (sortérbar på pris/vægt/temperatur fra `specs`) er **fase-2** — ikke i v1. Begge referencesider rangerer fint uden, og en tabel kræver komplette specs på alle produkter. YAGNI for v1.
 
 ## 5. Metodeside `/saadan-vurderer-vi` (troværdigheds-anker)
 
@@ -79,13 +83,13 @@ Udvider admin (`/admin/produkter` eller ny `/admin/koebsguider`):
 
 **v1 (dette spec):**
 - Datamodel (3.1–3.3) + RLS.
-- Guide-template (`/bedste/[slug]`) + sammenlignings-tabel + "bedst til X".
+- Guide-template (`/bedste/[slug]`): rangerede kort m. award-badges + pros/cons + spec-række, `body_md`-brødtekst, kilder-blok, FAQ.
 - Metodeside + disclosure.
 - Admin til at bygge guider + berige specs.
 - **2-3 flagskibsguider** i kategorier med dybest feed-dækning (forslag: sovepose, telt, pandelampe — bekræftes mod feed under build).
 - Schema (ItemList/Product/FAQPage), interne links, sitemap.
 
-**Senere (uden for scope):** flere kategorier; kobling til prissammenlignings-platformen ("bedste pris på tværs af butikker"); evt. brugeranmeldelser.
+**Senere (uden for scope):** sammenlignings-tabel (fase-2); flere kategorier; kobling til prissammenlignings-platformen ("bedste pris på tværs af butikker"); evt. brugeranmeldelser.
 
 ## 9. Succeskriterier
 
