@@ -30,7 +30,7 @@ create table if not exists public.buying_guides (
 create table if not exists public.buying_guide_entries (
   id uuid primary key default gen_random_uuid(),
   guide_id uuid not null references public.buying_guides(id) on delete cascade,
-  affiliate_product_id uuid not null references public.affiliate_products(id) on delete cascade,
+  affiliate_product_id text not null references public.affiliate_products(id) on delete cascade,
   rank int not null default 0,
   award_label text,                       -- 'Bedst i test'|'Bedste budget'|'Bedste letvægt'|'Bedste til vinter'...
   editorial_note text,                    -- "derfor anbefaler vi"
