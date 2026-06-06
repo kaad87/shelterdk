@@ -10,11 +10,21 @@ const SPEC_LABELS: Record<string, string> = {
   fyld: "Fyld",
   form: "Form",
   pakmaal: "Pakmål",
+  lumen: "Lysstyrke",
+  raekkevidde_m: "Rækkevidde",
+  genopladelig: "Genopladelig",
+  personer: "Personer",
+  saeson: "Sæson",
+  r_vaerdi: "R-værdi",
+  type: "Type",
 };
 
 function formatSpec(key: string, val: unknown): string {
   if (key.endsWith("_temp")) return `${val} °C`;
   if (key === "vaegt_g") return `${val} g`;
+  if (key === "lumen") return `${val} lm`;
+  if (key === "raekkevidde_m") return `${val} m`;
+  if (typeof val === "boolean") return val ? "Ja" : "Nej";
   return String(val);
 }
 
