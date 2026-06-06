@@ -11,6 +11,32 @@ function admin(req: NextRequest) {
   });
 }
 
+/** GET — ?guide_id= : entries for en guide (uanset status) + produkt-basics, til admin. */
+export async function GET(req: NextRequest) {
+  const sb = admin(req);
+  if (!sb) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const guideId = new URL(req.url).searchParams.get("guide_id");
+  if (!guideId) return NextResponse.json({ error: "guide_id påkrævet" }, { status: 400 });
+
+  const { data: rawEntries, error } = await sb
+    .from("buying_guide_entries")
+    .select("id, rank, award_label, editorial_note, pros, cons, affiliate_product_id")
+    .eq("guide_id", guideId)
+    .order("rank", { ascending: true });
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  const ids = (rawEntries ?? []).map((e) => e.affiliate_product_id);
+  const products = ids.length
+    ? (await sb
+        .from("affiliate_products")
+        .select("id, product_name, brand, retailer, price, in_stock, is_blocked, specs")
+        .in("id", ids)).data ?? []
+    : [];
+  const byId = new Map(products.map((p) => [p.id, p]));
+  const entries = (rawEntries ?? []).map((e) => ({ ...e, product: byId.get(e.affiliate_product_id) ?? null }));
+  return NextResponse.json({ entries });
+}
+
 /** POST — opret/opdatér entry (upsert på guide_id+affiliate_product_id). */
 export async function POST(req: NextRequest) {
   const sb = admin(req);

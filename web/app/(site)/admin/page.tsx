@@ -17,6 +17,7 @@ import {
   Star,
   Search,
   Megaphone,
+  Award,
 } from "lucide-react";
 import { AdminPhotoReview, type AdminSummaryCounts } from "@/components/AdminPhotoReview";
 import type { TabKey } from "@/components/AdminPhotoReview";
@@ -96,6 +97,12 @@ const NAV_GROUPS: AdminNavGroup[] = [
         icon: Megaphone,
         title: "Outreach til ejere",
         desc: "Send mails til potentielle bookingkunder",
+      },
+      {
+        href: "/admin/koebsguider",
+        icon: Award,
+        title: "Købsguider",
+        desc: "Byg 'bedste X'-guider + berig produkt-specs",
       },
     ],
   },
