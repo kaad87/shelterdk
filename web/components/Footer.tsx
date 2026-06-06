@@ -23,6 +23,14 @@ const contentLinks = [
   { label: "Blog", href: "/blog" },
 ];
 
+const gearGuideLinks = [
+  { label: "Bedste outdoor-grej", href: "/bedste" },
+  { label: "Bedste sovepose", href: "/bedste/sovepose" },
+  { label: "Bedste liggeunderlag", href: "/bedste/liggeunderlag" },
+  { label: "Bedste pandelampe", href: "/bedste/pandelampe" },
+  { label: "Bedste telt", href: "/bedste/telt" },
+];
+
 const companyLinks = [
   { label: "Tilføj manglende shelter", href: "/registrer-shelter" },
   { label: "Vandreruter", href: "/ruteplanner" },
@@ -91,6 +99,13 @@ export function Footer() {
             </h2>
             <ul className="space-y-2">
               {contentLinks.map(({ label, href }) => (
+                <li key={href}>
+                  <Link href={href} className={linkClass}>
+                    {label}
+                  </Link>
+                </li>
+              ))}
+              {gearGuideLinks.map(({ label, href }) => (
                 <li key={href}>
                   <Link href={href} className={linkClass}>
                     {label}

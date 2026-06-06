@@ -45,6 +45,7 @@ const navEntries: NavEntry[] = [
     label: "Inspiration",
     items: [
       { label: "Guides", href: "/guides" },
+      { label: "Bedste grej (køb)", href: "/bedste" },
       { label: "Fakta", href: "/fakta" },
       { label: "Pakkeliste", href: "/guides/pakkeliste-til-sheltertur" },
       { label: "Blog", href: "/blog" },

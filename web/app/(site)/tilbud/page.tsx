@@ -114,7 +114,12 @@ export default async function TilbudPage({ searchParams }: PageProps) {
         </h1>
         <p className="mt-3 max-w-2xl text-primary/70">
           Vi har samlet de største prisfald på shelter- og outdoor-grej fra
-          vores partnere. Opdateret dagligt.
+          vores partnere. Opdateret dagligt. Leder du efter det bedste i en
+          kategori, så se vores{" "}
+          <Link href="/bedste" className="text-accent underline">
+            købsguider til outdoor-grej
+          </Link>
+          .
         </p>
         <p className="mt-2 text-xs text-primary/50">
           Alle produkter her er affiliate-links.{" "}
