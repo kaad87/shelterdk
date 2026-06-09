@@ -49,7 +49,7 @@ function EditorialVariant({ product, className }: { product: AffiliateProduct; c
         <h4 className="font-serif text-base font-bold text-primary leading-tight">{product.product_name}</h4>
         <div className="mt-1 flex items-baseline gap-2">
           <span className="text-lg font-bold text-primary">{formatPrice(product.price)}</span>
-          {product.price_original != null && product.discount_pct != null && (
+          {product.price_original != null && product.price_original > product.price && product.discount_pct != null && (
             <>
               <span className="text-xs text-primary/40 line-through">{formatPrice(product.price_original)}</span>
               <span className="rounded bg-amber-50 px-1.5 py-0.5 text-xs font-semibold text-amber-800">–{product.discount_pct}%</span>
@@ -97,7 +97,7 @@ function ProductVariant({ product, className }: { product: AffiliateProduct; cla
         <h4 className="mt-0.5 md:mt-1 font-serif text-sm md:text-lg font-bold text-primary leading-tight line-clamp-2">{product.product_name}</h4>
         <div className="mt-1.5 md:mt-3 flex items-baseline gap-2">
           <span className="text-base md:text-xl font-bold text-primary">{formatPrice(product.price)}</span>
-          {product.price_original != null && (
+          {product.price_original != null && product.price_original > product.price && (
             <span className="text-xs md:text-sm text-primary/40 line-through">{formatPrice(product.price_original)}</span>
           )}
         </div>

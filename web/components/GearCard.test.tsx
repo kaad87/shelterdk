@@ -86,6 +86,15 @@ describe("GearCard product variant", () => {
     );
     expect(affiliate).toHaveAttribute("rel", "sponsored nofollow noopener");
   });
+  it("does NOT show a strikethrough when price_original equals price (no real deal)", () => {
+    const { container } = render(
+      <GearCardView
+        product={{ ...mockProduct, price: 399, price_original: 399, discount_pct: null }}
+        variant="product"
+      />
+    );
+    expect(container.querySelector(".line-through")).toBeNull();
+  });
 });
 
 describe("GearCard pill variant", () => {
