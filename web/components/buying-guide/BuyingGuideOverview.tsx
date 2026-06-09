@@ -2,10 +2,7 @@ import type { GuideEntryWithProduct } from "@/lib/buying-guides";
 import { formatScore } from "@/lib/buying-guides-score";
 import { StarRating } from "@/components/buying-guide/StarRating";
 import { AffiliateLink } from "@/components/buying-guide/AffiliateLink";
-
-function formatPrice(price: number): string {
-  return `${Math.round(price).toLocaleString("da-DK")} kr.`;
-}
+import { PriceTag } from "@/components/buying-guide/PriceTag";
 
 /**
  * "Hurtigt overblik" — de højest-rangerede produkter som fremhævede kort til
@@ -55,8 +52,12 @@ export function BuyingGuideOverview({
                 </span>
               </div>
             )}
-            <div className="mt-1 text-sm font-medium text-primary/80">
-              {formatPrice(e.product.price)}
+            <div className="mt-1 text-sm">
+              <PriceTag
+                price={e.product.price}
+                priceOriginal={e.product.price_original}
+                discountPct={e.product.discount_pct}
+              />
             </div>
             <AffiliateLink product={e.product} position="guide_overview" className="mt-2 w-full" />
           </div>

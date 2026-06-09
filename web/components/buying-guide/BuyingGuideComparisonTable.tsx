@@ -2,10 +2,7 @@ import type { GuideEntryWithProduct } from "@/lib/buying-guides";
 import { formatScore } from "@/lib/buying-guides-score";
 import { StarRating } from "@/components/buying-guide/StarRating";
 import { AffiliateLink } from "@/components/buying-guide/AffiliateLink";
-
-function formatPrice(price: number): string {
-  return `${Math.round(price).toLocaleString("da-DK")} kr.`;
-}
+import { PriceTag } from "@/components/buying-guide/PriceTag";
 
 function ScoreCell({ score }: { score: number | null }) {
   if (score == null) return <span className="text-primary/30">–</span>;
@@ -61,8 +58,12 @@ export function BuyingGuideComparisonTable({ entries }: { entries: GuideEntryWit
                   <ScoreCell score={e.score} />
                 </td>
                 <td className="py-3 pr-3 text-primary/70">{e.best_for ?? "–"}</td>
-                <td className="py-3 pr-3 whitespace-nowrap font-medium text-primary">
-                  {formatPrice(e.product.price)}
+                <td className="py-3 pr-3 whitespace-nowrap text-primary">
+                  <PriceTag
+                    price={e.product.price}
+                    priceOriginal={e.product.price_original}
+                    discountPct={e.product.discount_pct}
+                  />
                 </td>
                 <td className="py-3 whitespace-nowrap">
                   <AffiliateLink product={e.product} position="guide_table" />
@@ -93,7 +94,11 @@ export function BuyingGuideComparisonTable({ entries }: { entries: GuideEntryWit
             </div>
             <div className="mt-2 flex items-center justify-between">
               <ScoreCell score={e.score} />
-              <span className="font-medium text-primary">{formatPrice(e.product.price)}</span>
+              <PriceTag
+                price={e.product.price}
+                priceOriginal={e.product.price_original}
+                discountPct={e.product.discount_pct}
+              />
             </div>
             <AffiliateLink product={e.product} position="guide_table" className="mt-2 w-full" />
           </li>
