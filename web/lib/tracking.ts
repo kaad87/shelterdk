@@ -94,7 +94,7 @@ export function trackAffiliateClick(args: {
   retailer: string;
   brand?: string;
   category?: string;
-  position: "editorial" | "product" | "pill" | "deals_widget";
+  position: "editorial" | "product" | "pill" | "deals_widget" | "guide_overview" | "guide_table";
   priceDkk?: number;
 }) {
   push("affiliate_click", {

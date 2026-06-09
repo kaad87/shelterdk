@@ -1,73 +1,104 @@
 import type { GuideEntryWithProduct } from "@/lib/buying-guides";
 import { formatScore } from "@/lib/buying-guides-score";
+import { StarRating } from "@/components/buying-guide/StarRating";
+import { AffiliateLink } from "@/components/buying-guide/AffiliateLink";
 
 function formatPrice(price: number): string {
   return `${Math.round(price).toLocaleString("da-DK")} kr.`;
 }
 
+function ScoreCell({ score }: { score: number | null }) {
+  if (score == null) return <span className="text-primary/30">–</span>;
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <StarRating score={score} size={13} />
+      <span className="font-bold text-primary">
+        {formatScore(score)}
+        <span className="text-xs font-normal text-primary/40">/10</span>
+      </span>
+    </span>
+  );
+}
+
 /**
- * Sammenligningstabel: priser + scores synlige fra toppen (konvertering +
- * AI-citerbarhed). Mobil: horisontal scroll. "Se pris" linker direkte til
- * forhandleren (rel=sponsored).
+ * Sammenligning: priser + scores/stjerner synlige fra toppen (konvertering +
+ * AI-citerbarhed). Desktop: tabel. Mobil: stacked kort (ingen horisontal scroll).
+ * CTA er tracket (AffiliateLink) og lager-bevidst.
  */
 export function BuyingGuideComparisonTable({ entries }: { entries: GuideEntryWithProduct[] }) {
   if (entries.length === 0) return null;
   return (
-    <section className="my-8 -mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0" aria-label="Sammenligning">
-      <table className="w-full min-w-[560px] border-collapse text-sm">
-        <thead>
-          <tr className="border-b border-primary/15 text-left text-primary/60">
-            <th className="py-2.5 pr-3 font-medium">Produkt</th>
-            <th className="py-2.5 pr-3 font-medium">Score</th>
-            <th className="py-2.5 pr-3 font-medium">Bedst til</th>
-            <th className="py-2.5 pr-3 font-medium">Pris</th>
-            <th className="py-2.5 font-medium"></th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-primary/5">
-          {entries.map((e) => (
-            <tr key={e.id} className="align-middle">
-              <td className="py-3 pr-3">
-                <div className="flex items-center gap-3">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={e.product.image_url}
-                    alt={e.product.product_name}
-                    width={44}
-                    height={44}
-                    className="h-11 w-11 shrink-0 rounded-md object-contain"
-                  />
-                  <span className="font-medium text-primary">{e.product.product_name}</span>
-                </div>
-              </td>
-              <td className="py-3 pr-3 whitespace-nowrap">
-                {e.score != null ? (
-                  <span className="font-bold text-primary">
-                    {formatScore(e.score)}
-                    <span className="text-xs font-normal text-primary/40">/10</span>
-                  </span>
-                ) : (
-                  <span className="text-primary/30">–</span>
-                )}
-              </td>
-              <td className="py-3 pr-3 text-primary/70">{e.best_for ?? "–"}</td>
-              <td className="py-3 pr-3 whitespace-nowrap font-medium text-primary">
-                {formatPrice(e.product.price)}
-              </td>
-              <td className="py-3 whitespace-nowrap">
-                <a
-                  href={e.product.affiliate_url}
-                  target="_blank"
-                  rel="sponsored nofollow noopener"
-                  className="inline-block rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-white hover:bg-accent/90"
-                >
-                  Se pris
-                </a>
-              </td>
+    <section className="my-8" aria-label="Sammenligning">
+      {/* Desktop: tabel */}
+      <div className="hidden sm:block">
+        <table className="w-full border-collapse text-sm">
+          <thead>
+            <tr className="border-b border-primary/15 text-left text-primary/60">
+              <th className="py-2.5 pr-3 font-medium">Produkt</th>
+              <th className="py-2.5 pr-3 font-medium">Score</th>
+              <th className="py-2.5 pr-3 font-medium">Bedst til</th>
+              <th className="py-2.5 pr-3 font-medium">Pris</th>
+              <th className="py-2.5 font-medium"></th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-primary/5">
+            {entries.map((e) => (
+              <tr key={e.id} className="align-middle">
+                <td className="py-3 pr-3">
+                  <div className="flex items-center gap-3">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={e.product.image_url}
+                      alt={e.product.product_name}
+                      width={44}
+                      height={44}
+                      className="h-11 w-11 shrink-0 rounded-md object-contain"
+                    />
+                    <span className="font-medium text-primary">{e.product.product_name}</span>
+                  </div>
+                </td>
+                <td className="py-3 pr-3 whitespace-nowrap">
+                  <ScoreCell score={e.score} />
+                </td>
+                <td className="py-3 pr-3 text-primary/70">{e.best_for ?? "–"}</td>
+                <td className="py-3 pr-3 whitespace-nowrap font-medium text-primary">
+                  {formatPrice(e.product.price)}
+                </td>
+                <td className="py-3 whitespace-nowrap">
+                  <AffiliateLink product={e.product} position="guide_table" />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobil: stacked kort */}
+      <ul className="space-y-3 sm:hidden">
+        {entries.map((e) => (
+          <li key={e.id} className="rounded-xl border border-primary/10 bg-white p-3">
+            <div className="flex items-center gap-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={e.product.image_url}
+                alt={e.product.product_name}
+                width={48}
+                height={48}
+                className="h-12 w-12 shrink-0 rounded-md object-contain"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-primary line-clamp-2">{e.product.product_name}</p>
+                {e.best_for && <p className="text-xs text-primary/60">{e.best_for}</p>}
+              </div>
+            </div>
+            <div className="mt-2 flex items-center justify-between">
+              <ScoreCell score={e.score} />
+              <span className="font-medium text-primary">{formatPrice(e.product.price)}</span>
+            </div>
+            <AffiliateLink product={e.product} position="guide_table" className="mt-2 w-full" />
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

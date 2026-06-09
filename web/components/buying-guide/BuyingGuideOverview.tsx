@@ -1,5 +1,7 @@
 import type { GuideEntryWithProduct } from "@/lib/buying-guides";
 import { formatScore } from "@/lib/buying-guides-score";
+import { StarRating } from "@/components/buying-guide/StarRating";
+import { AffiliateLink } from "@/components/buying-guide/AffiliateLink";
 
 function formatPrice(price: number): string {
   return `${Math.round(price).toLocaleString("da-DK")} kr.`;
@@ -7,7 +9,7 @@ function formatPrice(price: number): string {
 
 /**
  * "Hurtigt overblik" — de højest-rangerede produkter som fremhævede kort til
- * hurtig scanning øverst på siden (badge + score + pris + CTA).
+ * hurtig scanning øverst på siden (badge + score + stjerner + pris + tracket CTA).
  */
 export function BuyingGuideOverview({
   entries,
@@ -37,28 +39,26 @@ export function BuyingGuideOverview({
             <img
               src={e.product.image_url}
               alt={e.product.product_name}
+              width={160}
+              height={96}
               className="mx-auto h-24 w-full object-contain"
             />
             <h3 className="mt-2 line-clamp-2 text-sm font-semibold text-primary">
               {e.product.product_name}
             </h3>
-            <div className="mt-1 flex items-center justify-between text-sm">
-              {e.score != null && (
-                <span className="font-bold text-primary">
+            {e.score != null && (
+              <div className="mt-1 flex items-center gap-1.5">
+                <StarRating score={e.score} size={13} />
+                <span className="text-xs font-bold text-primary">
                   {formatScore(e.score)}
-                  <span className="text-xs font-normal text-primary/40">/10</span>
+                  <span className="font-normal text-primary/40">/10</span>
                 </span>
-              )}
-              <span className="font-medium text-primary/80">{formatPrice(e.product.price)}</span>
+              </div>
+            )}
+            <div className="mt-1 text-sm font-medium text-primary/80">
+              {formatPrice(e.product.price)}
             </div>
-            <a
-              href={e.product.affiliate_url}
-              target="_blank"
-              rel="sponsored nofollow noopener"
-              className="mt-2 block rounded-lg bg-accent px-3 py-1.5 text-center text-xs font-semibold text-white hover:bg-accent/90"
-            >
-              Se pris
-            </a>
+            <AffiliateLink product={e.product} position="guide_overview" className="mt-2 w-full" />
           </div>
         ))}
       </div>
