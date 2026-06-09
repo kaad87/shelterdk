@@ -59,6 +59,33 @@ export default function MethodologyPage() {
               </li>
             </ul>
 
+            <h2>Sådan scorer vi (0-10)</h2>
+            <p>
+              Hvert produkt i en guide får en samlet score fra 0 til 10. Scoren er en redaktionel
+              vurdering ud fra en fast rubrik — ikke et resultat af en labtest. Vi vægter:
+            </p>
+            <ul>
+              <li>
+                <strong>Værdi-for-pengene</strong> (vægter mest) — hvad du får for prisen, ikke bare
+                den laveste pris.
+              </li>
+              <li>
+                <strong>Egnethed og specs</strong> — temperatur, vægt og materiale ift. den brug
+                guiden handler om.
+              </li>
+              <li>
+                <strong>Brand-pålidelighed</strong> — anerkendt kvalitet, garanti og holdbarhed.
+              </li>
+              <li>
+                <strong>Tilgængelighed</strong> — produktet skal faktisk kunne købes; udsolgte
+                rykker ned.
+              </li>
+            </ul>
+            <p>
+              Scoren oversættes til en stjernevurdering på siden. To produkter med samme score kan
+              vinde forskellige &quot;bedst til&quot;-kategorier, fordi de passer til hver sit behov.
+            </p>
+
             <h2>Det vi IKKE gør</h2>
             <p>
               Vi har ikke et testlab, og vi laver ikke fysiske labtests af hvert produkt. Vores
