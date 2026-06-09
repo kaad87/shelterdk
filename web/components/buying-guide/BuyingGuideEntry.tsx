@@ -1,6 +1,27 @@
 import { GearCardView } from "@/components/GearCard";
-import { Check, X } from "lucide-react";
+import { Check, X, Star, StarHalf } from "lucide-react";
 import type { GuideEntryWithProduct } from "@/lib/buying-guides";
+import { scoreToStars, formatScore } from "@/lib/buying-guides-score";
+
+/** Render 0-5 stjerner (halve understøttet) til en score. */
+function StarRow({ stars }: { stars: number }) {
+  return (
+    <span className="inline-flex items-center" aria-hidden="true">
+      {Array.from({ length: 5 }, (_, i) => {
+        const full = i + 1 <= stars;
+        const half = !full && i + 0.5 <= stars;
+        if (half) return <StarHalf key={i} size={14} className="fill-accent text-accent" />;
+        return (
+          <Star
+            key={i}
+            size={14}
+            className={full ? "fill-accent text-accent" : "text-primary/20"}
+          />
+        );
+      })}
+    </span>
+  );
+}
 
 /** Pæn label for udvalgte spec-nøgler (fallback = nøglen selv). */
 const SPEC_LABELS: Record<string, string> = {
@@ -41,7 +62,7 @@ export function BuyingGuideEntry({
 
   return (
     <article className="rounded-2xl border border-primary/10 bg-white p-5 shadow-sm">
-      <div className="mb-3 flex items-center gap-3">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
         <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
           {position}
         </span>
@@ -49,6 +70,16 @@ export function BuyingGuideEntry({
           <span className="rounded-full bg-accent/10 px-3 py-1 text-xs font-bold text-accent">
             {entry.award_label}
           </span>
+        )}
+        {entry.score != null && (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/[0.04] px-2.5 py-1">
+            <span className="text-sm font-bold text-primary">{formatScore(entry.score)}</span>
+            <span className="text-xs text-primary/40">/10</span>
+            <StarRow stars={scoreToStars(entry.score)} />
+          </span>
+        )}
+        {entry.best_for && (
+          <span className="text-xs text-primary/55">Bedst til: {entry.best_for}</span>
         )}
       </div>
 
