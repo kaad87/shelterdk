@@ -311,6 +311,35 @@ const guides = [
       { product_id: "outmore-5031863655309", score: 7.8, award_label: "Bedste lagenpose", best_for: "Lagenpose til varme nætter", editorial_note: "Lifeventure Cotton Liner er den lette lagenpose — nok alene på varme nætter, og et par ekstra grader resten af året.", pros: ["Næsten vægtløs", "Holder posen ren", "Fleksibel"], cons: ["Ikke en pose i sig selv (køligt)", "Lille varmebidrag"], specs: { type: "lagenpose" } },
     ],
   },
+
+  {
+    slug: "liggeunderlag-til-vinter",
+    title: "Bedste liggeunderlag til vinter 2026",
+    category: "liggeunderlag",
+    parent_slug: "liggeunderlag",
+    seo_title: "Bedste liggeunderlag til vinter 2026 – høj R-værdi | ShelterDK",
+    seo_description: "Find det bedste vinter-liggeunderlag med høj R-værdi. Vi scorer isolerede underlag der holder kulden fra jorden væk.",
+    intro: "Om vinteren kommer kulden fra jorden — og et almindeligt sommer-underlag isolerer ikke nok. Her er vores scorede favoritter blandt isolerede vinter-liggeunderlag med høj R-værdi.",
+    last_reviewed_at: TODAY,
+    sources: [{ title: "R-værdi (ASTM F3340)", url: "https://en.wikipedia.org/wiki/Sleeping_pad" }],
+    faq: [
+      { q: "Hvilken R-værdi skal et vinter-liggeunderlag have?", a: "Til vinter bør du have R-værdi 5 eller mere. Til de koldeste nætter eller sne kan du kombinere to underlag — R-værdierne lægges sammen, så et skumunderlag (R~2) under et oppusteligt (R~4) giver ~6." },
+      { q: "Hvorfor er liggeunderlaget så vigtigt om vinteren?", a: "Når du ligger ned, mases soveposens isolering under dig næsten flad og isolerer dårligt. Det er liggeunderlaget, der står for varmen nedad. Et koldt underlag gør selv en god vinterpose kold." },
+      { q: "Oppusteligt eller skum til vinter?", a: "Isolerede oppustelige underlag giver mest komfort og høj R-værdi for vægten, men kan punktere. Et skumunderlag punkterer aldrig og kan lægges under som ekstra isolering + backup. Mange bruger begge om vinteren." },
+      { q: "Kan jeg bruge mit sommer-underlag om vinteren?", a: "Sjældent nok alene — de fleste sommer-underlag har for lav R-værdi. Du kan dog lægge et skumunderlag under dit eksisterende for at hæve den samlede isolering." },
+      { q: "Hvordan undgår jeg at det oppustelige underlag punkterer i kulden?", a: "Puste det op med en pumpe-pose i stedet for med munden (fugt fryser indeni), undgå skarpe genstande, og tag altid en reparationslap med på vinterture." },
+      DISCLOSURE_FAQ,
+    ],
+    body_md: `## Kulden kommer fra jorden\n\nOm vinteren er liggeunderlaget den vigtigste del af dit sovesystem. Når du ligger ned, mases soveposens dun/fyld fladt under dig og isolerer næsten ikke — det er **underlaget**, der holder kulden fra jorden ude. Et koldt underlag gør selv den bedste vinterpose kold.\n\n## Sigt efter R-værdi 5+\n\nR-værdien måler isolering mod jorden. Til vinter vil du have **R 5 eller mere**. Et smart trick: læg et tyndt **skumunderlag** (R~2) under et **isoleret oppusteligt** (R~4) — R-værdierne lægges sammen til ~6, og skummet beskytter samtidig mod punktering.\n\n## Oppusteligt vs. skum om vinteren\n\n**Isolerede oppustelige** underlag giver mest komfort og høj R-værdi for vægten, men kan punktere — tag altid en lap med. **Skum** punkterer aldrig og fungerer som backup og ekstra isolering. Kombinationen er vinter-klassikeren.\n\n## Pas på fugt og punktering\n\nPust det oppustelige op med en **pumpepose**, ikke munden — fugt fra ånden fryser ellers indeni og nedsætter isoleringen. Undgå skarpe genstande, og hav en reparationslap klar.\n\n## Vores anbefaling\n\nTil dansk vinter: et isoleret oppusteligt underlag med R 5+ — gerne kombineret med et tyndt skumunderlag under, både for ekstra varme og som backup.`,
+    entries: [
+      { product_id: "backpackerlife-670386", score: 8.5, award_label: "Bedst i test", best_for: "Alround isoleret", editorial_note: "Klymit Insulated Static V2 er et pålideligt, isoleret underlag med god komfort til prisen — vores alround-vintervalg.", pros: ["God isolering", "Behagelig", "Fornuftig pris"], cons: ["Kan punktere", "Lidt støjende"], specs: { type: "oppustelig", r_vaerdi: 5 } },
+      { product_id: "backpackerlife-600052", score: 8.0, award_label: "Bedst til prisen", best_for: "Budget vinter", editorial_note: "Treklife Extreme RV er billigste vej til et rigtigt isoleret vinter-underlag.", pros: ["Lav pris", "Isoleret", "Bred"], cons: ["Tungere", "Stort pakmål"], specs: { type: "oppustelig", r_vaerdi: 4 } },
+      { product_id: "backpackerlife-629312", score: 8.4, award_label: "Bedste premium", best_for: "Premium isoleret", editorial_note: "Nordisk Vega Air forener høj isolering og komfort fra et stærkt mærke — premium til vinterturen.", pros: ["Høj isolering", "Behagelig", "Kvalitetsmærke"], cons: ["Højere pris", "Oppustelig (punkteringsrisiko)"], specs: { type: "oppustelig", r_vaerdi: 5 } },
+      { product_id: "backpackerlife-307004", score: 8.2, award_label: "Bedste letvægt", best_for: "Letvægt all-season", editorial_note: "Treklife Insulated Light All-season giver isolering uden for meget vægt — godt til vandrere der også er ude om vinteren.", pros: ["Isoleret + relativt let", "All-season", "God værdi"], cons: ["Smallere", "Kan punktere"], specs: { type: "oppustelig", r_vaerdi: 4 } },
+      { product_id: "backpackerlife-57291", score: 8.1, award_label: "Bedste robuste", best_for: "Robust isoleret", editorial_note: "Klymit Insulated Static V er en robust, gennemtestet klassiker til kolde nætter.", pros: ["Robust", "God isolering", "Pålidelig"], cons: ["Tungere end ultralette", "Lidt fyldig"], specs: { type: "oppustelig", r_vaerdi: 4 } },
+      { product_id: "backpackerlife-251979", score: 7.8, award_label: "Bedste alternativ", best_for: "Isoleret budget-alternativ", editorial_note: "Primaloft Insulated Nap-Pak er et solidt, billigt isoleret alternativ.", pros: ["Billig isolering", "Enkel", "Fin backup"], cons: ["Basal komfort", "Tungere"], specs: { type: "oppustelig", r_vaerdi: 3 } },
+    ],
+  },
 ];
 
 async function req(method, path, body, extraHeaders = {}) {
