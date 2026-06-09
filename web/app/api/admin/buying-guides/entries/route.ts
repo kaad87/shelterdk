@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
 
   const { data: rawEntries, error } = await sb
     .from("buying_guide_entries")
-    .select("id, rank, award_label, editorial_note, pros, cons, affiliate_product_id")
+    .select("id, rank, award_label, editorial_note, pros, cons, score, best_for, affiliate_product_id")
     .eq("guide_id", guideId)
     .order("rank", { ascending: true });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -53,6 +53,8 @@ export async function POST(req: NextRequest) {
     editorial_note: body.editorial_note ?? null,
     pros: Array.isArray(body.pros) ? body.pros : [],
     cons: Array.isArray(body.cons) ? body.cons : [],
+    score: typeof body.score === "number" ? body.score : null,
+    best_for: body.best_for ?? null,
   };
   const { data, error } = await sb
     .from("buying_guide_entries")

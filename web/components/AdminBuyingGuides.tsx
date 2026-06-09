@@ -39,6 +39,8 @@ interface Entry {
   editorial_note: string | null;
   pros: string[];
   cons: string[];
+  score: number | null;
+  best_for: string | null;
   affiliate_product_id: string;
   product: ProductLite | null;
 }
@@ -155,6 +157,8 @@ export function AdminBuyingGuides() {
         editorial_note: e.editorial_note,
         pros: e.pros,
         cons: e.cons,
+        score: e.score,
+        best_for: e.best_for,
       }),
     });
     if (form.id) loadEntries(form.id);
@@ -330,6 +334,12 @@ function EntryRow({
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <Field label="Rank" value={String(e.rank)} onChange={(v) => setE({ ...e, rank: parseInt(v || "0", 10) })} />
         <Field label="Award" value={e.award_label ?? ""} onChange={(v) => setE({ ...e, award_label: v })} />
+        <Field
+          label="Score (0-10)"
+          value={e.score == null ? "" : String(e.score)}
+          onChange={(v) => setE({ ...e, score: v.trim() === "" ? null : parseFloat(v.replace(",", ".")) })}
+        />
+        <Field label="Bedst til" value={e.best_for ?? ""} onChange={(v) => setE({ ...e, best_for: v })} />
       </div>
       <Area label="Derfor (note)" value={e.editorial_note ?? ""} onChange={(v) => setE({ ...e, editorial_note: v })} full />
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
