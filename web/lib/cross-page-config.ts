@@ -1,3 +1,5 @@
+import { slugifySegment } from "@/lib/slug";
+
 export interface FilterConfig {
   filterKey: string;
   filterLabel: string;
@@ -102,6 +104,20 @@ export const REGION_NAMES: Record<string, string> = {
   fyn: "Fyn",
   bornholm: "Bornholm",
 };
+
+/**
+ * DB-region-navn → kort kanonisk slug (fx "Sjælland og Øerne" → "sjaelland").
+ * Afviger KUN fra slugifySegment for regioner hvis fulde navn ikke matcher
+ * slug'en — i praksis kun "Sjælland og Øerne". Alle andre (Jylland/Fyn/
+ * Bornholm) giver samme resultat som slugifySegment.
+ */
+export function canonicalRegionSlug(regionName: string | null | undefined): string {
+  const name = (regionName ?? "").trim();
+  for (const [slug, full] of Object.entries(REGION_NAMES)) {
+    if (full === name) return slug;
+  }
+  return slugifySegment(name);
+}
 
 /** Kortere visningsnavne til brug i UI-tekst (pills, inline breakdowns). */
 export const REGION_SHORT_NAMES: Record<string, string> = {

@@ -4,7 +4,7 @@ import path from "node:path";
 import { getBlogCategories, getBlogPosts } from "@/data/blog";
 import { getAllAreas } from "@/lib/area-db";
 import { getFileModified, newestIsoDate } from "@/lib/content-dates";
-import { FILTER_CONFIGS, REGION_NAMES, REGION_SLUGS } from "@/lib/cross-page-config";
+import { FILTER_CONFIGS, REGION_NAMES, REGION_SLUGS, canonicalRegionSlug } from "@/lib/cross-page-config";
 import {
   getByLandingData,
   getDistinctByLandingPages,
@@ -443,7 +443,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const regions = await getDistinctRegions();
   for (const region of regions) {
     if (!region?.trim()) continue;
-    const regionSlug = slugifySegment(region.trim());
+    // Region-hub'en serveres på den KORTE kanoniske slug (fx "sjaelland"),
+    // ikke slugifySegment("Sjælland og Øerne")="sjaelland-og-oeerne" — sidstnævnte
+    // gav en 404-URL i sitemap'et.
+    const regionSlug = canonicalRegionSlug(region.trim());
     if (!regionSlug) continue;
     entries.push(
       entry(

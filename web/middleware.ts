@@ -1,10 +1,20 @@
 import { createServerClient } from "@supabase/ssr";
 import { findActiveRedirect } from "@/lib/custom-redirect-lookup";
+import { regionSlugRedirect } from "@/lib/region-slug-redirect";
 import { NextResponse, type NextRequest } from "next/server";
 import type { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Region-slug-kanonisering (301) — kør før alt andet.
+  const regionTarget = regionSlugRedirect(pathname);
+  if (regionTarget && regionTarget !== pathname) {
+    const url = request.nextUrl.clone();
+    url.pathname = regionTarget;
+    return NextResponse.redirect(url, 301);
+  }
+
   const skipRedirectLookup =
     pathname.startsWith("/ejer/") ||
     pathname.startsWith("/admin/") ||
