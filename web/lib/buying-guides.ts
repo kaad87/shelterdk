@@ -21,6 +21,7 @@ export interface BuyingGuide {
   hero_image_url: string | null;
   status: "draft" | "published";
   last_reviewed_at: string | null;
+  author: string | null;
   updated_at: string;
 }
 
@@ -31,6 +32,8 @@ export interface GuideEntryWithProduct {
   editorial_note: string;
   pros: string[];
   cons: string[];
+  score: number | null;
+  best_for: string | null;
   product: AffiliateProduct & { specs?: Record<string, unknown> | null };
 }
 
@@ -76,7 +79,7 @@ export async function getGuideBySlug(
 
   const { data: rawEntries } = await sb
     .from("buying_guide_entries")
-    .select("id, rank, award_label, editorial_note, pros, cons, affiliate_product_id")
+    .select("id, rank, award_label, editorial_note, pros, cons, score, best_for, affiliate_product_id")
     .eq("guide_id", guide.id);
 
   const ids = (rawEntries ?? []).map((e) => e.affiliate_product_id as string);
@@ -96,6 +99,8 @@ export async function getGuideBySlug(
         editorial_note: (e.editorial_note as string | null) ?? "",
         pros: (e.pros as string[] | null) ?? [],
         cons: (e.cons as string[] | null) ?? [],
+        score: (e.score as number | null) ?? null,
+        best_for: (e.best_for as string | null) ?? null,
         product,
       } satisfies GuideEntryWithProduct;
     })

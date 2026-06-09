@@ -9,6 +9,8 @@ function entry(id: string, rank: number, inStock: boolean, blocked = false): Gui
     editorial_note: "",
     pros: [],
     cons: [],
+    score: null,
+    best_for: null,
     product: { id: `p${id}`, in_stock: inStock, is_blocked: blocked, price: 500 } as GuideEntryWithProduct["product"],
   };
 }
