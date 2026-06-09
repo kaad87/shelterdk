@@ -44,6 +44,9 @@ const embedCsp = [
 ].join("; ");
 
 const nextConfig = {
+  // Sitemap.ts genererer 2.900+ URL'er + DB-kald ved build; default 60s-timeout
+  // kan rammes på CI (flaky → fejlet deploy). Giv tunge static-genereringer mere tid.
+  staticPageGenerationTimeout: 180,
   experimental: {
     // Tree-shake lucide-react and other icon libs: ship only the icons imported.
     optimizePackageImports: ["lucide-react"],
