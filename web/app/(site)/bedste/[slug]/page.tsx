@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getGuideBySlug, getPublishedGuideSlugs } from "@/lib/buying-guides";
+import { getGuideBySlug, getPublishedGuideSlugs, getPublishedGuides } from "@/lib/buying-guides";
+import { relatedGuides } from "@/lib/buying-guides-hub";
+import { RelatedGuides } from "@/components/buying-guide/RelatedGuides";
 import { buildItemListSchema } from "@/lib/buying-guides-schema";
 import { BuyingGuideEntry } from "@/components/buying-guide/BuyingGuideEntry";
 import { BuyingGuideOverview } from "@/components/buying-guide/BuyingGuideOverview";
@@ -48,6 +50,9 @@ export default async function BuyingGuidePage({
   const data = await getGuideBySlug(params.slug);
   if (!data) notFound();
   const { guide, entries } = data;
+  const allGuides = await getPublishedGuides();
+  const related = relatedGuides(guide.slug, allGuides);
+  const parent = guide.parent_slug ? allGuides.find((x) => x.slug === guide.parent_slug) ?? null : null;
   const pageUrl = `https://shelterdk.dk/bedste/${guide.slug}`;
   const itemList = buildItemListSchema(
     entries.map((e) => ({ product: e.product, score: e.score })),
@@ -69,6 +74,7 @@ export default async function BuyingGuidePage({
         items={[
           { label: "Hjem", href: "/" },
           { label: "Bedste", href: "/bedste" },
+          ...(parent ? [{ label: parent.title, href: `/bedste/${parent.slug}` }] : []),
           { label: guide.title },
         ]}
       />
@@ -94,6 +100,17 @@ export default async function BuyingGuidePage({
               Bedste
             </Link>
             <span aria-hidden="true">›</span>
+            {parent && (
+              <>
+                <Link
+                  href={`/bedste/${parent.slug}`}
+                  className="hover:text-accent transition-colors"
+                >
+                  {parent.title}
+                </Link>
+                <span aria-hidden="true">›</span>
+              </>
+            )}
             <span className="text-primary font-medium">{guide.title}</span>
           </nav>
 
@@ -151,6 +168,9 @@ export default async function BuyingGuidePage({
               </div>
             </section>
           )}
+
+          {/* Se også — relaterede guider */}
+          <RelatedGuides guides={related} />
 
           {/* Disclosure */}
           <p className="mt-10 rounded-lg bg-primary/[0.03] p-4 text-xs text-primary/50">

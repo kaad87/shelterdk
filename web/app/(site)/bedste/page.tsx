@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getPublishedGuides } from "@/lib/buying-guides";
+import { groupGuides } from "@/lib/buying-guides-hub";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 
 export const revalidate = 3600;
@@ -44,21 +45,30 @@ export default async function BuyingGuidesIndexPage() {
           {guides.length === 0 ? (
             <p className="py-8 text-primary/70">Der er ingen købsguider endnu.</p>
           ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {guides.map((g) => (
-                <Link
-                  key={g.id}
-                  href={`/bedste/${g.slug}`}
-                  className="rounded-2xl border border-primary/10 bg-white p-5 shadow-sm transition-transform hover:scale-[1.01]"
-                >
-                  <h2 className="font-serif text-xl font-bold text-primary">{g.title}</h2>
-                  {g.intro && (
-                    <p className="mt-1 line-clamp-2 text-sm text-primary/70">{g.intro}</p>
-                  )}
-                  <span className="mt-3 inline-block text-sm font-medium text-accent">
-                    Se guiden →
-                  </span>
-                </Link>
+            <div className="space-y-10">
+              {groupGuides(guides).map((section) => (
+                <section key={section.group}>
+                  <h2 className="mb-4 font-serif text-2xl font-bold text-primary">
+                    {section.group}
+                  </h2>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    {section.guides.map((g) => (
+                      <Link
+                        key={g.slug}
+                        href={`/bedste/${g.slug}`}
+                        className="rounded-2xl border border-primary/10 bg-white p-5 shadow-sm transition-transform hover:scale-[1.01]"
+                      >
+                        <h3 className="font-serif text-lg font-bold text-primary">{g.title}</h3>
+                        {g.intro && (
+                          <p className="mt-1 line-clamp-2 text-sm text-primary/70">{g.intro}</p>
+                        )}
+                        <span className="mt-3 inline-block text-sm font-medium text-accent">
+                          Se guiden →
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </section>
               ))}
             </div>
           )}
