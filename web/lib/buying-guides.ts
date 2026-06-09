@@ -22,6 +22,7 @@ export interface BuyingGuide {
   status: "draft" | "published";
   last_reviewed_at: string | null;
   author: string | null;
+  parent_slug: string | null;
   updated_at: string;
 }
 
