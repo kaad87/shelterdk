@@ -4,7 +4,11 @@ import Link from "next/link";
 import { getGuideBySlug, getPublishedGuideSlugs } from "@/lib/buying-guides";
 import { buildItemListSchema } from "@/lib/buying-guides-schema";
 import { BuyingGuideEntry } from "@/components/buying-guide/BuyingGuideEntry";
+import { BuyingGuideOverview } from "@/components/buying-guide/BuyingGuideOverview";
+import { BuyingGuideComparisonTable } from "@/components/buying-guide/BuyingGuideComparisonTable";
 import { BuyingGuideSources } from "@/components/buying-guide/BuyingGuideSources";
+import { QuickAnswer } from "@/components/seo/QuickAnswer";
+import { formatScore } from "@/lib/buying-guides-score";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { renderContent } from "@/lib/renderContent";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
@@ -50,6 +54,13 @@ export default async function BuyingGuidePage({
     pageUrl
   );
   const faqItems: FaqItem[] = (guide.faq ?? []).map((f) => ({ question: f.q, answer: f.a }));
+
+  // GEO-svarkapsel: kort, citerbar anbefaling bygget fra testvinderen + et budgetvalg.
+  const topPick = entries[0] ?? null;
+  const budgetPick = entries.find((e) => /budget|pris/i.test(e.award_label ?? "")) ?? null;
+  const answerText = topPick
+    ? `Vores testvinder er ${topPick.product.product_name}${topPick.score != null ? ` (${formatScore(topPick.score)}/10)` : ""} — det bedste alround-valg.${budgetPick && budgetPick.id !== topPick.id ? ` Bedst til prisen: ${budgetPick.product.product_name}.` : ""}`
+    : guide.intro ?? "";
   const body = guide.body_md ? await renderContent(guide.body_md) : null;
 
   return (
@@ -91,6 +102,7 @@ export default async function BuyingGuidePage({
           </h1>
           {guide.intro && <p className="text-lg text-primary/80">{guide.intro}</p>}
           <p className="mt-2 text-xs text-primary/50">
+            {guide.author && <>Af {guide.author} · </>}
             {guide.last_reviewed_at && (
               <>Sidst opdateret {new Date(guide.last_reviewed_at).toLocaleDateString("da-DK")} · </>
             )}
@@ -98,6 +110,17 @@ export default async function BuyingGuidePage({
               Sådan vurderer vi
             </Link>
           </p>
+
+          {/* GEO-svarkapsel */}
+          {answerText && (
+            <div className="mt-6">
+              <QuickAnswer url={pageUrl} heading="Hurtigt svar" answer={answerText} />
+            </div>
+          )}
+
+          {/* Hurtigt overblik (top-picks) + sammenligningstabel */}
+          <BuyingGuideOverview entries={entries} />
+          <BuyingGuideComparisonTable entries={entries} />
 
           {/* Rangeret liste */}
           <div className="mt-8 space-y-5">
