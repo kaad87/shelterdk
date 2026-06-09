@@ -1,7 +1,7 @@
-// Seed buyer-intent købsguider på shelterdk.
+// Seed buyer-intent købsguider (v2) på shelterdk.
 // Idempotent: upsert på slug (guider) og guide_id+affiliate_product_id (entries).
-// Live pris/lager hentes ved render — her sætter vi kun redaktionelt indhold + specs.
-// Kør: node seed_buying_guides.mjs
+// v2: scores (0-10), best_for, author; reselekteret mod konverterende mellemklasse.
+// Live pris/lager hentes ved render. Kør: node seed_buying_guides.mjs
 import fs from "node:fs";
 
 function loadEnv(p) {
@@ -15,13 +15,12 @@ function loadEnv(p) {
 ["web/.env.local", "web/.env", ".env.local", ".env"].forEach(loadEnv);
 const URL = process.env._NEXT_PUBLIC_SUPABASE_URL;
 const KEY = process.env._SUPABASE_SERVICE_ROLE_KEY;
-if (!URL || !KEY) {
-  console.error("Mangler NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY");
-  process.exit(1);
-}
+if (!URL || !KEY) { console.error("Mangler Supabase env"); process.exit(1); }
 const H = { apikey: KEY, Authorization: "Bearer " + KEY, "Content-Type": "application/json" };
-
 const TODAY = new Date().toISOString();
+const AUTHOR = "ShelterDK Redaktionen";
+
+const DISCLOSURE_FAQ = { q: "Tjener ShelterDK penge på anbefalingerne?", a: "Ja — når du køber via et link i guiden, får vi en kommission. Det koster ikke dig ekstra, og det påvirker ikke rangeringen: vi scorer efter værdi, egnethed, brand og tilgængelighed, ikke efter kommission. Se vores metode på /saadan-vurderer-vi." };
 
 const guides = [
   {
@@ -29,83 +28,31 @@ const guides = [
     title: "Bedste sovepose 2026",
     category: "sovepose",
     seo_title: "Bedste sovepose 2026 – test og købsguide | ShelterDK",
-    seo_description:
-      "Find den bedste sovepose til shelter og friluftsliv. Vi sammenligner dun vs. syntetisk, temperatur og vægt — fra budget til premium.",
-    intro:
-      "En god sovepose er forskellen mellem en kold, søvnløs nat og en tur du husker med glæde. Her er vores bud på de bedste soveposer til shelter- og friluftsovernatning i Danmark — fra et solidt budgetvalg til poser der holder dig varm langt under frysepunktet.",
+    seo_description: "Find den bedste sovepose til shelter og friluftsliv. Vi scorer 8 favoritter fra budget til premium — dun vs. syntetisk, temperatur og vægt.",
+    intro: "Vi har scoret de bedste soveposer til shelter- og friluftsovernatning i Danmark — med fokus på det der faktisk holder dig varm til prisen, ikke kun de dyreste ekspeditionsposer.",
     last_reviewed_at: TODAY,
     sources: [
-      { title: "Sleeping bag temperature ratings (EN/ISO 23537) – forklaring", url: "https://en.wikipedia.org/wiki/EN_13537" },
-      { title: "Outdoorsider: dun vs. syntetisk isolering", url: "https://www.outdoorgearlab.com/topics/camping-and-hiking/best-sleeping-bag" },
+      { title: "EN/ISO 23537 – temperatur-ratings forklaret", url: "https://en.wikipedia.org/wiki/EN_13537" },
+      { title: "OutdoorGearLab – best sleeping bags", url: "https://www.outdoorgearlab.com/topics/camping-and-hiking/best-sleeping-bag" },
     ],
     faq: [
-      { q: "Dun eller syntetisk sovepose?", a: "Dun pakker mindst, vejer mindst og holder længst — men taber isolering hvis den bliver våd og koster mere. Syntetisk isolerer stadig når den er fugtig, tørrer hurtigt og er billigere, men fylder og vejer mere. Til fugtigt dansk klima og begyndere er syntetisk et trygt valg; til lange ture hvor vægt og pakmål tæller, vinder dun." },
-      { q: "Hvor varm skal en sovepose være til shelter i Danmark?", a: "Til forår/efterår i et åbent shelter anbefaler vi en komforttemperatur på 0 til -5 °C, så du har margin på de kolde nætter. Om sommeren rækker en pose med komfort omkring 8-10 °C. Husk at temperatur-tal er vejledende — sov med tøj og hue hvis du fryser let." },
-      { q: "Hvad betyder komforttemperatur kontra grænsetemperatur?", a: "Komforttemperatur er den laveste temperatur hvor en gennemsnitlig person sover komfortabelt. Grænsetemperatur (limit) er hvor man lige kan sove sammenrullet uden at fryse. Vælg ud fra komforttemperaturen — ikke den mere optimistiske grænse." },
-      { q: "Skal jeg bruge liggeunderlag under soveposen?", a: "Ja. Det meste kuldetab sker nedad mod jorden, og selv den bedste sovepose isolerer dårligt når dunet mases sammen under dig. Et liggeunderlag med en passende R-værdi er lige så vigtigt som selve posen." },
-      { q: "Hvordan opbevarer jeg soveposen, så den holder?", a: "Opbevar den løst — i en stor opbevaringspose eller hængende — ikke sammenpresset i kompressionsposen. Konstant kompression ødelægger isoleringsevnen over tid, især på dun." },
+      { q: "Dun eller syntetisk sovepose?", a: "Syntetisk isolerer selv når den er fugtig, tørrer hurtigt og er billigere — et trygt valg i fugtigt dansk klima og til begyndere. Dun pakker mindst og vejer mindst, men koster mere og skal holdes tør. Til de fleste shelterture er en god syntetpose i mellemklassen det rigtige." },
+      { q: "Hvor varm skal en sovepose være til shelter i Danmark?", a: "Til forår/efterår i et åbent shelter: sigt efter komforttemperatur 0 til -5 °C, så du har margin. Om sommeren rækker komfort omkring 8-10 °C. Temperatur-tal er vejledende — sov med tøj og hue hvis du fryser let." },
+      { q: "Komfort- vs. grænsetemperatur?", a: "Komforttemperatur er hvor en gennemsnitlig person sover godt; grænsetemperatur er hvor man lige kan sove sammenrullet uden at fryse. Vælg ud fra komforttemperaturen." },
+      { q: "Hvad koster en god sovepose?", a: "Du får en udmærket 3-sæsons sovepose til 500-1.000 kr. Over ~1.500 kr betaler du primært for lavere vægt og bedre dun. Under 400 kr er fint til sommer og begyndere." },
+      { q: "Skal jeg bruge liggeunderlag under soveposen?", a: "Ja — det meste kuldetab sker nedad mod jorden. Et liggeunderlag med passende R-værdi er lige så vigtigt som selve posen." },
+      DISCLOSURE_FAQ,
     ],
-    body_md: `## Sådan vælger du den rigtige sovepose
-
-Tre ting afgør valget: **temperatur**, **isolering** og **vægt/pakmål**. Begynd med temperaturen — hvornår på året sover du ude? Til shelterture i det meste af året i Danmark er en 3-sæsons pose med komfort omkring 0 °C det mest alsidige valg.
-
-## Dun eller syntetisk
-
-**Dun** giver mest varme for vægten og pakker mindst, men er dyrere og mister isolering hvis den bliver våd. **Syntetisk** isolerer stadig når den er fugtig, tørrer hurtigt og koster mindre — til gengæld fylder og vejer den mere. I et fugtigt dansk klima er syntetisk et trygt og billigt udgangspunkt, mens dun belønner dig på de lange, vægtbevidste ture.
-
-## Form og pasform
-
-En **mumie-model** slutter tæt om kroppen og isolerer bedst, mens en rektangulær pose giver mere plads at vende sig i. Vælg den rigtige længde — for meget tomt rum i posen er koldluft du selv skal varme op.
-
-## Vores anbefaling
-
-Til de fleste er en 3-sæsons mumiepose med komfort omkring 0 °C det rigtige. Skal du sove ude om vinteren, så gå efter en pose i −10 °C-klassen og kombinér med et godt liggeunderlag.`,
+    body_md: `## Sådan vælger du den rigtige sovepose\n\nTre ting afgør valget: **temperatur**, **isolering** og **vægt/pakmål**. Til shelterture det meste af året i Danmark er en 3-sæsons pose med komfort omkring 0 °C det mest alsidige — og du behøver ikke betale i dyre domener for at få den.\n\n## Dun eller syntetisk\n\n**Syntetisk** isolerer stadig når den er fugtig, tørrer hurtigt og koster mindre — trygt i dansk klima. **Dun** giver mest varme for vægten og pakker mindst, men koster mere og mister isolering hvis den bliver våd. Vægtbevidste vandrere vælger dun; alle andre er godt tjent med en kvalitets-syntetpose.\n\n## Form og pasform\n\nEn **mumie-model** isolerer bedst, mens en rektangulær giver mere plads. Vælg den rigtige længde — tomt rum i posen er koldluft du selv skal varme op.\n\n## Typiske købsfejl\n\nAt vælge efter grænsetemperatur i stedet for komforttemperatur; at glemme liggeunderlaget; og at betale for en -20 °C-pose man aldrig bruger. Køb til den brug du faktisk har.\n\n## Vores anbefaling\n\nTil de fleste: en 3-sæsons pose med komfort omkring 0 °C i 500-1.000 kr-klassen. Skal du sove ude om vinteren, gå op i en koldere model og kombinér med et godt liggeunderlag.`,
     entries: [
-      {
-        product_id: "outmore-7045953013038",
-        award_label: "Bedst i test",
-        editorial_note:
-          "En alsidig 3-sæsons dunpose der rammer det meste af det danske år. Lav vægt, godt pakmål og pålidelig varme omkring frysepunktet — det vi anbefaler de fleste at starte med.",
-        pros: ["Alsidig 3-sæsons varme", "Let og pakker småt (dun)", "Solid kvalitet fra Helsport"],
-        cons: ["Dyrere end syntetiske poser", "Skal holdes tør"],
-        specs: { komfort_temp: 0, fyld: "dun", form: "mumie" },
-      },
-      {
-        product_id: "outmore-9327868990849",
-        award_label: "Bedste letvægt",
-        editorial_note:
-          "Når hvert gram og hver liter i rygsækken tæller: 900+ fill power dun giver maksimal varme for vægten. Til den vægtbevidste vandrer.",
-        pros: ["Ekstremt let og kompakt", "Høj fill power (900+)", "Premium dunkvalitet"],
-        cons: ["Høj pris", "Kræver omhyggelig tør opbevaring"],
-        specs: { fyld: "dun (900+)", form: "mumie" },
-      },
-      {
-        product_id: "outmore-7045953012949",
-        award_label: "Bedste til vinter",
-        editorial_note:
-          "Til kolde nætter og vinterture: en kraftig dunpose i −10 °C-klassen der holder dig varm når temperaturen falder. Kombinér med et liggeunderlag med høj R-værdi.",
-        pros: ["Varm helt ned i minusgrader", "Robust dunisolering", "God til vinter-shelter"],
-        cons: ["For varm til sommerbrug", "Vejer og fylder mere"],
-        specs: { komfort_temp: -10, fyld: "dun", form: "mumie" },
-      },
-      {
-        product_id: "backpackerlife-284278",
-        award_label: "Bedste budget",
-        editorial_note:
-          "Skal du bare i gang uden at bruge en formue? En enkel 3-sæsons syntetpose der gør arbejdet på milde til kølige nætter — perfekt til den første sheltertur.",
-        pros: ["Meget lav pris", "Syntetisk — tåler fugt", "Fint udgangspunkt for begyndere"],
-        cons: ["Fylder mere i pakningen", "Ikke til rigtig kolde nætter"],
-        specs: { fyld: "syntetisk", form: "mumie" },
-      },
-      {
-        product_id: "outmore-5709388147172",
-        award_label: "Bedste til sommer",
-        editorial_note:
-          "Let og billig sommerpose til de lune nætter. Når du ikke behøver tung isolering, er den nem at have med og fylder lidt.",
-        pros: ["Billig og let", "Ideel til sommer", "Syntetisk og pasningsfri"],
-        cons: ["Kun til milde nætter", "Begrænset til varmt vejr"],
-        specs: { komfort_temp: 8, fyld: "syntetisk", form: "mumie" },
-      },
+      { product_id: "backpackerlife-212384", score: 9.0, award_label: "Bedst i test", best_for: "Alround 3-sæson", editorial_note: "Nordisk Puk -2 rammer sweet-spottet: pålidelig varme, fin pasform og et stærkt mærke til en pris de fleste kan være med på. Vores alround-favorit.", pros: ["Fremragende værdi", "Pålidelig 3-sæsons varme", "Anerkendt dansk brand"], cons: ["Syntetisk fylder lidt mere", "Ikke til streng vinter"], specs: { komfort_temp: -2, fyld: "syntetisk", form: "mumie" } },
+      { product_id: "backpackerlife-666127", score: 8.0, award_label: "Bedst til prisen", best_for: "Stramt budget / sommer", editorial_note: "Highlander Rayet 250 er den billige vej i gang — let og fin til sommernætter og den første sheltertur.", pros: ["Meget lav pris", "Let", "Fint til sommer"], cons: ["Kun til milde nætter", "Simpel komfort"], specs: { fyld: "syntetisk", form: "mumie" } },
+      { product_id: "backpackerlife-72781", score: 8.2, award_label: "Bedste 4-sæson value", best_for: "Alsidig hele året billigt", editorial_note: "Snugpak Travelpak 4 giver fire-sæsons alsidighed til en skarp pris — robust og pasningsfri.", pros: ["4-sæsons alsidighed", "God pris", "Robust"], cons: ["Tungere", "Større pakmål"], specs: { fyld: "syntetisk", form: "mumie" } },
+      { product_id: "backpackerlife-152819", score: 8.4, award_label: "Bedste letvægt", best_for: "Letvægt sommer (dun)", editorial_note: "Treklife Down 300 er en overraskende billig dunpose — lav vægt og lille pakmål til sommer- og vandreture.", pros: ["Let og kompakt (dun)", "Skarp pris for dun", "God til sommer"], cons: ["Kun 2-sæson", "Skal holdes tør"], specs: { fyld: "dun", form: "mumie" } },
+      { product_id: "backpackerlife-926742", score: 8.5, award_label: "Bedste komfort", best_for: "Komfortabel 3-sæson", editorial_note: "Nemo Tempo 35 er en behagelig 3-sæsons med god plads og kvalitetsfornemmelse fra et stærkt mærke.", pros: ["Behagelig pasform", "Kvalitetsmærke (Nemo)", "Solid 3-sæson"], cons: ["Mellem-høj pris", "Fylder lidt"], specs: { komfort_temp: 2, fyld: "syntetisk", form: "mumie" } },
+      { product_id: "backpackerlife-613165", score: 8.6, award_label: "Bedste til vinter", best_for: "Koldt vejr / sen efterår", editorial_note: "Sea to Summit Boab -9 holder dig varm når temperaturen falder — til dig der sover ude i skuldersæsonen og vinter.", pros: ["Varm i minusgrader", "Kvalitetsbrand", "God til vinter-shelter"], cons: ["For varm om sommeren", "Tungere"], specs: { komfort_temp: -9, fyld: "syntetisk", form: "mumie" } },
+      { product_id: "outmore-9327868157921", score: 8.8, award_label: "Bedste premium", best_for: "Premium dun, lav vægt", editorial_note: "Sea to Summit Trek -1c Down er premium-dun: lav vægt, lille pakmål og høj kvalitet — til den vægtbevidste der vil have det bedste.", pros: ["Premium dunkvalitet", "Lav vægt + lille pakmål", "Holdbar"], cons: ["Høj pris", "Kræver tør opbevaring"], specs: { komfort_temp: -1, fyld: "dun", form: "mumie" } },
+      { product_id: "outmore-5709388147141", score: 7.8, award_label: "Bedste til begyndere", best_for: "Begynder / mild sommer", editorial_note: "Easy Camp Raven I er billig og nem — perfekt til den allerførste tur eller festivalen.", pros: ["Meget billig", "Enkel og nem", "Fin til sommer"], cons: ["Kun milde nætter", "Basal kvalitet"], specs: { komfort_temp: 5, fyld: "syntetisk", form: "mumie" } },
     ],
   },
 
@@ -114,77 +61,27 @@ Til de fleste er en 3-sæsons mumiepose med komfort omkring 0 °C det rigtige. S
     title: "Bedste liggeunderlag 2026",
     category: "liggeunderlag",
     seo_title: "Bedste liggeunderlag 2026 – test og købsguide | ShelterDK",
-    seo_description:
-      "Find det bedste liggeunderlag til shelter og telt. Vi forklarer R-værdi, komfort og vægt — fra billigt skum til oppustelige premium-mads.",
-    intro:
-      "Liggeunderlaget er det mest oversete stykke sovegrej — og det vigtigste for varmen. Det meste kuldetab sker nedad mod jorden, så et godt underlag holder dig varmere end en dyrere sovepose ville. Her er vores favoritter fra simpelt skum til luksuriøse oppustelige mads.",
+    seo_description: "Find det bedste liggeunderlag til shelter og telt. Vi scorer 8 favoritter — R-værdi, komfort og vægt, fra budget til premium.",
+    intro: "Liggeunderlaget er det mest oversete sovegrej — og det vigtigste for varmen. Vi har scoret de bedste fra billigt til premium, med vægt på værdi og isolering (R-værdi).",
     last_reviewed_at: TODAY,
-    sources: [
-      { title: "Hvad er R-værdi på liggeunderlag? (ASTM F3340)", url: "https://en.wikipedia.org/wiki/Sleeping_pad" },
-    ],
+    sources: [{ title: "R-værdi på liggeunderlag (ASTM F3340)", url: "https://en.wikipedia.org/wiki/Sleeping_pad" }],
     faq: [
-      { q: "Hvad er R-værdi?", a: "R-værdi måler hvor godt underlaget isolerer mod kulde fra jorden. Jo højere tal, jo varmere. Til sommer rækker R 1-2, til 3-sæsons brug vil du have R 3-4, og til vinter R 5 eller mere." },
-      { q: "Oppusteligt, selvoppustende eller skum?", a: "Oppustelige mads er mest komfortable og pakker småt, men kan punktere. Selvoppustende er en robust mellemvej. Skum er billigst, kan ikke punktere og fungerer som backup — men er mindre komfortabelt og fylder." },
-      { q: "Hvilket liggeunderlag til shelter?", a: "Til shelter med trægulv er et selvoppustende eller oppusteligt underlag med R-værdi omkring 3-4 et godt alround-valg. Sover du direkte på kold jord eller om vinteren, så vælg højere R-værdi." },
-      { q: "Kan jeg kombinere to underlag?", a: "Ja — et tyndt skumunderlag under et oppusteligt giver både ekstra isolering (R-værdierne lægges sammen) og beskytter mod punktering. En klassisk vinterløsning." },
+      { q: "Hvad er R-værdi?", a: "R-værdi måler isolering mod kulde fra jorden — jo højere, jo varmere. Sommer: R 1-2. 3-sæsons: R 3-4. Vinter: R 5+." },
+      { q: "Oppusteligt, selvoppustende eller skum?", a: "Oppustelige er mest komfortable og pakker småt, men kan punktere. Selvoppustende er en robust mellemvej. Skum er billigst og uopslideligt, men mindre komfortabelt." },
+      { q: "Hvilket liggeunderlag til shelter?", a: "Til shelter med trægulv er R 3-4 et godt alround-valg. På kold jord eller vinter: vælg højere R-værdi." },
+      { q: "Hvad koster et godt liggeunderlag?", a: "Et godt selvoppustende/oppusteligt underlag fås fra 500-900 kr. Over ~1.500 kr betaler du for lav vægt og høj R-værdi." },
+      DISCLOSURE_FAQ,
     ],
-    body_md: `## Det vigtigste tal: R-værdi
-
-R-værdien fortæller hvor godt underlaget isolerer mod kulde fra jorden. Sigt efter **R 3-4 til 3-sæsons** brug og **R 5+ til vinter**. Et tyndt skumunderlag under et oppusteligt øger samlet R-værdi og beskytter mod punktering.
-
-## Typer af underlag
-
-**Oppustelige** mads er mest komfortable og pakker mindst — men kan punktere, så tag en lap med. **Selvoppustende** er en robust og bekvem mellemvej. **Skum** er billigst og uopslideligt, men mindre komfortabelt og fylder mere.
-
-## Komfort og vægt
-
-Tykkelse betyder komfort — 5 cm eller mere føles markant bedre end et tyndt underlag, især hvis du sover på siden. Vægtbevidste vandrere går efter oppustelige mads, mens campere og shelterfolk ofte prioriterer komfort over gram.`,
+    body_md: `## Det vigtigste tal: R-værdi\n\nR-værdien fortæller hvor godt underlaget isolerer mod kulde fra jorden. Sigt efter **R 3-4 til 3-sæsons** og **R 5+ til vinter**. Et tyndt skumunderlag under et oppusteligt øger samlet R-værdi og beskytter mod punktering.\n\n## Typer\n\n**Oppustelige** er mest komfortable og pakker mindst — tag en lap med. **Selvoppustende** er robust og bekvemt. **Skum** er billigst og uopslideligt, men fylder.\n\n## Komfort og vægt\n\nTykkelse betyder komfort — 5 cm+ føles markant bedre, især for sidesovere. Vægtbevidste vælger oppustelige; shelter- og campingfolk prioriterer ofte komfort over gram.\n\n## Typiske købsfejl\n\nAt vælge et tyndt sommer-underlag til kolde nætter (for lav R-værdi), og at glemme en reparationslap til oppustelige modeller.`,
     entries: [
-      {
-        product_id: "outmore-9327868139736",
-        award_label: "Bedst i test",
-        editorial_note:
-          "Tykt, behageligt og selvoppustende — det føles næsten som en madras. Til shelter- og camping hvor komfort vejer tungere end gram er det svært at slå.",
-        pros: ["Meget komfortabel", "Selvoppustende — nemt", "Robust til shelter og camping"],
-        cons: ["Fylder en del", "Tungere end ultralette mads"],
-        specs: { type: "selvoppustende" },
-      },
-      {
-        product_id: "outmore-7045952913674",
-        award_label: "Bedste til vinter",
-        editorial_note:
-          "Høj isolering (R5+) til de kolde nætter, hvor kulden fra jorden ellers stjæler varmen. Et oplagt valg til vinter-shelter.",
-        pros: ["Høj R-værdi til vinter", "Solid Helsport-kvalitet", "Holder varmen mod kold jord"],
-        cons: ["Overkill om sommeren", "Højere pris"],
-        specs: { r_vaerdi: 5, type: "oppustelig" },
-      },
-      {
-        product_id: "outmore-0841487144173",
-        award_label: "Bedste letvægt",
-        editorial_note:
-          "Isoleret og oppusteligt med lav vægt og godt pakmål — til vandreren der vil have varme uden at slæbe rundt på det.",
-        pros: ["Let og kompakt", "Isoleret til 3-sæsons", "God komfort for vægten"],
-        cons: ["Kan punktere — tag lap med", "Lidt støjende materiale"],
-        specs: { type: "oppustelig", r_vaerdi: 4 },
-      },
-      {
-        product_id: "outmore-5709388082527",
-        award_label: "Bedste budget",
-        editorial_note:
-          "Et solidt selvoppustende underlag til en lav pris fra Robens. Perfekt udgangspunkt der dækker det meste af friluftsåret.",
-        pros: ["Lav pris", "Selvoppustende komfort", "Pålideligt mærke"],
-        cons: ["Fylder mere end premium", "Moderat isolering"],
-        specs: { type: "selvoppustende" },
-      },
-      {
-        product_id: "outmore-5709388148018",
-        award_label: "Bedste backup/skum",
-        editorial_note:
-          "Billigt foldbart skumunderlag der aldrig punkterer. Glimrende som backup, ekstra isolering om vinteren eller til den hårdføre minimalist.",
-        pros: ["Kan ikke punktere", "Meget billig", "God som ekstra vinterisolering"],
-        cons: ["Mindst komfort", "Fylder udvendigt på rygsækken"],
-        specs: { type: "skum" },
-      },
+      { product_id: "outmore-9327868067077", score: 8.8, award_label: "Bedst i test", best_for: "Alround komfort", editorial_note: "Sea to Summit Camp Mat er selvoppustende, behageligt og robust til en fornuftig pris — vores alround-favorit til shelter og camping.", pros: ["God komfort", "Selvoppustende — nemt", "Stærkt mærke til prisen"], cons: ["Fylder mere end ultralette", "Tungere"], specs: { type: "selvoppustende" } },
+      { product_id: "backpackerlife-251981", score: 7.6, award_label: "Bedst til prisen", best_for: "Stramt budget", editorial_note: "Highlanders selvoppustende underlag er billigste vej til reel komfort — fint udgangspunkt.", pros: ["Lav pris", "Selvoppustende", "Nem"], cons: ["Moderat isolering", "Fylder"], specs: { type: "selvoppustende" } },
+      { product_id: "backpackerlife-297425", score: 8.5, award_label: "Bedste letvægt", best_for: "Letvægt vandring", editorial_note: "Klymit Insulated V Ultralite er let, isoleret og kompakt — godt til vandrere der vil have varme uden vægt.", pros: ["Let og kompakt", "Isoleret", "God værdi"], cons: ["Kan punktere", "Lidt støjende"], specs: { type: "oppustelig", r_vaerdi: 4 } },
+      { product_id: "backpackerlife-629283", score: 8.6, award_label: "Bedste til vinter", best_for: "Vinter / høj R-værdi", editorial_note: "Nordisk Alden 5.0 har høj isolering til de kolde nætter — et trygt valg til vinter-shelter.", pros: ["Høj R-værdi", "Solid komfort", "Stærkt brand"], cons: ["Overkill om sommeren", "Højere pris"], specs: { type: "oppustelig", r_vaerdi: 5 } },
+      { product_id: "outmore-811666034618", score: 8.7, award_label: "Bedste premium", best_for: "Premium komfort + isolering", editorial_note: "Nemo Astro Insulated er let, tykt og varmt — premium komfort til den kræsne vandrer.", pros: ["Tyk og behagelig", "God isolering", "Lav vægt for komforten"], cons: ["Høj pris", "Oppustelig (punkteringsrisiko)"], specs: { type: "oppustelig", r_vaerdi: 4 } },
+      { product_id: "outmore-9327868168439", score: 8.4, award_label: "Bedste til camping", best_for: "Maks komfort (camping)", editorial_note: "Sea to Summit Comfort Deluxe er tykt og luksuriøst — når komfort vejer tungere end gram.", pros: ["Meget komfortabel", "Robust", "Selvoppustende"], cons: ["Fylder og vejer", "Ikke til vandring"], specs: { type: "selvoppustende" } },
+      { product_id: "backpackerlife-808519", score: 8.3, award_label: "Bedste value", best_for: "Isoleret 3-sæson value", editorial_note: "Treklife Insulated Comfort giver isoleret 3-sæsons komfort til en skarp pris.", pros: ["God værdi", "Isoleret", "Behagelig"], cons: ["Fylder lidt", "Basal pumpe"], specs: { type: "oppustelig", r_vaerdi: 3 } },
+      { product_id: "backpackerlife-832828", score: 8.0, award_label: "Bedste til begyndere", best_for: "Bredt og billigt", editorial_note: "Treklife Ultra RV er bredt og billigt — godt til begyndere og dem der vil ligge ekstra godt.", pros: ["Billigt", "Bredt og behageligt", "Nemt"], cons: ["Tungere", "Større pakmål"], specs: { type: "oppustelig" } },
     ],
   },
 
@@ -193,77 +90,27 @@ Tykkelse betyder komfort — 5 cm eller mere føles markant bedre end et tyndt u
     title: "Bedste pandelampe 2026",
     category: "pandelampe",
     seo_title: "Bedste pandelampe 2026 – test og købsguide | ShelterDK",
-    seo_description:
-      "Find den bedste pandelampe til friluftsliv. Vi sammenligner lysstyrke, batteritid og genopladelighed — fra budget til premium.",
-    intro:
-      "En pålidelig pandelampe er uundværlig på enhver sheltertur — til madlavning efter mørkets frembrud, natlige toiletbesøg og tidlige morgener. Her er vores favoritter med fokus på lysstyrke, batteritid og brugervenlighed.",
+    seo_description: "Find den bedste pandelampe til friluftsliv. Vi scorer 8 favoritter — lysstyrke, batteritid og genopladelighed, fra budget til premium.",
+    intro: "En pålidelig pandelampe er uundværlig på sheltertur. Vi har scoret de bedste med fokus på lysstyrke, batteritid og værdi — ikke kun de dyreste.",
     last_reviewed_at: TODAY,
-    sources: [
-      { title: "ANSI/PLATO FL1 – standard for lommelygters lysstyrke og rækkevidde", url: "https://en.wikipedia.org/wiki/Flashlight#Performance_standards" },
-    ],
+    sources: [{ title: "ANSI/PLATO FL1 – lysstyrke-standard", url: "https://en.wikipedia.org/wiki/Flashlight#Performance_standards" }],
     faq: [
-      { q: "Hvor mange lumen skal en pandelampe have?", a: "Til lejrbrug og gang rækker 200-400 lumen rigeligt. Vil du belyse stier i fart (løb, MTB) eller se langt, så gå efter 800 lumen og opefter. Flere lumen betyder også kortere batteritid på højeste trin." },
-      { q: "Genopladelig eller batterier?", a: "Genopladelige (USB) er billigst i drift og bedst i hverdagen. Almindelige batterier er en fordel på lange ture uden strøm, hvor du kan skifte i felten. Nogle lamper kan begge dele — det er det mest fleksible." },
-      { q: "Hvad er rødt lys godt for?", a: "Rødt lys bevarer dit nattesyn og blænder ikke dine telt- eller shelterkammerater. Brug det til at læse, finde ting og bevæge dig i lejren uden at ødelægge mørkesynet." },
-      { q: "Holder pandelamper til regn?", a: "De fleste friluftspandelamper har en IP-klassificering der tåler regn og stænk. Tjek for mindst IPX4 hvis du færdes i dansk vejr — undgå at nedsænke dem medmindre de er specifikt vandtætte." },
+      { q: "Hvor mange lumen skal en pandelampe have?", a: "Til lejr og gang rækker 200-400 lumen. Til løb eller hurtig færden i mørke: 800+ lumen. Flere lumen = kortere batteritid på højeste trin." },
+      { q: "Genopladelig eller batterier?", a: "Genopladelig (USB) er billigst i drift og bedst i hverdagen. Udskiftelige batterier er en fordel på lange ture uden strøm. De mest fleksible kan begge dele." },
+      { q: "Hvad er rødt lys godt for?", a: "Rødt lys bevarer nattesynet og blænder ikke teltkammeraterne — godt til at læse og bevæge sig i lejren." },
+      { q: "Hvad koster en god pandelampe?", a: "En fremragende alround-lampe fås for 300-600 kr (fx Petzl Actik Core). Over ~1.000 kr betaler du for meget lys, reaktivt lys og robusthed." },
+      DISCLOSURE_FAQ,
     ],
-    body_md: `## Lysstyrke og rækkevidde
-
-**Lumen** måler den samlede lysmængde, mens rækkevidde fortæller hvor langt lyset når. Til lejr og gang rækker 200-400 lumen; til løb og hurtig færden i mørke vil du have 800+ lumen. Husk at højeste lysstyrke dræner batteriet hurtigt.
-
-## Batteri og genopladning
-
-Genopladelige (USB) lamper er billigst og nemmest i hverdagen. Til lange ture uden strøm er udskiftelige batterier en fordel — og de mest fleksible lamper kan begge dele. Tjek batteritiden på et **realistisk** lystrin, ikke kun på det laveste.
-
-## Komfort og features
-
-Et godt hovedbånd, lav vægt og en **rødlys-tilstand** (bevarer nattesynet) gør stor forskel i praksis. Til dansk vejr bør lampen tåle regn — kig efter mindst IPX4.`,
+    body_md: `## Lysstyrke og rækkevidde\n\n**Lumen** måler lysmængden; rækkevidde hvor langt lyset når. Lejr/gang: 200-400 lumen. Løb/sti: 800+ lumen. Husk at højeste trin dræner batteriet hurtigt.\n\n## Batteri\n\nGenopladelige (USB) er nemmest og billigst i hverdagen. Til lange ture uden strøm er udskiftelige batterier en fordel — de mest fleksible lamper kan begge dele. Tjek batteritid på et **realistisk** lystrin.\n\n## Komfort og features\n\nGodt hovedbånd, lav vægt og en **rødlys-tilstand** gør stor forskel. Til dansk vejr bør lampen tåle regn — kig efter mindst IPX4.\n\n## Typiske købsfejl\n\nAt jagte maksimale lumen man aldrig bruger (og ofre batteritid), og at vælge en lampe uden rødt lys til delt shelter/telt.`,
     entries: [
-      {
-        product_id: "outmore-7318860205088",
-        award_label: "Bedst i test",
-        editorial_note:
-          "En alsidig, genopladelig pandelampe med rigelig lysstyrke til både lejr og sti. Det rigtige valg for de fleste friluftsfolk.",
-        pros: ["Alsidig lysstyrke (2000 lm)", "Genopladelig via USB", "Pålideligt Silva-kvalitet"],
-        cons: ["Mellemklasse-pris", "Højeste trin dræner batteriet"],
-        specs: { lumen: 2000, genopladelig: true },
-      },
-      {
-        product_id: "outmore-3342540828926",
-        award_label: "Bedste premium",
-        editorial_note:
-          "Petzls kraftige toptmodel til dem der vil have masser af lys og robusthed. Til krævende ture hvor lyset skal kunne det hele.",
-        pros: ["Meget kraftigt lys", "Robust og vejrbestandig", "Topkvalitet fra Petzl"],
-        cons: ["Høj pris", "Tungere end simple lamper"],
-        specs: { genopladelig: true },
-      },
-      {
-        product_id: "outmore-7318860202742",
-        award_label: "Bedste budget",
-        editorial_note:
-          "Billigste vej til pålidelig Silva-belysning. Mere end nok lys til lejr og gang, uden dikkedarer.",
-        pros: ["Lav pris", "Fint til lejr og gang", "Let og enkel"],
-        cons: ["Lavere lysstyrke", "Færre funktioner"],
-        specs: { genopladelig: true },
-      },
-      {
-        product_id: "outmore-4058205021050",
-        award_label: "Bedste til arbejde",
-        editorial_note:
-          "Robust arbejds-/friluftslampe fra Ledlenser med godt, jævnt lys og solid bygning. Til dig der bruger lampen hårdt.",
-        pros: ["Robust bygning", "Jævnt, behageligt lys", "Genopladelig"],
-        cons: ["Lidt tungere", "Mere arbejds- end sportsfokus"],
-        specs: { genopladelig: true },
-      },
-      {
-        product_id: "outmore-6942870308173",
-        award_label: "Bedste alternativ",
-        editorial_note:
-          "Fenix HP30R leverer kraftigt lys og lang rækkevidde med eksternt batteri — godt til lange, mørke ture.",
-        pros: ["Kraftigt lys og rækkevidde", "Langt batteri (ekstern pakke)", "Solid Fenix-kvalitet"],
-        cons: ["Eksternt batteri at holde styr på", "Højere pris"],
-        specs: { genopladelig: true },
-      },
+      { product_id: "outmore-3342540846388", score: 9.2, award_label: "Bedst i test", best_for: "Alround friluft", editorial_note: "Petzl Actik Core er referencen: rigeligt lys, genopladelig (men kan også køre på AAA), rødt lys og pålidelig kvalitet — til en pris de fleste kan være med på.", pros: ["Genopladelig + AAA-fleksibilitet", "Rødt lys + godt hovedbånd", "Pålidelig Petzl-kvalitet"], cons: ["Ikke den kraftigste", "Mellemklasse-pris"], specs: { lumen: 600, genopladelig: true } },
+      { product_id: "outmore-3342540847187", score: 8.2, award_label: "Bedst til prisen", best_for: "Billig pålidelig", editorial_note: "Petzl Tikka er den billige, pålidelige klassiker — mere end nok til lejr og gang.", pros: ["Lav pris", "Pålidelig", "Let"], cons: ["AAA-batterier", "Lavere lysstyrke"], specs: { lumen: 350, genopladelig: false } },
+      { product_id: "outmore-3342540840980", score: 8.9, award_label: "Bedste premium", best_for: "Kraftig / reaktiv", editorial_note: "Petzl Swift RL har reaktivt lys der automatisk justerer styrken — kraftig og smart til krævende ture.", pros: ["Kraftigt + reaktivt lys", "Genopladelig", "Premium kvalitet"], cons: ["Høj pris", "Tungere"], specs: { lumen: 1100, genopladelig: true } },
+      { product_id: "outmore-7318860208713", score: 7.8, award_label: "Bedste budget genopladelig", best_for: "Billigst genopladelig", editorial_note: "Silva Seek 420 er en billig genopladelig indgang med fin lysstyrke til lejr.", pros: ["Billig + genopladelig", "Fin til lejr", "Let"], cons: ["Basal", "Kortere rækkevidde"], specs: { lumen: 420, genopladelig: true } },
+      { product_id: "outmore-6957713004297", score: 8.5, award_label: "Bedste kraftige value", best_for: "Kraftigt nærlys", editorial_note: "Armytek Wizard C2 Pro Max giver masser af flomlys for pengene — robust og vandtæt.", pros: ["Meget lys for pengen", "Robust + vandtæt", "Genopladelig"], cons: ["Tungere", "Mere lommelygte-følelse"], specs: { lumen: 3800, genopladelig: true } },
+      { product_id: "outmore-4058205010313", score: 8.1, award_label: "Bedste til arbejde", best_for: "Robust arbejds-/friluftsbrug", editorial_note: "Ledlenser IH8R er robust med jævnt, behageligt lys — til dig der bruger lampen hårdt.", pros: ["Robust bygning", "Jævnt lys", "Genopladelig"], cons: ["Lidt tung", "Mere arbejdsfokus"], specs: { lumen: 600, genopladelig: true } },
+      { product_id: "outmore-793661588627", score: 8.6, award_label: "Bedste til trail", best_for: "Maks lys / trail", editorial_note: "Black Diamond Distance 1500 leverer kraftigt, langt lys til løb og hurtig færden i mørke.", pros: ["Meget kraftigt lys", "God rækkevidde", "Genopladelig"], cons: ["Højere pris", "Eksternt batteri"], specs: { lumen: 1500, genopladelig: true } },
+      { product_id: "outmore-7318860207693", score: 7.9, award_label: "Bedste kompakt", best_for: "Ultrakompakt backup", editorial_note: "Silva Smini er lillebitte og let — perfekt som backup eller til den vægtbevidste.", pros: ["Meget lille og let", "Genopladelig", "Fin backup"], cons: ["Lav lysstyrke", "Kort rækkevidde"], specs: { genopladelig: true } },
     ],
   },
 
@@ -272,82 +119,33 @@ Et godt hovedbånd, lav vægt og en **rødlys-tilstand** (bevarer nattesynet) g�
     title: "Bedste telt 2026",
     category: "telt",
     seo_title: "Bedste telt 2026 – test og købsguide | ShelterDK",
-    seo_description:
-      "Find det bedste telt til friluftsliv i Norden. Vi gennemgår robuste familie- og ekspeditionstelte, lavvo og et budgetvalg.",
-    intro:
-      "Et godt telt giver tryghed når vejret slår om. Vores udvalg fokuserer på robuste telte der passer til nordisk friluftsliv — fra rummelige familietelte og hardføre ekspeditionstelte til klassisk lavvo og et budgetvalg til den første tur.",
+    seo_description: "Find det bedste telt til friluftsliv. Vi scorer 8 favoritter fra budget til premium — 1-4 personer, letvægt og familie.",
+    intro: "Vi har scoret de bedste telte til friluftsliv i Danmark — fra et billigt 2-personers til robuste familie- og letvægtstelte. Fokus på værdi og brugbarhed, ikke kun de dyreste.",
     last_reviewed_at: TODAY,
-    sources: [
-      { title: "Teltsæsoner og opbygning – forklaret", url: "https://en.wikipedia.org/wiki/Tent" },
-    ],
+    sources: [{ title: "Teltsæsoner og opbygning forklaret", url: "https://en.wikipedia.org/wiki/Tent" }],
     faq: [
-      { q: "Hvor mange sæsoner skal teltet kunne?", a: "3-sæsons telte dækker forår, sommer og efterår og er nok for de fleste. 4-sæsons (vinter) telte tåler sne og kraftig vind, men er tungere og dyrere. Vælg ud fra hvornår og hvor du faktisk camperer." },
-      { q: "Hvor mange personer skal teltet rumme?", a: "Personangivelsen er ofte stram — et '2-personers' telt er hyggeligt for to uden meget grej. Vil du have plads til udstyr eller bevægelsesfrihed, så vælg ét persontal op." },
-      { q: "Hvad er en lavvo?", a: "En lavvo (tipi-telt) er et højt, kegleformet telt uden bund, ofte med plads til brændeovn. Det giver masser af ståhøjde og fællesskab og er populært til længere ophold og koldt vejr — men pakker større end et kuppeltelt." },
-      { q: "Skal jeg bruge en footprint (teltunderlag)?", a: "En footprint beskytter bunden mod slid og fugt og forlænger teltets levetid. Det er en billig forsikring, især hvis du ofte slår lejr på ujævnt eller stenet underlag." },
+      { q: "Hvor mange sæsoner skal teltet kunne?", a: "3-sæsons dækker forår/sommer/efterår og er nok for de fleste. 4-sæsons tåler sne og kraftig vind, men er tungere og dyrere." },
+      { q: "Hvor mange personer skal teltet rumme?", a: "Personangivelsen er ofte stram — vil du have plads til grej og bevægelse, vælg ét persontal op." },
+      { q: "Hvad koster et godt telt?", a: "Et solidt 2-personers fås fra 700-1.300 kr. Letvægts- og 4-sæsons-telte koster mere. Under 600 kr er fint til festival og milde forhold." },
+      { q: "Skal jeg bruge en footprint?", a: "En footprint beskytter bunden mod slid og fugt og forlænger teltets levetid — billig forsikring på stenet/fugtigt underlag." },
+      DISCLOSURE_FAQ,
     ],
-    body_md: `## Vælg teltet efter brugen
-
-Skal det med på vandretur, eller står det på en fast lejrplads? **Vægt og pakmål** afgør om teltet egner sig til at bære, mens **plads og ståhøjde** betyder mest når du bliver længe på samme sted.
-
-## Sæson og robusthed
-
-**3-sæsons** telte dækker det meste af året i Danmark. Skal teltet stå imod sne og kraftig nordisk vind, så kig efter et **4-sæsons** ekspeditionstelt med flere stænger og kraftigere dug — det vejer og koster mere, men giver tryghed i hårdt vejr.
-
-## Lavvo til længere ophold
-
-En **lavvo** (tipi-telt) giver ståhøjde, god ventilation og mulighed for brændeovn. Det er et stærkt valg til basecamp og koldt vejr, hvor komfort og fællesskab vejer tungere end vægt.
-
-## Husk footprint
-
-En footprint beskytter bunden mod slid og fugt og forlænger teltets levetid — en billig forsikring på stenet eller fugtigt underlag.`,
+    body_md: `## Vælg teltet efter brugen\n\nSkal det bæres på vandretur, eller stå på en fast lejrplads? **Vægt og pakmål** afgør om teltet egner sig til at bære; **plads og ståhøjde** betyder mest når du bliver længe samme sted.\n\n## Sæson og robusthed\n\n**3-sæsons** dækker det meste af året i Danmark. Skal teltet stå imod sne og kraftig vind, vælg et **4-sæsons** med flere stænger og kraftigere dug.\n\n## Personantal\n\nProducenternes persontal er optimistiske. To voksne med grej har det godt i et "3-personers". Vælg op hvis du vil have albuerum.\n\n## Typiske købsfejl\n\nAt købe efter persontal i stedet for reel plads, og at glemme footprint på stenet underlag.`,
     entries: [
-      {
-        product_id: "outmore-7029981040778",
-        award_label: "Bedst i test",
-        editorial_note:
-          "Rummeligt og robust familietelt fra Helsport med plads til hele familien og grejet. Et trygt alround-valg til nordisk friluftsliv.",
-        pros: ["God plads til familie + grej", "Robust nordisk kvalitet", "Alsidigt til 3 sæsoner"],
-        cons: ["Tungt at bære langt", "Højere pris"],
-        specs: { personer: 4, saeson: "3-sæsons" },
-      },
-      {
-        product_id: "outmore-7029981043991",
-        award_label: "Bedste til ekspedition",
-        editorial_note:
-          "Hardført ekspeditionstelt bygget til sne, vind og barske forhold. Til dig der camperer året rundt og vil have maksimal tryghed.",
-        pros: ["Tåler sne og kraftig vind", "4-sæsons robusthed", "Premium Helsport-kvalitet"],
-        cons: ["Høj pris", "Mere telt end de fleste behøver"],
-        specs: { personer: 3, saeson: "4-sæsons" },
-      },
-      {
-        product_id: "outmore-7340001627435",
-        award_label: "Bedste lavvo",
-        editorial_note:
-          "Klassisk Tentipi-lavvo med masser af ståhøjde og plads til mange — og mulighed for brændeovn. Til længere ophold og koldt vejr.",
-        pros: ["Stor ståhøjde og plads", "Velegnet til brændeovn", "Ikonisk Tentipi-kvalitet"],
-        cons: ["Pakker stort og tungt", "Dyr"],
-        specs: { personer: 9, saeson: "4-sæsons" },
-      },
-      {
-        product_id: "backpackerlife-193657",
-        award_label: "Bedste budget",
-        editorial_note:
-          "Billigt 2-personers telt til den første tur eller festivalen. Ikke til hårdt vejr, men en nem og overkommelig start.",
-        pros: ["Meget lav pris", "Let at slå op", "Fint til milde forhold"],
-        cons: ["Ikke til hårdt vejr", "Simpel materialekvalitet"],
-        specs: { personer: 2, saeson: "2-3-sæsons" },
-      },
+      { product_id: "backpackerlife-64353", score: 8.6, award_label: "Bedst i test", best_for: "Alround 2-personers", editorial_note: "Highlander Blackthorn 2 er den klassiske, prisvenlige 2-personers backpacking-telt — solid og nem til de fleste shelter-/vandreture.", pros: ["Fremragende værdi", "Nem at slå op", "Fint pakmål for prisen"], cons: ["Ikke ultralet", "Basal ventilation"], specs: { personer: 2, saeson: "3-sæsons" } },
+      { product_id: "outdoortid-52096196116812", score: 7.8, award_label: "Bedst til prisen", best_for: "Billigst 2-personers", editorial_note: "Nordic Peak Pico 2.0 er billigste vej til et rigtigt 2-personers telt — fint til milde forhold og begyndere.", pros: ["Meget lav pris", "Let nok", "Fin til sommer"], cons: ["Ikke til hårdt vejr", "Simpel kvalitet"], specs: { personer: 2, saeson: "2-3-sæsons" } },
+      { product_id: "backpackerlife-41621", score: 8.2, award_label: "Bedste solo", best_for: "Solo letvægt", editorial_note: "Highlander Blackthorn 1 er et kompakt, billigt 1-personers — godt til soloture med lav vægt.", pros: ["Let og kompakt", "God pris", "Hurtig opsætning"], cons: ["Snæver plads", "Lidt kondens"], specs: { personer: 1, saeson: "3-sæsons" } },
+      { product_id: "backpackerlife-741484", score: 8.0, award_label: "Bedste til lille familie", best_for: "3 personer / value", editorial_note: "High Peak Nevada 3 giver familieplads til en skarp pris — godt til weekendture med børn.", pros: ["God plads for prisen", "Nem", "Fint til 3"], cons: ["Tungere", "Basal materialekvalitet"], specs: { personer: 3, saeson: "3-sæsons" } },
+      { product_id: "backpackerlife-95676", score: 8.3, award_label: "Bedste letvægt", best_for: "Letvægt 2-personers", editorial_note: "High Peak Kite LW er et letvægts 2-personers til den der vil bære mindre på vandreturen.", pros: ["Lav vægt", "Lille pakmål", "2-personers"], cons: ["Mindre plads", "Højere pris end basis"], specs: { personer: 2, saeson: "3-sæsons" } },
+      { product_id: "outmore-5709388144911", score: 8.5, award_label: "Bedste premium", best_for: "Robust til længere ture", editorial_note: "Robens Lodge 2 Exp er et robust, gennemtænkt 2-personers til længere og mere krævende ture.", pros: ["Robust kvalitet", "God ventilation", "Holdbar"], cons: ["Højere pris", "Tungere"], specs: { personer: 2, saeson: "3-4-sæsons" } },
+      { product_id: "outmore-5709388144836", score: 8.1, award_label: "Bedste familie", best_for: "4 personer / camping", editorial_note: "Easy Camp Hidra 4 er et rummeligt familietelt til campingpladsen og længere ophold.", pros: ["God familieplads", "Ståhøjde", "Nem"], cons: ["Tungt", "Til camping, ikke vandring"], specs: { personer: 4, saeson: "3-sæsons" } },
+      { product_id: "outdoortid-53030432964940", score: 8.0, award_label: "Bedste tipi", best_for: "Tipi / brændeovn", editorial_note: "Naturehike Ranch 4.0 er et tipi-telt med god ståhøjde og plads — hyggeligt til længere ophold og koldt vejr.", pros: ["Stor ståhøjde", "God plads", "Tipi-hygge"], cons: ["Pakker stort", "Ingen bund i nogle versioner"], specs: { personer: 4, saeson: "3-4-sæsons" } },
     ],
   },
 ];
 
 async function req(method, path, body, extraHeaders = {}) {
-  const r = await fetch(`${URL}/rest/v1/${path}`, {
-    method,
-    headers: { ...H, ...extraHeaders },
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  const r = await fetch(`${URL}/rest/v1/${path}`, { method, headers: { ...H, ...extraHeaders }, body: body ? JSON.stringify(body) : undefined });
   const text = await r.text();
   if (!r.ok) throw new Error(`${method} ${path} → ${r.status}: ${text.slice(0, 300)}`);
   return text ? JSON.parse(text) : null;
@@ -356,45 +154,28 @@ async function req(method, path, body, extraHeaders = {}) {
 async function upsertGuide(g) {
   const { entries, ...guideRow } = g;
   guideRow.status = "published";
-  const [row] = await req(
-    "POST",
-    "buying_guides?on_conflict=slug",
-    guideRow,
-    { Prefer: "resolution=merge-duplicates,return=representation" }
-  );
+  guideRow.author = AUTHOR;
+  const [row] = await req("POST", "buying_guides?on_conflict=slug", guideRow, { Prefer: "resolution=merge-duplicates,return=representation" });
   const guideId = row.id;
-
+  // Idempotent replace: fjern eksisterende entries så guiden afspejler præcis
+  // den aktuelle selektion (ellers hober gamle v1-produkter sig op).
+  await req("DELETE", `buying_guide_entries?guide_id=eq.${guideId}`);
   let rank = 0;
   for (const e of entries) {
-    await req(
-      "POST",
-      "buying_guide_entries?on_conflict=guide_id,affiliate_product_id",
-      {
-        guide_id: guideId,
-        affiliate_product_id: e.product_id,
-        rank: rank++,
-        award_label: e.award_label ?? null,
-        editorial_note: e.editorial_note ?? null,
-        pros: e.pros ?? [],
-        cons: e.cons ?? [],
-      },
-      { Prefer: "resolution=merge-duplicates" }
-    );
-    if (e.specs) {
-      await req("PATCH", `affiliate_products?id=eq.${encodeURIComponent(e.product_id)}`, { specs: e.specs });
-    }
+    await req("POST", "buying_guide_entries?on_conflict=guide_id,affiliate_product_id", {
+      guide_id: guideId, affiliate_product_id: e.product_id, rank: rank++,
+      award_label: e.award_label ?? null, editorial_note: e.editorial_note ?? null,
+      pros: e.pros ?? [], cons: e.cons ?? [], score: e.score ?? null, best_for: e.best_for ?? null,
+    }, { Prefer: "resolution=merge-duplicates" });
+    if (e.specs) await req("PATCH", `affiliate_products?id=eq.${encodeURIComponent(e.product_id)}`, { specs: e.specs });
   }
-  return { slug: g.slug, guideId, entries: entries.length };
+  return { slug: g.slug, entries: entries.length };
 }
 
 (async () => {
   for (const g of guides) {
-    try {
-      const res = await upsertGuide(g);
-      console.log(`✓ ${res.slug} (${res.entries} produkter) → /bedste/${res.slug}`);
-    } catch (err) {
-      console.error(`✗ ${g.slug}: ${err.message}`);
-    }
+    try { const res = await upsertGuide(g); console.log(`✓ ${res.slug} (${res.entries} produkter) → /bedste/${res.slug}`); }
+    catch (err) { console.error(`✗ ${g.slug}: ${err.message}`); }
   }
-  console.log("\nFærdig. Husk: live pris/lager hentes ved render; udsolgte demoteres automatisk.");
+  console.log("\nFærdig (v2). Live pris/lager hentes ved render; udsolgte demoteres.");
 })();
