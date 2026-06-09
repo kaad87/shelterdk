@@ -46,7 +46,7 @@ export default async function BuyingGuidePage({
   const { guide, entries } = data;
   const pageUrl = `https://shelterdk.dk/bedste/${guide.slug}`;
   const itemList = buildItemListSchema(
-    entries.map((e) => e.product),
+    entries.map((e) => ({ product: e.product, score: e.score })),
     pageUrl
   );
   const faqItems: FaqItem[] = (guide.faq ?? []).map((f) => ({ question: f.q, answer: f.a }));
