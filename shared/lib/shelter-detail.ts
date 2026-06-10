@@ -98,13 +98,13 @@ function kommuneToBy(value: string): string {
  *  - Bookbar (ikke gratis / ukendt pris): "Book {navn} i {by}"
  *  - Ikke bookbar: "{navn} – Shelter i {by}" eller "{navn} i {by}"
  *  - Generisk navn: beskrivende fallback med stedsnavn
- *  Holder titlen under ~60 tegn (inkl. " | Shelterdk.dk"). */
+ *  Holder titlen under ~60 tegn (inkl. " | ShelterDK"). */
 export function buildSeoTitle(shelter: Shelter): string {
   const name = (shelter.title || "").trim();
   const city = getCity(shelter);
   const region = (shelter.region ?? "").trim() || "Danmark";
   const by = city || (region !== "Danmark" ? region : null);
-  const suffix = " | Shelterdk.dk";
+  const suffix = " | ShelterDK";
   const MAX_LEN = 60;
 
   const isGenericOnly =

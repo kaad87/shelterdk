@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import type { CuratedRouteIndex } from "@/types/curated-route";
 import { slugifySegment } from "@/lib/slug";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
 export const revalidate = 86400;
 export const dynamicParams = false;
@@ -47,7 +48,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: { absolute: title },
     description,
     alternates: { canonical: `https://shelterdk.dk${canonical}` },
-    openGraph: { title, description, url: canonical },
+    openGraph: { title, description, url: canonical, images: [DEFAULT_OG_IMAGE] },
   };
 }
 

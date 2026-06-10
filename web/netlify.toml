@@ -12,6 +12,23 @@
   directory = "netlify/functions"
   node_bundler = "esbuild"
 
+# Netlify Image CDN: /.netlify/images?url=...&w=...&q=... transformerer på
+# edge. Erstatter /api/image-funktionen i prod (sharp fejlede dér og streamede
+# 1,6-3,3 MB originaler igennem = bandwidth-lækage). Kun hosts der IKKE står
+# på skip-listen i lib/image-proxy.ts (skip-hosts loades direkte i browseren).
+[images]
+  remote_images = [
+    "https://winiuqqbllntgjeowkbs\\.supabase\\.co/storage/.*",
+    "https://geofa\\.geodanmark\\.dk/.*",
+    "https://udinaturen\\.dk/.*",
+    "https://book\\.naturstyrelsen\\.dk/.*",
+    "https://naturstyrelsen\\.dk/.*",
+    "https://kortservice2\\.vejle\\.dk/.*",
+    "https://apps\\.aalborgkommune\\.dk/.*",
+    "https://webkort\\.esbjergkommune\\.dk/.*",
+    "https://webkort\\.herning\\.dk/.*",
+  ]
+
 # www → apex så én kanonisk URL (Chrome har nogle gange socket-problem på www)
 [[redirects]]
   from = "https://www.shelterdk.dk/*"

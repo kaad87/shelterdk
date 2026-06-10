@@ -448,6 +448,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // gav en 404-URL i sitemap'et.
     const regionSlug = canonicalRegionSlug(region.trim());
     if (!regionSlug) continue;
+    // /danmark/danmark er noindex-bucket for shelters uden region.
+    if (regionSlug === "danmark") continue;
     entries.push(
       entry(
         `${BASE_URL}/danmark/${regionSlug}`,

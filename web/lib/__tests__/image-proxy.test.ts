@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { computeImageProxyKey, getProxiedImageSrc, isUnoptimizedImageUrl } from "../image-proxy";
 
 describe("getProxiedImageSrc", () => {
@@ -53,5 +53,38 @@ describe("getProxiedImageSrc", () => {
   it("skips proxy for stable hosts like Unsplash", () => {
     const result = getProxiedImageSrc("https://images.unsplash.com/photo-123");
     expect(result).toBe("https://images.unsplash.com/photo-123");
+  });
+});
+
+describe("getProxiedImageSrc – Netlify Image CDN i produktion", () => {
+  it("bruger /.netlify/images i production (edge-transform, ingen sharp)", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    try {
+      const result = getProxiedImageSrc("https://example.com/img.jpg", { w: 720, q: 70 });
+      expect(result).toBe(
+        "/.netlify/images?url=https%3A%2F%2Fexample.com%2Fimg.jpg&q=70&w=720"
+      );
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("bruger stadig /api/image i dev/test", () => {
+    const result = getProxiedImageSrc("https://example.com/img.jpg", { w: 720 });
+    expect(result).toContain("/api/image/");
+  });
+
+  it("skip-hosts går stadig direkte uden om CDN i production", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    try {
+      const result = getProxiedImageSrc("https://images.unsplash.com/img.jpg", { w: 720 });
+      expect(result).toBe("https://images.unsplash.com/img.jpg");
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("behandler /.netlify/images som allerede optimeret (ingen dobbelt-hop)", () => {
+    expect(isUnoptimizedImageUrl("/.netlify/images?url=x&w=720")).toBe(true);
   });
 });

@@ -5,6 +5,7 @@ import { ShelterListSchema } from "@/components/seo/ShelterListSchema";
 import { QuickAnswer } from "@/components/seo/QuickAnswer";
 import { ShelterCard } from "@/components/ShelterCard";
 import { ShelterMap } from "@/components/ShelterMap";
+import { toMapShelters } from "@/lib/map-shelter";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import { buildQuickAnswer } from "@/lib/quick-answer";
 import { slugifySegment } from "@/lib/slug";
@@ -210,7 +211,7 @@ export function CrossFilterRegionPage({
                   </div>
                 </div>
                 <div className="lg:sticky lg:top-24 lg:self-start rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[280px] h-[40vh] lg:h-[calc(100vh-8rem)] lg:max-h-[720px] order-1 lg:order-2 mb-6 lg:mb-0 mx-4 sm:mx-6 lg:mx-0">
-                  <ShelterMap shelters={shelters} className="w-full h-full" />
+                  <ShelterMap shelters={toMapShelters(shelters)} className="w-full h-full" />
                 </div>
               </div>
             </section>

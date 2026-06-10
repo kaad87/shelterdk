@@ -3,14 +3,16 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { TurvennerClient } from "@/components/TurvennerClient";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
 export const metadata: Metadata = {
-  title: "Find turvenner — ShelterDK",
+  title: "Find turvenner til din næste sheltertur",
   description:
     "Find makkere til din næste sheltertur. Opret et opslag eller kontakt andre shelter-entusiaster i Danmark.",
   alternates: { canonical: "https://shelterdk.dk/turvenner" },
   openGraph: {
-    title: "Find turvenner — ShelterDK",
+    images: [DEFAULT_OG_IMAGE],
+    title: "Find turvenner til din næste sheltertur",
     description:
       "Find makkere til din næste sheltertur. Opret et opslag eller kontakt andre shelter-entusiaster i Danmark.",
     url: "/turvenner",

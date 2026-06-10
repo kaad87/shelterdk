@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
 export const metadata: Metadata = {
   title: { absolute: "Vilkår og betingelser | ShelterDK" },
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
     "Læs vilkår og betingelser for brug af ShelterDKs website, bookingflow og ejerportal.",
   alternates: { canonical: "https://shelterdk.dk/vilkaar" },
   openGraph: {
+    images: [DEFAULT_OG_IMAGE],
     title: "Vilkår og betingelser | ShelterDK",
     description:
       "Læs vilkår og betingelser for brug af ShelterDKs website, bookingflow og ejerportal.",

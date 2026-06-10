@@ -24,6 +24,7 @@ export interface BuyingGuide {
   author: string | null;
   parent_slug: string | null;
   updated_at: string;
+  created_at: string;
 }
 
 export interface GuideEntryWithProduct {

@@ -48,11 +48,25 @@ export async function GET(req: Request) {
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
   try {
+    // Googles Photo API svarer 302 → lh3.googleusercontent.com. Send browseren
+    // direkte derhen i stedet for at streame billed-bytes gennem Netlify
+    // (bandwidth-lækage). lh3-URL'en indeholder ikke API-nøglen.
     const res = await fetch(url.toString(), {
       signal: controller.signal,
-      redirect: "follow",
+      redirect: "manual",
     });
     clearTimeout(timeout);
+    const location = res.headers.get("location");
+    if (res.status >= 300 && res.status < 400 && location) {
+      return new NextResponse(null, {
+        status: 302,
+        headers: {
+          Location: location,
+          "Cache-Control": "public, max-age=604800, stale-while-revalidate=86400",
+        },
+      });
+    }
+    // Fallback: Google svarede ikke med redirect — stream som før.
     if (!res.ok) {
       return errorResponse(502, `Google API error (${res.status})`);
     }

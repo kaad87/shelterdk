@@ -3,6 +3,7 @@ import Link from "next/link";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { LastVerifiedBadge } from "@/components/LastVerifiedBadge";
 import { SpeakableSchema } from "@/components/seo/SpeakableSchema";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
 const PAGE_TITLE = "Datakilder og metode | ShelterDK";
 const PAGE_DESCRIPTION =
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
   description: PAGE_DESCRIPTION,
   alternates: { canonical: "https://shelterdk.dk/data-kilder" },
   openGraph: {
+    images: [DEFAULT_OG_IMAGE],
     title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
     url: "/data-kilder",

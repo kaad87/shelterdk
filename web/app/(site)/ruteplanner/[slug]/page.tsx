@@ -10,6 +10,7 @@ import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import { formatDistance } from "@/lib/haversine";
 import { slugifySegment } from "@/lib/slug";
 import type { CuratedRouteIndex, CuratedRouteDataMap, RouteShelter } from "@/types/curated-route";
+import { DEFAULT_OG_IMAGE, truncateAtWord } from "@/lib/seo-meta";
 
 export const revalidate = 86400;
 export const dynamicParams = false;
@@ -55,7 +56,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const title = `${route.name} – ${route.length_km} km vandrerute med ${route.shelter_count} shelters | ShelterDK`;
   const description = route.description
-    ? route.description.slice(0, 160)
+    ? truncateAtWord(route.description, 160)
     : `${route.name} er en ${route.length_km} km vandrerute i ${route.region} med ${route.shelter_count} shelters langs ruten.`;
   const canonical = `/ruteplanner/${slug}`;
 
@@ -63,7 +64,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: { absolute: title },
     description,
     alternates: { canonical: `https://shelterdk.dk${canonical}` },
-    openGraph: { title, description, url: canonical },
+    openGraph: { title, description, url: canonical, images: [DEFAULT_OG_IMAGE] },
     robots: { index: true, follow: true },
   };
 }

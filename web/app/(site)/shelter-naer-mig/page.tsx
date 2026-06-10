@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ShelterNaerMigClient } from "@/components/ShelterNaerMigClient";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
 const PAGE_TITLE = "Find shelter nær mig | ShelterDK";
 const PAGE_DESCRIPTION =
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
   description: PAGE_DESCRIPTION,
   alternates: { canonical: "https://shelterdk.dk/shelter-naer-mig" },
   openGraph: {
+    images: [DEFAULT_OG_IMAGE],
     title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
     url: "/shelter-naer-mig",

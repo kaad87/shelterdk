@@ -14,6 +14,7 @@ import { formatScore } from "@/lib/buying-guides-score";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { renderContent } from "@/lib/renderContent";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
 export const revalidate = 3600;
 export const dynamicParams = true;
@@ -35,6 +36,7 @@ export async function generateMetadata({
     description: guide.seo_description ?? guide.intro ?? undefined,
     alternates: { canonical: `https://shelterdk.dk/bedste/${guide.slug}` },
     openGraph: {
+      images: [DEFAULT_OG_IMAGE],
       title: guide.seo_title || guide.title,
       description: guide.seo_description ?? guide.intro ?? undefined,
       url: `/bedste/${guide.slug}`,
@@ -55,7 +57,13 @@ export default async function BuyingGuidePage({
   const parent = guide.parent_slug ? allGuides.find((x) => x.slug === guide.parent_slug) ?? null : null;
   const pageUrl = `https://shelterdk.dk/bedste/${guide.slug}`;
   const itemList = buildItemListSchema(
-    entries.map((e) => ({ product: e.product, score: e.score })),
+    entries.map((e) => ({
+      product: e.product,
+      score: e.score,
+      pros: e.pros,
+      cons: e.cons,
+      reviewBody: e.editorial_note || null,
+    })),
     pageUrl
   );
   const faqItems: FaqItem[] = (guide.faq ?? []).map((f) => ({ question: f.q, answer: f.a }));
@@ -131,7 +139,14 @@ export default async function BuyingGuidePage({
           {/* GEO-svarkapsel */}
           {answerText && (
             <div className="mt-6">
-              <QuickAnswer url={pageUrl} heading="Hurtigt svar" answer={answerText} />
+              <QuickAnswer
+                url={pageUrl}
+                heading="Hurtigt svar"
+                answer={answerText}
+                datePublished={guide.created_at}
+                dateModified={guide.last_reviewed_at ?? guide.updated_at}
+                authorName={guide.author}
+              />
             </div>
           )}
 

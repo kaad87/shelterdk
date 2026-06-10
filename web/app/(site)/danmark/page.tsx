@@ -3,6 +3,7 @@ import Link from "next/link";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { getCountPerRegion } from "@/lib/fakta-db";
 import { slugifySegment } from "@/lib/slug";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
 export const revalidate = 86400;
 
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
     "Udforsk shelters efter region i Danmark. Gå videre til Jylland, Fyn, Sjælland og Øerne eller Bornholm og find shelters, bysider og kommunesider.",
   alternates: { canonical: "https://shelterdk.dk/danmark" },
   openGraph: {
+    images: [DEFAULT_OG_IMAGE],
     title: "Shelters i Danmarks regioner | ShelterDK",
     description:
       "Udforsk shelters efter region i Danmark og gå videre til regioner, kommuner og bysider.",

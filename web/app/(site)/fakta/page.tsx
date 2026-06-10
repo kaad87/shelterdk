@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
 export const revalidate = 86400;
 
@@ -10,6 +11,7 @@ export const metadata: Metadata = {
     "Udforsk ShelterDKs faktaunivers med statistik om shelters i Danmark, gratis shelters, faciliteter, nationalparker og de bedst bedømte pladser.",
   alternates: { canonical: "https://shelterdk.dk/fakta" },
   openGraph: {
+    images: [DEFAULT_OG_IMAGE],
     title: "Fakta om shelters i Danmark | ShelterDK",
     description:
       "Fakta og statistik om shelters i Danmark: antal, faciliteter, gratis shelters og nationalparker.",

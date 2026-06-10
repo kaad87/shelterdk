@@ -39,6 +39,7 @@ import {
   getFirewood,
 } from "@/lib/shelter-detail";
 import { getShelterFaqItems, faqToJsonLd } from "@/lib/faq";
+import { chooseMetaDescription, normalizeSeoTitle, DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 import { getAreaBySlug, prepositionForArea } from "@/lib/area-db";
 import { getWeatherForecast } from "@/lib/weather";
 import { ShelterDetailContent } from "@/components/ShelterDetailContent";
@@ -74,11 +75,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { shelter } = await getCachedShelterInSilo(shelter_slug);
   if (!shelter) return { title: "Shelter ikke fundet" };
 
-  const title =
-    (shelter.seo_title?.trim() || null) ?? buildSeoTitle(shelter);
-  const description =
-    (shelter.seo_description?.trim() ? stripHtml(shelter.seo_description) : null) ||
-    buildShelterDescription(shelter);
+  const title = normalizeSeoTitle(shelter.seo_title, buildSeoTitle(shelter));
+  const description = chooseMetaDescription(
+    shelter.seo_description ? stripHtml(shelter.seo_description) : null,
+    buildShelterDescription(shelter)
+  );
   const canonicalPath = `/danmark/${regionSlug}/${municipalitySlug}/${shelter_slug}`;
 
   const embeddedPlaces = shelter.google_places;
@@ -104,9 +105,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       siteName: "ShelterDK",
       type: "website",
       url: `https://shelterdk.dk${canonicalPath}`,
-      ...(ogImage && {
-        images: [{ url: ogImage, width: 1200, height: 630, alt: shelter.title }],
-      }),
+      images: ogImage
+        ? [{ url: ogImage, width: 1200, height: 630, alt: shelter.title }]
+        : [DEFAULT_OG_IMAGE],
     },
   };
 }

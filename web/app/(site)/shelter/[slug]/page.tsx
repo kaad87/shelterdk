@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { createPublicClient } from "@/utils/supabase/server-public";
 import { getShelterFaqItems, faqToJsonLd } from "@/lib/faq";
+import { chooseMetaDescription, normalizeSeoTitle, DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 import type { Shelter } from "@/types/shelter";
 import {
   getLongDescription,
@@ -115,11 +116,11 @@ export async function generateMetadata({
   const shelter = await getShelterBySlug(slug);
   if (!shelter) return { title: "Shelter ikke fundet" };
 
-  const title =
-    (shelter.seo_title?.trim() || null) ?? buildSeoTitle(shelter);
-  const description =
-    (shelter.seo_description?.trim() ? stripHtml(shelter.seo_description) : null) ||
-    buildShelterDescription(shelter);
+  const title = normalizeSeoTitle(shelter.seo_title, buildSeoTitle(shelter));
+  const description = chooseMetaDescription(
+    shelter.seo_description ? stripHtml(shelter.seo_description) : null,
+    buildShelterDescription(shelter)
+  );
 
   const embeddedPlaces = shelter.google_places;
   const embeddedRefs = Array.isArray(embeddedPlaces)
@@ -146,9 +147,9 @@ export async function generateMetadata({
       siteName: "ShelterDK",
       type: "website",
       url: canonicalUrl,
-      ...(ogImage && {
-        images: [{ url: ogImage, width: 1200, height: 630, alt: shelter.title }],
-      }),
+      images: ogImage
+        ? [{ url: ogImage, width: 1200, height: 630, alt: shelter.title }]
+        : [DEFAULT_OG_IMAGE],
     },
   };
 }

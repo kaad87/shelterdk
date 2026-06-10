@@ -13,6 +13,7 @@ import { RecentExperiencesFeed } from "@/components/RecentExperiencesFeed";
 import { InstagramFeed } from "@/components/InstagramFeed";
 import NewsletterSignup from "@/components/NewsletterSignup";
 import { MapComponent } from "@/components/MapComponent";
+import { toMapShelters } from "@/lib/map-shelter";
 import { WeekendCTACard } from "@/components/WeekendCTACard";
 import { NyeSheltersStrip } from "@/components/NyeSheltersStrip";
 import { createPublicClient } from "@/utils/supabase/server-public";
@@ -21,6 +22,7 @@ import { getDistinctPlacesWithCounts } from "@/lib/danmark-silo";
 import { slugifySegment } from "@/lib/slug";
 import type { Shelter } from "@/types/shelter";
 import { isShelterPlace } from "@/lib/shelter-detail";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
 export const revalidate = 86400; // ISR: cache og revalider forsiden hver 24. time (hurtig TTFB)
 
@@ -173,6 +175,7 @@ export const metadata: Metadata = {
     "Udforsk shelters i hele Danmark. Find overnatningspladser i naturen med kort, billeder og anmeldelser.",
   alternates: { canonical: "https://shelterdk.dk/" },
   openGraph: {
+    images: [DEFAULT_OG_IMAGE],
     title: "ShelterDK – Find dit næste shelter i Danmark",
     description: "Udforsk shelters i hele Danmark. Find overnatningspladser i naturen med kort, billeder og anmeldelser.",
     url: "/",
@@ -496,7 +499,7 @@ export default async function HomePage() {
           </h2>
           <figure className="rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[320px] sm:min-h-[400px] md:min-h-[560px] h-[60vh] sm:h-[70vh] md:h-[75vh] max-h-[960px]" aria-label="Interaktivt kort med shelters">
             <Suspense fallback={<div className="h-full w-full animate-pulse bg-primary/5" />}>
-              <MapComponent shelters={mapShelters} className="w-full h-full" />
+              <MapComponent shelters={toMapShelters(mapShelters)} className="w-full h-full" />
             </Suspense>
           </figure>
           <div className="mt-5 text-center">

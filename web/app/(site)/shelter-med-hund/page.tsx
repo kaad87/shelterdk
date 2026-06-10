@@ -6,10 +6,12 @@ import { getSheltersWithPets } from "@/lib/shelters-with-pets";
 import { slugifySegment } from "@/lib/slug";
 import { ShelterCard } from "@/components/ShelterCard";
 import { ShelterMap } from "@/components/ShelterMap";
+import { toMapShelters } from "@/lib/map-shelter";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import { DataSummaryBlock } from "@/components/DataSummaryBlock";
 import { getFilterRegionCount, getCountPerRegion } from "@/lib/fakta-db";
 import { REGION_SLUGS, REGION_NAMES, REGION_SHORT_NAMES } from "@/lib/cross-page-config";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
 const HUND_FAQ: FaqItem[] = [
   { question: "Skal hunden være i snor på shelterpladser?", answer: "Ja, i perioden 1. april til 30. september skal hunde altid føres i snor i danske skove og naturområder – også på shelterpladser. Resten af året må hunde gå løse hvis de er under fuld kontrol, men tjek altid lokal skiltning." },
@@ -26,6 +28,7 @@ export const metadata: Metadata = {
     "Find shelters og overnatningspladser i Danmark hvor hunde er tilladt. Se alle shelterpladser der er hundevenlige og tag hunden med på naturovernatning.",
   alternates: { canonical: "https://shelterdk.dk/shelter-med-hund" },
   openGraph: {
+    images: [DEFAULT_OG_IMAGE],
     title: PAGE_TITLE,
     description:
       "Hundevenlige shelters i Danmark – find overnatningspladser hvor du må have hund med.",
@@ -115,7 +118,7 @@ export default async function ShelterMedHundPage() {
                 </div>
               </div>
               <div className="lg:sticky lg:top-24 lg:self-start rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[280px] sm:min-h-[360px] lg:min-h-[420px] h-[50vh] sm:h-[60vh] lg:h-[calc(100vh-8rem)] lg:max-h-[720px] order-1 lg:order-2 mb-6 lg:mb-0 mx-4 sm:mx-6 lg:mx-0">
-                <ShelterMap shelters={shelters} className="w-full h-full" />
+                <ShelterMap shelters={toMapShelters(shelters)} className="w-full h-full" />
               </div>
             </div>
           </section>

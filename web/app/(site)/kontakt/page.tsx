@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { ContactForm } from "@/components/ContactForm";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
 export const metadata: Metadata = {
   title: { absolute: "Kontakt | ShelterDK" },
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
     "Kontakt ShelterDK – spørgsmål, forslag eller fejlrapporter om shelters i Danmark.",
   alternates: { canonical: "https://shelterdk.dk/kontakt" },
   openGraph: {
+    images: [DEFAULT_OG_IMAGE],
     title: "Kontakt | ShelterDK",
     description: "Kontakt ShelterDK – spørgsmål, forslag eller fejlrapporter om shelters i Danmark.",
     url: "/kontakt",

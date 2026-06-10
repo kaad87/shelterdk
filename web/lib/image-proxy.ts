@@ -57,7 +57,11 @@ function getSkipProxyHosts(): Set<string> {
 }
 
 function isAlreadyProxiedUrl(url: string): boolean {
-  return url.startsWith("/api/image/") || url.includes("/api/image?url=");
+  return (
+    url.startsWith("/api/image/") ||
+    url.includes("/api/image?url=") ||
+    url.startsWith("/.netlify/images")
+  );
 }
 
 export function computeImageProxyKey(
@@ -116,6 +120,12 @@ export function getProxiedImageSrc(
     if (getSkipProxyHosts().has(host)) return u;
   } catch {
     // invalid URL, proxy anyway
+  }
+  // Produktion: Netlify Image CDN transformer på edge — ingen funktion,
+  // ingen sharp (som fejlede i prod og streamede 3 MB originaler igennem).
+  // Dev: behold /api/image (Image CDN findes ikke under `next dev`).
+  if (process.env.NODE_ENV === "production") {
+    return `/.netlify/images?url=${encodeURIComponent(u)}${suffix}`;
   }
   const key = computeImageProxyKey(u, opts);
   return `/api/image/${key}?url=${encodeURIComponent(u)}${suffix}`;

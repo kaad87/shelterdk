@@ -7,6 +7,7 @@ import {
   PRIORITY_BY_CITY_NAMES,
   slugifySegment,
 } from "@/lib/danmark-silo";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
 export const revalidate = 86400;
 
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
     "Udforsk byer med shelters i Danmark. Find bysider med shelteroversigter, kort, faciliteter og direkte links til de enkelte pladser.",
   alternates: { canonical: "https://shelterdk.dk/by" },
   openGraph: {
+    images: [DEFAULT_OG_IMAGE],
     title: "Byer med shelters i Danmark | ShelterDK",
     description:
       "Udforsk byer med shelters i Danmark og find den rigtige byside til din næste tur.",
@@ -95,6 +97,7 @@ export default async function ByIndexPage() {
               {popular.map(({ place, count }) => (
                 <Link
                   key={place}
+                  prefetch={false}
                   href={`/by/${slugifySegment(place)}`}
                   className="rounded-2xl border border-primary/10 bg-white p-5 shadow-sm hover:border-accent/30 hover:shadow-md transition-all"
                 >
@@ -123,6 +126,7 @@ export default async function ByIndexPage() {
                     {groupedPlaces[letter].map(({ place, count }) => (
                       <Link
                         key={place}
+                  prefetch={false}
                         href={`/by/${slugifySegment(place)}`}
                         className="rounded-xl border border-primary/10 bg-white px-4 py-3 text-sm hover:border-accent/30 hover:shadow-sm transition-all"
                       >

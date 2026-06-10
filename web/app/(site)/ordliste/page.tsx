@@ -3,6 +3,7 @@ import Link from "next/link";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { LastVerifiedBadge } from "@/components/LastVerifiedBadge";
 import { SpeakableSchema } from "@/components/seo/SpeakableSchema";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
 const PAGE_TITLE = "Ordliste for shelters, booking og faciliteter | ShelterDK";
 const PAGE_DESCRIPTION =
@@ -57,6 +58,7 @@ export const metadata: Metadata = {
   description: PAGE_DESCRIPTION,
   alternates: { canonical: "https://shelterdk.dk/ordliste" },
   openGraph: {
+    images: [DEFAULT_OG_IMAGE],
     title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
     url: "/ordliste",
