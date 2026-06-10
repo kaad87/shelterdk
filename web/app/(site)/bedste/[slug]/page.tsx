@@ -14,6 +14,7 @@ import { formatScore } from "@/lib/buying-guides-score";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { renderContent } from "@/lib/renderContent";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
 export const revalidate = 3600;
 export const dynamicParams = true;
@@ -35,6 +36,7 @@ export async function generateMetadata({
     description: guide.seo_description ?? guide.intro ?? undefined,
     alternates: { canonical: `https://shelterdk.dk/bedste/${guide.slug}` },
     openGraph: {
+      images: [DEFAULT_OG_IMAGE],
       title: guide.seo_title || guide.title,
       description: guide.seo_description ?? guide.intro ?? undefined,
       url: `/bedste/${guide.slug}`,

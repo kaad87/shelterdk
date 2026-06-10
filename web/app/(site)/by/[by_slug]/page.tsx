@@ -93,8 +93,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   // "Gratis"-tal fjernet bevidst — payment-data er for upålideligt.
   // Title bygges på shelter-tal + bookbare i stedet, som er pålideligt.
   const titleBits: string[] = [];
-  if (count > 0) titleBits.push(`${count} pladser`);
-  if (bookable > 0) titleBits.push(`${bookable} bookbare`);
+  if (count > 0) titleBits.push(count === 1 ? "1 plads" : `${count} pladser`);
+  if (bookable > 0) titleBits.push(bookable === 1 ? "1 bookbar" : `${bookable} bookbare`);
   const title = count > 0
     ? `Shelter i ${placeName} ${new Date().getFullYear()} – ${titleBits.join(", ")} | ShelterDK`
     : `Shelter i ${placeName} – kort og faciliteter | ShelterDK`;

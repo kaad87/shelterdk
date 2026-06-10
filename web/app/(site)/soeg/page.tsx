@@ -20,6 +20,7 @@ const MissingShelterBanner = dynamic(
 /** Ved kortvisning: send færre initialt for hurtigere load; resten hentes på client. */
 const MAP_VIEW_PAGE_SIZE = 200;
 import { SoegContent } from "@/components/SoegContent";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
 export const revalidate = 3600; // ISR: revalider søgesiden hver time
 
@@ -30,6 +31,7 @@ const DEFAULT_METADATA: Metadata = {
   alternates: { canonical: "https://shelterdk.dk/soeg" },
   robots: { index: false, follow: true },
   openGraph: {
+    images: [DEFAULT_OG_IMAGE],
     title: "Søg shelters | ShelterDK",
     description: "Se alle shelters i Danmark. Filtrer efter region, søg efter område og se listen eller kortvisning.",
     url: "/soeg",
@@ -59,6 +61,7 @@ export async function generateMetadata(props: {
       alternates: { canonical: `https://shelterdk.dk${canonicalPath}` },
       robots: { index: false, follow: true },
       openGraph: {
+        images: [DEFAULT_OG_IMAGE],
         title: `Shelters ${prep} ${area.name} | ShelterDK`,
         description,
         url: canonicalPath,
@@ -79,6 +82,7 @@ export async function generateMetadata(props: {
       alternates: { canonical: `https://shelterdk.dk${canonicalPath}` },
       robots: { index: false, follow: true },
       openGraph: {
+        images: [DEFAULT_OG_IMAGE],
         title: `Shelters ${prep} ${regionTrim} | ShelterDK`,
         description,
         url: canonicalPath,

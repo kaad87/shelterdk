@@ -8,6 +8,7 @@ import { getSitePageModified } from "@/lib/content-dates";
 import { faqToJsonLd } from "@/lib/faq";
 import { getSheltersInNationalParks } from "@/lib/fakta-db";
 import { slugifySegment } from "@/lib/slug";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
 export const revalidate = 86400;
 const CANONICAL = "/fakta/shelters-i-nationalparker";
@@ -17,6 +18,7 @@ export const metadata: Metadata = {
   description: "Find shelters i Danmarks 5 nationalparker: Thy, Mols Bjerge, Vadehavet, Skjoldungernes Land og Kongernes Nordsj\u00e6lland.",
   alternates: { canonical: `https://shelterdk.dk${CANONICAL}` },
   openGraph: {
+    images: [DEFAULT_OG_IMAGE],
     title: "Shelters i nationalparker \u2013 Danmarks 5 nationalparker | ShelterDK",
     description: "Find shelters i Danmarks 5 nationalparker.",
     url: CANONICAL,

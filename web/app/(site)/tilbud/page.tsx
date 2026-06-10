@@ -6,6 +6,7 @@ import {
   type DealsFilter,
 } from "@/lib/affiliate-deals";
 import { GearCard } from "@/components/GearCard";
+import { buildItemListSchema } from "@/lib/buying-guides-schema";
 
 export const dynamic = "force-dynamic";
 
@@ -98,8 +99,20 @@ export default async function TilbudPage({ searchParams }: PageProps) {
 
   const hasFilters = !!(params.retailer || params.category || params.sort);
 
+  // ItemList JSON-LD (Product + Offer) — kun på den kanoniske, ufiltrerede
+  // visning, så schemaet matcher det Google indekserer på /tilbud.
+  const itemListSchema = !hasFilters && deals.length > 0
+    ? buildItemListSchema(deals.map((product) => ({ product })), "https://shelterdk.dk/tilbud")
+    : null;
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
+      {itemListSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }}
+        />
+      )}
       <nav className="mb-4 text-sm text-primary/60">
         <Link href="/" className="hover:text-accent">
           Hjem

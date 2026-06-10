@@ -6,10 +6,12 @@ import { getSheltersWithShower } from "@/lib/shelters-with-shower";
 import { slugifySegment } from "@/lib/slug";
 import { ShelterCard } from "@/components/ShelterCard";
 import { ShelterMap } from "@/components/ShelterMap";
+import { toMapShelters } from "@/lib/map-shelter";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import { DataSummaryBlock } from "@/components/DataSummaryBlock";
 import { getFilterRegionCount, getCountPerRegion } from "@/lib/fakta-db";
 import { REGION_SLUGS, REGION_NAMES, REGION_SHORT_NAMES } from "@/lib/cross-page-config";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
 const SHOWER_FAQ: FaqItem[] = [
   { question: "Har shelters i Danmark bruser?", answer: "Nogle shelterpladser i Danmark har adgang til bruser eller badefaciliteter. Det er dog langt fra alle — de fleste primitive shelterpladser har ikke bruser. På ShelterDK kan du filtrere efter shelters med bruser/bad for at finde pladser med denne facilitet." },
@@ -25,6 +27,7 @@ export const metadata: Metadata = {
     "Find shelters og overnatningspladser i Danmark med bruser og badefaciliteter. Perfekt til længere shelterture eller familier der vil have lidt ekstra komfort.",
   alternates: { canonical: "https://shelterdk.dk/shelter-med-bruser" },
   openGraph: {
+    images: [DEFAULT_OG_IMAGE],
     title: PAGE_TITLE,
     description:
       "Shelters med bruser og bad i Danmark. Find overnatningspladser i naturen med badefaciliteter.",
@@ -99,7 +102,7 @@ export default async function ShelterMedBruserPage() {
                 </div>
               </div>
               <div className="lg:sticky lg:top-24 lg:self-start rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[280px] sm:min-h-[360px] lg:min-h-[420px] h-[50vh] sm:h-[60vh] lg:h-[calc(100vh-8rem)] lg:max-h-[720px] order-1 lg:order-2 mb-6 lg:mb-0 mx-4 sm:mx-6 lg:mx-0">
-                <ShelterMap shelters={shelters} className="w-full h-full" />
+                <ShelterMap shelters={toMapShelters(shelters)} className="w-full h-full" />
               </div>
             </div>
           </section>

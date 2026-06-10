@@ -6,10 +6,12 @@ import { getSheltersWithFirewood } from "@/lib/shelters-with-firewood";
 import { slugifySegment } from "@/lib/slug";
 import { ShelterCard } from "@/components/ShelterCard";
 import { ShelterMap } from "@/components/ShelterMap";
+import { toMapShelters } from "@/lib/map-shelter";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import { DataSummaryBlock } from "@/components/DataSummaryBlock";
 import { getFilterRegionCount, getCountPerRegion } from "@/lib/fakta-db";
 import { REGION_SLUGS, REGION_NAMES, REGION_SHORT_NAMES } from "@/lib/cross-page-config";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
 const BAAL_FAQ: FaqItem[] = [
   { question: "Hvornår er der bålforbud i Danmark?", answer: "Bålforbud udstedes af lokale beredskaber i perioder med tørke og forhøjet brandfare, typisk om sommeren. Tjek altid Beredskabsstyrelsens hjemmeside eller lokal skiltning inden du tænder bål. Ved bålforbud må du heller ikke bruge gasblus eller engangsgrill i naturen." },
@@ -26,6 +28,7 @@ export const metadata: Metadata = {
     "Find shelters og overnatningspladser i Danmark med bålplads. Se alle shelterpladser hvor du kan tænde bål og opleve naturovernatning med åben ild.",
   alternates: { canonical: "https://shelterdk.dk/shelter-med-baalplads" },
   openGraph: {
+    images: [DEFAULT_OG_IMAGE],
     title: PAGE_TITLE,
     description:
       "Shelters med bålplads i Danmark – find overnatningspladser i naturen hvor du kan tænde bål.",
@@ -115,7 +118,7 @@ export default async function ShelterMedBaalpladsPage() {
                 </div>
               </div>
               <div className="lg:sticky lg:top-24 lg:self-start rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[280px] sm:min-h-[360px] lg:min-h-[420px] h-[50vh] sm:h-[60vh] lg:h-[calc(100vh-8rem)] lg:max-h-[720px] order-1 lg:order-2 mb-6 lg:mb-0 mx-4 sm:mx-6 lg:mx-0">
-                <ShelterMap shelters={shelters} className="w-full h-full" />
+                <ShelterMap shelters={toMapShelters(shelters)} className="w-full h-full" />
               </div>
             </div>
           </section>

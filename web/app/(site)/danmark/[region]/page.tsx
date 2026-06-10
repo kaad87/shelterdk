@@ -107,6 +107,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       // OG-billedet genereres dynamisk af ./opengraph-image.tsx (branded kort
       // med region + shelter-antal) i stedet for at hotlinke et generisk foto.
     },
+    // "danmark" er bucket-region for shelters uden region — listen duplikerer
+    // /danmark-hubben og skal ikke selv indekseres.
+    ...(canonicalRegionSlug === "danmark" && { robots: { index: false, follow: true } }),
   };
 }
 

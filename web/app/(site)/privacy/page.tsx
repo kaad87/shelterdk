@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
 export const metadata: Metadata = {
   title: { absolute: "Privatliv og cookies | ShelterDK" },
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
     "Læs hvordan ShelterDK behandler personoplysninger i forbindelse med booking, betaling, cookies og ejerportal.",
   alternates: { canonical: "https://shelterdk.dk/privacy" },
   openGraph: {
+    images: [DEFAULT_OG_IMAGE],
     title: "Privatliv og cookies | ShelterDK",
     description:
       "Læs hvordan ShelterDK behandler personoplysninger i forbindelse med booking, betaling, cookies og ejerportal.",

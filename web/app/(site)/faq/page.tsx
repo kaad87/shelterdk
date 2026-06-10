@@ -6,6 +6,7 @@ import { FaqAccordion } from "@/components/FaqAccordion";
 import { LastVerifiedBadge } from "@/components/LastVerifiedBadge";
 import { SpeakableSchema } from "@/components/seo/SpeakableSchema";
 import { getSitePageModified } from "@/lib/content-dates";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
 const PAGE_TITLE = "Ofte stillede spørgsmål om shelters i Danmark | ShelterDK";
 export const metadata: Metadata = {
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
     "Svar på de mest stillede spørgsmål om shelters: hvad er et shelter, hvor finder jeg dem, er de gratis, kan man booke, toilet og hund. Find shelters i hele Danmark på ShelterDK.",
   alternates: { canonical: "https://shelterdk.dk/faq" },
   openGraph: {
+    images: [DEFAULT_OG_IMAGE],
     title: PAGE_TITLE,
     description:
       "Svar på spørgsmål om shelters i Danmark – booking, toilet, hund, gratis overnatning og mere.",

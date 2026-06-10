@@ -7,6 +7,7 @@ import { CuratedRoutesClient } from "@/components/CuratedRoutesClient";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { slugifySegment } from "@/lib/slug";
 import type { CuratedRouteIndex } from "@/types/curated-route";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
 export const metadata: Metadata = {
   title: "Vandreruter med shelters — Udforsk Danmarks bedste vandreruter",
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
     "Udforsk over 200 vandreruter fra Naturstyrelsen med shelters langs vejen. Filtrer efter region og længde, og download GPX til din næste vandretur.",
   alternates: { canonical: "https://shelterdk.dk/ruteplanner" },
   openGraph: {
+    images: [DEFAULT_OG_IMAGE],
     title: "Vandreruter med shelters | ShelterDK",
     description:
       "Udforsk over 200 vandreruter fra Naturstyrelsen med shelters langs vejen. Filtrer efter region og længde, og download GPX til din næste vandretur.",

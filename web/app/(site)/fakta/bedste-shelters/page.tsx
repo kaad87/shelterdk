@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { FaktaPage } from "@/components/FaktaPage";
 import { getTopRatedShelters, getAverageRating, getTotalShelterCount } from "@/lib/fakta-db";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
 export const revalidate = 86400;
 const CANONICAL = "/fakta/bedste-shelters";
@@ -12,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: { absolute: title },
     description,
     alternates: { canonical: `https://shelterdk.dk${CANONICAL}` },
-    openGraph: { title, description, url: CANONICAL },
+    openGraph: { title, description, url: CANONICAL, images: [DEFAULT_OG_IMAGE] },
     robots: { index: true, follow: true },
   };
 }

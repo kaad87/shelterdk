@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { MapPin, Leaf, Compass, Route, Users } from "lucide-react";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
 export const metadata: Metadata = {
   title: { absolute: "Om os | ShelterDK" },
@@ -9,6 +10,7 @@ export const metadata: Metadata = {
     "ShelterDK samler shelters i hele Danmark – GeoFA, Naturstyrelsen, udinaturen.dk og mere. Find overnatning i naturen på ét kort.",
   alternates: { canonical: "https://shelterdk.dk/om-os" },
   openGraph: {
+    images: [DEFAULT_OG_IMAGE],
     title: "Om os | ShelterDK",
     description: "ShelterDK samler shelters i hele Danmark – GeoFA, Naturstyrelsen, udinaturen.dk og mere. Find overnatning i naturen på ét kort.",
     url: "/om-os",

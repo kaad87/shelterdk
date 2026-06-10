@@ -6,6 +6,7 @@ import { getSheltersWithWater } from "@/lib/shelters-with-water";
 import { slugifySegment } from "@/lib/slug";
 import { ShelterCard } from "@/components/ShelterCard";
 import { ShelterMap } from "@/components/ShelterMap";
+import { toMapShelters } from "@/lib/map-shelter";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import { DataSummaryBlock } from "@/components/DataSummaryBlock";
 import { getFilterRegionCount, getCountPerRegion } from "@/lib/fakta-db";
@@ -137,7 +138,7 @@ export default async function ShelterMedVandPage() {
                 </div>
               </div>
               <div className="lg:sticky lg:top-24 lg:self-start rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[280px] sm:min-h-[360px] lg:min-h-[420px] h-[50vh] sm:h-[60vh] lg:h-[calc(100vh-8rem)] lg:max-h-[720px] order-1 lg:order-2 mb-6 lg:mb-0 mx-4 sm:mx-6 lg:mx-0">
-                <ShelterMap shelters={shelters} className="w-full h-full" />
+                <ShelterMap shelters={toMapShelters(shelters)} className="w-full h-full" />
               </div>
             </div>
           </section>

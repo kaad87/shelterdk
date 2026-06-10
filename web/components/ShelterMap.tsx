@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useMemo } from "react";
-import type { Shelter } from "@/types/shelter";
+import type { MapShelter } from "@/lib/map-shelter";
 import { getLocationCoords } from "@/lib/shelter-detail";
 import { slugifySegment } from "@/lib/slug";
 
@@ -11,7 +11,7 @@ const NO_KOMMUNE_SLUG = "ukendt-kommune";
 
 const SITE_ORIGIN = "https://shelterdk.dk";
 
-function getShelterHref(shelter: Shelter): string {
+function getShelterHref(shelter: MapShelter): string {
   const r = (shelter.region || "").trim();
   if (!r || r === "Danmark") return `/shelter/${shelter.slug}`;
   const regionSlug = slugifySegment(r);
@@ -20,7 +20,7 @@ function getShelterHref(shelter: Shelter): string {
 }
 
 /** Til embed: fuld URL så link åbner shelterdk.dk i ny fane uanset hvor iframe er indlejret. */
-function getEmbedShelterHref(shelter: Shelter): string {
+function getEmbedShelterHref(shelter: MapShelter): string {
   return `${SITE_ORIGIN}/shelter/${shelter.slug}`;
 }
 
@@ -50,7 +50,7 @@ function isInRegionBounds(lat: number, lon: number, region: string): boolean {
   return lat >= b.minLat && lat <= b.maxLat && lon >= b.minLon && lon <= b.maxLon;
 }
 
-export interface ShelterWithCoords extends Shelter {
+export interface ShelterWithCoords extends MapShelter {
   _coords: { lat: number; lon: number };
 }
 
@@ -69,7 +69,7 @@ const DENMARK_BOUNDS: MapBounds = {
   east: 15.19,
 };
 
-function getSheltersWithCoords(shelters: Shelter[]): ShelterWithCoords[] {
+function getSheltersWithCoords(shelters: MapShelter[]): ShelterWithCoords[] {
   return shelters
     .map((s) => {
       const coords = getLocationCoords(s);
@@ -225,7 +225,7 @@ const MapInner = dynamic(
       initialCenter?: [number, number];
       initialZoom?: number;
       initialFitBounds?: { north: number; south: number; east: number; west: number };
-      getHref: (s: Shelter) => string;
+      getHref: (s: MapShelter) => string;
       embedMode?: boolean;
       reportBoundsOnMount?: boolean;
     }) {
@@ -322,7 +322,7 @@ const MapInner = dynamic(
 );
 
 interface ShelterMapProps {
-  shelters: Shelter[];
+  shelters: MapShelter[];
   className?: string;
   /** Kaldes når brugeren pan/zoomer – bruges til at hente shelters i det synlige område. */
   onBoundsChange?: (bounds: MapBounds) => void;

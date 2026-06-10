@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getAllAreas } from "@/lib/area-db";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { getShelterCountByAreaSlug } from "@/lib/area-db";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
 const BRAND = "ShelterDK";
 
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
   description:
     "Udforsk shelters efter område: Fyn, Sjælland, Jylland. Se kort, billeder og book muligheder for naturovernatning.",
   openGraph: {
+    images: [DEFAULT_OG_IMAGE],
     title: PAGE_TITLE,
     description: "Udforsk shelters efter område: Fyn, Sjælland, Jylland. Se kort, billeder og book muligheder for naturovernatning.",
     siteName: BRAND,
