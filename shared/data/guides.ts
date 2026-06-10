@@ -312,8 +312,8 @@ Hvis du kun skal huske én ting, er det **sovegrej**. Uden god søvn bliver alt 
 
 Pak mindst:
 
-- **Sovepose** der passer til årstiden (tjek comfort-temperaturen)
-- **Liggeunderlag** – gerne oppusteligt + evt. skumunderlag under til kulde
+- **Sovepose** der passer til årstiden (tjek comfort-temperaturen) – se [vores test af de bedste soveposer](/bedste/sovepose)
+- **Liggeunderlag** – gerne oppusteligt + evt. skumunderlag under til kulde ([bedste liggeunderlag](/bedste/liggeunderlag))
 - Evt. **pude** eller et sammenrullet trøje
 
 ::gear-group[backpackerlife-499694,outdoortid-49290462232908]
@@ -346,7 +346,7 @@ Når du pakker til børn, er målet ikke bare at overleve natten, men at gøre t
 
 Pak typisk ekstra:
 
-- Ét ekstra varmt lag pr. barn
+- Ét ekstra varmt lag pr. barn – og en [sovepose der passer til børn](/bedste/sovepose-til-boern)
 - Ét ekstra tørt sæt tøj pr. barn
 - Hue og vanter, også i skuldersæsonerne
 - Snacks, drikkedunk og noget velkendt mad
@@ -415,7 +415,7 @@ Det bliver **mørkt** i skoven – også selvom du er tæt på byen.
 
 Husk:
 
-- Pandelygte til alle + ekstra batterier
+- Pandelygte til alle + ekstra batterier – se [bedste pandelampe](/bedste/pandelampe)
 - Powerbank til telefon
 - Kort eller offline kort på mobilen
 
@@ -775,8 +775,8 @@ Men kulden skal tages alvorligt. Har du aldrig prøvet shelter før, kan det væ
 
 Til vinter skal du have:
 
-- Sovepose med **comfort-temperatur under** forventet nattemperatur
-- Minimum ét godt liggeunderlag – gerne to (skum + oppusteligt)
+- Sovepose med **comfort-temperatur under** forventet nattemperatur – se [bedste sovepose til vinter](/bedste/sovepose-til-vinter)
+- Minimum ét godt liggeunderlag – gerne to (skum + oppusteligt), se [bedste liggeunderlag til vinter](/bedste/liggeunderlag-til-vinter)
 - Hue, halsedisse og tørre uldsokker kun til nat
 
 Undgå at sove i fugtigt tøj – skift til tørt sæt, før du lægger dig. Se også vores [udstyrguide for begyndere](/blog/udstyr-guide-begyndere) for anbefalinger til soveposer og liggeunderlag.

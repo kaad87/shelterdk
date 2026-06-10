@@ -9,6 +9,12 @@ interface QuickAnswerProps {
   answer: string;
   /** Valgfri under-linje der beskriver hvilke spørgsmål siden besvarer. */
   questionHint?: string;
+  /** ISO-dato → WebPage.datePublished. */
+  datePublished?: string | null;
+  /** ISO-dato → WebPage.dateModified (fx last_reviewed_at). */
+  dateModified?: string | null;
+  /** Byline → WebPage.author (E-E-A-T). */
+  authorName?: string | null;
 }
 
 /**
@@ -19,10 +25,24 @@ interface QuickAnswerProps {
  * potentiale. Mønsteret er bevist på by-siderne; her genbrugt på øvrige
  * landingssider.
  */
-export function QuickAnswer({ url, heading, answer, questionHint }: QuickAnswerProps) {
+export function QuickAnswer({
+  url,
+  heading,
+  answer,
+  questionHint,
+  datePublished,
+  dateModified,
+  authorName,
+}: QuickAnswerProps) {
   return (
     <>
-      <SpeakableSchema url={url} selectors={[".llm-quote"]} />
+      <SpeakableSchema
+        url={url}
+        selectors={[".llm-quote"]}
+        datePublished={datePublished}
+        dateModified={dateModified}
+        authorName={authorName}
+      />
       <section className="mb-8 rounded-2xl border border-accent/20 bg-accent/5 p-6">
         <h2 className="font-serif text-2xl font-bold text-primary mb-3">{heading}</h2>
         <p className="llm-quote text-primary/85 leading-relaxed">{answer}</p>

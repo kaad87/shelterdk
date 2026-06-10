@@ -16,9 +16,33 @@ export const metadata: Metadata = {
 export default async function BuyingGuidesIndexPage() {
   const guides = await getPublishedGuides();
 
+  // CollectionPage + ItemList over guides → fortæller Google at hubben er
+  // den kuraterede indgang til købsguide-klyngen.
+  const collectionSchema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "@id": "https://shelterdk.dk/bedste",
+    url: "https://shelterdk.dk/bedste",
+    name: "Bedste outdoor-grej — købsguider",
+    inLanguage: "da",
+    mainEntity: {
+      "@type": "ItemList",
+      itemListElement: guides.map((g, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        name: g.title,
+        url: `https://shelterdk.dk/bedste/${g.slug}`,
+      })),
+    },
+  };
+
   return (
     <>
       <BreadcrumbSchema items={[{ label: "Hjem", href: "/" }, { label: "Bedste" }]} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
+      />
       <div className="min-h-screen bg-background">
         <div className="mx-auto max-w-4xl px-4 py-8 lg:py-12">
           <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-primary/70">
@@ -41,6 +65,31 @@ export default async function BuyingGuidesIndexPage() {
               .
             </p>
           </header>
+
+          <section className="mb-10 rounded-2xl border border-primary/10 bg-white p-6">
+            <h2 className="mb-3 font-serif text-xl font-bold text-primary">
+              Sådan arbejder vores købsguider
+            </h2>
+            <p className="text-sm leading-relaxed text-primary/80">
+              Hver guide scorer 6–8 udvalgte produkter på en 10-skala ud fra specs
+              (temperatur, vægt, R-værdi, lumen), pris og hvor godt de passer til
+              shelterture i dansk klima. Vi viser åbent plusser og minusser for
+              hvert produkt, og priser og lagerstatus opdateres automatisk fra
+              forhandlerne hver dag. Links til forhandlere er affiliate-links —{" "}
+              <Link href="/annoncer-og-partnere" className="text-accent underline">
+                læs hvordan det finansierer sitet
+              </Link>{" "}
+              uden at påvirke rangeringen. Den fulde metode står i{" "}
+              <Link href="/saadan-vurderer-vi" className="text-accent underline">
+                Sådan vurderer vi
+              </Link>
+              . Jagter du nedsat grej, er{" "}
+              <Link href="/tilbud" className="text-accent underline">
+                ugens bedste outdoor-tilbud
+              </Link>{" "}
+              samlet ét sted.
+            </p>
+          </section>
 
           {guides.length === 0 ? (
             <p className="py-8 text-primary/70">Der er ingen købsguider endnu.</p>

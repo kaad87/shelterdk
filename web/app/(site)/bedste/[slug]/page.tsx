@@ -57,7 +57,13 @@ export default async function BuyingGuidePage({
   const parent = guide.parent_slug ? allGuides.find((x) => x.slug === guide.parent_slug) ?? null : null;
   const pageUrl = `https://shelterdk.dk/bedste/${guide.slug}`;
   const itemList = buildItemListSchema(
-    entries.map((e) => ({ product: e.product, score: e.score })),
+    entries.map((e) => ({
+      product: e.product,
+      score: e.score,
+      pros: e.pros,
+      cons: e.cons,
+      reviewBody: e.editorial_note || null,
+    })),
     pageUrl
   );
   const faqItems: FaqItem[] = (guide.faq ?? []).map((f) => ({ question: f.q, answer: f.a }));
@@ -133,7 +139,14 @@ export default async function BuyingGuidePage({
           {/* GEO-svarkapsel */}
           {answerText && (
             <div className="mt-6">
-              <QuickAnswer url={pageUrl} heading="Hurtigt svar" answer={answerText} />
+              <QuickAnswer
+                url={pageUrl}
+                heading="Hurtigt svar"
+                answer={answerText}
+                datePublished={guide.created_at}
+                dateModified={guide.last_reviewed_at ?? guide.updated_at}
+                authorName={guide.author}
+              />
             </div>
           )}
 
