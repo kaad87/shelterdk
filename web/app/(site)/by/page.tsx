@@ -97,6 +97,7 @@ export default async function ByIndexPage() {
               {popular.map(({ place, count }) => (
                 <Link
                   key={place}
+                  prefetch={false}
                   href={`/by/${slugifySegment(place)}`}
                   className="rounded-2xl border border-primary/10 bg-white p-5 shadow-sm hover:border-accent/30 hover:shadow-md transition-all"
                 >
@@ -125,6 +126,7 @@ export default async function ByIndexPage() {
                     {groupedPlaces[letter].map(({ place, count }) => (
                       <Link
                         key={place}
+                  prefetch={false}
                         href={`/by/${slugifySegment(place)}`}
                         className="rounded-xl border border-primary/10 bg-white px-4 py-3 text-sm hover:border-accent/30 hover:shadow-sm transition-all"
                       >

@@ -20,10 +20,19 @@ function cacheHeaders(contentType: string, isPublicCacheable: boolean) {
   };
 }
 
-function passthroughResponse(buf: Buffer, contentType: string, isPublicCacheable: boolean) {
-  return new NextResponse(new Uint8Array(buf), {
-    status: 200,
-    headers: cacheHeaders(contentType, isPublicCacheable),
+/**
+ * Når vi ikke kan transformere (sharp utilgængelig/fejler, eller GIF), sender
+ * vi browseren direkte til upstream i stedet for at streame originalen
+ * igennem os — passthrough af 1,6-3,3 MB originaler var en bandwidth-lækage.
+ * Upstream-hosts er allerede whitelistede og offentligt tilgængelige.
+ */
+function redirectToUpstream(target: URL) {
+  return new NextResponse(null, {
+    status: 302,
+    headers: {
+      Location: target.toString(),
+      "Cache-Control": "public, max-age=86400",
+    },
   });
 }
 
@@ -88,12 +97,12 @@ export async function handleImageRequest(req: Request) {
     return errorResponse(413, "Image too large");
   }
 
+  if (contentType.toLowerCase().includes("gif")) {
+    return redirectToUpstream(target);
+  }
+
   const buf = Buffer.from(await res.arrayBuffer());
   if (buf.byteLength > MAX_BYTES) return errorResponse(413, "Image too large");
-
-  if (contentType.toLowerCase().includes("gif")) {
-    return passthroughResponse(buf, contentType, isKeyedPath);
-  }
 
   try {
     const sharp = (await import("sharp")).default;
@@ -127,6 +136,6 @@ export async function handleImageRequest(req: Request) {
       headers: cacheHeaders(outType, isKeyedPath),
     });
   } catch {
-    return passthroughResponse(buf, contentType, isKeyedPath);
+    return redirectToUpstream(target);
   }
 }

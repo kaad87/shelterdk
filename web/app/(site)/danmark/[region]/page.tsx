@@ -272,6 +272,7 @@ export default async function DanmarkRegionPage({ params, searchParams }: PagePr
                 {topPlaces.map((place) => (
                   <Link
                     key={place.slug}
+                    prefetch={false}
                     href={`/by/${place.slug}`}
                     className="rounded-full border border-primary/10 bg-white px-4 py-2 text-sm font-medium text-primary hover:border-accent/30 hover:text-accent transition-colors"
                   >
@@ -292,6 +293,7 @@ export default async function DanmarkRegionPage({ params, searchParams }: PagePr
                 {municipalities.map((m) => (
                   <Link
                     key={m.name}
+                    prefetch={false}
                     href={`/danmark/${childRegionSlug}/${slugifySegment(m.name)}`}
                     className="flex items-center justify-between rounded-lg border border-primary/10 bg-white px-3 py-2.5 text-sm hover:border-accent/30 hover:shadow-sm transition-all group"
                   >

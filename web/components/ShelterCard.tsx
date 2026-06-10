@@ -291,6 +291,7 @@ export function ShelterCard({ shelter, onImageError, href, priority, availabilit
     return (
       <Link
         href={linkHref}
+        prefetch={false}
         className="group block overflow-hidden rounded-xl bg-white shadow-sm transition-transform duration-300 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 active:scale-[0.98] touch-manipulation"
       >
         <div className="relative aspect-[4/3] overflow-hidden bg-primary/10">
@@ -314,6 +315,7 @@ export function ShelterCard({ shelter, onImageError, href, priority, availabilit
   return (
     <Link
       href={linkHref}
+      prefetch={false}
       className="group block overflow-hidden rounded-xl bg-white shadow-sm transition-transform duration-300 hover:scale-[1.02] md:hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 active:scale-[0.98] touch-manipulation"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-primary/10">
