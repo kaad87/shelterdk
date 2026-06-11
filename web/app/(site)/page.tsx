@@ -342,12 +342,30 @@ export default async function HomePage() {
             <Suspense fallback={<div className="h-14 bg-white/20 rounded-xl animate-pulse" />}>
               <SearchBar mode="home" className="w-full" />
             </Suspense>
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <Link
+                href="/soeg?view=map"
+                className="inline-flex items-center gap-2 rounded-xl bg-accent-dark px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent-dark/90"
+              >
+                Udforsk kortet
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </Link>
+              <Link
+                href="/soeg"
+                className="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/20"
+              >
+                Se alle shelters
+              </Link>
+            </div>
           </div>
         </div>
       </header>
 
       {/* ===== MOBILE PILLS (< md) ===== */}
       <MobileHomePills />
+
+      {/* Weekend-planner: sitets stærkeste booking-intent-fanger — lige under hero */}
+      <WeekendCTACard />
 
       {/* ===== DESKTOP: Redaktionel intro + pills (md+) ===== */}
       <section className="hidden md:block pt-8 pb-4 bg-background" aria-labelledby="heading-intro">
@@ -456,7 +474,6 @@ export default async function HomePage() {
         </section>
       )}
 
-      <WeekendCTACard />
 
       <Suspense fallback={null}>
         <NyeSheltersStrip />

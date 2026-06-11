@@ -392,6 +392,18 @@ export function BookingForm({
           {/* Form card */}
           <div className="rounded-2xl border border-primary/8 bg-white shadow-sm p-5">
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Felterne låses op når datoer er valgt — matcher brugerens
+                  rækkefølge (datoer → oplysninger) og forhindrer spildt
+                  indtastning før ledighed er valgt. */}
+              {!dateRange && (
+                <p className="rounded-lg bg-accent/5 border border-accent/20 px-3 py-2 text-xs text-primary/70">
+                  Vælg ankomst og afrejse i kalenderen først — så låses felterne op.
+                </p>
+              )}
+              <fieldset
+                disabled={!dateRange}
+                className={dateRange ? "space-y-4" : "space-y-4 opacity-45 pointer-events-none select-none"}
+              >
 
               {/* Name + email */}
               <div className="grid grid-cols-1 gap-4">
@@ -544,6 +556,7 @@ export function BookingForm({
                   ? "Du sendes videre til sikker betaling for at gennemføre bookingen."
                   : "Du modtager svar på mail, når shelter-ejeren har taget stilling til din forespørgsel."}
               </p>
+            </fieldset>
             </form>
           </div>
 

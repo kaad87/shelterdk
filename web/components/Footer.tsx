@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { MapPin, Tent, ExternalLink } from "lucide-react";
 import { CookieResetButton } from "@/components/CookieResetButton";
+import NewsletterSignup from "@/components/NewsletterSignup";
 
 const discoverLinks = [
   { label: "Shelter efter region", href: "/danmark" },
@@ -76,6 +77,12 @@ export function Footer() {
               Find dit næste shelter i Danmark – ét samlet kort over naturovernatning fra GeoFA,
               Naturstyrelsen og kommunale kilder. Billeder, anmeldelser og praktisk info.
             </p>
+            <div className="mt-5 max-w-sm">
+              <p className="mb-2 text-sm font-semibold text-white">
+                Få nye shelters og turtips på mail
+              </p>
+              <NewsletterSignup variant="compact" source="footer" className="!bg-white !border-white/20" />
+            </div>
           </div>
 
           <nav aria-labelledby="footer-discover-heading">

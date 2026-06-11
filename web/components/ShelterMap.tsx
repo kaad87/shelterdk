@@ -86,9 +86,23 @@ const MapInner = dynamic(
       "react-leaflet"
     );
     const L = await import("leaflet");
+    const MarkerClusterGroup = (await import("react-leaflet-cluster")).default;
     const { useEffect, useRef } = await import("react");
     const Image = (await import("next/image")).default;
     const { isValidImageUrl } = await import("@/lib/shelter-detail");
+
+    // Cluster-bobler i sitets farver. Inline styles så vi ikke afhænger af
+    // leaflet.markercluster's default-CSS.
+    const clusterIcon = (cluster: { getChildCount: () => number }) => {
+      const n = cluster.getChildCount();
+      const size = n >= 100 ? 48 : n >= 25 ? 42 : 36;
+      return L.divIcon({
+        html: `<div style="width:${size}px;height:${size}px;border-radius:9999px;background:rgba(44,62,45,0.92);border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:${n >= 100 ? 13 : 12}px;font-family:inherit;">${n}</div>`,
+        className: "shelter-cluster",
+        iconSize: L.point(size, size),
+        iconAnchor: L.point(size / 2, size / 2),
+      });
+    };
 
     // Fix default marker-ikon (Next/Leaflet)
     const icon = L.icon({
@@ -252,6 +266,13 @@ const MapInner = dynamic(
           <MapCleanup />
           <FitBounds items={points} fixedBounds={initialFitBounds} />
           <BoundsReporter onBoundsChange={onBoundsChange} reportOnMount={reportBoundsOnMount} />
+          <MarkerClusterGroup
+            chunkedLoading
+            maxClusterRadius={56}
+            showCoverageOnHover={false}
+            spiderfyOnMaxZoom
+            iconCreateFunction={clusterIcon}
+          >
           {sheltersWithCoords.map((shelter) => (
             <Marker
               key={shelter.id}
@@ -314,6 +335,7 @@ const MapInner = dynamic(
               </Popup>
             </Marker>
           ))}
+          </MarkerClusterGroup>
         </MapContainer>
       );
     };
