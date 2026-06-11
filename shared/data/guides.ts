@@ -13,7 +13,6 @@ export const GUIDE_CATEGORIES: GuideCategory[] = [
   "Begynder",
   "Mad",
   "Vinter",
-  "Udstyr",
   "Natur",
 ];
 
@@ -53,7 +52,7 @@ export const GUIDES: Guide[] = [
     excerpt:
       "Danmark har fem nationalparker med unikke sheltermuligheder. Udforsk shelters i Thy, Mols Bjerge, Vadehavet, Skjoldungernes Land og Kongernes Nordsjaelland.",
     coverImage:
-      "https://images.unsplash.com/photo-1723637012148-6ea41e4517be?w=1200&q=80&auto=format&fit=crop",
+      "https://mapcentia-www.s3-eu-west-1.amazonaws.com/fkg/1600/862d0a21-7627-4a6a-9c13-aa2d2d442938.jpg",
     category: "Natur",
     publishedAt: "2025-02-18",
     updatedAt: "2026-03-06",
@@ -154,14 +153,20 @@ Har du brug for shelters med bestemte faciliteter som [toilet](/shelter-med-toil
     excerpt:
       "En samlet guide til at finde det helt rigtige shelter i Danmark: vælg efter faciliteter, region, sæson og bookingmuligheder med ShelterDKs filtre.",
     coverImage:
-      "https://plus.unsplash.com/premium_photo-1697644694742-c97ff0266e69?w=1200&q=80&auto=format&fit=crop",
+      "https://mapcentia-www.s3-eu-west-1.amazonaws.com/fkg/1600/ef2db7dd-fccf-4c69-a6e1-808468d15982.jpg",
     category: "Begynder",
     publishedAt: "2025-03-04",
-    updatedAt: "2026-02-14",
+    updatedAt: "2026-06-11",
     content: `
 ## Find det shelter, der passer til netop din tur
 
 Danmark har hundredvis af shelters spredt ud over hele landet. Det kan virke uoverskueligt at finde den rigtige plads, men med en struktureret tilgang bliver det hurtigt nemmere. Denne guide hjælper dig med at vælge shelter ud fra faciliteter, beliggenhed, sæson og praktiske forhold som booking. Brug den som dit overblik, når du planlægger din næste sheltertur.
+
+## Beliggenhed og adgang: hvor langt vil du gå?
+
+Det første valg er, hvor langt du er villig til at gå med oppakning. Nogle shelters ligger få hundrede meter fra en parkeringsplads og er perfekte til familier med små børn eller til din første tur. Andre kræver flere kilometers vandring ad skovstier — det giver en mere autentisk naturoplevelse, men kræver bedre planlægning og lettere grej.
+
+Tænk også over landskabet: Vil du vågne til lyden af bølger ved kysten, fuglesang i en gammel bøgeskov eller udsigt over en stille sø? Brug kortet i [sheltersøgningen](/soeg) til at se den præcise placering og terrænet omkring pladsen, før du beslutter dig.
 
 ## Vælg shelter efter faciliteter
 
@@ -229,6 +234,12 @@ Der er grundlæggende to typer shelters i Danmark:
 
 Nogle shelters kan reserveres på forhånd, enten via kommunens bookingsystem eller gennem [udinaturen.dk](https://udinaturen.dk). Det giver tryghed for, at pladsen er ledig, og er særligt en fordel i weekender og ferier.
 
+Booking er især en god idé, når du:
+
+- Rejser med børn og har brug for sikkerhed i planlægningen
+- Skal afsted i højsæsonen (juni–august), hvor først-til-mølle-pladser fyldes hurtigt
+- Har lang transport og ikke vil risikere at køre forgæves
+
 ### Først-til-mølle
 
 Mange af Naturstyrelsens primitive overnatningspladser fungerer efter først-til-mølle-princippet. Det betyder, at du ikke kan reservere, men til gengæld er pladserne ofte gratis. Hav altid en plan B, hvis pladsen er optaget.
@@ -273,7 +284,7 @@ Hvis du er helt ny, anbefaler vi at starte med vores [begynderguide](/guides/she
     excerpt:
       "Den store pakkeliste til sheltertur med hurtig tjekliste, udstyr til børn og vinter samt de vigtigste ting, du ikke må glemme før du tager afsted.",
     coverImage:
-      "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1200&q=80&auto=format&fit=crop",
+      "https://mapcentia-www.s3-eu-west-1.amazonaws.com/fkg/1600/20ce3f13-4d23-4d31-9f54-5fde55d4fe7e.jpg",
     category: "Pakkeliste",
     publishedAt: "2025-03-21",
     updatedAt: "2026-03-28",
@@ -494,76 +505,123 @@ Hvis du vil dykke endnu mere ned i forberedelserne, kan du læse guiden [Shelter
     excerpt:
       "Få styr på de vigtigste regler for shelters og teltning i Danmark: hvor længe du må blive, om du må drikke alkohol, og hvem der har førsteret til pladsen.",
     coverImage:
-      "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&q=80&auto=format&fit=crop",
+      "https://mapcentia-www.s3-eu-west-1.amazonaws.com/fkg/1600/fb4d6fb9-6c08-4ff6-ac92-e4010c1d4876.jpg",
     category: "Regler",
     publishedAt: "2025-04-11",
-    updatedAt: "2026-01-25",
+    updatedAt: "2026-06-11",
     content: `
+Må man bare overnatte i naturen i Danmark? Svaret er nej — men systemet er bedre, end rygtet siger. Danmark har over 1.600 shelters og primitive overnatningspladser, hvor du må sove lovligt, og i mange tilfælde gratis. Denne guide samler alle reglerne: hvor længe du må blive, hvor du må slå telt op, hvad du må med bål og alkohol, og hvad der sker, hvis du bryder reglerne.
+
+## Grundreglen: udpegede pladser
+
+I Danmark er det som udgangspunkt kun tilladt at overnatte på udpegede pladser — shelters, primitive teltpladser og lejrpladser, der er markeret og godkendt til formålet. Du kan altså ikke bare finde et pænt sted i skoven og slå lejr. Naturbeskyttelsesloven regulerer adgangen til naturen, og selvom Danmark har gode adgangsregler, er grænserne klare.
+
+Det adskiller os fra Sverige og Norge, hvor allemandsretten er langt mere vidtgående. Til gengæld er det danske net af lovlige pladser tæt: du er sjældent mere end 10-15 km fra den nærmeste plads, og du kan finde dem alle på [Søg shelters](/soeg) eller [Ud i Naturen](https://udinaturen.dk/).
+
 ## Hvor længe må man blive på et shelter?
 
-Reglerne kan variere alt efter, hvem der ejer eller forvalter området (Naturstyrelsen, kommune, privat). Som hovedregel gælder:
+Reglerne varierer efter, hvem der ejer eller forvalter området (Naturstyrelsen, kommune, privat). Som hovedregel:
 
-- På **Naturstyrelsens primitive overnatningspladser** er det ofte tilladt at blive op til **2 nætter** samme sted.
+- På **Naturstyrelsens primitive overnatningspladser** må du typisk blive op til **2 nætter** samme sted.
 - På **fri teltning-områder** (uden faste shelters) må du typisk overnatte **én nat** samme sted.
+- På **bookbare shelters** gælder det tidsrum, du har booket.
 
-Tjek altid:
-
-- Beskrivelsen på sheltersiden
-- Evt. skiltning på pladsen
-- [Naturstyrelsens hjemmeside](https://naturstyrelsen.dk/) eller kommunens side, hvis du er i tvivl
-
-Du kan også finde overnatningspladser på [Ud i Naturen](https://udinaturen.dk/), som samler mange af landets shelters og lejrpladser.
+Tjek altid beskrivelsen på sheltersiden, eventuel skiltning på pladsen og [Naturstyrelsens hjemmeside](https://naturstyrelsen.dk/), hvis du er i tvivl.
 
 ![Skiltning ved en primitiv overnatningsplads i skoven](https://images.unsplash.com/photo-1448375240586-882707db888b?w=1200&q=80&auto=format&fit=crop)
 
-## Må man drikke alkohol ved shelteret?
+## De vigtigste regler for shelters
 
-Der findes sjældent en specifik lov mod at drikke alkohol ved et shelter – men:
+Shelters er de mest ligetil overnatningssteder i naturen — de er bygget til at sove i, og overnatning er tilladt, medmindre skilte siger andet:
 
-- Du skal følge **almindelige ordensregler**
-- Du må ikke være til gene for andre gæster eller naboer
-- Åbenlys støj og fest er sjældent populært
-
-På nogle kommunale eller private pladser kan der være **særlige regler** – respekter dem, hvis de er skiltet eller nævnt i beskrivelsen. Læs mere om god opførsel i vores artikel om [shelter-etikette](/blog/shelter-etiquette).
+- **Overnatning er tilladt** — det er det, shelters er til
+- **Først-til-mølle** — gratis shelters kan ikke reserveres, og du har ikke eneret på pladsen
+- **Typisk maks. 2 nætter** — medmindre andet er angivet
+- **Brug kun etablerede bålpladser** — aldrig bål uden for de markerede områder
+- **Tag alt affald med** — efterlad ingen spor
 
 ## Hvem har førsteret til shelteret?
 
-Her er udgangspunktet:
+- Mange shelters er **først-til-mølle** — den, der kommer først, må bruge pladsen.
+- På **bookbare shelters** har den, der har booket, førsteret i det reserverede tidsrum.
 
-- Mange shelters er **først-til-mølle** – den der kommer først, må bruge pladsen.
-- På **bookbare shelters** har den, der har booket, naturligvis førsteret i det tidsrum, der er reserveret.
+Det er god stil at spørge venligt, om der er plads til flere, hvis nogen allerede er der — og at være åben for at dele, når shelteret ikke er eksklusivt booket. Læs mere om god opførsel i vores artikel om [shelter-etikette](/blog/shelter-etiquette).
 
-Det er god stil at:
+## Må man drikke alkohol ved shelteret?
 
-- Spørg venligt, om der er plads til flere, hvis nogen allerede er der
-- Vær åben for at dele shelteret, når det ikke er eksklusivt booket
+Der findes sjældent en specifik lov mod alkohol ved et shelter, men:
+
+- Du skal følge **almindelige ordensregler**
+- Du må ikke være til gene for andre gæster eller naboer
+- Åbenlys støj og fest er sjældent populært — og kan være forbudt på kommunale/private pladser
+
+Respekter særlige regler, hvis de er skiltet eller nævnt i pladsens beskrivelse.
 
 ## Hvor må man slå telt op?
 
-I Danmark må du **ikke** bare slå telt op hvor som helst.
+Teltreglerne er mere komplicerede end shelter-reglerne:
 
-Du må bl.a.:
+**I statsskove (Naturstyrelsens skove):**
 
-- Telte på udvalgte **fri teltning-områder** (se [Naturstyrelsens kort](https://naturstyrelsen.dk/))
-- Telte på **primitive overnatningspladser**, hvor det er angivet
+- Du må telte én nat på udpegede teltpladser
+- Mange statsskove har gratis primitive teltpladser
+- Du må ikke slå telt op frit i skoven
 
-Du må ikke:
+**I private skove over 5 hektar:**
 
-- Telte på private marker, skove eller strande uden tilladelse
-- Overnatte i klitter og sårbare naturområder
+- Du må telte en enkelt nat, hvis du er gående eller på cykel
+- Du skal holde mindst **150 meter fra beboelse**
+- Du skal være væk senest **kl. 10 dagen efter ankomst**
+- Det gælder kun, hvis der ikke er skiltet med forbud
+
+**Andre steder:**
+
+- På stranden må du som udgangspunkt ikke telte
+- I klitter, fredede områder og sårbare naturområder er overnatning forbudt
+- I nationalparker kan der gælde særlige regler
 
 ![Telt ved en shelterplads i dansk natur](https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1200&q=80&auto=format&fit=crop)
 
+## Hvad med fri camping og wild camping?
+
+Wild camping — at overnatte frit i naturen uden for udpegede pladser — er generelt **ikke tilladt** i Danmark. De lovlige muligheder for "fri" overnatning er:
+
+- Udpegede shelters og teltpladser
+- Private skove over 5 hektar (med begrænsningerne ovenfor)
+- Steder hvor du har ejerens udtrykkelige tilladelse
+
+Der findes desuden et netværk af fri teltning-områder udpeget specifikt til formålet — se [Naturstyrelsens kort](https://naturstyrelsen.dk/) eller [Ud i Naturen](https://udinaturen.dk/).
+
+## Bålregler
+
+Bål er en central del af shelteroplevelsen, men reglerne er faste:
+
+- **Brug kun etablerede bålpladser** — aldrig bål direkte på skovbunden
+- **Tjek for bålforbud** — i tørre perioder kan myndighederne forbyde åben ild, også uden for sommeren
+- **Fæld aldrig levende træer** — brug dødt, nedfaldent træ eller medbring eget brænde
+- **Sluk bålet helt** — hæld vand på gløderne, og mærk efter at alt er koldt, før du går
+
+Overtrædelse af bålregler kan medføre bøde — og erstatningsansvar, hvis ilden forårsager skade.
+
 ## Generelle naturregler du skal kende
 
-- Tag altid dit affald med – også madrester og cigaretskod
-- Respekter eventuelle **bålforbud**
+- Tag altid dit affald med — også madrester og cigaretskod
 - Parker kun, hvor det er tilladt
-- Lad dyrelivet være i fred, og hold hund i snor hvor det kræves
+- Lad dyrelivet være i fred, og hold hund i snor, hvor det kræves
+- Respekter afspærringer og fredninger
 
-Hvis du følger disse grundregler, kan du roligt nyde din tur uden at være i konflikt med lovgivning eller lokale regler.
+## Hvad sker der, hvis man bryder reglerne?
 
-Vil du have hjælp til at vælge selve pladsen, kan du kombinere denne guide med [Shelter for begyndere – sådan får du en god første tur](/guides/shelter-for-begyndere-forste-tur) og vores store [Pakkeliste til sheltertur – den komplette tjekliste](/guides/pakkeliste-til-sheltertur). Du kan altid starte din søgning efter konkrete pladser på [Søg shelters](/soeg), hvor du kan filtrere efter område, faciliteter og booking.
+- **Teltning uden for udpegede pladser** — kan give bøde; Naturstyrelsen og politiet håndhæver reglerne
+- **Ulovligt bål** — bøde og eventuelt erstatningsansvar
+- **Hærværk på shelters eller natur** — strafbart efter straffeloven
+- **Forsøpling** — bøde og i grove tilfælde politianmeldelse
+
+I praksis møder de fleste aldrig problemer, hvis de bruger sund fornuft og holder sig til de udpegede pladser. Myndighederne er generelt imødekommende over for friluftsfolk, der opfører sig ordentligt.
+
+## Kom godt afsted
+
+Danmark har et fint system for naturovernatning — nøglen er at kende reglerne, bruge de udpegede pladser og rydde op efter sig. Find din plads på [Søg shelters](/soeg), og kombinér denne guide med [Shelter for begyndere](/guides/shelter-for-begyndere-forste-tur) og den store [Pakkeliste til sheltertur](/guides/pakkeliste-til-sheltertur), så er du klar til turen — helt inden for lovens rammer.
     `.trim(),
     faq: [
       {
@@ -581,6 +639,21 @@ Vil du have hjælp til at vælge selve pladsen, kan du kombinere denne guide med
         answer:
           "Du må som regel tænde bål på de dertil indrettede bålpladser ved shelteret. Tjek dog altid for eventuelle bålforbud, som kan gælde i tørre perioder – også uden for sommeren.",
       },
+      {
+        question: "Er wild camping lovligt i Danmark?",
+        answer:
+          "Nej, som udgangspunkt ikke. Du må kun overnatte på udpegede pladser, i private skove over 5 hektar (én nat, 150 m fra beboelse, væk inden kl. 10) eller med ejerens tilladelse.",
+      },
+      {
+        question: "Må man drikke alkohol ved et shelter?",
+        answer:
+          "Der er sjældent et direkte forbud, men almindelige ordensregler gælder: du må ikke være til gene for andre. Kommunale og private pladser kan have egne regler – tjek skiltning og pladsens beskrivelse.",
+      },
+      {
+        question: "Hvad er bøden for at telte ulovligt?",
+        answer:
+          "Teltning uden for udpegede pladser kan give en bøde, og ulovligt bål kan derudover medføre erstatningsansvar. I praksis håndhæves reglerne lempeligt over for folk, der opfører sig ordentligt og flytter sig, når de bliver bedt om det.",
+      },
     ],
   },
   {
@@ -589,10 +662,10 @@ Vil du have hjælp til at vælge selve pladsen, kan du kombinere denne guide med
     excerpt:
       "Ny i shelters? Her får du en enkel introduktion til valg af plads, grej, mad og gode vaner, så din første tur bliver en succes.",
     coverImage:
-      "https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?w=1200&q=80&auto=format&fit=crop",
+      "https://mapcentia-www.s3-eu-west-1.amazonaws.com/fkg/1600/8d8316d3-7be9-4b6c-8c90-8c1dd01cbd2c.jpg",
     category: "Begynder",
     publishedAt: "2025-04-28",
-    updatedAt: "2026-03-10",
+    updatedAt: "2026-06-11",
     content: `
 ## Start simpelt – vælg en nem plads
 
@@ -646,6 +719,23 @@ Læs om god shelteropførsel i vores artikel om [shelter-etikette](/blog/shelter
 Så bliver shelterlivet hurtigt let og naturligt.
 
 Når du er klar til næste skridt, kan du bruge vores [Pakkeliste til sheltertur – den komplette tjekliste](/guides/pakkeliste-til-sheltertur) som fast reference og hente madinspiration i [Mad over bål – nem shelter-mad til hele turen](/guides/mad-over-bal-nem-shelter-mad). Du finder konkrete pladser og områder ved at bruge kort og filtre på [Søg shelters](/soeg).
+    
+
+## De 5 mest almindelige begynderfejl
+
+1. **For meget oppakning** — du skal ikke bruge 80 % af det, du tror. Følg [pakkelisten](/guides/pakkeliste-til-sheltertur) og lad resten blive hjemme
+2. **For tynd sovepose** — nætterne er 10-15 grader koldere end dagene, også om sommeren. Tjek comfort-temperaturen, ikke extreme-temperaturen ([sovepose-guide her](/bedste/sovepose))
+3. **Intet liggeunderlag** — briksen i et shelter er hårdt træ, og kulden kommer nedefra. Et [liggeunderlag](/bedste/liggeunderlag) er ikke valgfrit
+4. **Ankomst i mørke** — giv dig selv mindst to timers dagslys til at finde pladsen, slå lejr og samle brænde
+5. **Ingen plan B** — først-til-mølle-shelters kan være optaget. Hav 1-2 alternative pladser klar i nærheden, eller book hvor det er muligt
+
+## Hvad koster en sheltertur?
+
+En af de bedste ting ved shelterlivet: det er næsten gratis. De fleste shelters koster 0 kr. (se [oversigten over gratis pladser](/fakta/gratis-shelters)), og bookbare pladser ligger typisk på 30-100 kr. pr. nat. Startudstyret behøver heller ikke ruinere dig — en god begynder-sovepose, et liggeunderlag og en pandelampe kan samlet fås for under 1.000 kr., hvis du vælger efter [vores grej-tests](/bedste) frem for at købe i blinde.
+
+## Din første tur: kort opskrift
+
+Vælg en plads under 30 minutter hjemmefra med toilet og kort afstand fra parkering. Tag afsted en lun aften i maj-september med en ven. Spis aftensmad over bål, og hav en plan om at køre hjem næste morgen. Det er hele opskriften — turen må gerne være "for nem". Succes på første tur er det, der giver lyst til tur nummer to.
     `.trim(),
     faq: [
       {
@@ -671,10 +761,10 @@ Når du er klar til næste skridt, kan du bruge vores [Pakkeliste til sheltertur
     excerpt:
       "Idéer til nem og lækker mad over bål: snobrød, one-pot gryderetter, morgenmad og søde sager til aftenhyggen.",
     coverImage:
-      "https://plus.unsplash.com/premium_photo-1682500052659-07fc479a4772?w=1200&q=80&auto=format&fit=crop",
+      "https://mapcentia-www.s3-eu-west-1.amazonaws.com/fkg/1600/9a5f3aef-c48c-4605-9709-044cd1f23a91.jpg",
     category: "Mad",
     publishedAt: "2025-05-16",
-    updatedAt: "2026-02-20",
+    updatedAt: "2026-06-11",
     content: `
 ## Basisudstyr til mad over bål
 
@@ -734,6 +824,26 @@ Når gløderne er perfekte:
 Hold det simpelt – det vigtigste er, at I hygger jer omkring bålet. Planlægger du en tur i forår eller sommer, kan du kombinere med vores tips til [shelter i forår og sommer](/blog/shelter-foraar-sommer).
 
 Hvis du gerne vil kombinere madplanen med en god pakkeliste og tips til valg af plads, så læs også [Pakkeliste til sheltertur – den komplette tjekliste](/guides/pakkeliste-til-sheltertur) og [Shelter for begyndere – sådan får du en god første tur](/guides/shelter-for-begyndere-forste-tur). Når du har styr på madidéerne, kan du bruge [Søg shelters](/soeg) til at finde pladser med bålplads og de faciliteter, der passer til din tur.
+    
+
+## Tidsplan: sådan undgår du at spise klokken 22
+
+Den klassiske begynderfejl er at undervurdere, hvor lang tid bålmad tager. Et bål skal brænde **45-60 minutter**, før der er en stabil glødeseng at lave mad over — flammer er til hygge, gløder er til madlavning. En realistisk aftenplan ser sådan ud:
+
+1. **Ankomst + lejr** (30 min): slå lejr og saml brænde FØR du er træt og sulten
+2. **Bål tændes** (kl. ~17): mens det brænder ned, forberedes maden — snit grøntsager, marinér kød
+3. **Madlavning over gløder** (kl. ~18): one-pot-retter tager 25-40 min over gode gløder
+4. **Snobrød og hygge** (efter aftensmad): nyd resten af gløderne
+
+## Hvad gør du, når bålet driller?
+
+- **Vådt brænde:** Flæk det — det indre er tørt. Brug kniven fra [vores knivtest](/bedste/kniv) eller en lille økse, og snit tændspåner af det tørre indre
+- **Bålforbud:** Tjek altid inden afgang (især i tørre perioder). Et stormkøkken eller Trangia er den lovlige plan B — og faktisk hurtigere til morgenmad
+- **Regn:** Lav maden under en tarp spændt op i god afstand fra bålet, og hold brændet tørt under shelterets tag
+
+## Husk at pakke
+
+Udover selve maden: snitteplade, en god kniv, grydelap eller arbejdshandske (gryden bliver GLOHED), stanniol, opvaskebalje og -børste, og skraldeposer til alt affald — også madrester. Se den fulde [pakkeliste](/guides/pakkeliste-til-sheltertur) med mad-sektionen.
     `.trim(),
     faq: [
       {
@@ -754,10 +864,10 @@ Hvis du gerne vil kombinere madplanen med en god pakkeliste og tips til valg af 
     excerpt:
       "Drømmer du om vinter-shelter? Få styr på udstyr, sikkerhed og gode rutiner, så turen bliver kold på den gode måde – ikke den ubehagelige.",
     coverImage:
-      "https://images.unsplash.com/photo-1482192596544-9eb780fc7f66?w=1200&q=80&auto=format&fit=crop",
+      "https://mapcentia-www.s3-eu-west-1.amazonaws.com/fkg/1600/41420734-998e-4623-bb57-1c9ea5c155b7.jpg",
     category: "Vinter",
     publishedAt: "2025-10-02",
-    updatedAt: "2026-01-08",
+    updatedAt: "2026-06-11",
     content: `
 ## Er vinter-shelter noget for dig?
 
@@ -794,6 +904,24 @@ Vigtigt:
 - Frys ikke for længe ad gangen – bevæg dig eller lav bål
 - Spis og drik regelmæssigt – kroppen laver varme af energi
 
+## Sov rigtigt: teknikken der holder dig varm
+
+Selv det bedste grej fejler, hvis du bruger det forkert. De vigtigste vinter-vaner:
+
+- **Gå varm i seng.** Soveposen producerer ikke varme — den holder kun på din. Lav 20 sprællemænd eller en kort gåtur, før du kravler ned i posen.
+- **Skift ALT tøjet.** Dagens tøj er fugtigt af sved, selv om det ikke føles sådan. Sov i et tørt sæt uld, du kun bruger til at sove i.
+- **Spis fedt og varmt før sengetid.** Kroppen brænder kalorier for at holde varmen hele natten — en håndfuld nødder eller et stykke chokolade lige før du sover, er reelt "brændsel".
+- **Flaskefidusen:** Fyld en drikkeflaske (der tåler det) med varmt vand og læg den ved fødderne eller i lysken, hvor blodet løber tæt på overfladen.
+- **Luft ud i posen om morgenen** — ellers samler nattens fugt sig i fyldet og gør posen koldere nat for nat.
+
+## Mad og drikke i frostvejr
+
+Vinterture brænder langt flere kalorier end sommerture. Planlæg mad, der er hurtig, fed og varm: havregrød med smør og rosiner til morgen, og en one-pot-ret til aften. Husk at:
+
+- Vand fryser — opbevar flasken med bunden i vejret (isen lægger sig i toppen, så låget ikke fryser fast) eller inde i rygsækken
+- En termokande med te eller bouillon er guld værd ved ankomst, før bålet er i gang
+- Gasblus mister tryk i frost — læg gasdåsen i soveposen om natten, eller brug vinterblanding
+
 ## Sikkerhed og vejr
 
 Hold ekstra øje med:
@@ -822,6 +950,19 @@ Respekter bålforbud – også om vinteren kan de forekomme. Aktuelle forbud fin
 Med det rigtige udstyr og de rigtige rutiner kan vinter-shelter blive en af de mest mindeværdige ture, du tager på. Læs også vores tips til [shelter i regnvejr](/blog/shelter-i-regnvejr), da mange af rådene også gælder om vinteren.
 
 Det er en god idé at kombinere denne guide med [Pakkeliste til sheltertur – den komplette tjekliste](/guides/pakkeliste-til-sheltertur) for at sikre, at du har alt med til kulden, og [Regler for shelter og teltning i Danmark](/guides/regler-for-shelter-og-teltning-i-danmark) for at være helt skarp på, hvor og hvordan du må overnatte. Brug gerne kortet og filtrene på [Søg shelters](/soeg) til at finde shelters, der ligger lidt tættere på civilisationen på dine første vinterture – så er det let at afkorte turen, hvis vejret overrasker.
+    
+
+## Begynderens første vintertur: tjekliste
+
+Er det din første tur i frostgrader, så gør den kort og sikker:
+
+1. Vælg et shelter **tæt på bilen** (under 1 km) — så er en kold nat aldrig farlig, bare ubehagelig
+2. Tjek vejrudsigten samme dag — udskyd ved udsigt til regn/slud omkring frysepunktet (det farligste vintervejr)
+3. Sig til nogen derhjemme, hvor du er, og hvornår du er hjemme
+4. Pak efter [pakkelisten til vinterture](/guides/pakkeliste-til-sheltertur), og brug grej-testene: [bedste vintersovepose](/bedste/sovepose-til-vinter) og [bedste liggeunderlag til vinter](/bedste/liggeunderlag-til-vinter)
+5. Book eventuelt pladsen, hvor det er muligt — vinterpladser er sjældent optaget, men en booking giver ro i planlægningen
+
+Vinterovernatning i shelter er en af de mest givende friluftsoplevelser, Danmark byder på: stilheden, stjernehimlen og følelsen af at have naturen helt for sig selv. Med det rigtige grej og de rigtige vaner er det hverken farligt eller specielt ubehageligt — bare velforberedt.
     `.trim(),
     faq: [
       {
@@ -847,7 +988,7 @@ Det er en god idé at kombinere denne guide med [Pakkeliste til sheltertur – d
     excerpt:
       "Lær hvornår og hvordan du booker shelter i Danmark. Se hvilke platforme der bruges, hvad det koster, og hvornår det er nødvendigt at booke på forhånd.",
     coverImage:
-      "https://images.unsplash.com/photo-1464037866556-6812c9d1c72e?w=1200&q=80&auto=format&fit=crop",
+      "https://mapcentia-www.s3-eu-west-1.amazonaws.com/fkg/1600/3defe0e8-fadc-4ee3-9eb4-9671b5e7b155.jpg",
     category: "Begynder",
     publishedAt: "2025-11-14",
     updatedAt: "2026-04-05",

@@ -143,7 +143,8 @@ export default async function BlogPostPage({ params }: PageProps) {
               >
                 <span className="flex items-center gap-1">
                   <Calendar size={14} />
-                  {new Date(post.date).toLocaleDateString("da-DK", {
+                  {post.updatedAt ? "Opdateret " : ""}
+                  {new Date(post.updatedAt ?? post.date).toLocaleDateString("da-DK", {
                     day: "numeric",
                     month: "long",
                     year: "numeric",
