@@ -462,7 +462,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const blogPosts = getBlogPosts();
   for (const post of blogPosts) {
-    entries.push(entry(`${BASE_URL}/blog/${post.slug}`, "monthly", 0.65, newestIsoDate(post.date)));
+    entries.push(entry(`${BASE_URL}/blog/${post.slug}`, "monthly", 0.65, newestIsoDate(post.date, post.updatedAt)));
   }
 
   for (const category of getBlogCategories()) {
@@ -472,7 +472,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         `${BASE_URL}/blog/kategori/${slugifySegment(category)}`,
         "weekly",
         0.6,
-        newestIsoDate(...categoryPosts.map((post) => post.date))
+        newestIsoDate(...categoryPosts.flatMap((post) => [post.date, post.updatedAt]))
       )
     );
   }

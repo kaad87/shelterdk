@@ -93,6 +93,12 @@ const nextConfig = {
   },
   async redirects() {
     return [
+      // Konsolidering af kannibaliserende blogposts → de tilsvarende guides
+      // (indholdet er flyttet med over; autoriteten skal samles ét sted).
+      { source: "/blog/shelter-regler-overnatning", destination: "/guides/regler-for-shelter-og-teltning-i-danmark", permanent: true },
+      { source: "/blog/hvordan-v%C3%A6lge-shelter", destination: "/guides/saadan-finder-du-det-perfekte-shelter", permanent: true },
+      // Tom guide-kategori fjernet (ingen guides i Udstyr — købsguider bor i /bedste)
+      { source: "/guides/kategori/udstyr", destination: "/guides", permanent: true },
       { source: "/danmark/jylland/ny-hammersholt", destination: "/danmark/jylland", permanent: true },
       { source: "/danmark/jylland/fons", destination: "/danmark/jylland", permanent: true },
       { source: "/danmark/fyn/dybbol", destination: "/danmark/fyn", permanent: true },

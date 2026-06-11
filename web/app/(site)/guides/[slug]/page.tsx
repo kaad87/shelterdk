@@ -101,6 +101,9 @@ export default async function GuidePage({ params }: PageProps) {
       <SpeakableSchema
         url={`${BASE_URL}${canonicalPath}`}
         selectors={[".llm-quote"]}
+        datePublished={guide.publishedAt}
+        dateModified={guide.updatedAt}
+        authorName="ShelterDK Redaktionen"
       />
       <script
         type="application/ld+json"
