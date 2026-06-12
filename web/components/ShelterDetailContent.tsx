@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { RevealContact } from "@/components/RevealContact";
 import {
   ExternalLink,
   MapPin,
@@ -619,6 +620,12 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                   </Link>
                   {" "}– det skal du vide
                 </li>
+              </ul>
+              <details className="mt-3">
+                <summary className="cursor-pointer text-sm font-medium text-accent hover:underline">
+                  Flere ressourcer og guides
+                </summary>
+                <ul className="mt-2 space-y-2 text-sm text-primary/80">
                 <li>
                   <Link href="/guides/shelter-for-begyndere-forste-tur" className="text-accent hover:underline">
                     Shelter for begyndere
@@ -654,7 +661,8 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                   </Link>
                   {" "}– spar på grej til turen
                 </li>
-              </ul>
+                </ul>
+              </details>
             </section>
 
             {/* Mobile: show booking above reviews (aside moves below on mobile) */}
@@ -766,7 +774,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                   {contact && (
                     <li className="flex items-start gap-2">
                       <Mail size={18} className="text-accent shrink-0 mt-0.5" />
-                      <span className="break-all"><strong className="text-primary">Kontakt:</strong> {contact}</span>
+                      <RevealContact contact={contact} />
                     </li>
                   )}
                   {season && (
