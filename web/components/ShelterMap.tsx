@@ -86,7 +86,14 @@ const MapInner = dynamic(
       "react-leaflet"
     );
     const L = await import("leaflet");
-    const MarkerClusterGroup = (await import("react-leaflet-cluster")).default;
+    // Fail-safe: kan cluster-lib'et ikke loades, renderes markører uden
+    // clustering frem for at hele kortet dør.
+    let MarkerClusterGroup: React.ComponentType<Record<string, unknown>> | null = null;
+    try {
+      MarkerClusterGroup = (await import("react-leaflet-cluster")).default;
+    } catch {
+      MarkerClusterGroup = null;
+    }
     const { useEffect, useRef } = await import("react");
     const Image = (await import("next/image")).default;
     const { isValidImageUrl } = await import("@/lib/shelter-detail");
@@ -103,6 +110,21 @@ const MapInner = dynamic(
         iconAnchor: L.point(size / 2, size / 2),
       });
     };
+
+    function ClusterWrapper({ children }: { children: React.ReactNode }) {
+      if (!MarkerClusterGroup) return <>{children}</>;
+      return (
+        <MarkerClusterGroup
+          chunkedLoading
+          maxClusterRadius={56}
+          showCoverageOnHover={false}
+          spiderfyOnMaxZoom
+          iconCreateFunction={clusterIcon}
+        >
+          {children}
+        </MarkerClusterGroup>
+      );
+    }
 
     // Fix default marker-ikon (Next/Leaflet)
     const icon = L.icon({
@@ -266,13 +288,7 @@ const MapInner = dynamic(
           <MapCleanup />
           <FitBounds items={points} fixedBounds={initialFitBounds} />
           <BoundsReporter onBoundsChange={onBoundsChange} reportOnMount={reportBoundsOnMount} />
-          <MarkerClusterGroup
-            chunkedLoading
-            maxClusterRadius={56}
-            showCoverageOnHover={false}
-            spiderfyOnMaxZoom
-            iconCreateFunction={clusterIcon}
-          >
+          <ClusterWrapper>
           {sheltersWithCoords.map((shelter) => (
             <Marker
               key={shelter.id}
@@ -335,7 +351,7 @@ const MapInner = dynamic(
               </Popup>
             </Marker>
           ))}
-          </MarkerClusterGroup>
+          </ClusterWrapper>
         </MapContainer>
       );
     };
