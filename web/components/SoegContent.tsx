@@ -7,7 +7,7 @@ import { SearchBar } from "@/components/SearchBar";
 import { ShelterCard } from "@/components/ShelterCard";
 import { ShelterMap, type MapBounds } from "@/components/ShelterMap";
 import type { Shelter } from "@/types/shelter";
-import type { SoegFilters } from "@/lib/soeg-db";
+import type { SoegFilters, ShelterPin } from "@/lib/soeg-db";
 import { filterSheltersByRegion } from "@/lib/soeg-filters";
 import { getLocationCoords } from "@/lib/shelter-detail";
 
@@ -173,6 +173,32 @@ export function SoegContent({
 
   // Sorting
   const [sortMode, setSortMode] = useState<SortMode>("standard");
+
+  // ALLE matchende shelters som slanke pins til kortet — listens dataset er
+  // sidebegrænset (200), så kortet underrapporterede massivt på landsplan.
+  // bookbar/dato håndteres ikke af pins-endpointet → dér bruges listens data.
+  const [pins, setPins] = useState<ShelterPin[] | null>(null);
+  const pinsDisabled = Boolean(
+    effectiveFilters?.bookbar || effectiveFilters?.date || effectiveFilters?.confirmed_available
+  );
+  useEffect(() => {
+    if (view === "list" || pinsDisabled) { setPins(null); return; }
+    const controller = new AbortController();
+    const params = new URLSearchParams();
+    if (initialRegion?.trim()) params.set("region", initialRegion);
+    if (initialQuery?.trim()) params.set("q", initialQuery);
+    for (const k of FILTER_KEYS) {
+      if (k !== "bookbar" && effectiveFilters?.[k]) params.set(k, "1");
+    }
+    if (effectiveFilters?.min_pladser && effectiveFilters.min_pladser > 0) {
+      params.set("min_pladser", String(effectiveFilters.min_pladser));
+    }
+    fetch(`/api/map/pins?${params}`, { signal: controller.signal })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d?.pins) setPins(d.pins as ShelterPin[]); })
+      .catch(() => {});
+    return () => controller.abort();
+  }, [view, pinsDisabled, initialRegion, initialQuery, effectiveFilters]);
 
   // "Mente du..." — populeres når søgning giver 0 resultater og bruger har
   // skrevet noget i søgefeltet. Henter forslag via samme autocomplete-endpoint
@@ -516,7 +542,7 @@ export function SoegContent({
             <div className="flex items-center justify-between mb-4 sticky top-0 bg-background/95 py-2 z-10">
             <p className="text-primary/70 text-sm">
               {hasPannedMap.current && mapBounds
-                ? `${visibleShelters.length} shelter${visibleShelters.length !== 1 ? "s" : ""} i dette område`
+                ? `${pins ? pins.length : visibleShelters.length} shelter${(pins ? pins.length : visibleShelters.length) !== 1 ? "s" : ""} i dette område`
                 : hasMore
                   ? `Shelters ${initialRegion?.trim() ? `${prepositionForRegionName(initialRegion)} ${initialRegion.trim()}` : "i Danmark"} · scroll for flere`
                   : `${visibleShelters.length} shelter${visibleShelters.length !== 1 ? "s" : ""} ${initialRegion?.trim() ? `${prepositionForRegionName(initialRegion)} ${initialRegion.trim()}` : "i Danmark"}`}
@@ -539,9 +565,9 @@ export function SoegContent({
           </div>
           <div className="compact-map lg:sticky lg:top-24 lg:self-start rounded-xl overflow-hidden border border-primary/10 bg-primary/5 h-[160px] sm:h-[200px] lg:min-h-[420px] lg:h-[calc(100vh-8rem)] lg:max-h-[720px] order-1 lg:order-2 mb-2 lg:mb-0 relative">
               <ShelterMap
-                shelters={shelters}
+                shelters={pins ?? shelters}
                 className="absolute inset-0 w-full h-full"
-                onBoundsChange={fetchByBounds}
+                onBoundsChange={pins ? undefined : fetchByBounds}
                 initialRegion={initialRegion}
                 fitWholeDenmarkOnLoad={!initialRegion?.trim()}
                 overrideCenter={!initialRegion?.trim() ? [56.0, 10.5] : undefined}
@@ -553,14 +579,14 @@ export function SoegContent({
       ) : view === "map" ? (
         <>
           <p className="text-primary/70 text-sm">
-            Viser {shelters.length} shelter{shelters.length !== 1 ? "s" : ""} på kortet
+            Viser {(pins ?? shelters).length} shelter{(pins ?? shelters).length !== 1 ? "s" : ""} på kortet
             {loading && " · opdaterer…"}
           </p>
           <div className="rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[400px] sm:min-h-[500px] md:min-h-[700px] h-[500px] sm:h-[600px] md:h-[85vh] max-h-[1400px] relative">
             <ShelterMap
-              shelters={shelters}
+              shelters={pins ?? shelters}
               className="absolute inset-0 w-full h-full"
-              onBoundsChange={fetchByBounds}
+              onBoundsChange={pins ? undefined : fetchByBounds}
               initialRegion={initialRegion}
             />
           </div>

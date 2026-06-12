@@ -804,3 +804,81 @@ export async function getByerSuggestions(prefix: string): Promise<string[]> {
   const suggestions = await getSuggestions(prefix);
   return suggestions.map((s) => s.name);
 }
+
+/** Slank pin til kortet — matcher MapShelter i lib/map-shelter.ts. */
+export interface ShelterPin {
+  id: string;
+  slug: string;
+  title: string;
+  region: string | null;
+  kommune: string | null;
+  image_url: string | null;
+  location: string | null;
+}
+
+const PIN_COLS = "id, slug, title, region, kommune, image_url, location";
+const PINS_MAX = 4000;
+
+/**
+ * ALLE shelters der matcher region/q/filtre — som slanke pins til kortet.
+ * Kort-visningen var før cappet til én side (200), så landsvisningen
+ * underrapporterede massivt (200 af 1.663). Paginerer forbi PostgRESTs
+ * 1000-rækkers loft. Samme filter-semantik som getSheltersPage.
+ */
+export async function getShelterPins(
+  region?: string | null,
+  q?: string | null,
+  filters?: SoegFilters | null
+): Promise<ShelterPin[]> {
+  const supabase = createPublicClient();
+  const out: ShelterPin[] = [];
+  let offset = 0;
+
+  while (out.length < PINS_MAX) {
+    let query = supabase
+      .from("shelters")
+      .select(PIN_COLS)
+      .is("duplicate_of_shelter_id", null)
+      .not("slug", "is", null)
+      .order("id");
+
+    if (region && region.trim()) query = query.eq("region", region.trim());
+
+    if (q && q.trim()) {
+      const variants = expandDanishVariants(q.trim());
+      const patternFor = (v: string) => `"%${v.replace(/"/g, '""')}%"`;
+      const orPartsArr: string[] = [];
+      for (const v of variants) {
+        const pat = patternFor(v);
+        orPartsArr.push(`title.ilike.${pat}`, `region.ilike.${pat}`, `kommune.ilike.${pat}`, `place.ilike.${pat}`);
+      }
+      for (const v of variants) {
+        const synonymKommuner = SEARCH_SYNONYMS[v];
+        if (synonymKommuner) for (const k of synonymKommuner) orPartsArr.push(`kommune.eq.${k}`);
+      }
+      query = query.or(orPartsArr.join(","));
+    }
+
+    if (filters?.anmeldelser) query = query.not("google_user_ratings_total", "is", null).gt("google_user_ratings_total", 0);
+    if (filters?.vand) query = query.eq("water", true);
+    if (filters?.toilet) query = query.in("toilet", ["flush", "mulch"]);
+    if (filters?.hund) query = query.filter("geofa_raw->>hunde_tilladt", "ilike", "%ja%");
+    if (filters?.baalplads) query = query.filter("geofa_raw->>baalplads", "ilike", "%ja%");
+    if (filters?.handicap) query = query.or("geofa_raw->>handicap.ilike.Handicapegnet,geofa_raw->>handicap.ilike.Delvist handicapegnet");
+    if (filters?.bord_baenk) query = query.filter("geofa_raw->>bord_baenk", "ilike", "%ja%");
+    if (filters?.strand) query = query.filter("geofa_raw->>strand_naerhed", "ilike", "%ja%");
+    if (filters?.bruser) query = query.filter("geofa_raw->>bruser_bad", "ilike", "%ja%");
+    if (filters?.min_pladser && filters.min_pladser > 0) query = query.gte("capacity", filters.min_pladser);
+
+    const { data, error } = await query.range(offset, offset + 999);
+    if (error || !data || data.length === 0) break;
+    out.push(...(data as ShelterPin[]));
+    if (data.length < 1000) break;
+    offset += 1000;
+  }
+
+  // bookbar er post-filter (isStructuredBookable kræver flere felter) — pins
+  // til bookbar-filteret håndteres af klienten via listens datasæt i stedet.
+  return out;
+}
+
