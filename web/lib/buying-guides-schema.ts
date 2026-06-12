@@ -2,7 +2,16 @@ import type { AffiliateProduct } from "@/lib/affiliate-products";
 
 type P = Pick<
   AffiliateProduct,
-  "product_name" | "brand" | "image_url" | "price" | "affiliate_url" | "retailer" | "in_stock"
+  | "id"
+  | "product_name"
+  | "brand"
+  | "description"
+  | "image_url"
+  | "price"
+  | "affiliate_url"
+  | "retailer"
+  | "in_stock"
+  | "shipping_cost"
 >;
 
 export interface ProductSchemaOpts {
@@ -59,6 +68,34 @@ export function inferBrandFromName(productName: string): string | null {
   return null;
 }
 
+/**
+ * Returret pr. forhandler (Search Console: hasMerchantReturnPolicy).
+ * Backpackerlife reklamerer med 100 dages returret; øvrige sættes til de
+ * lovpligtige 14 dages fortrydelsesret for dansk nethandel.
+ */
+const RETURN_DAYS: Record<string, number> = {
+  backpackerlife: 100,
+  outmore: 14,
+  outdoortid: 14,
+};
+
+function returnPolicy(retailer: string): Record<string, unknown> {
+  return {
+    "@type": "MerchantReturnPolicy",
+    applicableCountry: "DK",
+    returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+    merchantReturnDays: RETURN_DAYS[retailer] ?? 14,
+    returnMethod: "https://schema.org/ReturnByMail",
+    returnFees: "https://schema.org/ReturnFeesCustomerResponsibility",
+  };
+}
+
+/** Outmore-id'er er rene EAN13-numre ("outmore-5709388146854"). */
+function gtin13FromId(id: string): string | null {
+  const num = (id ?? "").split("-").slice(1).join("-");
+  return /^\d{13}$/.test(num) ? num : null;
+}
+
 function notesList(notes: string[]): Record<string, unknown> {
   return {
     "@type": "ItemList",
@@ -84,10 +121,14 @@ function priceValidUntil(): string {
 export function buildProductSchema(p: P, opts: ProductSchemaOpts = {}): Record<string, unknown> {
   const { score, pros, cons, reviewBody } = opts;
   const brand = p.brand || inferBrandFromName(p.product_name);
+  const gtin = gtin13FromId(p.id);
+  const description = (p.description ?? "").trim();
   return {
     "@type": "Product",
     name: p.product_name,
     ...(brand ? { brand: { "@type": "Brand", name: brand } } : {}),
+    ...(gtin ? { gtin13: gtin } : {}),
+    ...(description ? { description: description.slice(0, 500) } : {}),
     image: p.image_url,
     ...(score != null
       ? {
@@ -110,6 +151,23 @@ export function buildProductSchema(p: P, opts: ProductSchemaOpts = {}): Record<s
         ? "https://schema.org/InStock"
         : "https://schema.org/OutOfStock",
       url: p.affiliate_url,
+      hasMerchantReturnPolicy: returnPolicy(p.retailer),
+      ...(p.shipping_cost != null
+        ? {
+            shippingDetails: {
+              "@type": "OfferShippingDetails",
+              shippingRate: {
+                "@type": "MonetaryAmount",
+                value: p.shipping_cost,
+                currency: "DKK",
+              },
+              shippingDestination: {
+                "@type": "DefinedRegion",
+                addressCountry: "DK",
+              },
+            },
+          }
+        : {}),
     },
   };
 }

@@ -2,6 +2,9 @@ import { describe, it, expect } from "vitest";
 import { buildItemListSchema, buildProductSchema } from "@/lib/buying-guides-schema";
 
 const product = {
+  id: "backpackerlife-72997",
+  description: "En god 3-sæsons sovepose til shelterture i Danmark.",
+  shipping_cost: null,
   product_name: "Test Sovepose",
   brand: "Acme",
   image_url: "https://x/i.jpg",
@@ -132,5 +135,51 @@ describe("buildProductSchema – lager, pros/cons, reviewBody, priceValidUntil",
       in_stock: true,
     });
     expect(s.brand).toBeUndefined();
+  });
+});
+
+describe("buildProductSchema – Merchant listing-felter (Search Console)", () => {
+  it("inkluderer description fra produktet (trunkeret)", () => {
+    const s = buildProductSchema({ ...product, description: "En god sovepose til shelterture. ".repeat(50) });
+    expect(typeof s.description).toBe("string");
+    expect((s.description as string).length).toBeLessThanOrEqual(500);
+  });
+
+  it("udelader description når produktet ingen har", () => {
+    const s = buildProductSchema({ ...product, description: null });
+    expect(s.description).toBeUndefined();
+  });
+
+  it("sætter gtin13 når id'et indeholder et 13-cifret EAN (outmore)", () => {
+    const s = buildProductSchema({ ...product, id: "outmore-5709388146854" });
+    expect(s.gtin13).toBe("5709388146854");
+  });
+
+  it("udelader gtin når id'et ikke er et EAN (backpackerlife)", () => {
+    const s = buildProductSchema({ ...product, id: "backpackerlife-72997" });
+    expect(s.gtin13).toBeUndefined();
+  });
+
+  it("inkluderer shippingDetails når shipping_cost kendes", () => {
+    const s = buildProductSchema({ ...product, shipping_cost: 0 });
+    const off = s.offers as Record<string, unknown>;
+    const sd = off.shippingDetails as Record<string, unknown>;
+    expect(sd["@type"]).toBe("OfferShippingDetails");
+    expect((sd.shippingRate as { value: number }).value).toBe(0);
+  });
+
+  it("udelader shippingDetails når shipping_cost er ukendt", () => {
+    const s = buildProductSchema({ ...product, shipping_cost: null });
+    const off = s.offers as Record<string, unknown>;
+    expect(off.shippingDetails).toBeUndefined();
+  });
+
+  it("inkluderer hasMerchantReturnPolicy med forhandlerens returdage", () => {
+    const bp = buildProductSchema({ ...product, retailer: "backpackerlife" });
+    const om = buildProductSchema({ ...product, retailer: "outmore" });
+    const bpPol = (bp.offers as Record<string, unknown>).hasMerchantReturnPolicy as { merchantReturnDays: number };
+    const omPol = (om.offers as Record<string, unknown>).hasMerchantReturnPolicy as { merchantReturnDays: number };
+    expect(bpPol.merchantReturnDays).toBe(100);
+    expect(omPol.merchantReturnDays).toBe(14);
   });
 });
