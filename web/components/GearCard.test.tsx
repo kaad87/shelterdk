@@ -26,6 +26,7 @@ const mockProduct: AffiliateProduct = {
   image_url: "https://example.com/image.jpg",
   affiliate_url: "https://example.com/buy",
   is_blocked: false,
+  shipping_cost: 0,
 };
 
 describe("GearCard editorial variant", () => {

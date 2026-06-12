@@ -24,6 +24,7 @@ vi.mock("./affiliate-products", () => ({
         image_url: "https://example.com/img.jpg",
         affiliate_url: "https://example.com",
         is_blocked: false,
+  shipping_cost: 0,
       });
     }
     return map;

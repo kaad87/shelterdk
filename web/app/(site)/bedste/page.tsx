@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getPublishedGuides } from "@/lib/buying-guides";
+import { getPublishedGuides, getGuideTeasers } from "@/lib/buying-guides";
 import { groupGuides } from "@/lib/buying-guides-hub";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 
@@ -15,6 +15,7 @@ export const metadata: Metadata = {
 
 export default async function BuyingGuidesIndexPage() {
   const guides = await getPublishedGuides();
+  const teasers = await getGuideTeasers(guides.map((g) => g.id));
 
   // CollectionPage + ItemList over guides → fortæller Google at hubben er
   // den kuraterede indgang til købsguide-klyngen.
@@ -111,6 +112,22 @@ export default async function BuyingGuidesIndexPage() {
                         {g.intro && (
                           <p className="mt-1 line-clamp-2 text-sm text-primary/70">{g.intro}</p>
                         )}
+                        {(() => {
+                          const t = teasers.get(g.id);
+                          if (!t?.winnerName) return null;
+                          return (
+                            <p className="mt-2 text-xs text-primary/60">
+                              <span className="font-semibold text-primary">Testvinder:</span>{" "}
+                              {t.winnerName}
+                              {t.winnerScore != null && (
+                                <span className="ml-1 font-semibold text-accent">{String(t.winnerScore).replace(".", ",")}/10</span>
+                              )}
+                              {t.minPrice != null && (
+                                <span className="ml-1 text-primary/45">· fra {Math.round(t.minPrice).toLocaleString("da-DK")} kr.</span>
+                              )}
+                            </p>
+                          );
+                        })()}
                         <span className="mt-3 inline-block text-sm font-medium text-accent">
                           Se guiden →
                         </span>
