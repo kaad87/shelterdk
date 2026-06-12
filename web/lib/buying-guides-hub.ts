@@ -13,6 +13,7 @@ export const HUB_GROUPS: { group: string; categories: string[] }[] = [
   { group: "Belysning", categories: ["pandelampe", "lygte"] },
   { group: "Vand & mad", categories: ["vandfilter", "drikkedunk", "kogeudstyr", "stormkoekken"] },
   { group: "Værktøj & udstyr", categories: ["kniv", "multitool", "rygsaek", "kikkert"] },
+  { group: "Lejr & komfort", categories: ["campingstol", "campingmobler"] },
 ];
 const OTHER = "Andet";
 

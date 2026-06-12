@@ -50,6 +50,21 @@ const CATEGORY_LABELS: Record<string, string> = {
   boern: "Børn",
 };
 
+/** Kategorier hvor vi har en købsguide — krydslink fra tilbuds-filteret. */
+const CATEGORY_GUIDES: Record<string, { slug: string; label: string }> = {
+  sovepose: { slug: "sovepose", label: "soveposer" },
+  telt: { slug: "telt", label: "telte" },
+  liggeunderlag: { slug: "liggeunderlag", label: "liggeunderlag" },
+  pandelampe: { slug: "pandelampe", label: "pandelamper" },
+  haengekoje: { slug: "haengekoje", label: "hængekøjer" },
+  kniv: { slug: "kniv", label: "knive" },
+  vandfilter: { slug: "vandfilter", label: "vandfiltre" },
+  rygsaek: { slug: "vandrerygsaek", label: "vandrerygsække" },
+  kogeudstyr: { slug: "stormkoekken", label: "stormkøkkener" },
+  campingmobler: { slug: "campingstol", label: "campingstole" },
+  tarp: { slug: "tarp", label: "tarps" },
+};
+
 const SORT_OPTIONS = [
   { value: "discount", label: "Største rabat" },
   { value: "price-asc", label: "Laveste pris" },
@@ -98,6 +113,7 @@ export default async function TilbudPage({ searchParams }: PageProps) {
   });
 
   const hasFilters = !!(params.retailer || params.category || params.sort);
+  const activeGuide = params.category ? CATEGORY_GUIDES[params.category] : undefined;
 
   // ItemList JSON-LD (Product + Offer) — kun på den kanoniske, ufiltrerede
   // visning, så schemaet matcher det Google indekserer på /tilbud.
@@ -261,6 +277,15 @@ export default async function TilbudPage({ searchParams }: PageProps) {
             {params.category &&
               ` i ${CATEGORY_LABELS[params.category] ?? params.category}`}
           </p>
+      {activeGuide && (
+        <p className="mb-4 -mt-2 text-sm text-primary/70">
+          Vil du vide hvad der er bedst — ikke kun billigst? Se{" "}
+          <Link href={`/bedste/${activeGuide.slug}`} className="font-medium text-accent underline">
+            vores test af de bedste {activeGuide.label}
+          </Link>
+          .
+        </p>
+      )}
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {deals.map((p) => (
               <GearCard key={p.id} id={p.id} variant="product" preloaded={p} />

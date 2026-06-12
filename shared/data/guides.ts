@@ -332,7 +332,7 @@ Pak mindst:
 Overvej også:
 
 - Lagenpose eller indersovepose (nemmere at vaske)
-- Tarp eller lille telt, hvis du er i tvivl om hvor tæt shelteret er
+- [Tarp](/bedste/tarp) eller lille telt, hvis du er i tvivl om hvor tæt shelteret er
 - Ekstra tæppe eller fleecepose til kolde nætter
 
 ![Sovepose og liggeunderlag klar til en nat i shelteret](https://images.unsplash.com/photo-1510312305653-8ed496efae75?w=1200&q=80&auto=format&fit=crop)
@@ -838,7 +838,7 @@ Den klassiske begynderfejl er at undervurdere, hvor lang tid bålmad tager. Et b
 ## Hvad gør du, når bålet driller?
 
 - **Vådt brænde:** Flæk det — det indre er tørt. Brug kniven fra [vores knivtest](/bedste/kniv) eller en lille økse, og snit tændspåner af det tørre indre
-- **Bålforbud:** Tjek altid inden afgang (især i tørre perioder). Et stormkøkken eller Trangia er den lovlige plan B — og faktisk hurtigere til morgenmad
+- **Bålforbud:** Tjek altid inden afgang (især i tørre perioder). Et [stormkøkken eller Trangia](/bedste/stormkoekken) er den lovlige plan B — og faktisk hurtigere til morgenmad
 - **Regn:** Lav maden under en tarp spændt op i god afstand fra bålet, og hold brændet tørt under shelterets tag
 
 ## Husk at pakke

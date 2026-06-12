@@ -855,6 +855,8 @@ Medbring altid ekstra batterier. Der er intet værre end at stå i bælgmørke m
 
 ## Rygsæk – den rigtige størrelse
 
+> **Se vores test:** [Bedste vandrerygsæk](/bedste/vandrerygsaek) — fra letvægts-daypacks til trekking-sække, med bæresystem og liter forklaret.
+
 Til en enkelt overnatning er en rygsæk på 30–45 liter typisk tilstrækkelig. Til flerdages ture har du brug for 50–65 liter. Vigtige features:
 
 - Justerbart hoftebælte der fordeler vægten
@@ -973,6 +975,8 @@ Alt dit udstyr – især sovepose og tørt tøj – skal pakkes i vandtætte pos
 Et regncover til rygsækken er godt, men stol ikke på det alene. Kraftig regn kan drive igennem, og ryggen sveder under coveret. Drybags indeni er den sikre løsning.
 
 ## Tarp – din bedste investering
+
+> **Se vores test:** [Bedste tarp](/bedste/tarp) — 7 favoritter fra 425 kr., med størrelse og opsætning forklaret.
 
 Hvis der er ét stykke udstyr, der transformerer en regnvejrstur, er det en tarp. En let tarp (3x3 meter er ideelt) spændt ud foran shelteret skaber et tørt opholdsområde, hvor du kan:
 

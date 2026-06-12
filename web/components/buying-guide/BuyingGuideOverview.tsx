@@ -57,6 +57,7 @@ export function BuyingGuideOverview({
                 price={e.product.price}
                 priceOriginal={e.product.price_original}
                 discountPct={e.product.discount_pct}
+                shippingCost={e.product.shipping_cost}
               />
             </div>
             <AffiliateLink product={e.product} position="guide_overview" className="mt-2 w-full" />

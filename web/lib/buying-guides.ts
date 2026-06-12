@@ -51,7 +51,7 @@ export function rankGuideEntries(entries: GuideEntryWithProduct[]): GuideEntryWi
 }
 
 const PRODUCT_COLS =
-  "id, retailer, brand, product_name, description, category_mapped, price, price_original, discount_pct, in_stock, stock_count, image_url, affiliate_url, is_blocked, specs";
+  "id, retailer, brand, product_name, description, category_mapped, price, price_original, discount_pct, in_stock, stock_count, image_url, affiliate_url, is_blocked, shipping_cost, updated_at, specs";
 
 export async function getPublishedGuides(): Promise<BuyingGuide[]> {
   const sb = getServiceClient();
@@ -109,4 +109,51 @@ export async function getGuideBySlug(
     .filter((e): e is GuideEntryWithProduct => e !== null);
 
   return { guide: guide as BuyingGuide, entries: rankGuideEntries(entries) };
+}
+
+export interface GuideTeaser {
+  winnerName: string | null;
+  winnerScore: number | null;
+  minPrice: number | null;
+}
+
+/**
+ * Testvinder + laveste pris pr. guide til hub-kortene — én batch-query for
+ * alle guides (rank/score + live-pris fra produkterne).
+ */
+export async function getGuideTeasers(guideIds: string[]): Promise<Map<string, GuideTeaser>> {
+  const out = new Map<string, GuideTeaser>();
+  if (guideIds.length === 0) return out;
+  const sb = getServiceClient();
+  const { data: entries } = await sb
+    .from("buying_guide_entries")
+    .select("guide_id, rank, score, affiliate_product_id")
+    .in("guide_id", guideIds);
+  if (!entries || entries.length === 0) return out;
+  const ids = [...new Set(entries.map((e) => e.affiliate_product_id))];
+  const { data: products } = await sb
+    .from("affiliate_products")
+    .select("id, product_name, price, in_stock, is_blocked")
+    .in("id", ids);
+  const byId = new Map((products ?? []).map((p) => [p.id, p]));
+  for (const gid of guideIds) {
+    const ge = entries
+      .filter((e) => e.guide_id === gid)
+      .sort((a, b) => a.rank - b.rank);
+    const available = ge.filter((e) => {
+      const pr = byId.get(e.affiliate_product_id);
+      return pr && pr.in_stock && !pr.is_blocked;
+    });
+    const winner = available[0] ?? ge[0];
+    const winnerProduct = winner ? byId.get(winner.affiliate_product_id) : null;
+    const prices = available
+      .map((e) => byId.get(e.affiliate_product_id)?.price)
+      .filter((n): n is number => typeof n === "number");
+    out.set(gid, {
+      winnerName: winnerProduct?.product_name ?? null,
+      winnerScore: winner?.score ?? null,
+      minPrice: prices.length ? Math.min(...prices) : null,
+    });
+  }
+  return out;
 }

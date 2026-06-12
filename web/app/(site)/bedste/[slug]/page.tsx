@@ -76,6 +76,16 @@ export default async function BuyingGuidePage({
     : guide.intro ?? "";
   const body = guide.body_md ? await renderContent(guide.body_md) : null;
 
+  // Priser/lager synces dagligt — sig det højt (tillid + friskhed).
+  const newestPriceCheck = entries
+    .map((e) => e.product.updated_at)
+    .filter((d): d is string => Boolean(d))
+    .sort()
+    .pop();
+  const priceCheckedLabel = newestPriceCheck
+    ? new Intl.DateTimeFormat("da-DK", { day: "numeric", month: "long" }).format(new Date(newestPriceCheck))
+    : null;
+
   return (
     <>
       <BreadcrumbSchema
@@ -152,12 +162,19 @@ export default async function BuyingGuidePage({
 
           {/* Hurtigt overblik (top-picks) + sammenligningstabel */}
           <BuyingGuideOverview entries={entries} />
+          {priceCheckedLabel && (
+            <p className="-mb-4 mt-2 text-xs text-primary/45">
+              Priser og lagerstatus tjekket {priceCheckedLabel} — opdateres automatisk dagligt.
+            </p>
+          )}
           <BuyingGuideComparisonTable entries={entries} />
 
-          {/* Rangeret liste */}
+          {/* Rangeret liste — anker pr. produkt så tabellen kan linke ned */}
           <div className="mt-8 space-y-5">
             {entries.map((e, i) => (
-              <BuyingGuideEntry key={e.id} entry={e} position={i + 1} />
+              <div key={e.id} id={`produkt-${i + 1}`} className="scroll-mt-24">
+                <BuyingGuideEntry entry={e} position={i + 1} />
+              </div>
             ))}
           </div>
 

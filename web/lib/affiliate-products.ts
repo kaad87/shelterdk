@@ -22,10 +22,12 @@ export interface AffiliateProduct {
   image_url: string;
   affiliate_url: string;
   is_blocked: boolean;
+  shipping_cost: number | null;
+  updated_at?: string;
 }
 
 const SELECT_COLUMNS =
-  "id, retailer, brand, product_name, description, category_mapped, price, price_original, discount_pct, in_stock, stock_count, image_url, affiliate_url, is_blocked";
+  "id, retailer, brand, product_name, description, category_mapped, price, price_original, discount_pct, in_stock, stock_count, image_url, affiliate_url, is_blocked, shipping_cost, updated_at";
 
 /**
  * Fetches a single product by id. Cached at the React request level to

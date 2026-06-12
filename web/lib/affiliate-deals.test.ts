@@ -23,6 +23,7 @@ function mockP(
     image_url: "x",
     affiliate_url: "y",
     is_blocked: false,
+  shipping_cost: 0,
   };
 }
 

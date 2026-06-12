@@ -39,7 +39,7 @@ export function BuyingGuideComparisonTable({ entries }: { entries: GuideEntryWit
             </tr>
           </thead>
           <tbody className="divide-y divide-primary/5">
-            {entries.map((e) => (
+            {entries.map((e, i) => (
               <tr key={e.id} className="align-middle">
                 <td className="py-3 pr-3">
                   <div className="flex items-center gap-3">
@@ -51,7 +51,12 @@ export function BuyingGuideComparisonTable({ entries }: { entries: GuideEntryWit
                       height={44}
                       className="h-11 w-11 shrink-0 rounded-md object-contain"
                     />
-                    <span className="font-medium text-primary">{e.product.product_name}</span>
+                    <a
+                      href={`#produkt-${i + 1}`}
+                      className="font-medium text-primary hover:text-accent hover:underline"
+                    >
+                      {e.product.product_name}
+                    </a>
                   </div>
                 </td>
                 <td className="py-3 pr-3 whitespace-nowrap">
@@ -63,6 +68,7 @@ export function BuyingGuideComparisonTable({ entries }: { entries: GuideEntryWit
                     price={e.product.price}
                     priceOriginal={e.product.price_original}
                     discountPct={e.product.discount_pct}
+                    shippingCost={e.product.shipping_cost}
                   />
                 </td>
                 <td className="py-3 whitespace-nowrap">
@@ -98,6 +104,7 @@ export function BuyingGuideComparisonTable({ entries }: { entries: GuideEntryWit
                 price={e.product.price}
                 priceOriginal={e.product.price_original}
                 discountPct={e.product.discount_pct}
+                shippingCost={e.product.shipping_cost}
               />
             </div>
             <AffiliateLink product={e.product} position="guide_table" className="mt-2 w-full" />
