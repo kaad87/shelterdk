@@ -37,6 +37,10 @@ export async function GET(req: NextRequest) {
       headers: {
         // Pins ændrer sig sjældent — lad CDN'en bære gentagne kald.
         "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+        // Netlify cacher funktions-svar UDEN query-params i nøglen som
+        // default — uden denne header fik ?hund=1 serveret det ufiltrerede
+        // svar fra cachen.
+        "Netlify-Vary": "query",
       },
     }
   );
