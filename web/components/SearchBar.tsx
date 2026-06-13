@@ -425,14 +425,16 @@ export function SearchBar({
           className
         }
       >
-        {/* Region + søgefelt */}
-        <div className="flex flex-row flex-1 min-w-0 gap-0 border-r border-primary/10">
+        {/* Region + søgefelt — stables lodret på mobil (begge fuld bredde, så
+            hverken "Hele Danmark" eller placeholderen klippes på 375px), og
+            side-om-side fra sm+. */}
+        <div className="flex flex-col sm:flex-row flex-1 min-w-0 gap-2 sm:gap-0 sm:border-r border-primary/10">
         <div className="relative flex-shrink-0">
           <select
             name="region"
             value={region}
             onChange={(e) => setRegion(e.target.value)}
-            className="w-[140px] md:w-auto md:min-w-[160px] appearance-none bg-accent/15 text-primary font-medium py-3 md:py-3.5 pl-3 md:pl-4 pr-8 md:pr-10 text-sm rounded-l-xl rounded-r-none focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 cursor-pointer touch-manipulation"
+            className="w-full sm:w-[140px] md:w-auto md:min-w-[160px] appearance-none bg-accent/15 text-primary font-medium py-3 md:py-3.5 pl-3 md:pl-4 pr-8 md:pr-10 text-sm rounded-xl sm:rounded-l-xl sm:rounded-r-none focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 cursor-pointer touch-manipulation"
             aria-label="Vælg region"
           >
             {REGIONS.map((r) => (
