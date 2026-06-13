@@ -960,8 +960,8 @@ Det vigtigste våben mod regn er det rigtige tøj. Princippet er simpelt: hold d
 
 - **Vandtæt jakke** – vælg en med åndbart membran (Gore-Tex eller lignende). Billige regncapes holder vand ude men lukker sveden ind
 - **Vandtætte bukser** – overtræksbukser du kan tage over dine almindelige bukser
-- **Vandtætte sko eller støvler** – membransko holder fødderne tørre. Gummistøvler er gode til lejren men dårlige til vandring
-- **Ekstra tørt tøj** – pak mindst ét komplet sæt tørt tøj i en vandtæt drybag. Det er din livline, hvis alt andet bliver gennemblødt
+- **Vandtætte sko eller støvler** – [membran-vandrestøvler](/bedste/vandrestovler) holder fødderne tørre, og et par [gamacher](/bedste/gamacher) lukker vand og mudder ude i toppen. Gummistøvler er gode til lejren men dårlige til vandring
+- **Ekstra tørt tøj** – pak mindst ét komplet sæt tørt tøj i en [vandtæt drybag](/bedste/dry-bag). Det er din livline, hvis alt andet bliver gennemblødt
 
 Et vigtigt princip: undgå bomuld. Våd bomuld tørrer ekstremt langsomt og trækker varme ud af kroppen. Brug uld eller syntetisk materiale, der isolerer selv når det er fugtigt.
 
