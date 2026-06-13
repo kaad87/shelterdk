@@ -33,7 +33,9 @@ export function ShelterGallery({
   blurDataUrl,
   headingId,
 }: ShelterGalleryProps) {
-  const HERO_W = 1200;
+  // 900px dækker desktop-containeren (896px) og mobil-2x; halverer hero-vægten
+  // ift. 1200 (536→289 KB) uden synlig kvalitetsforskel i 4:3-visningen.
+  const HERO_W = 900;
   const THUMB_W = 320;
   const MAX_THUMBS = 10;
 
@@ -42,7 +44,7 @@ export function ShelterGallery({
     // proxy-sti. (Før blev w kun tilføjet for /api/image-stien — på prod
     // returnerer proxyen /.netlify/images uden w → fuld-opløsning, ~900 KB
     // pr. billede på mobil.)
-    .map((u) => getProxiedImageSrc(u, { w: HERO_W, q: 72 }))
+    .map((u) => getProxiedImageSrc(u, { w: HERO_W, q: 70 }))
     .filter((p) => p.trim().length > 0);
   const [brokenUrls, setBrokenUrls] = useState<Set<string>>(new Set());
   const visibleUrls = proxiedUrls.filter((u) => !brokenUrls.has(u));
