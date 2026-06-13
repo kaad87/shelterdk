@@ -542,7 +542,7 @@ export function SoegContent({
             <div className="flex items-center justify-between mb-4 sticky top-0 bg-background/95 py-2 z-10">
             <p className="text-primary/70 text-sm">
               {hasPannedMap.current && mapBounds
-                ? `${pins ? pins.length : visibleShelters.length} shelter${(pins ? pins.length : visibleShelters.length) !== 1 ? "s" : ""} i dette område`
+                ? `${visibleShelters.length} shelter${visibleShelters.length !== 1 ? "s" : ""} i dette område`
                 : hasMore
                   ? `Shelters ${initialRegion?.trim() ? `${prepositionForRegionName(initialRegion)} ${initialRegion.trim()}` : "i Danmark"} · scroll for flere`
                   : `${visibleShelters.length} shelter${visibleShelters.length !== 1 ? "s" : ""} ${initialRegion?.trim() ? `${prepositionForRegionName(initialRegion)} ${initialRegion.trim()}` : "i Danmark"}`}
@@ -567,7 +567,7 @@ export function SoegContent({
               <ShelterMap
                 shelters={pins ?? shelters}
                 className="absolute inset-0 w-full h-full"
-                onBoundsChange={pins ? undefined : fetchByBounds}
+                onBoundsChange={fetchByBounds}
                 initialRegion={initialRegion}
                 fitWholeDenmarkOnLoad={!initialRegion?.trim()}
                 overrideCenter={!initialRegion?.trim() ? [56.0, 10.5] : undefined}
