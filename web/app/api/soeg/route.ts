@@ -121,6 +121,12 @@ export async function GET(request: NextRequest) {
   return Response.json({ shelters, hasMore, availabilityMap: availabilityMap ?? undefined }, {
     headers: {
       "Cache-Control": cacheControl,
+      // KRITISK: Netlify medtager ikke query-strengen i edge-cachens nøgle som
+      // default. Uden dette deler ALLE /api/soeg-kald (forskellig bbox, region,
+      // filtre, side, sortering) én cache-indgang → kortets liste/tæller fik
+      // serveret et tilfældigt cachet svar uafhængigt af det viste område, og
+      // filter-refetch kunne få ufiltrerede resultater. Vary på hele queryen.
+      "Netlify-Vary": "query",
     },
   });
 }
