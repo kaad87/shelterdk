@@ -738,8 +738,8 @@ Sommerens lange dage giver op til 18 timers dagslys, og nattemperaturen sjælden
 Men sommeren bringer også udfordringer:
 
 - **Populære shelters bookes hurtigt** – reserver via [udinaturen.dk](https://udinaturen.dk) mindst 2–3 uger i forvejen
-- **Myg og flåter** – juni og juli er værst. Medbring myggespray med DEET og tjek for flåter dagligt
-- **Varme** – en let sovepose eller blot et lagen kan være nok. Medbring ekstra vand
+- **Myg og flåter** – juni og juli er værst. Medbring myggespray med DEET, tjek for flåter dagligt, og pak et [myggenet](/bedste/myggenet) til hoved og soveplads, hvis du slår lejr nær vand
+- **Varme** – en let sovepose eller blot en [lagenpose](/bedste/sovepude) kan være nok. Medbring ekstra vand
 - **Solbeskyttelse** – solcreme, kasket og solbriller. Solen kan stå overraskende stærkt selv i skoven
 
 ## Kombinér med andre aktiviteter

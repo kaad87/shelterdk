@@ -297,6 +297,7 @@ Hvis du bare vil have den korte version, så pak mindst:
 
 - **Sovepose** der passer til årstiden
 - **Liggeunderlag** eller madrasunderlag
+- En [sovepude og lagenpose](/bedste/sovepude) til bedre søvn og et par graders ekstra varme
 - Varmt **tøj i lag** + ekstra sokker
 - **Mad og vand** til hele turen
 - **Pandelygte** eller lommelygte
@@ -775,7 +776,7 @@ Du behøver ikke et helt udekøkken for at lave god mad over bål. Som regel ræ
 - 1–2 solide gryder/pander
 - Tang eller grillhandske
 
-Husk at tjekke, om der er **bålplads** og om der er **bålforbud** i området. Aktuelle bålforbud kan ses på [Naturstyrelsens hjemmeside](https://naturstyrelsen.dk/).
+Husk at tjekke, om der er **bålplads** og om der er **bålforbud** i området. Aktuelle bålforbud kan ses på [Naturstyrelsens hjemmeside](https://naturstyrelsen.dk/). Er der bålforbud — eller vil du bare rejse let — er [frysetørret trekking-mad](/bedste/frysetorret-mad) en nem genvej: du skal kun bruge kogende vand fra et lille stormkøkken.
 
 ![Mad over bål i en gryde ved shelterplads](https://images.unsplash.com/photo-1510672981848-a1c4f1cb5ccf?w=1200&q=80&auto=format&fit=crop)
 
