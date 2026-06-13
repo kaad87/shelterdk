@@ -299,7 +299,7 @@ Hvis du bare vil have den korte version, så pak mindst:
 - **Liggeunderlag** eller madrasunderlag
 - En [sovepude og lagenpose](/bedste/sovepude) til bedre søvn og et par graders ekstra varme
 - Varmt **tøj i lag** + ekstra sokker
-- **Mad og vand** til hele turen
+- **Mad og vand** til hele turen — i en god [drikkedunk](/bedste/drikkedunk)
 - **Pandelygte** eller lommelygte
 - Tandbørste, toiletpapir og **håndsprit**
 - Telefon + **powerbank**
@@ -375,7 +375,7 @@ Gør det simpelt – så du kan hygge dig, i stedet for at stå med et avanceret
 Grundlæggende køkken:
 
 - Trangia eller lille gasbrænder
-- Brændstof / gas + tændstikker/tændstål
+- Brændstof / gas + tændstikker/[tændstål og optænding](/bedste/taendstaal)
 - 1 gryde og evt. 1 pande
 - Krus, tallerken og bestik pr. person
 - Skarp kniv og lille skærebræt

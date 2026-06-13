@@ -379,7 +379,7 @@ Udstyr til efterårsture kræver mere omtanke end sommerpakkelisten. Her er de v
 - **Godt liggeunderlag med høj R-værdi** – kulden kommer nedefra, og et tyndt skumunderlag er ikke nok i oktober
 - **Vandtæt overtøj** – en god regnjakke og vandtætte bukser er uundværlige
 - **Uldundertøj** – uld holder varmen selv når det er fugtigt, og regulerer temperaturen naturligt
-- **Varm hue og handsker** – hovedet og hænderne mister varme hurtigt
+- **Varm hue og handsker** – hovedet og hænderne mister varme hurtigt. Se [bedste hue](/bedste/hue) og [bedste handsker](/bedste/handsker)
 - **Ekstra tørre sokker** – våde fødder er den hurtigste vej til en dårlig oplevelse
 - **Tarp som ekstra beskyttelse** – kan spændes op foran shelterens åbning i kraftigt regnvejr
 

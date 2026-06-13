@@ -12,9 +12,9 @@ export const HUB_GROUPS: { group: string; categories: string[] }[] = [
   { group: "Telte & ly", categories: ["telt", "tarp"] },
   { group: "Belysning", categories: ["pandelampe", "lygte"] },
   { group: "Vand & mad", categories: ["vandfilter", "drikkedunk", "kogeudstyr", "stormkoekken", "frysetorret"] },
-  { group: "Værktøj & udstyr", categories: ["kniv", "multitool", "rygsaek", "kikkert", "kompas", "drybag"] },
-  { group: "Lejr & komfort", categories: ["campingstol", "campingmobler", "myggenet"] },
-  { group: "Tøj & lag-på-lag", categories: ["uldundertoj", "regntoj", "sokker", "fodtoj", "gamacher"] },
+  { group: "Værktøj & udstyr", categories: ["kniv", "multitool", "rygsaek", "kikkert", "kompas", "drybag", "optaending"] },
+  { group: "Lejr & komfort", categories: ["campingstol", "campingmobler", "myggenet", "siddeunderlag"] },
+  { group: "Tøj & lag-på-lag", categories: ["uldundertoj", "regntoj", "sokker", "fodtoj", "gamacher", "handsker", "hue"] },
 ];
 const OTHER = "Andet";
 
