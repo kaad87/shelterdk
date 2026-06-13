@@ -83,6 +83,7 @@ export async function getCountPerRegion(): Promise<
 }
 
 export interface FacilityCounts {
+  total: number;
   toilet: number;
   water: number;
   baalplads: number;
@@ -103,8 +104,9 @@ export async function getFacilityCounts(): Promise<FacilityCounts> {
       .select("id", { count: "exact", head: true })
       .is("duplicate_of_shelter_id", null);
 
-  const [toilet, water, baalplads, hund, strand, bruser, gratis, handicap, bookableShelters] =
+  const [total, toilet, water, baalplads, hund, strand, bruser, gratis, handicap, bookableShelters] =
     await Promise.all([
+      base(),
       base().in("toilet", ["flush", "mulch"]),
       base().eq("water", true),
       base().filter("geofa_raw->>baalplads", "ilike", "%ja%"),
@@ -117,6 +119,7 @@ export async function getFacilityCounts(): Promise<FacilityCounts> {
     ]);
 
   return {
+    total: total.count ?? 0,
     toilet: toilet.count ?? 0,
     water: water.count ?? 0,
     baalplads: baalplads.count ?? 0,
@@ -127,6 +130,39 @@ export async function getFacilityCounts(): Promise<FacilityCounts> {
     gratis: gratis.count ?? 0,
     handicap: handicap.count ?? 0,
   };
+}
+
+/**
+ * Top-steder (place) i en region, aggregeret server-side over ALLE shelters —
+ * uafhængigt af hvor mange kort der server-renderes. Henter kun place-strenge
+ * (slankt), paginerer forbi PostgRESTs 1000-loft.
+ */
+export async function getTopPlacesForRegion(
+  region: string,
+  limit: number = 8
+): Promise<{ name: string; count: number }[]> {
+  const supabase = createPublicClient();
+  const counts = new Map<string, number>();
+  let offset = 0;
+  while (offset < 5000) {
+    const { data, error } = await supabase
+      .from("shelters")
+      .select("place")
+      .is("duplicate_of_shelter_id", null)
+      .eq("region", region)
+      .range(offset, offset + 999);
+    if (error || !data || data.length === 0) break;
+    for (const row of data as { place: string | null }[]) {
+      const place = row.place?.trim();
+      if (place) counts.set(place, (counts.get(place) ?? 0) + 1);
+    }
+    if (data.length < 1000) break;
+    offset += 1000;
+  }
+  return [...counts.entries()]
+    .sort((a, b) => (b[1] !== a[1] ? b[1] - a[1] : a[0].localeCompare(b[0], "da")))
+    .slice(0, limit)
+    .map(([name, count]) => ({ name, count }));
 }
 
 /** Facility counts scoped to a single region. */
@@ -141,8 +177,9 @@ export async function getFacilityCountsForRegion(
       .is("duplicate_of_shelter_id", null)
       .eq("region", region);
 
-  const [toilet, water, baalplads, hund, strand, bruser, gratis, handicap, bookableShelters] =
+  const [total, toilet, water, baalplads, hund, strand, bruser, gratis, handicap, bookableShelters] =
     await Promise.all([
+      base(),
       base().in("toilet", ["flush", "mulch"]),
       base().eq("water", true),
       base().filter("geofa_raw->>baalplads", "ilike", "%ja%"),
@@ -155,6 +192,7 @@ export async function getFacilityCountsForRegion(
     ]);
 
   return {
+    total: total.count ?? 0,
     toilet: toilet.count ?? 0,
     water: water.count ?? 0,
     baalplads: baalplads.count ?? 0,

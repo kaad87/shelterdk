@@ -17,8 +17,10 @@ const MissingShelterBanner = dynamic(
   { ssr: false }
 );
 
-/** Ved kortvisning: send færre initialt for hurtigere load; resten hentes på client. */
-const MAP_VIEW_PAGE_SIZE = 200;
+/** Kun ~24 vises ad gangen (resten via infinite scroll), og kortet henter sine
+ * markører via /api/map/pins. Server-render kun en lille første side frem for
+ * 200 (sparede ~300 KB gzippet HTML på mobil). */
+const MAP_VIEW_PAGE_SIZE = 48;
 import { SoegContent } from "@/components/SoegContent";
 import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
