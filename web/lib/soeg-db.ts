@@ -335,132 +335,120 @@ export async function getSheltersPage(
     dateAvailability = await getDateAvailabilityData(filters.date, filters.date_to, needTrackedIds);
   }
 
-  let query = supabase
-    .from("shelters")
-    .select(SHELTER_SELECT)
-    .is("duplicate_of_shelter_id", null);
-
-  // Apply sort order
-  if (sort === "rating") {
-    query = query
-      .order("google_rating", { ascending: false, nullsFirst: false })
-      .order("google_user_ratings_total", { ascending: false, nullsFirst: false })
-      .order("title", { ascending: true });
-  } else if (sort === "reviews") {
-    query = query
-      .order("google_user_ratings_total", { ascending: false, nullsFirst: false })
-      .order("google_rating", { ascending: false, nullsFirst: false })
-      .order("title", { ascending: true });
-  } else {
-    query = query
-      .order("featured_sort_boost", { ascending: false, nullsFirst: false })
-      .order("display_score", { ascending: false, nullsFirst: false })
-      .order("title", { ascending: true });
-  }
-
-  if (region && region.trim()) {
-    query = query.eq("region", region.trim());
-  }
-  if (areaSlug && areaSlug.trim()) {
-    query = query.eq("area_slug", areaSlug.trim());
-  }
+  // Async forarbejde der ikke kan gentages pr. side: area-slug-opslag for q.
+  const matchingAreaSlugs = new Set<string>();
   if (q && q.trim()) {
-    const term = q.trim().replace(/"/g, '""');
-
-    {
-      // Expand til alle plausible danske staver (Aarhus/Århus, kobenhavn/
-      // København etc.) så ilike fanger uanset om brugeren har æøå med.
-      const variants = expandDanishVariants(term);
-      const patternFor = (v: string) => `"%${v.replace(/"/g, '""')}%"`;
-
-      // Find area_slugs der matcher søgetermen (fx "Nationalpark Thy" → "nationalpark-thy").
-      // Slår op med ALLE varianter så "soenderjylland" også finder areas-navne
-      // skrevet med ø.
-      const areaResults = await Promise.all(
-        variants.map((v) =>
-          supabase
-            .from("areas")
-            .select("slug")
-            .ilike("name", `%${v}%`)
-            .limit(5)
-        )
-      );
-      const matchingAreaSlugs = new Set<string>();
-      for (const res of areaResults) {
-        for (const a of (res.data as { slug: string }[]) ?? []) {
-          if (a.slug) matchingAreaSlugs.add(a.slug);
-        }
+    const variants = expandDanishVariants(q.trim());
+    const areaResults = await Promise.all(
+      variants.map((v) =>
+        supabase.from("areas").select("slug").ilike("name", `%${v}%`).limit(5)
+      )
+    );
+    for (const res of areaResults) {
+      for (const a of (res.data as { slug: string }[]) ?? []) {
+        if (a.slug) matchingAreaSlugs.add(a.slug);
       }
-
-      const orPartsArr: string[] = [];
-      for (const v of variants) {
-        const p = patternFor(v);
-        orPartsArr.push(`title.ilike.${p}`, `region.ilike.${p}`, `kommune.ilike.${p}`, `place.ilike.${p}`);
-      }
-      for (const slug of matchingAreaSlugs) {
-        orPartsArr.push(`area_slug.eq.${slug}`);
-      }
-
-      // Geografiske synonymer: fx "Sønderjylland" → kommuner i det område.
-      // Slår op på hver variant så "soenderjylland" også triggerer mapping.
-      for (const v of variants) {
-        const synonymKommuner = SEARCH_SYNONYMS[v];
-        if (synonymKommuner) {
-          for (const k of synonymKommuner) {
-            orPartsArr.push(`kommune.eq.${k}`);
-          }
-        }
-      }
-
-      query = query.or(orPartsArr.join(","));
     }
   }
-  if (filters?.anmeldelser) {
-    query = query.not("google_user_ratings_total", "is", null).gt("google_user_ratings_total", 0);
-  }
-  if (filters?.vand) {
-    query = query.eq("water", true);
-  }
-  if (filters?.toilet) {
-    query = query.in("toilet", ["flush", "mulch"]);
-  }
-  if (filters?.hund) {
-    query = query.filter("geofa_raw->>hunde_tilladt", "ilike", "%ja%");
-  }
-  if (filters?.baalplads) {
-    query = query.filter("geofa_raw->>baalplads", "ilike", "%ja%");
-  }
-  if (filters?.gratis) {
-    query = query.filter("geofa_raw->>betaling", "eq", "Nej");
-  }
-  if (filters?.handicap) {
-    query = query.or("geofa_raw->>handicap.ilike.Handicapegnet,geofa_raw->>handicap.ilike.Delvist handicapegnet");
-  }
-  if (filters?.bord_baenk) {
-    query = query.filter("geofa_raw->>bord_baenk", "ilike", "%ja%");
-  }
-  if (filters?.strand) {
-    query = query.filter("geofa_raw->>strand_naerhed", "ilike", "%ja%");
-  }
-  if (filters?.bruser) {
-    query = query.filter("geofa_raw->>bruser_bad", "ilike", "%ja%");
-  }
-  if (filters?.min_pladser && filters.min_pladser > 0) {
-    query = query.gte("capacity", filters.min_pladser);
-  }
+
+  // Dato-baseret id-begrænsning hoistes ud, så tidlig-retur sker uden for
+  // query-factoryen og kun beregnes én gang.
+  let dateIdConstraint: { kind: "in" | "notin"; ids: string[] } | null = null;
   if (filters?.confirmed_available && dateAvailability?.trackedIds) {
-    // Vis KUN shelters med bekræftet ledighedsdata der ikke er optaget i perioden
     const bookedSet = new Set(dateAvailability.bookedIds);
     const availableIds = dateAvailability.trackedIds.filter((id) => !bookedSet.has(id));
     if (availableIds.length === 0) {
       return { shelters: [], hasMore: false, availabilityMap: dateAvailability.availabilityMap };
     }
-    query = query.in("id", availableIds);
+    dateIdConstraint = { kind: "in", ids: availableIds };
   } else if (dateAvailability && dateAvailability.bookedIds.length > 0) {
-    query = query.not("id", "in", `(${dateAvailability.bookedIds.join(",")})`);
+    dateIdConstraint = { kind: "notin", ids: dateAvailability.bookedIds };
   }
 
-  let { data, error } = await query.range(from, toInclusive);
+  // Query-factory: bygger en frisk, fuldt konfigureret query. Skal kunne kaldes
+  // pr. side, fordi Supabase-builderen er single-use OG PostgREST capper svar
+  // ved 1000 rækker — bbox/bookbar-bulkhentning skal paginere forbi det loft
+  // (ellers koord-/bookbar-filtreres kun de første 1000 efter score, ikke geografi).
+  const buildQuery = () => {
+    let query = supabase
+      .from("shelters")
+      .select(SHELTER_SELECT)
+      .is("duplicate_of_shelter_id", null);
+
+    if (sort === "rating") {
+      query = query
+        .order("google_rating", { ascending: false, nullsFirst: false })
+        .order("google_user_ratings_total", { ascending: false, nullsFirst: false })
+        .order("title", { ascending: true });
+    } else if (sort === "reviews") {
+      query = query
+        .order("google_user_ratings_total", { ascending: false, nullsFirst: false })
+        .order("google_rating", { ascending: false, nullsFirst: false })
+        .order("title", { ascending: true });
+    } else {
+      query = query
+        .order("featured_sort_boost", { ascending: false, nullsFirst: false })
+        .order("display_score", { ascending: false, nullsFirst: false })
+        .order("title", { ascending: true });
+    }
+
+    if (region && region.trim()) query = query.eq("region", region.trim());
+    if (areaSlug && areaSlug.trim()) query = query.eq("area_slug", areaSlug.trim());
+
+    if (q && q.trim()) {
+      const variants = expandDanishVariants(q.trim());
+      const patternFor = (v: string) => `"%${v.replace(/"/g, '""')}%"`;
+      const orPartsArr: string[] = [];
+      for (const v of variants) {
+        const p = patternFor(v);
+        orPartsArr.push(`title.ilike.${p}`, `region.ilike.${p}`, `kommune.ilike.${p}`, `place.ilike.${p}`);
+      }
+      for (const slug of matchingAreaSlugs) orPartsArr.push(`area_slug.eq.${slug}`);
+      for (const v of variants) {
+        const synonymKommuner = SEARCH_SYNONYMS[v];
+        if (synonymKommuner) for (const k of synonymKommuner) orPartsArr.push(`kommune.eq.${k}`);
+      }
+      query = query.or(orPartsArr.join(","));
+    }
+
+    if (filters?.anmeldelser) query = query.not("google_user_ratings_total", "is", null).gt("google_user_ratings_total", 0);
+    if (filters?.vand) query = query.eq("water", true);
+    if (filters?.toilet) query = query.in("toilet", ["flush", "mulch"]);
+    if (filters?.hund) query = query.filter("geofa_raw->>hunde_tilladt", "ilike", "%ja%");
+    if (filters?.baalplads) query = query.filter("geofa_raw->>baalplads", "ilike", "%ja%");
+    if (filters?.gratis) query = query.filter("geofa_raw->>betaling", "eq", "Nej");
+    if (filters?.handicap) query = query.or("geofa_raw->>handicap.ilike.Handicapegnet,geofa_raw->>handicap.ilike.Delvist handicapegnet");
+    if (filters?.bord_baenk) query = query.filter("geofa_raw->>bord_baenk", "ilike", "%ja%");
+    if (filters?.strand) query = query.filter("geofa_raw->>strand_naerhed", "ilike", "%ja%");
+    if (filters?.bruser) query = query.filter("geofa_raw->>bruser_bad", "ilike", "%ja%");
+    if (filters?.min_pladser && filters.min_pladser > 0) query = query.gte("capacity", filters.min_pladser);
+    if (dateIdConstraint?.kind === "in") query = query.in("id", dateIdConstraint.ids);
+    else if (dateIdConstraint?.kind === "notin") query = query.not("id", "in", `(${dateIdConstraint.ids.join(",")})`);
+
+    return query;
+  };
+
+  // Hent data. Bulk (bbox/bookbar) pagineres i 1000-batches forbi PostgRESTs
+  // 1000-loft; normal sidehentning er ét range-kald.
+  let data: Shelter[] | null = null;
+  let error: { code?: string } | null = null;
+  if (bulkFetchLimit > 0) {
+    const acc: Shelter[] = [];
+    let off = 0;
+    while (off < bulkFetchLimit) {
+      const res = await buildQuery().range(off, off + 999);
+      if (res.error) { error = res.error; break; }
+      const rows = (res.data as Shelter[] | null) ?? [];
+      acc.push(...rows);
+      if (rows.length < 1000) break;
+      off += 1000;
+    }
+    if (!error) data = acc;
+  } else {
+    const res = await buildQuery().range(from, toInclusive);
+    data = (res.data as Shelter[] | null) ?? null;
+    error = res.error;
+  }
 
   if (!error && data && useBbox && bbox) {
     let list: Shelter[] = [];
