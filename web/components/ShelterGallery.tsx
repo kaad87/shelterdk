@@ -38,11 +38,11 @@ export function ShelterGallery({
   const MAX_THUMBS = 10;
 
   const proxiedUrls = urls
-    .map((u) => {
-      const p = getProxiedImageSrc(u);
-      if (p.startsWith("/api/image/")) return `${p}${p.includes("?") ? "&" : "?"}w=${HERO_W}`;
-      return p;
-    })
+    // w/q bages ind via getProxiedImageSrc, så hero-billedet skaleres uanset
+    // proxy-sti. (Før blev w kun tilføjet for /api/image-stien — på prod
+    // returnerer proxyen /.netlify/images uden w → fuld-opløsning, ~900 KB
+    // pr. billede på mobil.)
+    .map((u) => getProxiedImageSrc(u, { w: HERO_W, q: 72 }))
     .filter((p) => p.trim().length > 0);
   const [brokenUrls, setBrokenUrls] = useState<Set<string>>(new Set());
   const visibleUrls = proxiedUrls.filter((u) => !brokenUrls.has(u));
@@ -211,13 +211,13 @@ export function ShelterGallery({
         return (
           <div className="hidden md:flex gap-2 mb-6 overflow-x-auto pb-1">
             {toShow.map((url, i) => {
+              // Skalér thumbnails ned til THUMB_W uanset proxy-sti
+              // (/.netlify/images, /api/image og google-photo).
               const thumbUrl = url.startsWith("/api/google-photo")
                 ? url.replace(/([?&])maxwidth=\d+/i, `$1maxwidth=${THUMB_W}`)
-                : url.startsWith("/api/image/")
-                  ? url.includes("&w=") || url.includes("?w=")
-                    ? url.replace(/([?&])w=\d+/i, `$1w=${THUMB_W}`)
-                    : `${url}${url.includes("?") ? "&" : "?"}w=${THUMB_W}`
-                  : url;
+                : /[?&]w=\d+/i.test(url)
+                  ? url.replace(/([?&])w=\d+/i, `$1w=${THUMB_W}`)
+                  : `${url}${url.includes("?") ? "&" : "?"}w=${THUMB_W}`;
               return (
                 <button
                   key={`${i}-${url}`}

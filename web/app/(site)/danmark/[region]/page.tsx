@@ -14,7 +14,7 @@ import { buildQuickAnswer } from "@/lib/quick-answer";
 import { SoegContent } from "@/components/SoegContent";
 import { getRegionContent } from "@/data/region-content";
 import { DataSummaryBlock } from "@/components/DataSummaryBlock";
-import { getFacilityCountsForRegion, getTopRatedShelters } from "@/lib/fakta-db";
+import { getFacilityCountsForRegion, getTopRatedShelters, getTopPlacesForRegion } from "@/lib/fakta-db";
 import { generateRegionPageFaq } from "@/lib/fakta-faq";
 import { faqToJsonLd } from "@/lib/faq";
 import { FILTER_CONFIGS, REGION_SLUGS, REGION_NAMES } from "@/lib/cross-page-config";
@@ -45,7 +45,11 @@ export const dynamicParams = false;
 /** ISR: cache og revalider hver 24. time. */
 export const revalidate = 86400;
 
-const MAP_VIEW_PAGE_SIZE = 1000;
+// Listen viser kun ~24 ad gangen (resten via infinite scroll), og kortet
+// henter sine markører separat via /api/map/pins. Server-render derfor kun en
+// lille første side i stedet for hele regionen — region-siderne sendte før
+// ~1,4 MB gzippet HTML til mobilen (1.000 fulde shelter-objekter i payloaden).
+const MAP_VIEW_PAGE_SIZE = 48;
 
 type ViewMode = "list" | "map" | "split";
 
@@ -155,7 +159,13 @@ export default async function DanmarkRegionPage({ params, searchParams }: PagePr
     }
   }
 
-  const [{ shelters: rawShelters, hasMore: initialHasMore }, facilityCounts, topRated, municipalities] =
+  // Aktiv søgning/filter/postnr gør siden ikke-kanonisk og snævrer resultatet;
+  // dér beskriver tal/top-steder den hentede delmængde. På den kanoniske
+  // ufiltrerede side (det Google indekserer) bruges region-brede tal, så vi
+  // ikke skal server-rendere hele regionen bare for at tælle.
+  const hasActiveQuery = Boolean(resolvedQ || postalBbox || Object.keys(filters).length);
+
+  const [{ shelters: rawShelters, hasMore: initialHasMore }, facilityCounts, topRated, municipalities, regionTopPlaces] =
     await Promise.all([
       getSheltersPage(
         regionName,
@@ -168,23 +178,27 @@ export default async function DanmarkRegionPage({ params, searchParams }: PagePr
       getFacilityCountsForRegion(regionName),
       getTopRatedShelters(1, 3),
       getMunicipalitiesWithCounts(regionName),
+      hasActiveQuery ? Promise.resolve([]) : getTopPlacesForRegion(regionName, 8),
     ]);
   const initialShelters = await enrichSheltersWithGooglePhotoRef(rawShelters);
-  const placeCounts = new Map<string, number>();
-  for (const shelter of initialShelters) {
-    const place = shelter.place?.trim();
-    if (!place) continue;
-    placeCounts.set(place, (placeCounts.get(place) ?? 0) + 1);
-  }
-  const topPlaces = [...placeCounts.entries()]
-    .sort((a, b) => {
-      if (b[1] !== a[1]) return b[1] - a[1];
-      return a[0].localeCompare(b[0], "da");
-    })
-    .slice(0, 8)
-    .map(([name, count]) => ({ name, count, slug: slugifySegment(name) }));
 
-  const totalCount = initialShelters.length;
+  let topPlaces: { name: string; count: number; slug: string }[];
+  if (hasActiveQuery) {
+    const placeCounts = new Map<string, number>();
+    for (const shelter of initialShelters) {
+      const place = shelter.place?.trim();
+      if (!place) continue;
+      placeCounts.set(place, (placeCounts.get(place) ?? 0) + 1);
+    }
+    topPlaces = [...placeCounts.entries()]
+      .sort((a, b) => (b[1] !== a[1] ? b[1] - a[1] : a[0].localeCompare(b[0], "da")))
+      .slice(0, 8)
+      .map(([name, count]) => ({ name, count, slug: slugifySegment(name) }));
+  } else {
+    topPlaces = regionTopPlaces.map((p) => ({ ...p, slug: slugifySegment(p.name) }));
+  }
+
+  const totalCount = hasActiveQuery ? initialShelters.length : facilityCounts.total;
   const freeCount = facilityCounts.gratis;
   const topInRegion = topRated.find(
     (s) => (s.region ?? "").trim() === regionName
