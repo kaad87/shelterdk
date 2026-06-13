@@ -14,6 +14,7 @@ export const HUB_GROUPS: { group: string; categories: string[] }[] = [
   { group: "Vand & mad", categories: ["vandfilter", "drikkedunk", "kogeudstyr", "stormkoekken"] },
   { group: "Værktøj & udstyr", categories: ["kniv", "multitool", "rygsaek", "kikkert"] },
   { group: "Lejr & komfort", categories: ["campingstol", "campingmobler"] },
+  { group: "Tøj & lag-på-lag", categories: ["uldundertoj", "regntoj", "sokker", "fodtoj"] },
 ];
 const OTHER = "Andet";
 

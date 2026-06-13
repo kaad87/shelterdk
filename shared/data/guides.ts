@@ -324,6 +324,7 @@ Hvis du kun skal huske én ting, er det **sovegrej**. Uden god søvn bliver alt 
 Pak mindst:
 
 - **Sovepose** der passer til årstiden (tjek comfort-temperaturen) – se [vores test af de bedste soveposer](/bedste/sovepose)
+- **Uldundertøj** at sove i — se [bedste uldundertøj](/bedste/uldundertoj)
 - **Liggeunderlag** – gerne oppusteligt + evt. skumunderlag under til kulde ([bedste liggeunderlag](/bedste/liggeunderlag))
 - Evt. **pude** eller et sammenrullet trøje
 
@@ -413,7 +414,7 @@ Pak ekstra til vinter:
 
 - Varmere sovepose eller kombination af sovepose + inderpose
 - Isolerende liggeunderlag med høj R-værdi
-- Uldundertøj, varm hue og tørre sokker kun til natten
+- Uldundertøj, varm hue og tørre sokker kun til natten — se [bedste uldundertøj](/bedste/uldundertoj) og [bedste vandresokker](/bedste/vandresokker)
 - Termokande med varmt vand eller te
 - Ekstra handsker og evt. håndvarmere
 - Tørpose til tøj og elektronik

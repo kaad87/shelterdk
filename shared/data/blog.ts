@@ -954,6 +954,8 @@ Tjek vores komplette [pakkeliste](/guides/pakkeliste-til-sheltertur) og vores [b
 
 ## Tøjvalg der gør forskellen
 
+> **Se vores test:** [Bedste regntøj](/bedste/regntoj) — pakbare jakker, bukser og sæt fra 149 kr., og [bedste uldundertøj](/bedste/uldundertoj) til laget indenunder.
+
 Det vigtigste våben mod regn er det rigtige tøj. Princippet er simpelt: hold dig tør udefra og undgå at svede indefra.
 
 - **Vandtæt jakke** – vælg en med åndbart membran (Gore-Tex eller lignende). Billige regncapes holder vand ude men lukker sveden ind
