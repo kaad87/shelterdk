@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
   }
   const { data, error } = await sb
     .from("stay_guide_entries")
-    .insert({ guide_id: body.guide_id, nature_stay_id: body.nature_stay_id, rank: body.rank ?? 0 })
+    .insert({ guide_id: body.guide_id, nature_stay_id: body.nature_stay_id, rank: Number(body.rank) || 0 })
     .select()
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -51,6 +51,7 @@ export async function PATCH(req: NextRequest) {
   if (!body || typeof body.id !== "number") return NextResponse.json({ error: "id påkrævet" }, { status: 400 });
   const row: Record<string, unknown> = {};
   for (const f of ["rank", "award_label", "best_for", "editorial_note"] as const) if (f in body) row[f] = body[f];
+  if ("rank" in row) row.rank = Number(row.rank) || 0;
   const { data, error } = await sb.from("stay_guide_entries").update(row).eq("id", body.id).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ entry: data });

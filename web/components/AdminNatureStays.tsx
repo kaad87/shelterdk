@@ -95,7 +95,19 @@ export function AdminNatureStays() {
     const slug = form.slug.trim() || slugify(form.name);
     const image_urls = imgUrlsText.split(",").map((x) => x.trim()).filter(Boolean);
     const location = lat && lng ? toPointWkt(Number(lng), Number(lat)) : form.location;
-    const payload = { ...form, slug, image_urls, location };
+    // Number-inputs giver strings; tom streng → null, ellers Number (undgår
+    // "invalid input syntax for type integer" mod heltals-/numeric-kolonner).
+    const num = (v: unknown): number | null => (v === "" || v == null ? null : Number(v));
+    const payload = {
+      ...form,
+      slug,
+      image_urls,
+      location,
+      price_from: num(form.price_from),
+      capacity: num(form.capacity),
+      rating: num(form.rating),
+      sort_boost: num(form.sort_boost) ?? 0,
+    };
     const r = await authFetch("/api/admin/nature-stays", { method: "POST", body: JSON.stringify(payload) });
     const j = await r.json().catch(() => ({}));
     if (!r.ok) { setMsg(j.error ?? "Fejl ved gem."); return; }

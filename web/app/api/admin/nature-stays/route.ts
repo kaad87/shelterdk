@@ -41,6 +41,14 @@ export async function POST(req: NextRequest) {
   }
   const row: Record<string, unknown> = {};
   for (const f of FIELDS) if (f in body) row[f] = body[f];
+
+  // Robust numerik: tom streng/null → null (undgå "invalid input syntax for
+  // type integer"). Route er trust-boundary — sanitér uanset klient.
+  for (const f of ["price_from", "capacity", "rating", "sort_boost"] as const) {
+    if (f in row) row[f] = row[f] === "" || row[f] == null ? null : Number(row[f]);
+  }
+  if (row.sort_boost == null) delete row.sort_boost; // NOT NULL → brug default 0
+
   const isUpdate = typeof body.id === "number";
 
   // Håndhæv spec §1: publicering kræver billede + dokumenteret tilladelse.

@@ -77,24 +77,17 @@ drop trigger if exists stay_guides_updated_at on public.stay_guides;
 create trigger stay_guides_updated_at before update on public.stay_guides
   for each row execute function public.set_updated_at();
 
--- ── RLS (permissive — skrivning gates i app-laget via service-role) ──────
+-- ── RLS — offentlig LÆSNING; skrivning KUN via service_role (jf. 045-lockdown) ──
+-- Ingen insert/update/delete-policies → anon kan ikke skrive; service_role
+-- bypasser altid RLS, så admin-API-routes (x-admin-secret + service_role) virker.
 alter table public.nature_stays enable row level security;
 create policy "nature_stays læsbar" on public.nature_stays for select using (true);
-create policy "nature_stays insert" on public.nature_stays for insert with check (true);
-create policy "nature_stays update" on public.nature_stays for update using (true);
-create policy "nature_stays delete" on public.nature_stays for delete using (true);
 
 alter table public.stay_guides enable row level security;
 create policy "stay_guides læsbar" on public.stay_guides for select using (true);
-create policy "stay_guides insert" on public.stay_guides for insert with check (true);
-create policy "stay_guides update" on public.stay_guides for update using (true);
-create policy "stay_guides delete" on public.stay_guides for delete using (true);
 
 alter table public.stay_guide_entries enable row level security;
 create policy "stay_guide_entries læsbar" on public.stay_guide_entries for select using (true);
-create policy "stay_guide_entries insert" on public.stay_guide_entries for insert with check (true);
-create policy "stay_guide_entries update" on public.stay_guide_entries for update using (true);
-create policy "stay_guide_entries delete" on public.stay_guide_entries for delete using (true);
 
 -- ── Nærmeste publicerede stays (Plan B) — spejler get_nearby_shelters ────
 create or replace function public.get_nearby_stays(
