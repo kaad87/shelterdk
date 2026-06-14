@@ -94,7 +94,16 @@ export function trackAffiliateClick(args: {
   retailer: string;
   brand?: string;
   category?: string;
-  position: "editorial" | "product" | "pill" | "deals_widget" | "guide_overview" | "guide_table";
+  position:
+    | "editorial"
+    | "product"
+    | "pill"
+    | "deals_widget"
+    | "guide_overview"
+    | "guide_table"
+    | "naturophold_guide"
+    | "naturophold_planb"
+    | "naturophold_map";
   priceDkk?: number;
 }) {
   push("affiliate_click", {

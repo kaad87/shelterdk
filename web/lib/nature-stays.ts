@@ -1,5 +1,12 @@
+import { createClient } from "@supabase/supabase-js";
 import { slugifySegment } from "@/lib/slug";
-import { createPublicClient } from "@/utils/supabase/server-public";
+
+/** Service-role-klient til server-side læsning (offentlige sider læser via server, filtrerer status). */
+function getServiceClient() {
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
+    auth: { persistSession: false },
+  });
+}
 
 /**
  * Kurateret naturophold-/glamping-datalag (affiliate). Spejler buying_guides-
@@ -128,7 +135,7 @@ export async function getNearbyStays(
   opts: { radiusKm?: number; limit?: number } = {},
   client?: RpcRunner
 ): Promise<NearbyStay[]> {
-  const sb = client ?? (createPublicClient() as unknown as RpcRunner);
+  const sb = client ?? (getServiceClient() as unknown as RpcRunner);
   const { data, error } = await sb.rpc("get_nearby_stays", {
     p_lat: lat,
     p_lng: lng,
@@ -140,4 +147,132 @@ export async function getNearbyStays(
     return [];
   }
   return (data as NearbyStay[]) ?? [];
+}
+
+/** Entry + det fulde sted (kun publicerede steder, sorteret efter rank). */
+export interface StayEntryWithStay {
+  id: number;
+  rank: number;
+  award_label: string | null;
+  best_for: string | null;
+  editorial_note: string | null;
+  stay: NatureStay;
+}
+
+export async function getPublishedStayGuides(): Promise<StayGuide[]> {
+  const sb = getServiceClient();
+  const { data } = await sb
+    .from("stay_guides")
+    .select(STAY_GUIDE_SELECT_COLS)
+    .eq("status", "published")
+    .order("updated_at", { ascending: false });
+  return (data as StayGuide[]) ?? [];
+}
+
+export async function getPublishedStayGuideSlugs(): Promise<string[]> {
+  return (await getPublishedStayGuides()).map((g) => g.slug);
+}
+
+export async function getStayGuideBySlug(
+  slug: string
+): Promise<{ guide: StayGuide; entries: StayEntryWithStay[] } | null> {
+  const sb = getServiceClient();
+  const { data: guide } = await sb
+    .from("stay_guides")
+    .select(STAY_GUIDE_SELECT_COLS)
+    .eq("slug", slug)
+    .eq("status", "published")
+    .maybeSingle();
+  if (!guide) return null;
+
+  const { data: rawEntries } = await sb
+    .from("stay_guide_entries")
+    .select("id, rank, award_label, best_for, editorial_note, nature_stay_id")
+    .eq("guide_id", (guide as StayGuide).id);
+
+  const ids = (rawEntries ?? []).map((e) => e.nature_stay_id as number);
+  if (ids.length === 0) return { guide: guide as StayGuide, entries: [] };
+
+  // Kun publicerede steder vises offentligt (en draft-stay i en guide skjules).
+  const { data: stays } = await sb.from("nature_stays").select(STAY_SELECT_COLS).in("id", ids).eq("status", "published");
+  const byId = new Map(((stays ?? []) as NatureStay[]).map((s) => [s.id, s]));
+
+  const entries: StayEntryWithStay[] = (rawEntries ?? [])
+    .map((e) => {
+      const stay = byId.get(e.nature_stay_id as number);
+      if (!stay) return null;
+      return {
+        id: e.id as number,
+        rank: e.rank as number,
+        award_label: (e.award_label as string | null) ?? null,
+        best_for: (e.best_for as string | null) ?? null,
+        editorial_note: (e.editorial_note as string | null) ?? null,
+        stay,
+      } satisfies StayEntryWithStay;
+    })
+    .filter((e): e is StayEntryWithStay => e !== null)
+    .sort((a, b) => a.rank - b.rank);
+
+  return { guide: guide as StayGuide, entries };
+}
+
+export interface StayGuideTeaser {
+  topStayName: string | null;
+  minPrice: number | null;
+  count: number;
+}
+
+/** Testvinder + laveste pris pr. guide til hub-kortene (én batch-query). */
+export async function getStayGuideTeasers(guideIds: number[]): Promise<Map<number, StayGuideTeaser>> {
+  const out = new Map<number, StayGuideTeaser>();
+  if (guideIds.length === 0) return out;
+  const sb = getServiceClient();
+  const { data: entries } = await sb
+    .from("stay_guide_entries")
+    .select("guide_id, rank, nature_stay_id")
+    .in("guide_id", guideIds);
+  if (!entries || entries.length === 0) return out;
+  const ids = [...new Set(entries.map((e) => e.nature_stay_id as number))];
+  const { data: stays } = await sb
+    .from("nature_stays")
+    .select("id, name, price_from, status")
+    .in("id", ids)
+    .eq("status", "published");
+  const byId = new Map((stays ?? []).map((s) => [s.id as number, s]));
+  for (const gid of guideIds) {
+    const ge = entries.filter((e) => e.guide_id === gid && byId.has(e.nature_stay_id as number)).sort((a, b) => (a.rank as number) - (b.rank as number));
+    const top = ge[0] ? byId.get(ge[0].nature_stay_id as number) : null;
+    const prices = ge.map((e) => byId.get(e.nature_stay_id as number)?.price_from).filter((n): n is number => typeof n === "number");
+    out.set(gid, { topStayName: (top?.name as string) ?? null, minPrice: prices.length ? Math.min(...prices) : null, count: ge.length });
+  }
+  return out;
+}
+
+/** Slim pins til kortet (Fase 2C) — kun publicerede steder med gyldig location. */
+export interface StayPin {
+  id: number;
+  slug: string;
+  name: string;
+  type: string;
+  lat: number;
+  lng: number;
+  price_from: number | null;
+  image_url: string | null;
+  booking_url: string | null;
+}
+
+export async function getPublishedStayPins(): Promise<StayPin[]> {
+  const sb = getServiceClient();
+  const { data } = await sb
+    .from("nature_stays")
+    .select("id, slug, name, type, location, price_from, image_url, booking_url")
+    .eq("status", "published")
+    .not("location", "is", null);
+  const out: StayPin[] = [];
+  for (const s of (data ?? []) as Array<{ id: number; slug: string; name: string; type: string; location: string | null; price_from: number | null; image_url: string | null; booking_url: string | null }>) {
+    const m = s.location?.match(/^POINT\(\s*(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)\s*\)/i);
+    if (!m) continue;
+    out.push({ id: s.id, slug: s.slug, name: s.name, type: s.type, lng: Number(m[1]), lat: Number(m[2]), price_from: s.price_from, image_url: s.image_url, booking_url: s.booking_url });
+  }
+  return out;
 }
