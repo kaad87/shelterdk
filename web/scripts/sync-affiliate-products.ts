@@ -162,6 +162,120 @@ async function syncRetailer(
   };
 }
 
+/**
+ * Freshness-motor: bump kun en købsguides `updated_at`, når et af dens
+ * produkter FAKTISK har ændret pris/lager i denne sync — så sitemap-lastmod og
+ * JSON-LD dateModified afspejler reelle ændringer (ikke daglig inflation).
+ * Helt selvstændig og defensiv: en fejl her må aldrig vælte selve synken.
+ */
+interface GuideProductState {
+  signatures: Map<string, string>;
+  productToGuides: Map<string, Set<number>>;
+}
+
+function productSignature(p: {
+  price: number | null;
+  price_original: number | null;
+  discount_pct: number | null;
+  in_stock: boolean | null;
+}): string {
+  return `${p.price}|${p.price_original}|${p.discount_pct}|${p.in_stock}`;
+}
+
+async function captureGuideProductState(
+  supabase: SupabaseClient
+): Promise<GuideProductState | null> {
+  try {
+    const { data: guides } = await supabase
+      .from("buying_guides")
+      .select("id")
+      .eq("status", "published");
+    const guideIds = (guides ?? []).map((g: { id: number }) => g.id);
+    if (!guideIds.length) return null;
+
+    const { data: entries } = await supabase
+      .from("buying_guide_entries")
+      .select("guide_id, affiliate_product_id")
+      .in("guide_id", guideIds);
+
+    const productToGuides = new Map<string, Set<number>>();
+    for (const e of (entries ?? []) as Array<{
+      guide_id: number;
+      affiliate_product_id: string | null;
+    }>) {
+      if (!e.affiliate_product_id) continue;
+      const set = productToGuides.get(e.affiliate_product_id) ?? new Set<number>();
+      set.add(e.guide_id);
+      productToGuides.set(e.affiliate_product_id, set);
+    }
+
+    const ids = [...productToGuides.keys()];
+    const signatures = new Map<string, string>();
+    if (ids.length) {
+      const { data: prods } = await supabase
+        .from("affiliate_products")
+        .select("id, price, price_original, discount_pct, in_stock")
+        .in("id", ids);
+      for (const p of (prods ?? []) as Array<
+        { id: string } & Parameters<typeof productSignature>[0]
+      >) {
+        signatures.set(p.id, productSignature(p));
+      }
+    }
+    return { signatures, productToGuides };
+  } catch (err) {
+    console.warn(
+      "guide-freshness: capture skipped:",
+      err instanceof Error ? err.message : String(err)
+    );
+    return null;
+  }
+}
+
+async function bumpChangedGuides(
+  supabase: SupabaseClient,
+  before: GuideProductState | null
+): Promise<void> {
+  if (!before) return;
+  try {
+    const ids = [...before.productToGuides.keys()];
+    if (!ids.length) return;
+
+    const { data: prods } = await supabase
+      .from("affiliate_products")
+      .select("id, price, price_original, discount_pct, in_stock")
+      .in("id", ids);
+
+    const changedGuides = new Set<number>();
+    for (const p of (prods ?? []) as Array<
+      { id: string } & Parameters<typeof productSignature>[0]
+    >) {
+      const prev = before.signatures.get(p.id);
+      if (prev !== undefined && prev !== productSignature(p)) {
+        for (const gid of before.productToGuides.get(p.id) ?? []) changedGuides.add(gid);
+      }
+    }
+
+    if (!changedGuides.size) {
+      console.log("guide-freshness: ingen guide-produkter ændret");
+      return;
+    }
+    const { error } = await supabase
+      .from("buying_guides")
+      .update({ updated_at: new Date().toISOString() })
+      .in("id", [...changedGuides]);
+    if (error) throw new Error(error.message);
+    console.log(
+      `guide-freshness: bumpede ${changedGuides.size} guide(r) med reelle pris/lager-ændringer`
+    );
+  } catch (err) {
+    console.warn(
+      "guide-freshness: bump skipped:",
+      err instanceof Error ? err.message : String(err)
+    );
+  }
+}
+
 async function markStaleProducts(supabase: SupabaseClient) {
   const sevenDaysAgo = new Date(
     Date.now() - 7 * 24 * 60 * 60 * 1000
@@ -195,6 +309,9 @@ export async function runSync(): Promise<void> {
 
   let total = 0;
   try {
+    // Snapshot guide-produkternes pris/lager FØR feeds opdaterer dem.
+    const guideStateBefore = await captureGuideProductState(supabase);
+
     for (const { retailer, envVar } of FEEDS) {
       const url = process.env[envVar];
       if (!url) {
@@ -206,6 +323,9 @@ export async function runSync(): Promise<void> {
     }
 
     await markStaleProducts(supabase);
+
+    // Bump kun guider hvis et produkts pris/lager reelt ændrede sig.
+    await bumpChangedGuides(supabase, guideStateBefore);
 
     if (runId != null) {
       await supabase

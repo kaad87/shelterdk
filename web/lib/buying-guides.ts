@@ -51,7 +51,7 @@ export function rankGuideEntries(entries: GuideEntryWithProduct[]): GuideEntryWi
 }
 
 const PRODUCT_COLS =
-  "id, retailer, brand, product_name, description, category_mapped, price, price_original, discount_pct, in_stock, stock_count, image_url, affiliate_url, is_blocked, shipping_cost, updated_at, specs";
+  "id, retailer, brand, product_name, description, category_mapped, price, price_original, discount_pct, in_stock, stock_count, image_url, affiliate_url, is_blocked, shipping_cost, updated_at, last_seen_at, specs";
 
 export async function getPublishedGuides(): Promise<BuyingGuide[]> {
   const sb = getServiceClient();

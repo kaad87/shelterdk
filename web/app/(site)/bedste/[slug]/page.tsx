@@ -13,6 +13,7 @@ import { QuickAnswer } from "@/components/seo/QuickAnswer";
 import { formatScore } from "@/lib/buying-guides-score";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { renderContent } from "@/lib/renderContent";
+import { newestIsoDate } from "@/lib/content-dates";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
@@ -76,15 +77,21 @@ export default async function BuyingGuidePage({
     : guide.intro ?? "";
   const body = guide.body_md ? await renderContent(guide.body_md) : null;
 
-  // Priser/lager synces dagligt — sig det højt (tillid + friskhed).
+  // Priser/lager synces dagligt — sig det højt (tillid + friskhed). last_seen_at
+  // sættes på hvert produkt ved hver feed-sync = den ærlige "tjekket"-dato.
   const newestPriceCheck = entries
-    .map((e) => e.product.updated_at)
+    .map((e) => e.product.last_seen_at)
     .filter((d): d is string => Boolean(d))
     .sort()
     .pop();
   const priceCheckedLabel = newestPriceCheck
     ? new Intl.DateTimeFormat("da-DK", { day: "numeric", month: "long" }).format(new Date(newestPriceCheck))
     : null;
+
+  // dateModified = nyeste af redaktionel review og guidens updated_at (som
+  // den natlige sync bumper, når et produkts pris/lager faktisk ændrer sig).
+  const guideDateModified =
+    newestIsoDate(guide.last_reviewed_at, guide.updated_at) ?? guide.updated_at;
 
   return (
     <>
@@ -154,7 +161,7 @@ export default async function BuyingGuidePage({
                 heading="Hurtigt svar"
                 answer={answerText}
                 datePublished={guide.created_at}
-                dateModified={guide.last_reviewed_at ?? guide.updated_at}
+                dateModified={guideDateModified}
                 authorName={guide.author}
               />
             </div>

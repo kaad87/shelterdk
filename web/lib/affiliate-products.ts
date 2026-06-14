@@ -24,6 +24,8 @@ export interface AffiliateProduct {
   is_blocked: boolean;
   shipping_cost: number | null;
   updated_at?: string;
+  /** Sættes til now() ved hver feed-sync — den ærlige "pris/lager tjekket"-dato. */
+  last_seen_at?: string;
 }
 
 const SELECT_COLUMNS =
