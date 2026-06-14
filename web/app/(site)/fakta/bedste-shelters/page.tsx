@@ -54,7 +54,7 @@ export default async function BedsteSheltersPage() {
         { label: "Sådan vælger du shelter", href: "/guides/saadan-finder-du-det-perfekte-shelter" },
       ]}
       datasetName="Bedste shelters i Danmark - Ranking"
-      datasetDescription="Top-rated shelters baseret p\u00e5 Google-anmeldelser"
+      datasetDescription="Top-rated shelters baseret på Google-anmeldelser"
       canonicalPath={CANONICAL}
       variableMeasured={["Google rating", "review count"]}
     />

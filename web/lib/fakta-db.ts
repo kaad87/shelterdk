@@ -57,6 +57,29 @@ export async function getTotalShelterCount(): Promise<number> {
   return count ?? 0;
 }
 
+/**
+ * Nyeste `updated_at` på tværs af alle shelters — bruges som reel "data
+ * opdateret"-dato for fakta-statistik (freshness-signal til både brugere og
+ * Google), i stedet for sidens fil-mtime der blot er deploy-tidspunktet.
+ * Valgfrit region-filter til region-/områdesider.
+ */
+export async function getNewestShelterUpdatedAt(region?: string): Promise<string | undefined> {
+  const supabase = createPublicClient();
+  let query = supabase
+    .from("shelters")
+    .select("updated_at")
+    .is("duplicate_of_shelter_id", null)
+    .order("updated_at", { ascending: false, nullsFirst: false })
+    .limit(1);
+  if (region) query = query.eq("region", region);
+  const { data, error } = await query.maybeSingle();
+  if (error) {
+    console.error("fakta-db: getNewestShelterUpdatedAt", error);
+    return undefined;
+  }
+  return data?.updated_at ?? undefined;
+}
+
 /** Shelter count per region. Returns sorted array of { region, count }. */
 export async function getCountPerRegion(): Promise<
   { region: string; count: number }[]

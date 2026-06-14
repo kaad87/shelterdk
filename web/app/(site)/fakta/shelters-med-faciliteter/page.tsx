@@ -27,7 +27,7 @@ export default async function FaciliteterPage() {
 
   return (
     <FaktaPage
-      title="Faciliteter p\u00e5 shelters i Danmark"
+      title="Faciliteter på shelters i Danmark"
       heroStat={`${facilities.toilet} ud af ${total} shelters har toilet`}
       summary={`Shelter-faciliteter varierer meget i Danmark. ${facilities.toilet} shelters har toilet, ${facilities.water} har vand, ${facilities.baalplads} har b\u00e5lplads, og ${facilities.hund} tillader hund. ${facilities.bruser} har bruser og ${facilities.strand} ligger n\u00e6r strand.`}
       breakdownTitle="Faciliteter i tal"
@@ -41,7 +41,7 @@ export default async function FaciliteterPage() {
         { label: "Kan bookes", value: facilities.bookbar, href: "/shelter-booking" },
         { label: "Gratis", value: facilities.gratis },
       ]}
-      topSheltersTitle="H\u00f8jest bed\u00f8mte shelters med faciliteter"
+      topSheltersTitle="Højest bedømte shelters med faciliteter"
       topShelters={topShelters}
       faqItems={[
         { question: "Hvilke faciliteter har shelters i Danmark?", answer: `De mest almindelige faciliteter er toilet (${facilities.toilet} shelters), drikkevand (${facilities.water}), b\u00e5lplads (${facilities.baalplads}) og hund tilladt (${facilities.hund}).` },

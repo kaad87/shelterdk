@@ -14,7 +14,7 @@ import { buildQuickAnswer } from "@/lib/quick-answer";
 import { SoegContent } from "@/components/SoegContent";
 import { getRegionContent } from "@/data/region-content";
 import { DataSummaryBlock } from "@/components/DataSummaryBlock";
-import { getFacilityCountsForRegion, getTopRatedShelters, getTopPlacesForRegion } from "@/lib/fakta-db";
+import { getFacilityCountsForRegion, getTopRatedShelters, getTopPlacesForRegion, getNewestShelterUpdatedAt } from "@/lib/fakta-db";
 import { generateRegionPageFaq } from "@/lib/fakta-faq";
 import { faqToJsonLd } from "@/lib/faq";
 import { FILTER_CONFIGS, REGION_SLUGS, REGION_NAMES } from "@/lib/cross-page-config";
@@ -165,7 +165,7 @@ export default async function DanmarkRegionPage({ params, searchParams }: PagePr
   // ikke skal server-rendere hele regionen bare for at tælle.
   const hasActiveQuery = Boolean(resolvedQ || postalBbox || Object.keys(filters).length);
 
-  const [{ shelters: rawShelters, hasMore: initialHasMore }, facilityCounts, topRated, municipalities, regionTopPlaces] =
+  const [{ shelters: rawShelters, hasMore: initialHasMore }, facilityCounts, topRated, municipalities, regionTopPlaces, regionDataUpdatedAt] =
     await Promise.all([
       getSheltersPage(
         regionName,
@@ -179,6 +179,7 @@ export default async function DanmarkRegionPage({ params, searchParams }: PagePr
       getTopRatedShelters(1, 3),
       getMunicipalitiesWithCounts(regionName),
       hasActiveQuery ? Promise.resolve([]) : getTopPlacesForRegion(regionName, 8),
+      getNewestShelterUpdatedAt(regionName),
     ]);
   const initialShelters = await enrichSheltersWithGooglePhotoRef(rawShelters);
 
@@ -239,6 +240,8 @@ export default async function DanmarkRegionPage({ params, searchParams }: PagePr
       <ShelterListSchema
         name={`Shelters ${prep} ${regionName}`}
         shelters={initialShelters}
+        url={`https://shelterdk.dk/danmark/${childRegionSlug}`}
+        dateModified={regionDataUpdatedAt}
         hrefFn={(s) => {
           const sh = initialShelters.find((x) => x.id === s.id);
           const m = sh?.kommune ? slugifySegment(sh.kommune) : NO_KOMMUNE_SLUG;

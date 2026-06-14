@@ -47,7 +47,7 @@ export default async function SheltersIDanmarkPage() {
         value: r.count,
         href: `/danmark/${slugifySegment(r.region)}`,
       }))}
-      topSheltersTitle="H\u00f8jest bed\u00f8mte shelters i Danmark"
+      topSheltersTitle="Højest bedømte shelters i Danmark"
       topShelters={topShelters}
       faqItems={[
         { question: "Hvor mange shelters er der i Danmark?", answer: `Der er ${total} shelters registreret i Danmark p\u00e5 ShelterDK. Data stammer fra GeoFA, Naturstyrelsen og udinaturen.dk.` },

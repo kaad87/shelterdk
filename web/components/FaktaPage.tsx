@@ -6,6 +6,7 @@ import { DatasetSchema } from "@/components/seo/DatasetSchema";
 import { ShelterCard } from "@/components/ShelterCard";
 import { InstagramFeed } from "@/components/InstagramFeed";
 import { getSitePageModified } from "@/lib/content-dates";
+import { getNewestShelterUpdatedAt } from "@/lib/fakta-db";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import { slugifySegment } from "@/lib/slug";
 import type { Shelter } from "@/types/shelter";
@@ -43,10 +44,18 @@ interface FaktaPageProps {
   datasetDescription: string;
   canonicalPath: string;
   variableMeasured?: string[];
+  /** Reel "data opdateret"-dato (ISO). Udelades → hentes som nyeste shelter-updated_at. */
+  dataUpdatedAt?: string;
   children?: React.ReactNode;
 }
 
-export function FaktaPage({
+function formatDataDate(iso: string): string | null {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleDateString("da-DK", { day: "numeric", month: "long", year: "numeric" });
+}
+
+export async function FaktaPage({
   title,
   heroStat,
   summary,
@@ -60,9 +69,14 @@ export function FaktaPage({
   datasetDescription,
   canonicalPath,
   variableMeasured,
+  dataUpdatedAt,
   children,
 }: FaktaPageProps) {
-  const datasetDateModified = getSitePageModified(canonicalPath);
+  // Reel datakilde-dato (nyeste shelter-opdatering) frem for sidens fil-mtime.
+  const resolvedDataDate =
+    dataUpdatedAt ?? (await getNewestShelterUpdatedAt()) ?? getSitePageModified(canonicalPath);
+  const datasetDateModified = resolvedDataDate;
+  const dataDateLabel = resolvedDataDate ? formatDataDate(resolvedDataDate) : null;
 
   return (
     <>
@@ -100,6 +114,12 @@ export function FaktaPage({
             </h1>
             <p className="text-accent font-semibold text-xl mb-3">{heroStat}</p>
             <p className="text-primary/80 text-lg leading-relaxed">{summary}</p>
+            {dataDateLabel && (
+              <p className="mt-3 text-sm text-primary/55">
+                <time dateTime={resolvedDataDate!.slice(0, 10)}>Tal opdateret {dataDateLabel}</time>
+                {" · "}opdateres dagligt
+              </p>
+            )}
           </header>
 
           {/* Breakdown table */}

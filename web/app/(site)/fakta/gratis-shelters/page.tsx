@@ -42,7 +42,7 @@ export default async function GratisSheltersPage() {
         value: r.count,
         href: `/danmark/${slugifySegment(r.region)}`,
       }))}
-      topSheltersTitle="H\u00f8jest bed\u00f8mte gratis shelters"
+      topSheltersTitle="Højest bedømte gratis shelters"
       topShelters={topShelters}
       faqItems={[
         { question: "Er shelters i Danmark gratis?", answer: `Ja, ${facilities.gratis} ud af ${total} shelters (${freePercent}%) er helt gratis. De fungerer efter f\u00f8rst-til-m\u00f8lle-princippet.` },

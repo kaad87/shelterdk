@@ -156,6 +156,7 @@ Gratis shelters er en fantastisk ressource for alle, der vil opleve dansk natur 
     excerpt:
       "En sammenligning af shelter og teltplads – fordele, ulemper og hvornår du bør vælge hvad.",
     date: "2026-02-28",
+    updatedAt: "2026-06-14",
     category: "Tips",
     coverImage:
       "https://images.unsplash.com/photo-1504851149312-7a075b496cc7?w=1200&q=80&auto=format&fit=crop",
@@ -194,7 +195,7 @@ Telt har også styrker, som et shelter ikke kan matche:
 
 - **Privatliv** – du har dit eget rum og behøver ikke dele med fremmede
 - **Fleksibilitet** – du er ikke afhængig af, om et shelter er ledigt
-- **Insektbeskyttelse** – et telt med myggenet holder insekter ude, hvilket kan være en stor fordel om sommeren
+- **Insektbeskyttelse** – et telt med myggenet holder insekter ude, hvilket kan være en stor fordel om sommeren. Sover du i åbent shelter, kan et [myggenet til hoved og soveplads](/bedste/myggenet) give samme ro
 - **Temperaturregulering** – et lukket telt holder bedre på varmen i kolde nætter
 - **Flere placeringsmuligheder** – du kan bruge enhver udpeget teltplads
 
@@ -259,6 +260,7 @@ For begyndere og dem, der vil rejse let, er shelters det oplagte valg. De giver 
     excerpt:
       "Vores bud på de 10 bedste shelters i Danmark – fra kyst til skov og alt derimellem.",
     date: "2026-03-01",
+    updatedAt: "2026-06-14",
     category: "Inspiration",
     coverImage:
       "https://mapcentia-www.s3-eu-west-1.amazonaws.com/fkg/1600/e60edff5-ba5e-4437-aa63-0c3a90b567ce.jpg",
@@ -325,7 +327,7 @@ De bedste shelters kombinerer flere af disse faktorer og giver en samlet oplevel
 
 Vil du dykke ned i et bestemt område, har vi dedikerede oversigter med kort og alle pladser: se fx [Bornholm](/omraade/bornholm), [Vadehavet](/omraade/vadehavet) eller hele regionsoversigten under [Danmark](/danmark). Hver side viser shelters med faciliteter, billeder og bookingmuligheder.
 
-Brug vores <a href="/soeg">sheltersøgning</a> til at finde shelters i alle dele af Danmark. Filtrér efter region, faciliteter og tilgængelighed. Læs også vores <a href="/guides/shelter-for-begyndere-forste-tur">begynderguide</a>, hvis du er ny i shelterverdenen, eller lad dig inspirere af vores <a href="/blog/de-bedste-regioner">regionguide</a> for et dybere indblik i hvert område.
+Brug vores <a href="/soeg">sheltersøgning</a> til at finde shelters i alle dele af Danmark. Filtrér efter region, faciliteter og tilgængelighed. Læs også vores <a href="/guides/shelter-for-begyndere-forste-tur">begynderguide</a>, hvis du er ny i shelterverdenen, eller lad dig inspirere af vores <a href="/blog/de-bedste-regioner">regionguide</a> for et dybere indblik i hvert område. Skal grejet klargøres før turen, så start med vores <a href="/bedste">købsguider til shelterudstyr</a>.
 
 Planlæg din tur med tid og omhu, og husk at de mest populære shelters kan være optaget i weekender og ferier. Book i forvejen, hvis muligheden er der, eller vælg at tage afsted midt i ugen for en mere fredelig oplevelse.`,
     faq: [
@@ -347,6 +349,7 @@ Planlæg din tur med tid og omhu, og husk at de mest populære shelters kan vær
     excerpt:
       "Alt du skal vide om shelterture i efteråret: vejr, udstyr, stemning og de bedste oplevelser.",
     date: "2026-01-20",
+    updatedAt: "2026-06-14",
     category: "Sæson",
     coverImage:
       "https://mapcentia-www.s3-eu-west-1.amazonaws.com/fkg/1600/6c9903c4-1189-4b5a-a750-159666ee1f1a.jpg",
