@@ -14,6 +14,7 @@ import { InstagramFeed } from "@/components/InstagramFeed";
 import NewsletterSignup from "@/components/NewsletterSignup";
 import { MapComponent } from "@/components/MapComponent";
 import { toMapShelters } from "@/lib/map-shelter";
+import { getPublishedStayPins } from "@/lib/nature-stays";
 import { WeekendCTACard } from "@/components/WeekendCTACard";
 import { NyeSheltersStrip } from "@/components/NyeSheltersStrip";
 import { createPublicClient } from "@/utils/supabase/server-public";
@@ -280,6 +281,10 @@ export default async function HomePage() {
   // Kortet må gerne have flere pins fra start, så man ser et mere fyldigt Danmarkskort.
   const mapShelters: Shelter[] = primaryForMap.length > 0 ? primaryForMap : featuredShelters;
 
+  // Premium guld-markører: publicerede naturophold (få, nationalt). Tom indtil
+  // der er data → ingen visuel ændring på kortet før da.
+  const stayPins = await getPublishedStayPins().catch(() => []);
+
   // Round count to nearest 100 for trust counter; fallback to 800 if zero.
   const shelterCount = shelterCountRaw > 0 ? Math.round(shelterCountRaw / 100) * 100 : 800;
 
@@ -516,7 +521,7 @@ export default async function HomePage() {
           </h2>
           <figure className="rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[320px] sm:min-h-[400px] md:min-h-[560px] h-[60vh] sm:h-[70vh] md:h-[75vh] max-h-[960px]" aria-label="Interaktivt kort med shelters">
             <Suspense fallback={<div className="h-full w-full animate-pulse bg-primary/5" />}>
-              <MapComponent shelters={toMapShelters(mapShelters)} className="w-full h-full" />
+              <MapComponent shelters={toMapShelters(mapShelters)} stays={stayPins} className="w-full h-full" />
             </Suspense>
           </figure>
           <div className="mt-5 text-center">

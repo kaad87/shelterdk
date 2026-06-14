@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useMemo } from "react";
 import type { MapShelter } from "@/lib/map-shelter";
+import type { StayPin } from "@/lib/nature-stays";
 import { getLocationCoords } from "@/lib/shelter-detail";
 import { slugifySegment } from "@/lib/slug";
 
@@ -135,6 +136,18 @@ const MapInner = dynamic(
       iconAnchor: [12, 41],
     });
 
+    // Premium guld-markør for betalte naturophold (glamping). divIcon (ingen
+    // ekstra asset) — guld-cirkel m. hvid diamant, så den skiller sig tydeligt
+    // ud fra de grå shelter-pins.
+    const stayIcon = L.divIcon({
+      html:
+        '<div style="width:26px;height:26px;border-radius:9999px;background:#EF9F27;border:2.5px solid #854F0B;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;">' +
+        '<div style="width:9px;height:9px;background:#fff;transform:rotate(45deg);"></div></div>',
+      className: "stay-marker",
+      iconSize: L.point(26, 26),
+      iconAnchor: L.point(13, 13),
+    });
+
     function FitBounds({
       items,
       fixedBounds,
@@ -248,6 +261,7 @@ const MapInner = dynamic(
 
     return function Inner({
       sheltersWithCoords,
+      stays,
       onBoundsChange,
       initialCenter,
       initialZoom,
@@ -257,6 +271,7 @@ const MapInner = dynamic(
       reportBoundsOnMount,
     }: {
       sheltersWithCoords: ShelterWithCoords[];
+      stays?: StayPin[];
       onBoundsChange?: (bounds: MapBounds) => void;
       initialCenter?: [number, number];
       initialZoom?: number;
@@ -352,6 +367,33 @@ const MapInner = dynamic(
             </Marker>
           ))}
           </ClusterWrapper>
+          {(stays ?? []).map((s) => (
+            <Marker key={`stay-${s.id}`} position={[s.lat, s.lng]} icon={stayIcon}>
+              <Popup closeButton closeOnEscapeKey autoClose>
+                <div className="p-1 min-w-[180px]">
+                  {isValidImageUrl(s.image_url) && (
+                    <div className="w-full aspect-video rounded overflow-hidden bg-primary/10 mb-2 relative">
+                      <Image src={(s.image_url || "").trim()} alt={`Billede af ${s.name}`} width={240} height={135} className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <p className="font-semibold text-primary">{s.name}</p>
+                  {typeof s.price_from === "number" && (
+                    <p className="text-sm text-primary/70 mt-0.5">Glamping · fra {s.price_from} kr/nat</p>
+                  )}
+                  {s.booking_url && (
+                    <a
+                      href={s.booking_url}
+                      target="_blank"
+                      rel="sponsored nofollow noopener"
+                      className="mt-2 inline-block px-3 py-1.5 text-sm font-medium text-white bg-accent rounded-lg hover:opacity-90"
+                    >
+                      Se & book
+                    </a>
+                  )}
+                </div>
+              </Popup>
+            </Marker>
+          ))}
         </MapContainer>
       );
     };
@@ -361,6 +403,8 @@ const MapInner = dynamic(
 
 interface ShelterMapProps {
   shelters: MapShelter[];
+  /** Premium guld-markører for betalte naturophold (glamping). Default: ingen. */
+  stays?: StayPin[];
   className?: string;
   /** Kaldes når brugeren pan/zoomer – bruges til at hente shelters i det synlige område. */
   onBoundsChange?: (bounds: MapBounds) => void;
@@ -380,6 +424,7 @@ interface ShelterMapProps {
 
 export function ShelterMap({
   shelters,
+  stays,
   className = "",
   onBoundsChange,
   initialRegion,
@@ -428,6 +473,7 @@ export function ShelterMap({
     <div className={wrapperClass}>
       <MapInner
         sheltersWithCoords={withCoords}
+        stays={stays}
         onBoundsChange={onBoundsChange}
         initialCenter={initialCenter}
         initialZoom={initialZoom}
