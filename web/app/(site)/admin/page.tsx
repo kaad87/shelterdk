@@ -104,6 +104,18 @@ const NAV_GROUPS: AdminNavGroup[] = [
         title: "Købsguider",
         desc: "Byg 'bedste X'-guider + berig produkt-specs",
       },
+      {
+        href: "/admin/naturophold",
+        icon: Tent,
+        title: "Naturophold (glamping)",
+        desc: "Kuratér betalte glamping-/naturophold (affiliate)",
+      },
+      {
+        href: "/admin/naturophold-guider",
+        icon: Tent,
+        title: "Naturophold-guider",
+        desc: "Byg glamping-guider af kuraterede naturophold",
+      },
     ],
   },
   {
