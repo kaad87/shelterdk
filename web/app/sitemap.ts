@@ -17,6 +17,7 @@ import {
 import { getFilterRegionCount } from "@/lib/fakta-db";
 import { getGuideCategories, getGuides } from "@/data/guides";
 import { getPublishedGuides } from "@/lib/buying-guides";
+import { getPublishedStayGuides } from "@/lib/nature-stays";
 import { SEARCH_SYNONYMS } from "@/lib/search-synonyms";
 import { slugifySegment } from "@/lib/slug";
 import type { CuratedRouteIndex } from "@/types/curated-route";
@@ -102,6 +103,7 @@ const STATIC_PAGES: Array<{
   { path: "/turvenner", source: "app/(site)/turvenner/page.tsx", changeFrequency: "weekly", priority: 0.6 },
   { path: "/tilbud", source: "app/(site)/tilbud/page.tsx", changeFrequency: "daily", priority: 0.7 },
   { path: "/bedste", source: "app/(site)/bedste/page.tsx", changeFrequency: "weekly", priority: 0.75 },
+  { path: "/naturophold", source: "app/(site)/naturophold/page.tsx", changeFrequency: "weekly", priority: 0.72 },
   { path: "/saadan-vurderer-vi", source: "app/(site)/saadan-vurderer-vi/page.tsx", changeFrequency: "monthly", priority: 0.3 },
   { path: "/annoncer-og-partnere", source: "app/(site)/annoncer-og-partnere/page.tsx", changeFrequency: "monthly", priority: 0.3 },
 ];
@@ -488,6 +490,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const buyingGuides = await getPublishedGuides();
   for (const g of buyingGuides) {
     entries.push(entry(`${BASE_URL}/bedste/${g.slug}`, "weekly", 0.7, g.updated_at));
+  }
+
+  // Naturophold/glamping-guider (/naturophold/[slug]) — publicerede.
+  const stayGuides = await getPublishedStayGuides();
+  for (const g of stayGuides) {
+    entries.push(entry(`${BASE_URL}/naturophold/${g.slug}`, "weekly", 0.7, g.updated_at));
   }
 
   for (const category of getGuideCategories()) {
