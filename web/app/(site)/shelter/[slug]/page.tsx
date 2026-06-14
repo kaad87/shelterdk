@@ -39,6 +39,7 @@ import { ShelterSchema } from "@/components/seo/ShelterSchema";
 import { getRoutesForShelter } from "@/lib/shelter-routes";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { NearbySheltersWithinRadius } from "@/components/NearbySheltersWithinRadius";
+import { NearbyStays } from "@/components/naturophold/NearbyStays";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -307,6 +308,9 @@ export default async function ShelterPage({ params }: PageProps) {
           limit={5}
           coords={coords}
         />
+      </Suspense>
+      <Suspense fallback={null}>
+        <NearbyStays coords={coords ? { lat: coords.lat, lon: coords.lon } : null} />
       </Suspense>
     </>
   );

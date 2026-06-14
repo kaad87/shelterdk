@@ -47,6 +47,7 @@ import { ShelterSchema } from "@/components/seo/ShelterSchema";
 import { getRoutesForShelter } from "@/lib/shelter-routes";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { NearbySheltersWithinRadius } from "@/components/NearbySheltersWithinRadius";
+import { NearbyStays } from "@/components/naturophold/NearbyStays";
 import { listBookableSheltersByShelterDbId } from "@/lib/booking-db";
 
 interface PageProps {
@@ -299,6 +300,9 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
           limit={5}
           coords={coords}
         />
+      </Suspense>
+      <Suspense fallback={null}>
+        <NearbyStays coords={coords ? { lat: coords.lat, lon: coords.lon } : null} />
       </Suspense>
     </>
   );
