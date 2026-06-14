@@ -1,4 +1,5 @@
 import { slugifySegment } from "@/lib/slug";
+import { createPublicClient } from "@/utils/supabase/server-public";
 
 /**
  * Kurateret naturophold-/glamping-datalag (affiliate). Spejler buying_guides-
@@ -111,4 +112,32 @@ export function stayDisclosure(source: StayLinkSource): string {
 /** Et sted må kun publiceres med billede OG dokumenteret billedtilladelse (spec §1). */
 export function canPublishStay(stay: Pick<NatureStay, "image_url" | "image_permission">): boolean {
   return Boolean(stay.image_url && stay.image_url.trim() && stay.image_permission && stay.image_permission.trim());
+}
+
+interface RpcRunner {
+  rpc(fn: string, args: Record<string, unknown>): Promise<{ data: unknown; error: unknown }>;
+}
+
+/**
+ * De nærmeste PUBLICEREDE naturophold inden for radius af et punkt (Plan B).
+ * Kalder PostGIS-RPC'en get_nearby_stays. Klient kan injiceres (test).
+ */
+export async function getNearbyStays(
+  lat: number,
+  lng: number,
+  opts: { radiusKm?: number; limit?: number } = {},
+  client?: RpcRunner
+): Promise<NearbyStay[]> {
+  const sb = client ?? (createPublicClient() as unknown as RpcRunner);
+  const { data, error } = await sb.rpc("get_nearby_stays", {
+    p_lat: lat,
+    p_lng: lng,
+    p_radius_km: opts.radiusKm ?? 25,
+    p_limit: opts.limit ?? 3,
+  });
+  if (error) {
+    console.error("getNearbyStays", error);
+    return [];
+  }
+  return (data as NearbyStay[]) ?? [];
 }
