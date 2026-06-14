@@ -110,6 +110,12 @@ const NAV_GROUPS: AdminNavGroup[] = [
         title: "Naturophold (glamping)",
         desc: "Kuratér betalte glamping-/naturophold (affiliate)",
       },
+      {
+        href: "/admin/naturophold-guider",
+        icon: Tent,
+        title: "Naturophold-guider",
+        desc: "Byg glamping-guider af kuraterede naturophold",
+      },
     ],
   },
   {
