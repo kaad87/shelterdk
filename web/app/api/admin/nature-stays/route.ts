@@ -49,6 +49,29 @@ export async function POST(req: NextRequest) {
   }
   if (row.sort_boost == null) delete row.sort_boost; // NOT NULL → brug default 0
 
+  // Validér location strengt: ét ugyldigt WKT (fx 'POINT(NaN NaN)') ville få
+  // ST_GeomFromText i get_nearby_stays til at kaste for ALLE rækker → Plan B
+  // nede globalt. Accepter kun 'POINT(lng lat)' med tal i gyldige intervaller.
+  if ("location" in row) {
+    const loc = row.location;
+    if (loc === "" || loc == null) {
+      row.location = null;
+    } else if (typeof loc === "string") {
+      const m = loc.trim().match(/^POINT\(\s*(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)\s*\)$/i);
+      const lng = m ? Number(m[1]) : NaN;
+      const lat = m ? Number(m[2]) : NaN;
+      if (!m || !Number.isFinite(lng) || !Number.isFinite(lat) || lng < -180 || lng > 180 || lat < -90 || lat > 90) {
+        return NextResponse.json(
+          { error: "Ugyldig location. Forventet 'POINT(lng lat)' med lng∈[-180,180], lat∈[-90,90]." },
+          { status: 400 }
+        );
+      }
+      row.location = `POINT(${lng} ${lat})`;
+    } else {
+      return NextResponse.json({ error: "location skal være en streng eller null" }, { status: 400 });
+    }
+  }
+
   const isUpdate = typeof body.id === "number";
 
   // Håndhæv spec §1: publicering kræver billede + dokumenteret tilladelse.

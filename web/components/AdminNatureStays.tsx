@@ -94,7 +94,8 @@ export function AdminNatureStays() {
   async function save() {
     const slug = form.slug.trim() || slugify(form.name);
     const image_urls = imgUrlsText.split(",").map((x) => x.trim()).filter(Boolean);
-    const location = lat && lng ? toPointWkt(Number(lng), Number(lat)) : form.location;
+    const haveCoords = Number.isFinite(Number(lat)) && Number.isFinite(Number(lng)) && lat.trim() !== "" && lng.trim() !== "";
+    const location = haveCoords ? toPointWkt(Number(lng), Number(lat)) : (form.location && /^POINT\(/i.test(form.location) ? form.location : null);
     // Number-inputs giver strings; tom streng → null, ellers Number (undgår
     // "invalid input syntax for type integer" mod heltals-/numeric-kolonner).
     const num = (v: unknown): number | null => (v === "" || v == null ? null : Number(v));
