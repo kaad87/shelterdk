@@ -103,7 +103,6 @@ const STATIC_PAGES: Array<{
   { path: "/turvenner", source: "app/(site)/turvenner/page.tsx", changeFrequency: "weekly", priority: 0.6 },
   { path: "/tilbud", source: "app/(site)/tilbud/page.tsx", changeFrequency: "daily", priority: 0.7 },
   { path: "/bedste", source: "app/(site)/bedste/page.tsx", changeFrequency: "weekly", priority: 0.75 },
-  { path: "/naturophold", source: "app/(site)/naturophold/page.tsx", changeFrequency: "weekly", priority: 0.72 },
   { path: "/saadan-vurderer-vi", source: "app/(site)/saadan-vurderer-vi/page.tsx", changeFrequency: "monthly", priority: 0.3 },
   { path: "/annoncer-og-partnere", source: "app/(site)/annoncer-og-partnere/page.tsx", changeFrequency: "monthly", priority: 0.3 },
 ];
@@ -492,10 +491,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entries.push(entry(`${BASE_URL}/bedste/${g.slug}`, "weekly", 0.7, g.updated_at));
   }
 
-  // Naturophold/glamping-guider (/naturophold/[slug]) — publicerede.
+  // Naturophold/glamping-guider — kun når der ER publicerede guider (undgå at
+  // indsende en tom hub til Google).
   const stayGuides = await getPublishedStayGuides();
-  for (const g of stayGuides) {
-    entries.push(entry(`${BASE_URL}/naturophold/${g.slug}`, "weekly", 0.7, g.updated_at));
+  if (stayGuides.length > 0) {
+    entries.push(entry(`${BASE_URL}/naturophold`, "weekly", 0.72, newestIsoDate(...stayGuides.map((g) => g.updated_at))));
+    for (const g of stayGuides) {
+      entries.push(entry(`${BASE_URL}/naturophold/${g.slug}`, "weekly", 0.7, g.updated_at));
+    }
   }
 
   for (const category of getGuideCategories()) {

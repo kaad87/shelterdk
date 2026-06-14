@@ -5,12 +5,17 @@ import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 
 export const revalidate = 3600;
 
-export const metadata: Metadata = {
-  title: { absolute: "Glamping & naturophold i Danmark — kuraterede guider | ShelterDK" },
-  description:
-    "Håndplukket glamping, naturhytter, domes og træhuse i Danmark. Vores kuraterede guider til luksus i naturen — udvalgt med omhu, ærligt forklaret.",
-  alternates: { canonical: "https://shelterdk.dk/naturophold" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const guides = await getPublishedStayGuides();
+  return {
+    title: { absolute: "Glamping & naturophold i Danmark — kuraterede guider | ShelterDK" },
+    description:
+      "Håndplukket glamping, naturhytter, domes og træhuse i Danmark. Vores kuraterede guider til luksus i naturen — udvalgt med omhu, ærligt forklaret.",
+    alternates: { canonical: "https://shelterdk.dk/naturophold" },
+    // Undgå at indeksere en tom hub før der er indhold (tynd-side-beskyttelse).
+    ...(guides.length === 0 ? { robots: { index: false, follow: true } } : {}),
+  };
+}
 
 export default async function NatureStaysHubPage() {
   const guides = await getPublishedStayGuides();

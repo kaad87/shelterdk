@@ -1,5 +1,4 @@
 import { MapPin } from "lucide-react";
-import { getProxiedImageSrc } from "@/lib/image-proxy";
 import type { NatureStay } from "@/lib/nature-stays";
 import { StayAffiliateLink } from "@/components/naturophold/StayAffiliateLink";
 
@@ -24,7 +23,9 @@ interface StayCardProps {
 
 /** Kort til et naturophold — bruges af guide-sider og Plan B-sektionen. */
 export function StayCard({ stay, awardLabel, bestFor, editorialNote, distanceKm, position }: StayCardProps) {
-  const img = stay.image_url ? getProxiedImageSrc(stay.image_url, { w: 600, q: 70 }) : null;
+  // Rå ejer-billed-URL (ingen proxy/next-image): ejer-hosts er uforudsigelige og
+  // ikke i Netlify-remote_images-/next-remotePatterns-allowlisten → proxy ville 404.
+  const img = stay.image_url?.trim() || null;
   const place = [stay.place, stay.region].filter(Boolean).join(", ");
   return (
     <div className="overflow-hidden rounded-2xl border border-primary/10 bg-white">

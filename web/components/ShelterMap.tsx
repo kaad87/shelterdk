@@ -373,7 +373,9 @@ const MapInner = dynamic(
                 <div className="p-1 min-w-[180px]">
                   {isValidImageUrl(s.image_url) && (
                     <div className="w-full aspect-video rounded overflow-hidden bg-primary/10 mb-2 relative">
-                      <Image src={(s.image_url || "").trim()} alt={`Billede af ${s.name}`} width={240} height={135} className="w-full h-full object-cover" />
+                      {/* Rå ejer-URL via plain img — ejer-hosts er ikke i next/image-allowlisten */}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={(s.image_url || "").trim()} alt={`Billede af ${s.name}`} loading="lazy" className="w-full h-full object-cover" />
                     </div>
                   )}
                   <p className="font-semibold text-primary">{s.name}</p>

@@ -19,11 +19,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const data = await getStayGuideBySlug(slug);
   if (!data) return { title: "Ikke fundet | ShelterDK" };
-  const { guide } = data;
+  const { guide, entries } = data;
   return {
     title: { absolute: guide.seo_title ?? `${guide.title} | ShelterDK` },
     description: guide.seo_description ?? guide.intro ?? undefined,
     alternates: { canonical: `https://shelterdk.dk/naturophold/${guide.slug}` },
+    // En guide uden publicerede steder er tynd → indeksér ikke før den har indhold.
+    ...(entries.length === 0 ? { robots: { index: false, follow: true } } : {}),
   };
 }
 
