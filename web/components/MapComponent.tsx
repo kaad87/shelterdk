@@ -3,11 +3,14 @@
 import { useCallback, useState } from "react";
 import { Hand } from "lucide-react";
 import type { MapShelter } from "@/lib/map-shelter";
+import type { StayPin } from "@/lib/nature-stays";
 import { ShelterMap, type MapBounds } from "@/components/ShelterMap";
 
 interface MapComponentProps {
   /** Første visning – bruges indtil brugeren pan/zoomer; derefter hentes data via bbox-RPC. */
   shelters: MapShelter[];
+  /** Premium guld-markører for betalte naturophold (få, nationalt — statiske). */
+  stays?: StayPin[];
   className?: string;
 }
 
@@ -15,7 +18,7 @@ interface MapComponentProps {
  * Kort på forsiden: viser initiale shelters og henter kun shelters i viewport
  * ved moveend/zoom via PostGIS RPC (get_shelters_in_bbox) for hurtigere load.
  */
-export function MapComponent({ shelters: initialShelters, className }: MapComponentProps) {
+export function MapComponent({ shelters: initialShelters, stays, className }: MapComponentProps) {
   const [shelters, setShelters] = useState<MapShelter[]>(initialShelters);
   // Mobil: kortet fylder ~60 % af skærmen midt på forsiden. Uden dette fanger
   // Leaflet lodret swipe som panorering, så man ikke kan scrolle forbi. Et
@@ -45,6 +48,7 @@ export function MapComponent({ shelters: initialShelters, className }: MapCompon
     <div className={`relative ${className ?? ""}`}>
       <ShelterMap
         shelters={shelters}
+        stays={stays}
         className="h-full w-full"
         onBoundsChange={handleBoundsChange}
         fitWholeDenmarkOnLoad

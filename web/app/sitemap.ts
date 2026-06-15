@@ -17,6 +17,7 @@ import {
 import { getFilterRegionCount } from "@/lib/fakta-db";
 import { getGuideCategories, getGuides } from "@/data/guides";
 import { getPublishedGuides } from "@/lib/buying-guides";
+import { getPublishedStayGuides } from "@/lib/nature-stays";
 import { SEARCH_SYNONYMS } from "@/lib/search-synonyms";
 import { slugifySegment } from "@/lib/slug";
 import type { CuratedRouteIndex } from "@/types/curated-route";
@@ -488,6 +489,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const buyingGuides = await getPublishedGuides();
   for (const g of buyingGuides) {
     entries.push(entry(`${BASE_URL}/bedste/${g.slug}`, "weekly", 0.7, g.updated_at));
+  }
+
+  // Naturophold/glamping-guider — kun når der ER publicerede guider (undgå at
+  // indsende en tom hub til Google).
+  const stayGuides = await getPublishedStayGuides();
+  if (stayGuides.length > 0) {
+    entries.push(entry(`${BASE_URL}/naturophold`, "weekly", 0.72, newestIsoDate(...stayGuides.map((g) => g.updated_at))));
+    for (const g of stayGuides) {
+      entries.push(entry(`${BASE_URL}/naturophold/${g.slug}`, "weekly", 0.7, g.updated_at));
+    }
   }
 
   for (const category of getGuideCategories()) {
