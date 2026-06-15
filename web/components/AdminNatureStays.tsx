@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { StayLocationPicker } from "@/components/naturophold/StayLocationPicker";
+import { StayImageUploader } from "@/components/naturophold/StayImageUploader";
 
 const STORAGE_KEY = "shelterdk-admin-secret";
 
@@ -58,7 +60,7 @@ export function AdminNatureStays() {
   const [form, setForm] = useState<Stay>(EMPTY);
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
-  const [imgUrlsText, setImgUrlsText] = useState("");
+  const [images, setImages] = useState<string[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
 
   useEffect(() => {
@@ -86,14 +88,13 @@ export function AdminNatureStays() {
     setForm({ ...s });
     const { lat, lng } = parseLatLng(s.location);
     setLat(lat); setLng(lng);
-    setImgUrlsText((s.image_urls ?? []).join(", "));
+    setImages(s.image_urls?.length ? s.image_urls : (s.image_url ? [s.image_url] : []));
     setMsg(null);
   }
-  function reset() { setForm(EMPTY); setLat(""); setLng(""); setImgUrlsText(""); setMsg(null); }
+  function reset() { setForm(EMPTY); setLat(""); setLng(""); setImages([]); setMsg(null); }
 
   async function save() {
     const slug = form.slug.trim() || slugify(form.name);
-    const image_urls = imgUrlsText.split(",").map((x) => x.trim()).filter(Boolean);
     const haveCoords = Number.isFinite(Number(lat)) && Number.isFinite(Number(lng)) && lat.trim() !== "" && lng.trim() !== "";
     const location = haveCoords ? toPointWkt(Number(lng), Number(lat)) : (form.location && /^POINT\(/i.test(form.location) ? form.location : null);
     // Number-inputs giver strings; tom streng → null, ellers Number (undgår
@@ -102,7 +103,8 @@ export function AdminNatureStays() {
     const payload = {
       ...form,
       slug,
-      image_urls,
+      image_url: images[0] ?? null,
+      image_urls: images,
       location,
       price_from: num(form.price_from),
       capacity: num(form.capacity),
@@ -172,15 +174,24 @@ export function AdminNatureStays() {
           <label className="text-sm">Kommune<input className="w-full rounded border px-2 py-1" value={form.kommune ?? ""} onChange={set("kommune")} /></label>
           <label className="text-sm">Sted/by<input className="w-full rounded border px-2 py-1" value={form.place ?? ""} onChange={set("place")} /></label>
           <label className="text-sm">Pris fra (kr/nat)<input type="number" className="w-full rounded border px-2 py-1" value={form.price_from ?? ""} onChange={set("price_from")} /></label>
-          <label className="text-sm">Lat<input className="w-full rounded border px-2 py-1" value={lat} onChange={(e) => setLat(e.target.value)} /></label>
-          <label className="text-sm">Lng<input className="w-full rounded border px-2 py-1" value={lng} onChange={(e) => setLng(e.target.value)} /></label>
           <label className="text-sm">Kapacitet<input type="number" className="w-full rounded border px-2 py-1" value={form.capacity ?? ""} onChange={set("capacity")} /></label>
           <label className="text-sm">Rating<input type="number" step="0.1" className="w-full rounded border px-2 py-1" value={form.rating ?? ""} onChange={set("rating")} /></label>
         </div>
+
+        <div className="rounded-lg border border-primary/10 p-3">
+          <StayLocationPicker
+            lat={lat}
+            lng={lng}
+            onChange={(la, ln, meta) => {
+              setLat(la);
+              setLng(ln);
+              if (meta?.place && !form.place?.trim()) setForm((f) => ({ ...f, place: meta.place! }));
+            }}
+          />
+        </div>
         <label className="block text-sm">Kort beskrivelse<textarea className="w-full rounded border px-2 py-1" rows={2} value={form.short_description ?? ""} onChange={set("short_description")} /></label>
         <label className="block text-sm">Brødtekst (markdown)<textarea className="w-full rounded border px-2 py-1" rows={5} value={form.body_md ?? ""} onChange={set("body_md")} /></label>
-        <label className="block text-sm">Billed-URL (hoved)<input className="w-full rounded border px-2 py-1" value={form.image_url ?? ""} onChange={set("image_url")} /></label>
-        <label className="block text-sm">Flere billed-links (komma-adskilt)<input className="w-full rounded border px-2 py-1" value={imgUrlsText} onChange={(e) => setImgUrlsText(e.target.value)} /></label>
+        <StayImageUploader images={images} onChange={setImages} secret={secret} />
         <label className="block text-sm">Billedtilladelse (påkrævet for publicering)<input className="w-full rounded border px-2 py-1" placeholder="fx: Ejer ok pr. mail 2026-06-14" value={form.image_permission ?? ""} onChange={set("image_permission")} /></label>
         <div className="grid grid-cols-2 gap-3">
           <label className="text-sm">Booking-URL<input className="w-full rounded border px-2 py-1" value={form.booking_url ?? ""} onChange={set("booking_url")} /></label>
