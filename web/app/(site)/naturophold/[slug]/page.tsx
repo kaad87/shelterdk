@@ -51,22 +51,26 @@ export default async function NatureStayGuidePage({ params }: { params: Promise<
     dateModified,
     mainEntity: {
       "@type": "ItemList",
-      itemListElement: entries.map((e, i) => ({
-        "@type": "ListItem",
-        position: i + 1,
-        item: {
-          "@type": "LodgingBusiness",
-          name: e.stay.name,
-          ...(e.stay.image_url ? { image: e.stay.image_url } : {}),
-          ...(e.stay.price_from != null ? { priceRange: `fra ${e.stay.price_from} kr` } : {}),
-          address: {
-            "@type": "PostalAddress",
-            ...(e.stay.place ? { addressLocality: e.stay.place } : {}),
-            ...(e.stay.region ? { addressRegion: e.stay.region } : {}),
-            addressCountry: "DK",
+      itemListElement: entries.map((e, i) => {
+        const m = e.stay.location?.match(/^POINT\(\s*(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)\s*\)/i);
+        return {
+          "@type": "ListItem",
+          position: i + 1,
+          item: {
+            "@type": "LodgingBusiness",
+            name: e.stay.name,
+            ...(e.stay.image_url ? { image: e.stay.image_url } : {}),
+            ...(e.stay.price_from != null ? { priceRange: `fra ${e.stay.price_from} kr` } : {}),
+            address: {
+              "@type": "PostalAddress",
+              ...(e.stay.place ? { addressLocality: e.stay.place } : {}),
+              ...(e.stay.region ? { addressRegion: e.stay.region } : {}),
+              addressCountry: "DK",
+            },
+            ...(m ? { geo: { "@type": "GeoCoordinates", latitude: Number(m[2]), longitude: Number(m[1]) } } : {}),
           },
-        },
-      })),
+        };
+      }),
     },
   };
 

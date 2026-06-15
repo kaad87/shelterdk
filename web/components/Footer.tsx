@@ -2,6 +2,7 @@ import Link from "next/link";
 import { MapPin, Tent, ExternalLink } from "lucide-react";
 import { CookieResetButton } from "@/components/CookieResetButton";
 import NewsletterSignup from "@/components/NewsletterSignup";
+import { hasPublishedStayGuides } from "@/lib/nature-stays";
 
 const discoverLinks = [
   { label: "Shelter efter region", href: "/danmark" },
@@ -58,8 +59,10 @@ const headingClass = "mb-4 text-sm font-semibold uppercase tracking-wider text-w
 const linkClass =
   "inline-block py-2 text-sm text-white/75 transition-colors hover:text-accent hover:underline touch-manipulation";
 
-export function Footer() {
+export async function Footer() {
   const currentYear = new Date().getFullYear();
+  // Vis kun naturophold-link når der ér indhold (undgå link til tom hub).
+  const showNatureStays = await hasPublishedStayGuides().catch(() => false);
 
   return (
     <footer className="mt-auto bg-primary text-white">
@@ -119,6 +122,13 @@ export function Footer() {
                   </Link>
                 </li>
               ))}
+              {showNatureStays && (
+                <li>
+                  <Link href="/naturophold" className={linkClass}>
+                    Glamping & naturophold
+                  </Link>
+                </li>
+              )}
             </ul>
           </nav>
 

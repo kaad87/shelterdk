@@ -56,6 +56,10 @@ export default async function NatureStaysHubPage() {
             <p className="text-lg text-primary/80">
               Håndplukket luksus i naturen — glamping, naturhytter, domes og træhuse. Vil du sove ude uden at gå på kompromis med komforten, er det her.
             </p>
+            <p className="mt-3 text-sm text-primary/60">
+              Skal du selv pakke grejet? Se også vores{" "}
+              <Link href="/bedste" className="font-medium text-accent hover:underline">købsguider til shelterudstyr</Link>.
+            </p>
           </header>
 
           {guides.length === 0 ? (

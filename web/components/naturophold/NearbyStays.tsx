@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getNearbyStays } from "@/lib/nature-stays";
 import { StayCard } from "@/components/naturophold/StayCard";
 
@@ -30,6 +31,11 @@ export async function NearbyStays({
           <StayCard key={s.id} stay={s} distanceKm={s.distance_km} position="naturophold_planb" />
         ))}
       </div>
+      <p className="mt-5">
+        <Link href="/naturophold" className="text-sm font-medium text-accent hover:underline">
+          Se alle glamping- &amp; naturophold-guider →
+        </Link>
+      </p>
     </section>
   );
 }

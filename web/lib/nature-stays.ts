@@ -173,6 +173,20 @@ export async function getPublishedStayGuideSlugs(): Promise<string[]> {
   return (await getPublishedStayGuides()).map((g) => g.slug);
 }
 
+/**
+ * Findes der mindst én publiceret naturophold-guide? Bruges til at gate interne
+ * links (footer, hubs) så de først dukker op når der ER indhold — undgår links
+ * til en tom hub. Let indekseret head-count — billig nok til at kalde direkte.
+ */
+export async function hasPublishedStayGuides(): Promise<boolean> {
+  const sb = getServiceClient();
+  const { count } = await sb
+    .from("stay_guides")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "published");
+  return (count ?? 0) > 0;
+}
+
 export async function getStayGuideBySlug(
   slug: string
 ): Promise<{ guide: StayGuide; entries: StayEntryWithStay[] } | null> {

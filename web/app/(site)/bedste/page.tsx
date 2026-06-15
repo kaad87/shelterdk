@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getPublishedGuides, getGuideTeasers } from "@/lib/buying-guides";
+import { hasPublishedStayGuides } from "@/lib/nature-stays";
 import { groupGuides } from "@/lib/buying-guides-hub";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
 export default async function BuyingGuidesIndexPage() {
   const guides = await getPublishedGuides();
   const teasers = await getGuideTeasers(guides.map((g) => g.id));
+  const showStays = await hasPublishedStayGuides().catch(() => false);
 
   // CollectionPage + ItemList over guides → fortæller Google at hubben er
   // den kuraterede indgang til købsguide-klyngen.
@@ -65,6 +67,12 @@ export default async function BuyingGuidesIndexPage() {
               </Link>
               .
             </p>
+            {showStays && (
+              <p className="mt-3 text-sm text-primary/60">
+                Leder du efter luksus i naturen i stedet for grej? Se vores{" "}
+                <Link href="/naturophold" className="font-medium text-accent hover:underline">glamping- &amp; naturophold-guider</Link>.
+              </p>
+            )}
           </header>
 
           <section className="mb-10 rounded-2xl border border-primary/10 bg-white p-6">
