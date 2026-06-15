@@ -167,14 +167,28 @@ export default async function BuyingGuidePage({
             </div>
           )}
 
+          {/* Indholdsfortegnelse med jump-links — hjælper Google generere sitelinks. */}
+          {entries.length > 0 && (
+            <nav aria-label="Indhold" className="mt-6 flex flex-wrap gap-2 border-y border-primary/10 py-3 text-sm">
+              <a href="#overblik" className="rounded-full bg-primary/5 px-3 py-1 text-primary/80 hover:bg-accent/10 hover:text-accent">Hurtigt overblik</a>
+              <a href="#sammenligning" className="rounded-full bg-primary/5 px-3 py-1 text-primary/80 hover:bg-accent/10 hover:text-accent">Sammenligning</a>
+              {body && <a href="#guide" className="rounded-full bg-primary/5 px-3 py-1 text-primary/80 hover:bg-accent/10 hover:text-accent">Sådan vælger du</a>}
+              {faqItems.length > 0 && <a href="#faq" className="rounded-full bg-primary/5 px-3 py-1 text-primary/80 hover:bg-accent/10 hover:text-accent">Spørgsmål & svar</a>}
+            </nav>
+          )}
+
           {/* Hurtigt overblik (top-picks) + sammenligningstabel */}
-          <BuyingGuideOverview entries={entries} />
+          <div id="overblik" className="scroll-mt-24">
+            <BuyingGuideOverview entries={entries} />
+          </div>
           {priceCheckedLabel && (
             <p className="-mb-4 mt-2 text-xs text-primary/45">
               Priser og lagerstatus tjekket {priceCheckedLabel} — opdateres automatisk dagligt.
             </p>
           )}
-          <BuyingGuideComparisonTable entries={entries} />
+          <div id="sammenligning" className="scroll-mt-24">
+            <BuyingGuideComparisonTable entries={entries} />
+          </div>
 
           {/* Rangeret liste — anker pr. produkt så tabellen kan linke ned */}
           <div className="mt-8 space-y-5">
@@ -186,14 +200,14 @@ export default async function BuyingGuidePage({
           </div>
 
           {/* Lang købsguide-brødtekst (SEO-motor) */}
-          {body && <div className="prose prose-primary mt-12 max-w-none">{body}</div>}
+          {body && <div id="guide" className="prose prose-primary mt-12 max-w-none scroll-mt-24">{body}</div>}
 
           {/* Kilder */}
           <BuyingGuideSources sources={guide.sources} />
 
           {/* FAQ */}
           {faqItems.length > 0 && (
-            <section className="mt-10 border-t border-primary/10 pt-6">
+            <section id="faq" className="mt-10 scroll-mt-24 border-t border-primary/10 pt-6">
               <h2 className="mb-3 font-serif text-xl font-bold text-primary">
                 Ofte stillede spørgsmål
               </h2>
