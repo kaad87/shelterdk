@@ -180,7 +180,7 @@ export function AdminNatureStays() {
         <label className="block text-sm">Kort beskrivelse<textarea className="w-full rounded border px-2 py-1" rows={2} value={form.short_description ?? ""} onChange={set("short_description")} /></label>
         <label className="block text-sm">Brødtekst (markdown)<textarea className="w-full rounded border px-2 py-1" rows={5} value={form.body_md ?? ""} onChange={set("body_md")} /></label>
         <label className="block text-sm">Billed-URL (hoved)<input className="w-full rounded border px-2 py-1" value={form.image_url ?? ""} onChange={set("image_url")} /></label>
-        <label className="block text-sm">Flere billed-URL'er (komma)<input className="w-full rounded border px-2 py-1" value={imgUrlsText} onChange={(e) => setImgUrlsText(e.target.value)} /></label>
+        <label className="block text-sm">Flere billed-links (komma-adskilt)<input className="w-full rounded border px-2 py-1" value={imgUrlsText} onChange={(e) => setImgUrlsText(e.target.value)} /></label>
         <label className="block text-sm">Billedtilladelse (påkrævet for publicering)<input className="w-full rounded border px-2 py-1" placeholder="fx: Ejer ok pr. mail 2026-06-14" value={form.image_permission ?? ""} onChange={set("image_permission")} /></label>
         <div className="grid grid-cols-2 gap-3">
           <label className="text-sm">Booking-URL<input className="w-full rounded border px-2 py-1" value={form.booking_url ?? ""} onChange={set("booking_url")} /></label>
