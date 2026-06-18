@@ -16,6 +16,7 @@ import { ShareExperience } from "@/components/ShareExperience";
 import { LastVerifiedBadge } from "@/components/LastVerifiedBadge";
 import { SpeakableSchema } from "@/components/seo/SpeakableSchema";
 import { getGuideHowToSchema } from "@/lib/guide-howto";
+import { AdBanner } from "@/components/AdBanner";
 import { Calendar } from "lucide-react";
 import { slugifySegment } from "@/lib/slug";
 
@@ -236,6 +237,9 @@ export default async function GuidePage({ params }: PageProps) {
         <article className="prose prose-primary max-w-none">
           {secondHalf}
         </article>
+
+        {/* Diskret annonce efter indholdet (kun ved marketing-samtykke) */}
+        <AdBanner />
 
         {/* Author bio */}
         <div className="mt-12">

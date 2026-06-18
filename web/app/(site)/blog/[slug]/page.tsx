@@ -14,6 +14,7 @@ import { AuthorBio } from "@/components/AuthorBio";
 import { ArticleFaq } from "@/components/ArticleFaq";
 import { ShelterCTA } from "@/components/ShelterCTA";
 import { ShareExperience } from "@/components/ShareExperience";
+import { AdBanner } from "@/components/AdBanner";
 import dynamic from "next/dynamic";
 import { ArrowLeft, Calendar, Clock } from "lucide-react";
 import { slugifySegment } from "@/lib/slug";
@@ -180,6 +181,9 @@ export default async function BlogPostPage({ params }: PageProps) {
           <article className="prose prose-primary max-w-none">
             {secondHalf}
           </article>
+
+          {/* Diskret annonce efter indholdet (kun ved marketing-samtykke) */}
+          <AdBanner />
 
           {/* Author bio */}
           <div className="mt-12">
