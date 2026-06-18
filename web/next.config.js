@@ -11,18 +11,25 @@ const supabaseHost =
       })()
     : null;
 
+// AdSense kræver disse domæner i CSP'en (ellers blokeres ad-scriptet/iframes).
+const adsense = {
+  script: "https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.googleadservices.com https://*.g.doubleclick.net https://adservice.google.com",
+  connect: "https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.g.doubleclick.net https://*.google.com",
+  frame: "https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://*.safeframe.googlesyndication.com https://*.googlesyndication.com",
+};
+
 const baseCsp = [
   "default-src 'self'",
   "base-uri 'self'",
   "object-src 'none'",
   "form-action 'self' https://checkout.stripe.com",
   "frame-ancestors 'self'",
-  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com https://www.instagram.com https://tags.srv.stackadapt.com",
+  `script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com https://www.instagram.com https://tags.srv.stackadapt.com ${adsense.script}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  "connect-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com https://www.instagram.com https://*.supabase.co https://*.ingest.sentry.io https://*.ingest.de.sentry.io https://tags.srv.stackadapt.com https://*.stackadapt.com",
-  "frame-src 'self' https://checkout.stripe.com https://www.instagram.com",
+  `connect-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com https://www.instagram.com https://*.supabase.co https://*.ingest.sentry.io https://*.ingest.de.sentry.io https://tags.srv.stackadapt.com https://*.stackadapt.com ${adsense.connect}`,
+  `frame-src 'self' https://checkout.stripe.com https://www.instagram.com ${adsense.frame}`,
   "worker-src 'self' blob:",
   "manifest-src 'self'",
 ].join("; ");
