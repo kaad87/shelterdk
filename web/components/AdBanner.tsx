@@ -66,7 +66,7 @@ export function AdBanner({ slot = "1359693016", className }: { slot?: string; cl
         style={{ display: "block", minHeight: 90 }}
         data-ad-client={CLIENT}
         data-ad-slot={slot}
-        data-ad-format="horizontal"
+        data-ad-format="auto"
         data-full-width-responsive="true"
       />
     </aside>
