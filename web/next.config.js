@@ -13,9 +13,9 @@ const supabaseHost =
 
 // AdSense kræver disse domæner i CSP'en (ellers blokeres ad-scriptet/iframes).
 const adsense = {
-  script: "https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.googleadservices.com https://*.g.doubleclick.net https://adservice.google.com https://fundingchoicesmessages.google.com",
-  connect: "https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.g.doubleclick.net https://*.google.com https://fundingchoicesmessages.google.com",
-  frame: "https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://*.safeframe.googlesyndication.com https://*.googlesyndication.com https://fundingchoicesmessages.google.com",
+  script: "https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.googleadservices.com https://*.g.doubleclick.net https://adservice.google.com",
+  connect: "https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.g.doubleclick.net https://*.google.com",
+  frame: "https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://*.safeframe.googlesyndication.com https://*.googlesyndication.com",
 };
 
 const baseCsp = [
