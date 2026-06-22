@@ -9,6 +9,7 @@ import { SearchBar } from "@/components/SearchBar";
 import { MobileHomePills } from "@/components/MobileHomePills";
 import { HomepageDatePicker } from "@/components/HomepageDatePicker";
 import { HomepageDealsWidget } from "@/components/HomepageDealsWidget";
+import { AwinBanner } from "@/components/AwinBanner";
 import { RecentExperiencesFeed } from "@/components/RecentExperiencesFeed";
 import { InstagramFeed } from "@/components/InstagramFeed";
 import NewsletterSignup from "@/components/NewsletterSignup";
@@ -534,6 +535,10 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <AwinBanner />
+      </div>
 
       <HomepageDealsWidget />
 

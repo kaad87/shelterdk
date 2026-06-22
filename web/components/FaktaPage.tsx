@@ -5,6 +5,7 @@ import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { DatasetSchema } from "@/components/seo/DatasetSchema";
 import { ShelterCard } from "@/components/ShelterCard";
 import { InstagramFeed } from "@/components/InstagramFeed";
+import { AwinBanner } from "@/components/AwinBanner";
 import { getSitePageModified } from "@/lib/content-dates";
 import { getNewestShelterUpdatedAt } from "@/lib/fakta-db";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
@@ -170,6 +171,8 @@ export async function FaktaPage({
           )}
 
           {children}
+
+          <AwinBanner />
 
           <InstagramFeed title="Shelter-stemning fra Instagram" className="mt-12" />
 
