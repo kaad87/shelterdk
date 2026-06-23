@@ -1,4 +1,7 @@
+import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/utils/supabase/server-admin";
+import { slugifySegment } from "@/lib/slug";
+import { NO_KOMMUNE_SLUG } from "@/lib/danmark-silo";
 import type { BookableShelter } from "@/types/booking";
 import type { Shelter } from "@shared/types/shelter";
 
@@ -161,13 +164,60 @@ export async function updateSharedShelterContent(
     photo_order?: string[] | null;
   }
 ): Promise<Shelter | null> {
-  const { data } = await createAdminClient()
+  const admin = createAdminClient();
+  const writeFields: Record<string, unknown> = { ...fields };
+
+  // When an owner saves a real description, make it authoritative on the public
+  // page. The detail page builds its body via `getLongDescription() || description`,
+  // and getLongDescription reads GEOFA's imported keys (lang_beskr/…), which would
+  // otherwise permanently shadow the owner's edit. So we blank those keys here.
+  // Surgical: only fires for owner-edited shelters, and the importer is insert-only,
+  // so it never restores them.
+  const hasNewDescription =
+    typeof fields.description === "string" && fields.description.trim().length > 0;
+  if (hasNewDescription) {
+    let baseRaw = fields.geofa_raw as Record<string, unknown> | null | undefined;
+    if (baseRaw === undefined) {
+      const { data: cur } = await admin
+        .from("shelters")
+        .select("geofa_raw")
+        .eq("id", shelterDbId)
+        .single();
+      baseRaw = (cur?.geofa_raw as Record<string, unknown> | null) ?? null;
+    }
+    writeFields.geofa_raw = {
+      ...(baseRaw ?? {}),
+      lang_beskr: "",
+      lang_besk: "",
+      d_k_beskr: "",
+      beskrivels: "",
+    };
+  }
+
+  const { data } = await admin
     .from("shelters")
-    .update(fields)
+    .update(writeFields)
     .eq("id", shelterDbId)
-    .select("id, title, slug, description, image_url, image_urls, user_image_urls, water, toilet, geofa_raw, photo_order")
+    .select(
+      "id, title, slug, region, kommune, description, image_url, image_urls, user_image_urls, water, toilet, geofa_raw, photo_order"
+    )
     .single();
-  return (data as Shelter | null) ?? null;
+
+  const shelter = (data as Shelter | null) ?? null;
+
+  // Owner edits write straight to the DB, but the public detail page is ISR-cached
+  // (revalidate = 86400). Without this, changes take up to 24h to appear. Revalidate
+  // the shelter's public URLs so edits show within seconds.
+  if (shelter?.slug) {
+    const regionSlug = shelter.region ? slugifySegment(shelter.region) : null;
+    const municipalitySlug = shelter.kommune ? slugifySegment(shelter.kommune) : NO_KOMMUNE_SLUG;
+    if (regionSlug) {
+      revalidatePath(`/danmark/${regionSlug}/${municipalitySlug}/${shelter.slug}`);
+    }
+    revalidatePath(`/shelter/${shelter.slug}`);
+  }
+
+  return shelter;
 }
 
 // ─── Shelter update ──────────────────────────────────────────────────────────

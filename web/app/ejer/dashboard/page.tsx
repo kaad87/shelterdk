@@ -242,14 +242,22 @@ export default async function EjerDashboardPage() {
           <h1 className="font-serif text-2xl font-bold text-primary">Mine shelters</h1>
           <p className="text-xs text-primary/35 mt-0.5">{user.email}</p>
         </div>
-        <form action="/api/ejer/logout" method="POST">
-          <button
-            type="submit"
+        <div className="flex items-center gap-2">
+          <Link
+            href="/ejer/skift-adgangskode"
             className="text-sm text-primary/40 hover:text-primary border border-primary/15 rounded-lg px-3 py-1.5 transition-colors"
           >
-            Log ud
-          </button>
-        </form>
+            Skift adgangskode
+          </Link>
+          <form action="/api/ejer/logout" method="POST">
+            <button
+              type="submit"
+              className="text-sm text-primary/40 hover:text-primary border border-primary/15 rounded-lg px-3 py-1.5 transition-colors"
+            >
+              Log ud
+            </button>
+          </form>
+        </div>
       </div>
 
       {/* Global pending notice (only when multiple shelters) */}
