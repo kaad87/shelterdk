@@ -8,6 +8,25 @@ import type { Shelter } from "@shared/types/shelter";
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const BUCKET = "shelter-photos";
 
+/**
+ * Revalidates a shelter's public detail pages after an owner edit. The detail
+ * page is ISR-cached (revalidate = 86400), so without this, owner edits take up
+ * to 24h to appear. Mirrors the canonical path logic in the danmark-silo route.
+ */
+function revalidateShelterDetailPages(shelter: {
+  slug?: string | null;
+  region?: string | null;
+  kommune?: string | null;
+}) {
+  if (!shelter.slug) return;
+  const regionSlug = shelter.region ? slugifySegment(shelter.region) : null;
+  const municipalitySlug = shelter.kommune ? slugifySegment(shelter.kommune) : NO_KOMMUNE_SLUG;
+  if (regionSlug) {
+    revalidatePath(`/danmark/${regionSlug}/${municipalitySlug}/${shelter.slug}`);
+  }
+  revalidatePath(`/shelter/${shelter.slug}`);
+}
+
 // ─── Dashboard summary ───────────────────────────────────────────────────────
 
 export interface DashboardShelterSummary {
@@ -204,19 +223,7 @@ export async function updateSharedShelterContent(
     .single();
 
   const shelter = (data as Shelter | null) ?? null;
-
-  // Owner edits write straight to the DB, but the public detail page is ISR-cached
-  // (revalidate = 86400). Without this, changes take up to 24h to appear. Revalidate
-  // the shelter's public URLs so edits show within seconds.
-  if (shelter?.slug) {
-    const regionSlug = shelter.region ? slugifySegment(shelter.region) : null;
-    const municipalitySlug = shelter.kommune ? slugifySegment(shelter.kommune) : NO_KOMMUNE_SLUG;
-    if (regionSlug) {
-      revalidatePath(`/danmark/${regionSlug}/${municipalitySlug}/${shelter.slug}`);
-    }
-    revalidatePath(`/shelter/${shelter.slug}`);
-  }
-
+  if (shelter) revalidateShelterDetailPages(shelter);
   return shelter;
 }
 
@@ -237,13 +244,31 @@ export async function updateOwnerShelter(
   shelterId: string,
   fields: OwnerShelterUpdate
 ): Promise<BookableShelter | null> {
-  const { data } = await createAdminClient()
+  const admin = createAdminClient();
+  const { data } = await admin
     .from("bookable_shelters")
     .update({ ...fields })
     .eq("id", shelterId)
     .select("*")
     .single();
-  return data ?? null;
+  const unit = (data as BookableShelter | null) ?? null;
+
+  // The per-unit booking page (/book/[slug]) is statically cached, and the parent
+  // detail page lists each unit's title/capacity — both must be revalidated so owner
+  // edits to title/description/max_persons show without waiting for the ISR window.
+  if (unit) {
+    if (unit.slug) revalidatePath(`/book/${unit.slug}`);
+    if (unit.shelter_id) {
+      const { data: parent } = await admin
+        .from("shelters")
+        .select("slug, region, kommune")
+        .eq("id", unit.shelter_id)
+        .single();
+      if (parent) revalidateShelterDetailPages(parent);
+    }
+  }
+
+  return unit;
 }
 
 // ─── Photo helpers ───────────────────────────────────────────────────────────
