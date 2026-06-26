@@ -364,24 +364,35 @@ export async function getSheltersInMunicipality(
 }
 
 /** Reviews for a Google Place (for shelter detail page). */
-export async function getReviews(googlePlaceId: string | null): Promise<
-  { author_name: string | null; rating: number | null; text: string | null; relative_time_description: string | null; time: string | null }[]
-> {
+type GoogleReview = {
+  author_name: string | null;
+  rating: number | null;
+  text: string | null;
+  relative_time_description: string | null;
+  time: string | null;
+};
+
+// Google-reviews kommer fra en periodisk synket tabel og er ens for alle besøgende.
+// Cachet 24t (= sidens ISR) fjerner ~228k pr-render-opslag + 63 min DB-tid uden
+// mærkbar staleness; en ny anmeldelse vises blot lidt senere.
+const cachedReviews = unstable_cache(
+  async (googlePlaceId: string): Promise<GoogleReview[]> => {
+    const supabase = createPublicClient();
+    const { data } = await supabase
+      .from("google_place_reviews")
+      .select("author_name, rating, text, relative_time_description, time")
+      .eq("google_place_id", googlePlaceId)
+      .order("time", { ascending: false })
+      .limit(5);
+    return (data || []) as GoogleReview[];
+  },
+  ["get-google-reviews"],
+  { revalidate: 86400 }
+);
+
+export async function getReviews(googlePlaceId: string | null): Promise<GoogleReview[]> {
   if (!googlePlaceId) return [];
-  const supabase = createPublicClient();
-  const { data } = await supabase
-    .from("google_place_reviews")
-    .select("author_name, rating, text, relative_time_description, time")
-    .eq("google_place_id", googlePlaceId)
-    .order("time", { ascending: false })
-    .limit(5);
-  return (data || []) as {
-    author_name: string | null;
-    rating: number | null;
-    text: string | null;
-    relative_time_description: string | null;
-    time: string | null;
-  }[];
+  return cachedReviews(googlePlaceId);
 }
 
 /** Single shelter by slug (for detail page). Returns full detail for gallery, features, etc. */

@@ -34,6 +34,28 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  const isPublicEjerRoute =
+    pathname.startsWith("/ejer/login") ||
+    pathname.startsWith("/ejer/signup") ||
+    pathname.startsWith("/ejer/glemt-adgangskode") ||
+    pathname.startsWith("/ejer/nulstil-adgangskode");
+  const needsAuthGate = pathname.startsWith("/ejer") && !isPublicEjerRoute;
+
+  // Anonyme besøgende har ingen Supabase-session-cookie → der er hverken en session
+  // at forny eller en adgangsspærre at håndhæve. Vi springer derfor hele auth-kaldet
+  // over for dem. Det er langt størstedelen af trafikken (inkl. crawlere) og fjerner
+  // et per-request Auth-round-trip, der timede edge-funktionen ud under egress-throttlingen.
+  const hasAuthCookie = request.cookies.getAll().some((c) => c.name.startsWith("sb-"));
+  if (!hasAuthCookie) {
+    if (needsAuthGate) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/ejer/login";
+      url.searchParams.set("next", `${pathname}${request.nextUrl.search}`);
+      return NextResponse.redirect(url);
+    }
+    return NextResponse.next({ request });
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   // Create a Supabase client that can refresh session cookies on the response
@@ -56,16 +78,10 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Refresh session — keeps session alive and rotates tokens
+  // Refresh session — keeps session alive and rotates tokens (only for logged-in owners)
   const { data: { user } } = await supabase.auth.getUser();
 
-  const isPublicEjerRoute =
-    pathname.startsWith("/ejer/login") ||
-    pathname.startsWith("/ejer/signup") ||
-    pathname.startsWith("/ejer/glemt-adgangskode") ||
-    pathname.startsWith("/ejer/nulstil-adgangskode");
-
-  if (pathname.startsWith("/ejer") && !isPublicEjerRoute && !user) {
+  if (needsAuthGate && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/ejer/login";
     url.searchParams.set("next", `${pathname}${request.nextUrl.search}`);

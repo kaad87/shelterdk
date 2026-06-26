@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { createPublicClient } from "@/utils/supabase/server-public";
 import type { Shelter } from "@/types/shelter";
 export { prepositionForArea, prepositionForRegionName } from "@shared/lib/area-prepositions";
@@ -24,16 +25,26 @@ export async function getAllAreas(): Promise<Area[]> {
   return data as Area[];
 }
 
-/** Hent område efter slug. Returnerer null hvis ikke fundet. */
+// Områder er ~statisk redaktionelt indhold (navn/beskrivelse) → cachet 24t for at
+// fjerne ~444k pr-render-opslag uden mærkbar staleness.
+const cachedAreaBySlug = unstable_cache(
+  async (slug: string): Promise<Area | null> => {
+    const supabase = createPublicClient();
+    const { data, error } = await supabase
+      .from("areas")
+      .select("slug, name, description, region")
+      .eq("slug", slug)
+      .single();
+    if (error || !data) return null;
+    return data as Area;
+  },
+  ["get-area-by-slug"],
+  { revalidate: 86400 }
+);
+
+/** Hent område efter slug. Returnerer null hvis ikke fundet. Cachet 24t. */
 export async function getAreaBySlug(slug: string): Promise<Area | null> {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from("areas")
-    .select("slug, name, description, region")
-    .eq("slug", slug)
-    .single();
-  if (error || !data) return null;
-  return data as Area;
+  return cachedAreaBySlug(slug);
 }
 
 /** Antal shelters i et område (area_slug, ekskl. dubletter). */
