@@ -188,6 +188,8 @@ export function ShelterSchema({
     "@type": useLodgingBusiness ? "LodgingBusiness" : "Campground",
     inLanguage: "da",
     name,
+    ...(shelter.created_at && { datePublished: shelter.created_at }),
+    ...(shelter.updated_at && { dateModified: shelter.updated_at }),
     ...(description && { description }),
     ...(canonicalPath && { url: `${BASE_URL}${canonicalPath}` }),
     geo:
