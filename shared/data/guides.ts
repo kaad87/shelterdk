@@ -55,7 +55,7 @@ export const GUIDES: Guide[] = [
       "https://mapcentia-www.s3-eu-west-1.amazonaws.com/fkg/1600/862d0a21-7627-4a6a-9c13-aa2d2d442938.jpg",
     category: "Natur",
     publishedAt: "2025-02-18",
-    updatedAt: "2026-03-06",
+    updatedAt: "2026-06-27",
     content: `
 ## Derfor er nationalparkerne perfekte til shelterture
 
@@ -73,7 +73,7 @@ Thy byder på flere primitive overnatningspladser fordelt langs vandreruter og c
 
 ### Sådan kommer du dertil
 
-Thy er lettest tilgængelig med bil via rute 11 langs vestkysten. Nærmeste større by er Thisted. Du kan også tage tog til Thisted og cykle videre ud i parken. Udforsk flere shelters i området via [Jylland-siden](/danmark/jylland).
+Thy er lettest tilgængelig med bil via rute 11 langs vestkysten. Nærmeste større by er Thisted. Du kan også tage tog til Thisted og cykle videre ud i parken. Se alle shelters i [Nationalpark Thy](/omraade/nationalpark-thy).
 
 ## Nationalpark Mols Bjerge – bakker og fjordudsigt
 
@@ -97,7 +97,7 @@ Overnatning ved Vadehavet er en helt særlig oplevelse. Shelters ligger typisk v
 
 ### Sådan kommer du dertil
 
-De vigtigste adgangspunkter er Ribe, Tønder og Esbjerg. Herfra kan du køre eller cykle ud til parkens pladser. Find flere shelters i denne del af landet under [Jylland](/danmark/jylland).
+De vigtigste adgangspunkter er Ribe, Tønder og Esbjerg. Herfra kan du køre eller cykle ud til parkens pladser. Se alle shelters ved [Vadehavet](/omraade/vadehavet).
 
 ## Nationalpark Skjoldungernes Land – fjorde og vikingearv
 
@@ -109,7 +109,7 @@ Parkens shelters og lejrpladser ligger tæt på Roskilde Fjord og de omkringligg
 
 ### Sådan kommer du dertil
 
-Tag S-tog eller regionaltog til Roskilde, hvorfra der er kort afstand til parkens områder. Udforsk shelters på Sjælland via [Sjælland-siden](/danmark/sjaelland).
+Tag S-tog eller regionaltog til Roskilde, hvorfra der er kort afstand til parkens områder. Se alle shelters i [Skjoldungernes Land](/omraade/skjoldungernes-land).
 
 ## Kongernes Nordsjælland – skov, søer og slotte
 
@@ -121,7 +121,7 @@ Her finder du shelters i nogle af Danmarks største og mest varierede skovområd
 
 ### Sådan kommer du dertil
 
-Tag S-tog til Hillerød og bus videre, eller kør via Hillerødmotorvejen. Find shelters i Nordsjælland under [Sjælland](/danmark/sjaelland).
+Tag S-tog til Hillerød og bus videre, eller kør via Hillerødmotorvejen. Se alle shelters i [Kongernes Nordsjælland](/omraade/kongernes-nordsjaelland).
 
 ## Planlæg din nationalparktur
 
