@@ -44,8 +44,13 @@ export async function generateMetadata({
   const slug = decodeURIComponent(rawSlug);
   const post = getBlogPostBySlug(slug);
   if (!post) return { title: { absolute: "Indlæg ikke fundet" } };
-  const title = `${post.title} | ShelterDK`;
-  const description = post.excerpt;
+  // Drop brand-suffikset hvis titlen ellers afkortes >60 tegn; klamp meta-desc til ~155.
+  const title =
+    (post.title + " | ShelterDK").length <= 60 ? `${post.title} | ShelterDK` : post.title;
+  const description =
+    post.excerpt.length <= 160
+      ? post.excerpt
+      : post.excerpt.slice(0, 155).replace(/\s+\S*$/, "").trimEnd() + "…";
   const canonicalPath = `/blog/${rawSlug}`;
   return {
     title: { absolute: title },

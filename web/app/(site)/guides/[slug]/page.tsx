@@ -42,14 +42,23 @@ export async function generateMetadata({
     guide.category === "Regler"
       ? `${guide.title} (${new Date().getFullYear()})`
       : guide.title;
+  // Drop brand-suffikset hvis titlen ellers ryger over ~60 tegn (Google afkorter
+  // dér); den beskrivende titel er vigtigere end brandet, som Google ofte selv
+  // tilføjer. Klamp meta-description til ~155 tegn (fuldt excerpt vises på siden).
+  const titleAbsolute =
+    (metaTitle + " | ShelterDK").length <= 60 ? `${metaTitle} | ShelterDK` : metaTitle;
+  const metaDescription =
+    guide.excerpt.length <= 160
+      ? guide.excerpt
+      : guide.excerpt.slice(0, 155).replace(/\s+\S*$/, "").trimEnd() + "…";
   return {
-    title: { absolute: `${metaTitle} | ShelterDK` },
-    description: guide.excerpt,
+    title: { absolute: titleAbsolute },
+    description: metaDescription,
     alternates: { canonical: `https://shelterdk.dk${canonicalPath}` },
     openGraph: {
       type: "article",
-      title: `${guide.title} | ShelterDK`,
-      description: guide.excerpt,
+      title: titleAbsolute,
+      description: metaDescription,
       url: canonicalPath,
       publishedTime: guide.publishedAt,
       modifiedTime: guide.updatedAt,
