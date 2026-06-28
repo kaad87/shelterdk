@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { getDistinctRegions, slugifySegment, NO_KOMMUNE_SLUG, getMunicipalitiesWithCounts } from "@/lib/danmark-silo";
+import { createPublicClient } from "@/utils/supabase/server-public";
 import { segmentSlugToName } from "@/lib/slug";
 import { getSheltersPage, SOEG_PAGE_SIZE, type SoegFilters, type MapBbox } from "@/lib/soeg-db";
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
@@ -99,8 +100,28 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const regionName = resolveRegionName(regionSlug, regions);
   if (!regionName) return { title: { absolute: "Region ikke fundet" } };
   const prep = prepositionForRegionName(regionName);
-  const title = `Shelters ${prep} ${regionName} – Se kort og liste | ShelterDK`;
-  const description = `Find alle shelters ${prep} ${regionName}. Udforsk overnatningspladser i naturen på interaktivt kort og liste – med billeder, faciliteter og booking.`;
+  // CTR: konkret antal + aktuelt årstal (samme mønster som by-siderne, der har
+  // bedst CTR). Let head-count (ingen rækker overføres); begge dele dynamiske.
+  const year = new Date().getFullYear();
+  let shelterCount = 0;
+  try {
+    const { count } = await createPublicClient()
+      .from("shelters")
+      .select("id", { count: "exact", head: true })
+      .eq("region", regionName)
+      .is("duplicate_of_shelter_id", null);
+    shelterCount = count ?? 0;
+  } catch {
+    shelterCount = 0;
+  }
+  const title =
+    shelterCount > 0
+      ? `Shelters ${prep} ${regionName} (${year}) – ${shelterCount} pladser | ShelterDK`
+      : `Shelters ${prep} ${regionName} (${year}) – kort & liste | ShelterDK`;
+  const description =
+    shelterCount > 0
+      ? `${shelterCount} shelters ${prep} ${regionName} – gratis og bookbare pladser med kort, billeder og faciliteter. Opdateret ${year}.`
+      : `Find alle shelters ${prep} ${regionName}. Kort, billeder, faciliteter og booking. Opdateret ${year}.`;
   const canonicalRegionSlug = resolveCanonicalRegionSlug(regionName, regionSlug);
   const canonicalPath = `/danmark/${canonicalRegionSlug}`;
   return {

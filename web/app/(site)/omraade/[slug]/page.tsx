@@ -68,17 +68,23 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { primaryName, secondaryName } = getAreaDisplayParts(area.name);
   const canonicalPath = `/omraade/${slug}`;
   const shelterCount = (await getCachedAreaShelters(slug)).length;
+  // META-description holdes kort (~140 tegn) så Google ikke afkorter den midt i
+  // en sætning. Den rige area.description bruges stadig som on-page-intro.
   const description =
-    area.description?.trim() ||
-    `Find shelters ${prep} ${primaryName}. Se billeder, overnatningsmuligheder og links videre til kort, booking og nærliggende shelters.${secondaryName ? ` Siden dækker også ${secondaryName}.` : ""}`;
+    shelterCount > 0
+      ? `${shelterCount} shelters ${prep} ${primaryName} – gratis og bookbare overnatningspladser med kort, billeder og ruter. Find din næste tur.`
+      : `Find shelters ${prep} ${primaryName}. Se kort, billeder, booking og nærliggende shelters.${secondaryName ? ` Dækker også ${secondaryName}.` : ""}`;
 
-  // Hold titlen <60 tegn: drop den beskrivende hale for lange områdenavne
-  // (fx "Nationalpark Kongernes Nordsjælland") så Google ikke afkorter den.
-  const titleBase = `Shelter ${prep} ${primaryName}`;
+  // CTR: konkret antal i titlen. Hold titlen <~62 tegn; drop antal/hale for lange
+  // områdenavne (fx "Nationalpark Kongernes Nordsjælland") så Google ikke afkorter.
+  const titleCore =
+    shelterCount > 0
+      ? `Shelter ${prep} ${primaryName} – ${shelterCount} pladser`
+      : `Shelter ${prep} ${primaryName}`;
   const titleAbsolute =
-    titleBase.length + " – kort og overnatning | ShelterDK".length <= 60
-      ? `${titleBase} – kort og overnatning | ShelterDK`
-      : `${titleBase} | ShelterDK`;
+    (titleCore + " | ShelterDK").length <= 62
+      ? `${titleCore} | ShelterDK`
+      : `Shelter ${prep} ${primaryName} | ShelterDK`;
 
   return {
     title: {

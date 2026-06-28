@@ -36,8 +36,14 @@ export async function generateMetadata({
   const guide = getGuideBySlug(slug);
   if (!guide) return { title: { absolute: "Guide ikke fundet" } };
   const canonicalPath = `/guides/${guide.slug}`;
+  // Årstal i titlen på regel-guides: reglerne ændres, så et synligt aktuelt år
+  // signalerer friskhed og løfter CTR. Dynamisk, så det aldrig bliver forældet.
+  const metaTitle =
+    guide.category === "Regler"
+      ? `${guide.title} (${new Date().getFullYear()})`
+      : guide.title;
   return {
-    title: { absolute: `${guide.title} | ShelterDK` },
+    title: { absolute: `${metaTitle} | ShelterDK` },
     description: guide.excerpt,
     alternates: { canonical: `https://shelterdk.dk${canonicalPath}` },
     openGraph: {
