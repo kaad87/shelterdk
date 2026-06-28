@@ -217,7 +217,7 @@ export default async function ShelterMedVandPage() {
             <Link href="/danmark/jylland" className="text-accent hover:underline">Jylland</Link>,{" "}
             <Link href="/danmark/fyn" className="text-accent hover:underline">Fyn</Link>,{" "}
             <Link href="/danmark/sjaelland" className="text-accent hover:underline">Sjælland</Link>{" "}
-            og på Bornholm. Klik på et shelter for at se mere information og præcis hvad der
+            og på <Link href="/omraade/bornholm" className="text-accent hover:underline">Bornholm</Link>. Klik på et shelter for at se mere information og præcis hvad der
             findes på pladsen. Mange shelters kan bookes på forhånd via udinaturen.dk eller
             Naturstyrelsen.
           </p>

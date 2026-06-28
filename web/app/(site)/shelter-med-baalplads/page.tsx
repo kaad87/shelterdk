@@ -165,7 +165,7 @@ export default async function ShelterMedBaalpladsPage() {
             <Link href="/danmark/jylland" className="text-accent hover:underline">Jylland</Link>,{" "}
             <Link href="/danmark/fyn" className="text-accent hover:underline">Fyn</Link>,{" "}
             <Link href="/danmark/sjaelland" className="text-accent hover:underline">Sjælland</Link>{" "}
-            og på Bornholm. Klik på et shelter for at se om der er bålplads, billeder og
+            og på <Link href="/omraade/bornholm" className="text-accent hover:underline">Bornholm</Link>. Klik på et shelter for at se om der er bålplads, billeder og
             bookingmuligheder.
           </p>
 
