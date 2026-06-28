@@ -505,14 +505,14 @@ Hvis du vil dykke endnu mere ned i forberedelserne, kan du læse guiden [Shelter
     slug: "regler-for-shelter-og-teltning-i-danmark",
     title: "Regler for shelter og teltning i Danmark",
     excerpt:
-      "Få styr på de vigtigste regler for shelters og teltning i Danmark: hvor længe du må blive, om du må drikke alkohol, og hvem der har førsteret til pladsen.",
+      "Hvor må du slå telt op, hvor længe må du blive, og hvad gælder for bål og fri teltning? Få styr på alle reglerne for shelter og teltning i Danmark — og hvor du må overnatte lovligt og gratis.",
     coverImage:
       "https://mapcentia-www.s3-eu-west-1.amazonaws.com/fkg/1600/fb4d6fb9-6c08-4ff6-ac92-e4010c1d4876.jpg",
     category: "Regler",
     publishedAt: "2025-04-11",
-    updatedAt: "2026-06-11",
+    updatedAt: "2026-06-28",
     content: `
-Må man bare overnatte i naturen i Danmark? Svaret er nej — men systemet er bedre, end rygtet siger. Danmark har over 1.600 shelters og primitive overnatningspladser, hvor du må sove lovligt, og i mange tilfælde gratis. Denne guide samler alle reglerne: hvor længe du må blive, hvor du må slå telt op, hvad du må med bål og alkohol, og hvad der sker, hvis du bryder reglerne.
+Må man bare overnatte i naturen i Danmark? Svaret er nej — men systemet er bedre, end rygtet siger. Danmark har over 1.700 shelters og primitive overnatningspladser, hvor du må sove lovligt, og i mange tilfælde gratis. Denne guide samler alle reglerne: hvor længe du må blive, hvor du må slå telt op, hvad du må med bål og alkohol, og hvad der sker, hvis du bryder reglerne.
 
 ## Grundreglen: udpegede pladser
 

@@ -46,7 +46,7 @@ const BLOG_POSTS: BlogPost[] = [
     excerpt:
       "Sådan planlægger du en sheltertur helt uden udgifter: find de gratis pladser, kend først-til-mølle-reglerne og pak rigtigt.",
     date: "2026-02-15",
-    updatedAt: "2026-06-11",
+    updatedAt: "2026-06-28",
     category: "Guides",
     coverImage:
       "https://mapcentia-www.s3-eu-west-1.amazonaws.com/fkg/1600/c4fa2b79-728e-4c5d-9305-87f1c16a988e.jpg",
@@ -85,11 +85,11 @@ Der findes flere gode kilder til at finde gratis shelters i Danmark. Se [den sam
 
 De mest populære områder for gratis shelters inkluderer:
 
-- **Nordjylland** – store klitplantager og kystområder med mange frie shelters
-- **Midtjylland** – Silkeborg-området og Søhøjlandet har adskillige shelters langs vandreruter
-- **Fyn** – et tæt netværk af cykelvenlige shelters
-- **Nordsjælland** – Gribskov og Tisvilde Hegn er populære for Københavnere
-- **Bornholm** – unikke klippekystshelters i en helt særlig natur
+- **[Nordjylland](/danmark/jylland)** – store klitplantager og kystområder med mange frie shelters
+- **[Søhøjlandet](/omraade/soehojlandet)** – Silkeborg-området har adskillige shelters langs vandreruter
+- **[Fyn](/danmark/fyn)** – et tæt netværk af cykelvenlige shelters
+- **[Kongernes Nordsjælland](/omraade/kongernes-nordsjaelland)** – Gribskov og Tisvilde Hegn er populære for københavnere
+- **[Bornholm](/omraade/bornholm)** – unikke klippekystshelters i en helt særlig natur
 
 ## Faciliteter ved gratis shelters
 
