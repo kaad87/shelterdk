@@ -143,14 +143,30 @@ async function syncRetailer(
     };
   });
 
-  // Upsert in batches of 500 to avoid payload limits
-  const BATCH = 500;
+  // Upsert in smaller batches with retry/backoff. Smaller batches stay under the
+  // Postgres statement_timeout (important when the DB is throttled/under load), and
+  // the retry means a single transient timeout doesn't abort the whole sync.
+  const BATCH = 150;
+  const MAX_ATTEMPTS = 4;
   for (let i = 0; i < rows.length; i += BATCH) {
     const batch = rows.slice(i, i + BATCH);
-    const { error } = await supabase
-      .from("affiliate_products")
-      .upsert(batch, { onConflict: "id" });
-    if (error) throw new Error(`Upsert failed (batch ${i}): ${error.message}`);
+    let lastError: string | null = null;
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      const { error } = await supabase
+        .from("affiliate_products")
+        .upsert(batch, { onConflict: "id" });
+      if (!error) {
+        lastError = null;
+        break;
+      }
+      lastError = error.message;
+      if (attempt < MAX_ATTEMPTS) {
+        const backoffMs = 1000 * 2 ** (attempt - 1); // 1s, 2s, 4s
+        console.warn(`[${retailer}] batch ${i} fejl (forsøg ${attempt}/${MAX_ATTEMPTS}): ${error.message} — prøver igen om ${backoffMs}ms`);
+        await new Promise((r) => setTimeout(r, backoffMs));
+      }
+    }
+    if (lastError) throw new Error(`Upsert failed (batch ${i}) efter ${MAX_ATTEMPTS} forsøg: ${lastError}`);
     console.log(`[${retailer}] upserted ${i + batch.length}/${rows.length}`);
   }
 
