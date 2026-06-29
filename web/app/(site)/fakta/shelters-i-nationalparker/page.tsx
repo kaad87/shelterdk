@@ -14,7 +14,7 @@ export const revalidate = 86400;
 const CANONICAL = "/fakta/shelters-i-nationalparker";
 
 export const metadata: Metadata = {
-  title: { absolute: "Shelters i nationalparker \u2013 Danmarks 5 nationalparker | ShelterDK" },
+  title: { absolute: "Shelters i Danmarks 5 nationalparker | ShelterDK" },
   description: "Find shelters i Danmarks 5 nationalparker: Thy, Mols Bjerge, Vadehavet, Skjoldungernes Land og Kongernes Nordsj\u00e6lland.",
   alternates: { canonical: `https://shelterdk.dk${CANONICAL}` },
   openGraph: {

@@ -16,7 +16,7 @@ const CANONICAL = "/fakta/shelters-i-danmark";
 
 export async function generateMetadata(): Promise<Metadata> {
   const total = await getTotalShelterCount();
-  const title = `Shelters i Danmark \u2013 ${total} shelters p\u00e5 kort og liste | ShelterDK`;
+  const title = `Shelters i Danmark \u2013 ${total} p\u00e5 kort & liste | ShelterDK`;
   const description = `Der er ${total} shelters i Danmark. Se komplet statistik over regioner, faciliteter og bed\u00f8mmelser. Opdateret data fra GeoFA, Naturstyrelsen og udinaturen.dk.`;
   return {
     title: { absolute: title },

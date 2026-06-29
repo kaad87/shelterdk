@@ -9,7 +9,7 @@ const CANONICAL = "/fakta/gratis-shelters";
 
 export async function generateMetadata(): Promise<Metadata> {
   const facilities = await getFacilityCounts();
-  const title = `Gratis shelters i Danmark \u2013 ${facilities.gratis} shelters uden betaling | ShelterDK`;
+  const title = `Gratis shelters i Danmark \u2013 ${facilities.gratis} uden betaling | ShelterDK`;
   const description = `${facilities.gratis} shelters i Danmark er helt gratis. Se oversigt over gratis vs. betalte shelters fordelt p\u00e5 regioner.`;
   return {
     title: { absolute: title },

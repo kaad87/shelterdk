@@ -7,7 +7,7 @@ export const revalidate = 86400;
 const CANONICAL = "/fakta/shelters-med-faciliteter";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const title = "Faciliteter p\u00e5 shelters i Danmark \u2013 toilet, vand, b\u00e5lplads | ShelterDK";
+  const title = "Shelters med toilet, vand & b\u00e5lplads i Danmark | ShelterDK";
   const description = "Komplet oversigt over faciliteter p\u00e5 shelters i Danmark. Se hvor mange shelters der har toilet, vand, b\u00e5lplads, og mere.";
   return {
     title: { absolute: title },

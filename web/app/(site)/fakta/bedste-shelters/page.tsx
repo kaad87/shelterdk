@@ -7,7 +7,7 @@ export const revalidate = 86400;
 const CANONICAL = "/fakta/bedste-shelters";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const title = "H\u00f8jest bed\u00f8mte shelters i Danmark \u2013 baseret p\u00e5 Google-anmeldelser | ShelterDK";
+  const title = "Bedst bed\u00f8mte shelters i Danmark (Google) | ShelterDK";
   const description = "Se Danmarks bedst bed\u00f8mte shelters baseret p\u00e5 Google-anmeldelser. Data-backed ranking med rigtige bed\u00f8mmelser.";
   return {
     title: { absolute: title },
