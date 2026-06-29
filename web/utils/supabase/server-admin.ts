@@ -15,5 +15,15 @@ export function createAdminClient() {
     );
   }
 
-  return createClient(url, key);
+  // VIGTIGT: tving no-store på alle requests. Ellers cacher Next.js' patchede fetch
+  // supabase-js' GET-queries i Data Cache — selv i force-dynamic-ruter — hvilket gav
+  // forældede reads (fx availability-kalenderen viste ikke nye bookinger → datoen så
+  // "ledig" ud i kalenderen, men blev afvist ved booking). Admin-klienten bruges kun
+  // i dynamiske ruter, så friske reads er altid korrekt; ingen effekt på public-cachen.
+  return createClient(url, key, {
+    global: {
+      fetch: (input: RequestInfo | URL, init?: RequestInit) =>
+        fetch(input, { ...init, cache: "no-store" }),
+    },
+  });
 }
