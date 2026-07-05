@@ -103,7 +103,8 @@ export function trackAffiliateClick(args: {
     | "guide_table"
     | "naturophold_guide"
     | "naturophold_planb"
-    | "naturophold_map";
+    | "naturophold_map"
+    | "awin_banner";
   priceDkk?: number;
 }) {
   push("affiliate_click", {

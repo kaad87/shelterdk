@@ -366,7 +366,7 @@ Pak typisk ekstra:
 - Evt. bamse, lille pude eller andet tryghedsskabende
 - Vådservietter og flere skraldeposer end du tror
 
-Til familieture er det ofte de små komfortting, der redder aftenen. Se også vores guide til [shelter med børn](/blog/shelter-med-boern) og siden med [shelter til familier](/shelter-til-familier), hvis du vil finde pladser, der er nemmere at starte med.
+Til familieture er det ofte de små komfortting, der redder aftenen — en [god campingstol](/bedste/campingstol) til de voksne vejer lidt, men gør timerne ved bålet meget bedre. Se også vores guide til [shelter med børn](/blog/shelter-med-boern) og siden med [shelter til familier](/shelter-til-familier), hvis du vil finde pladser, der er nemmere at starte med.
 
 ## 3. Mad og køkken
 
@@ -823,7 +823,7 @@ Når gløderne er perfekte:
 - Lun pandekager eller pandekage-mix
 - Rist skumfiduser og lav små "s'mores" med kiks og chokolade
 
-Hold det simpelt – det vigtigste er, at I hygger jer omkring bålet. Planlægger du en tur i forår eller sommer, kan du kombinere med vores tips til [shelter i forår og sommer](/blog/shelter-foraar-sommer).
+Hold det simpelt – det vigtigste er, at I hygger jer omkring bålet, og en [campingstol](/bedste/campingstol) gør de lange aftener ved gløderne langt mere behagelige. Planlægger du en tur i forår eller sommer, kan du kombinere med vores tips til [shelter i forår og sommer](/blog/shelter-foraar-sommer).
 
 Hvis du gerne vil kombinere madplanen med en god pakkeliste og tips til valg af plads, så læs også [Pakkeliste til sheltertur – den komplette tjekliste](/guides/pakkeliste-til-sheltertur) og [Shelter for begyndere – sådan får du en god første tur](/guides/shelter-for-begyndere-forste-tur). Når du har styr på madidéerne, kan du bruge [Søg shelters](/soeg) til at finde pladser med bålplads og de faciliteter, der passer til din tur.
     

@@ -9,6 +9,7 @@ import { BuyingGuideEntry } from "@/components/buying-guide/BuyingGuideEntry";
 import { BuyingGuideOverview } from "@/components/buying-guide/BuyingGuideOverview";
 import { BuyingGuideComparisonTable } from "@/components/buying-guide/BuyingGuideComparisonTable";
 import { BuyingGuideSources } from "@/components/buying-guide/BuyingGuideSources";
+import { GuideDeals } from "@/components/buying-guide/GuideDeals";
 import { QuickAnswer } from "@/components/seo/QuickAnswer";
 import { formatScore } from "@/lib/buying-guides-score";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
@@ -221,6 +222,9 @@ export default async function BuyingGuidePage({
               </div>
             </section>
           )}
+
+          {/* Aktuelle tilbud i samme kategori (ekskl. guidens egne produkter) */}
+          <GuideDeals entries={entries} />
 
           {/* Se også — relaterede guider */}
           <RelatedGuides guides={related} />
