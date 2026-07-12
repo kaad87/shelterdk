@@ -132,6 +132,12 @@ export default async function BookShelterPage({ params }: Props) {
               </div>
 
               <div className="mt-5 flex flex-wrap gap-3 text-sm">
+                {/* Synlig pris FØR dato-valg (før stod prisen først i opsummeringen) */}
+                <span className="inline-flex items-center rounded-full bg-primary/5 px-3 py-1.5 font-semibold text-primary">
+                  {(shelter.shelter_price_dkk ?? 0) > 0
+                    ? `${shelter.shelter_price_dkk} kr pr. nat + gebyr fra ${shelter.platform_fee_min_dkk ?? 25} kr`
+                    : `Gratis shelter · bookinggebyr fra ${shelter.platform_fee_min_dkk ?? 25} kr`}
+                </span>
                 <span className="inline-flex items-center rounded-full bg-accent/10 px-3 py-1.5 text-accent font-medium">
                   Maks {shelter.max_persons} personer
                 </span>

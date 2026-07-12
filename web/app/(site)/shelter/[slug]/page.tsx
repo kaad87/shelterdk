@@ -36,6 +36,7 @@ import { getWeatherForecast } from "@/lib/weather";
 import { ShelterDetailContent } from "@/components/ShelterDetailContent";
 import { listBookableSheltersByShelterDbId } from "@/lib/booking-db";
 import { ShelterSchema } from "@/components/seo/ShelterSchema";
+import { getPublishedGuestReviews } from "@/lib/guest-reviews";
 import { getRoutesForShelter } from "@/lib/shelter-routes";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { NearbySheltersWithinRadius } from "@/components/NearbySheltersWithinRadius";
@@ -49,9 +50,9 @@ interface PageProps {
 export const revalidate = 86400;
 
 const SHELTER_SELECT_DETAIL =
-  "id, title, slug, seo_title, description, seo_description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, booking_provider, booking_link_mode, booking_lookup_key, booking_url_verified_at, booking_confidence, availability_provider, availability_mode, availability_lookup_key, availability_url, availability_verified_at, availability_confidence, duplicate_of_shelter_id, region, kommune, place, toilet, water, geofa_raw, area_slug, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
+  "id, title, slug, seo_title, description, seo_description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, booking_provider, booking_link_mode, booking_lookup_key, booking_url_verified_at, booking_confidence, availability_provider, availability_mode, availability_lookup_key, availability_url, availability_verified_at, availability_confidence, duplicate_of_shelter_id, region, kommune, place, toilet, water, geofa_raw, area_slug, created_at, updated_at, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
 const SHELTER_SELECT_DETAIL_FALLBACK =
-  "id, title, slug, description, seo_description, location, image_url, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, availability_provider, availability_mode, availability_lookup_key, availability_url, availability_verified_at, availability_confidence, duplicate_of_shelter_id, region, kommune, place, water, geofa_raw, area_slug, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
+  "id, title, slug, description, seo_description, location, image_url, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, availability_provider, availability_mode, availability_lookup_key, availability_url, availability_verified_at, availability_confidence, duplicate_of_shelter_id, region, kommune, place, water, geofa_raw, area_slug, created_at, updated_at, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
 
 async function getShelterBySlugUncached(slug: string): Promise<Shelter | null> {
   const supabase = createPublicClient();
@@ -174,14 +175,29 @@ export default async function ShelterPage({ params }: PageProps) {
   const areaSlug = (shelter as { area_slug?: string | null }).area_slug?.trim() || null;
   // Compute coords synchronously so weather fetch can run in parallel with the others.
   const coordsEarly = getLocationCoords(shelter);
-  const [reviews, area, bookableShelters, weatherForecast] = await Promise.all([
+  const [reviews, area, bookableShelters, weatherForecast, guestReviews] = await Promise.all([
     getReviews(shelter.google_place_id ?? null),
     areaSlug ? getAreaBySlug(areaSlug) : Promise.resolve(null),
     listBookableSheltersByShelterDbId(shelter.id).catch(() => []),
     coordsEarly
       ? getWeatherForecast(coordsEarly.lat, coordsEarly.lon).catch(() => null)
       : Promise.resolve(null),
+    getPublishedGuestReviews(shelter.id).catch(() => []),
   ]);
+
+  // Ærligt pris-offer (schema.org Offer) for ShelterDK-bookbare enheder — laveste
+  // 1-nats-total (shelterpris + minimumsgebyr) fra vores egne booking-data.
+  const bookingOffer =
+    bookableShelters.length > 0
+      ? {
+          priceDkk: Math.min(
+            ...bookableShelters.map(
+              (u) => (u.shelter_price_dkk ?? 0) + (u.platform_fee_min_dkk ?? 0)
+            )
+          ),
+          url: `https://shelterdk.dk${canonicalPath}`,
+        }
+      : null;
   const embeddedPlaces = shelter.google_places;
   const embeddedRefs = Array.isArray(embeddedPlaces)
     ? embeddedPlaces?.[0]?.photo_references
@@ -253,7 +269,7 @@ export default async function ShelterPage({ params }: PageProps) {
   ];
   return (
     <>
-      <ShelterSchema shelter={shelter} canonicalPath={canonicalPath} reviews={reviews} />
+      <ShelterSchema shelter={shelter} canonicalPath={canonicalPath} reviews={reviews} guestReviews={guestReviews} bookingOffer={bookingOffer} />
       <BreadcrumbSchema items={breadcrumbs} />
       <ShelterDetailContent
       shelter={shelter}
@@ -284,6 +300,8 @@ export default async function ShelterPage({ params }: PageProps) {
           ? `/book/${unit.slug}`
           : `/embed/book/${unit.slug}`,
         maxPersons: unit.max_persons,
+        priceDkk: unit.shelter_price_dkk ?? null,
+        feeMinDkk: unit.platform_fee_min_dkk ?? null,
       }))}
       bookingFallbackHint={bookingFallbackHint}
       firewood={getFirewood(shelter)}
@@ -293,6 +311,7 @@ export default async function ShelterPage({ params }: PageProps) {
       shelterFaqItems={shelterFaqItems}
       shelterFaqJsonLd={shelterFaqJsonLd}
       reviews={reviews}
+      guestReviews={guestReviews}
       coords={coords}
       weatherForecast={weatherForecast}
       />

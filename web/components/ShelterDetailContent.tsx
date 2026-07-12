@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { RevealContact } from "@/components/RevealContact";
+import { displayGuestName } from "@/lib/guest-reviews";
 import {
   ExternalLink,
   MapPin,
@@ -87,6 +88,10 @@ interface ShelterDetailContentProps {
     title: string;
     href: string;
     maxPersons: number;
+    /** Shelter-ejerens pris pr. nat i DKK (0/null = gratis shelter). */
+    priceDkk?: number | null;
+    /** Minimums-bookinggebyr i DKK. */
+    feeMinDkk?: number | null;
   }[];
   /** Når bookbar men ingen bookingUrl: 'naturstyrelsen' = link til book.naturstyrelsen.dk. */
   bookingFallbackHint?: "naturstyrelsen" | null;
@@ -100,6 +105,8 @@ interface ShelterDetailContentProps {
     relative_time_description: string | null;
     time: string | null;
   }[];
+  /** Førsteparts gæste-anmeldelser (verificerede ShelterDK-bookinger). */
+  guestReviews?: import("@/lib/guest-reviews").GuestReview[];
   coords: { lat: number; lon: number } | null;
   weatherForecast?: DailyForecast[] | null;
 }
@@ -136,6 +143,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
     shelterFaqItems,
     shelterFaqJsonLd,
     reviews,
+    guestReviews = [],
     coords,
     weatherForecast = null,
   } = props;
@@ -180,6 +188,25 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
     return title;
   };
 
+  // Synlig pris for ShelterDK-bookbare shelters (AEO/UX: siden indeholdt ingen
+  // pris-info i HTML, så hverken brugere eller AI kunne svare på "hvad koster det").
+  // Kun vores egne booking-data bruges — aldrig gæt for eksterne bookinger.
+  const unitPriceLabel = (() => {
+    if (bookingUnits.length === 0) return null;
+    const prices = bookingUnits.map((u) => u.priceDkk ?? 0);
+    const fees = bookingUnits
+      .map((u) => u.feeMinDkk)
+      .filter((f): f is number => typeof f === "number" && f > 0);
+    const minPrice = Math.min(...prices);
+    const minFee = fees.length > 0 ? Math.min(...fees) : null;
+    if (minPrice <= 0) {
+      return minFee
+        ? `Gratis shelter — du betaler kun et bookinggebyr fra ${minFee} kr`
+        : "Gratis shelter";
+    }
+    return `Fra ${minPrice} kr pr. nat${minFee ? ` + bookinggebyr fra ${minFee} kr` : ""}`;
+  })();
+
   const BookingCard = ({ className = "" }: { className?: string }) => (
     <div className={`rounded-2xl border border-primary/10 bg-white shadow-sm p-6 ${className}`}>
       {hasMultipleBookingUnits ? (
@@ -191,6 +218,9 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
             <p className="mt-1 text-sm text-primary/70">
               Der er {bookingUnits.length} shelters på pladsen, og de bookes hver for sig.
             </p>
+            {unitPriceLabel && (
+              <p className="mt-2 text-sm font-semibold text-primary">{unitPriceLabel}</p>
+            )}
           </div>
           <div className="space-y-2.5">
             {bookingUnits.map((unit) => (
@@ -230,6 +260,9 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
         </>
       ) : bookingUnits.length === 1 ? (
         <>
+          {unitPriceLabel && (
+            <p className="mb-3 text-center text-sm font-semibold text-primary">{unitPriceLabel}</p>
+          )}
           <TrackedBookLink
             href={bookingUnits[0].href}
             shelterId={shelter.id}
@@ -670,6 +703,43 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
 
             {showAvailabilityPanel && (
               <div id={mobileAvailabilityTargetId} />
+            )}
+
+            {/* Førsteparts-anmeldelser fra verificerede ShelterDK-bookinger —
+                server-renderet (synligt for både brugere og AI/crawlere). */}
+            {guestReviews.length > 0 && (
+              <section className="mb-10">
+                <h2 className="font-serif text-xl font-bold text-primary mb-1">
+                  Anmeldelser fra gæster
+                </h2>
+                <p className="mb-4 text-xs text-primary/50">
+                  Fra verificerede ophold booket via ShelterDK.
+                </p>
+                <ul className="space-y-4">
+                  {guestReviews.map((r) => (
+                    <li key={r.id} className="rounded-xl border border-primary/10 bg-white/50 p-5">
+                      <div className="mb-1.5 flex items-center gap-2">
+                        <span className="flex items-center gap-0.5" aria-label={`${r.rating} af 5 stjerner`}>
+                          {[1, 2, 3, 4, 5].map((n) => (
+                            <Star
+                              key={n}
+                              size={14}
+                              className={n <= r.rating ? "fill-accent text-accent" : "text-primary/20"}
+                            />
+                          ))}
+                        </span>
+                        <span className="font-medium text-primary text-sm">{displayGuestName(r.guest_name)}</span>
+                        <span className="text-primary/50 text-xs">
+                          · {new Date(r.created_at).toLocaleDateString("da-DK", { month: "long", year: "numeric" })}
+                        </span>
+                      </div>
+                      {r.comment && (
+                        <p className="text-sm leading-relaxed text-primary/80">{r.comment}</p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </section>
             )}
 
             {showReviews && reviews.length > 0 && (

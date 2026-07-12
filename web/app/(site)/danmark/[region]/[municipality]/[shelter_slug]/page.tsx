@@ -14,6 +14,7 @@ import {
   NO_KOMMUNE_SLUG,
 } from "@/lib/danmark-silo";
 import { segmentSlugToName } from "@/lib/slug";
+import { getPublishedGuestReviews } from "@/lib/guest-reviews";
 import type { Shelter } from "@/types/shelter";
 import {
   getLongDescription,
@@ -155,11 +156,12 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
   }
 
   const areaSlug = (shelter as { area_slug?: string | null }).area_slug?.trim() || null;
-  const [municipalitiesResult, reviews, area, bookableShelters] = await Promise.all([
+  const [municipalitiesResult, reviews, area, bookableShelters, guestReviews] = await Promise.all([
     regionName ? getMunicipalitiesInRegion(regionName) : Promise.resolve([]),
     getReviews(shelter.google_place_id ?? null),
     areaSlug ? getAreaBySlug(areaSlug) : Promise.resolve(null),
     listBookableSheltersByShelterDbId(shelter.id).catch(() => []),
+    getPublishedGuestReviews(shelter.id).catch(() => []),
   ]);
   const embeddedPlaces = shelter.google_places;
   const embeddedRefs = Array.isArray(embeddedPlaces)
@@ -243,9 +245,23 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
   );
   const canonicalPath = `/danmark/${regionSlug}/${municipalitySlug}/${shelter_slug}`;
 
+  // Ærligt pris-offer (schema.org Offer) for ShelterDK-bookbare enheder — laveste
+  // 1-nats-total (shelterpris + minimumsgebyr) fra vores egne booking-data.
+  const bookingOffer =
+    bookableShelters.length > 0
+      ? {
+          priceDkk: Math.min(
+            ...bookableShelters.map(
+              (u) => (u.shelter_price_dkk ?? 0) + (u.platform_fee_min_dkk ?? 0)
+            )
+          ),
+          url: `https://shelterdk.dk${canonicalPath}`,
+        }
+      : null;
+
   return (
     <>
-      <ShelterSchema shelter={shelter} canonicalPath={canonicalPath} reviews={reviews} />
+      <ShelterSchema shelter={shelter} canonicalPath={canonicalPath} reviews={reviews} guestReviews={guestReviews} bookingOffer={bookingOffer} />
       <BreadcrumbSchema items={breadcrumbSchemaItems} />
       <ShelterDetailContent
         shelter={shelter}
@@ -276,6 +292,8 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
           ? `/book/${unit.slug}`
           : `/embed/book/${unit.slug}`,
         maxPersons: unit.max_persons,
+        priceDkk: unit.shelter_price_dkk ?? null,
+        feeMinDkk: unit.platform_fee_min_dkk ?? null,
       }))}
       bookingFallbackHint={bookingFallbackHint}
       firewood={getFirewood(shelter)}
@@ -285,6 +303,7 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
       shelterFaqItems={shelterFaqItems}
       shelterFaqJsonLd={shelterFaqJsonLd}
       reviews={reviews}
+      guestReviews={guestReviews}
       coords={coords}
       weatherForecast={weatherForecast}
       />

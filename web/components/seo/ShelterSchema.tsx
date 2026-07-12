@@ -43,6 +43,23 @@ interface ShelterSchemaProps {
   firewood?: boolean | null;
   /** Reserved for future first-party reviews; Google Places reviews are not marked up. */
   reviews?: ShelterSchemaReview[];
+  /**
+   * Pris-offer for ShelterDK-bookbare enheder (egne booking-data, laveste
+   * 1-nats-total inkl. gebyr). Null når shelteret ikke kan bookes via ShelterDK —
+   * vi gætter aldrig priser for eksterne bookinger.
+   */
+  bookingOffer?: { priceDkk: number; url: string } | null;
+  /**
+   * Førsteparts gæste-anmeldelser (verificerede ShelterDK-bookinger) — må gerne
+   * markes up jf. Googles retningslinjer (egne, ægte anmeldelser af stedet).
+   * Google Places-anmeldelser markes fortsat IKKE up (tredjepart).
+   */
+  guestReviews?: {
+    rating: number;
+    comment: string | null;
+    guest_name: string;
+    created_at: string;
+  }[];
 }
 
 /**
@@ -55,6 +72,8 @@ export function ShelterSchema({
   useLodgingBusiness = false,
   firewood = null,
   reviews: _reviews = [],
+  bookingOffer = null,
+  guestReviews = [],
 }: ShelterSchemaProps) {
   const coords = getLocationCoords(shelter);
   const toilet = getToilet(shelter);
@@ -72,6 +91,12 @@ export function ShelterSchema({
     shelter.description ||
     null;
   const name = shelter.title?.trim() || "Shelter";
+  // aggregateRating: Google-rating har forrang (størst datamængde); ellers
+  // beregnes den ærligt fra egne verificerede gæste-anmeldelser.
+  const guestAvg =
+    guestReviews.length > 0
+      ? guestReviews.reduce((sum, r) => sum + r.rating, 0) / guestReviews.length
+      : null;
   const aggregateRating: AggregateRating | undefined =
     shelter.google_rating != null &&
     shelter.google_user_ratings_total != null &&
@@ -81,7 +106,22 @@ export function ShelterSchema({
           ratingValue: Number(shelter.google_rating.toFixed(1)),
           reviewCount: shelter.google_user_ratings_total,
         }
-      : undefined;
+      : guestAvg != null
+        ? {
+            "@type": "AggregateRating",
+            ratingValue: Number(guestAvg.toFixed(1)),
+            reviewCount: guestReviews.length,
+          }
+        : undefined;
+
+  // Førsteparts-reviews (maks 5) — schema.org Review med ægte forfatter + dato.
+  const reviewSchema = guestReviews.slice(0, 5).map((r) => ({
+    "@type": "Review",
+    author: { "@type": "Person", name: r.guest_name.trim().split(/\s+/)[0] || "Gæst" },
+    datePublished: r.created_at.slice(0, 10),
+    reviewRating: { "@type": "Rating", ratingValue: r.rating, bestRating: 5, worstRating: 1 },
+    ...(r.comment ? { reviewBody: r.comment } : {}),
+  }));
 
   const amenityFeatures: LocationFeatureSpecification[] = [];
 
@@ -205,6 +245,17 @@ export function ShelterSchema({
     ...(amenityFeatures.length > 0 && { amenityFeature: amenityFeatures }),
     ...(images.length > 0 && { image: images }),
     ...(aggregateRating && { aggregateRating }),
+    ...(reviewSchema.length > 0 && { review: reviewSchema }),
+    ...(bookingOffer && {
+      offers: {
+        "@type": "Offer",
+        price: bookingOffer.priceDkk,
+        priceCurrency: "DKK",
+        availability: "https://schema.org/InStock",
+        url: bookingOffer.url,
+        description: "Pris pr. nat inkl. bookinggebyr ved booking via ShelterDK",
+      },
+    }),
     ...(containedInPlace.length > 0 && { containedInPlace }),
     ...(hasMap && { hasMap }),
     ...(additionalProperties.length > 0 && { additionalProperty: additionalProperties }),

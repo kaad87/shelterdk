@@ -1160,3 +1160,49 @@ export async function sendNewMessageToGuest(opts: {
     throw new Error("Email-fejl (besked til gæst): " + (error instanceof Error ? error.message : String(error)));
   }
 }
+
+/** Til gæsten dagen efter check-out: bed om en anmeldelse af opholdet. */
+export async function sendReviewRequestToGuest(opts: {
+  guestEmail: string;
+  guestName: string;
+  shelterTitle: string;
+  guestToken: string;
+  bookingId?: string;
+  shelterId?: string;
+}) {
+  const subject = `Hvordan var dit ophold på ${opts.shelterTitle}?`;
+  const reviewUrl = `${SITE_URL}/anmeld/${opts.guestToken}`;
+  const html = renderEmail({
+    title: "Hvordan var dit ophold?",
+    preheader: `Del din oplevelse på ${opts.shelterTitle} — det tager under et minut.`,
+    bodyHtml: `
+      <p style="font-size:13px;color:#333;line-height:1.65;margin:0 0 10px;">Hej <strong>${esc(opts.guestName)}</strong>! Vi håber, du havde en god tur til <strong>${esc(opts.shelterTitle)}</strong>.</p>
+      <p style="font-size:13px;color:#666;margin:0 0 16px;">Vil du hjælpe andre shelter-gæster ved at dele din oplevelse? Det tager under et minut — giv stjerner og skriv evt. et par ord.</p>
+      <a href="${reviewUrl}" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">Anmeld dit ophold</a>
+      <p style="font-size:12px;color:#999;margin:12px 0 0;">Din anmeldelse vises på shelterets side på shelterdk.dk med dit fornavn.</p>
+    `,
+  });
+  const text = renderEmailText({
+    title: "Hvordan var dit ophold?",
+    lines: [
+      `Hej ${opts.guestName}! Vi håber, du havde en god tur til ${opts.shelterTitle}.`,
+      "Vil du hjælpe andre shelter-gæster ved at dele din oplevelse? Det tager under et minut.",
+    ],
+    url: reviewUrl,
+  });
+  try {
+    await sendLoggedEmail({
+      to: opts.guestEmail,
+      subject,
+      html,
+      text,
+      context: {
+        emailType: "review_request_guest",
+        bookingId: opts.bookingId ?? null,
+        shelterId: opts.shelterId ?? null,
+      },
+    });
+  } catch (error) {
+    throw new Error("Email-fejl (anmeldelses-anmodning): " + (error instanceof Error ? error.message : String(error)));
+  }
+}
