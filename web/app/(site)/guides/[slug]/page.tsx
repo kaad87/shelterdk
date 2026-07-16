@@ -17,7 +17,6 @@ import { LastVerifiedBadge } from "@/components/LastVerifiedBadge";
 import { SpeakableSchema } from "@/components/seo/SpeakableSchema";
 import { getGuideHowToSchema } from "@/lib/guide-howto";
 import { AdBanner } from "@/components/AdBanner";
-import { AwinBanner } from "@/components/AwinBanner";
 import { Calendar } from "lucide-react";
 import { slugifySegment } from "@/lib/slug";
 
@@ -261,9 +260,6 @@ export default async function GuidePage({ params }: PageProps) {
         <div className="mt-12">
           <AuthorBio linkTo="/guides" linkLabel="Se alle guides" />
         </div>
-
-        {/* Awin-affiliate-banner (adskilt fra AdSense ovenfor) */}
-        <AwinBanner />
 
         {/* FAQ section */}
         {guide.faq && guide.faq.length > 0 && (

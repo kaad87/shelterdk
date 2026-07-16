@@ -15,7 +15,6 @@ import { buildQuickAnswer } from "@/lib/quick-answer";
 import { SoegContent } from "@/components/SoegContent";
 import { getRegionContent } from "@/data/region-content";
 import { DataSummaryBlock } from "@/components/DataSummaryBlock";
-import { AwinBanner } from "@/components/AwinBanner";
 import { getFacilityCountsForRegion, getTopRatedShelters, getTopPlacesForRegion, getNewestShelterUpdatedAt } from "@/lib/fakta-db";
 import { generateRegionPageFaq } from "@/lib/fakta-faq";
 import { faqToJsonLd } from "@/lib/faq";
@@ -431,7 +430,6 @@ export default async function DanmarkRegionPage({ params, searchParams }: PagePr
               dangerouslySetInnerHTML={{ __html: JSON.stringify(faqToJsonLd(faqItems)) }}
             />
           </section>
-          <AwinBanner />
         </div>
       </div>
     </>
