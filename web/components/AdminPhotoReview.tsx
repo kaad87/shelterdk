@@ -1235,6 +1235,14 @@ export function AdminPhotoReview({
             <p className="text-sm text-primary/60">
               {unreadMsgs.length} ulæst{unreadMsgs.length !== 1 ? "e" : ""} af {contactMsgs.length} total
             </p>
+            {/* Svar-funktionen bor på den dedikerede indbakke-side — link dertil,
+                så den er til at finde fra dashboardets arbejdskø. */}
+            <Link
+              href="/admin/kontakt"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-accent/30 px-3 py-1.5 text-sm font-medium text-accent hover:bg-accent/5 transition-colors"
+            >
+              Åbn indbakke & besvar →
+            </Link>
           </div>
 
           {contactMsgs.length === 0 ? (
