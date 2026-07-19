@@ -231,19 +231,19 @@ export function ShelterCard({ shelter, onImageError, href, priority, availabilit
       {/* Bookbar + availability badges */}
       <div className="mt-1.5 flex flex-wrap gap-1 min-h-[1.5rem]">
         {isBookable(shelter) && (
-          <span className="inline-flex items-center gap-1 bg-green-50 text-green-700 text-xs font-medium px-2 py-0.5 rounded-full border border-green-200">
+          <span className="inline-flex items-center gap-1 bg-pine/5 text-pine text-xs font-medium px-2 py-0.5 rounded-full border border-pine/20">
             <CheckCircle size={12} />
             Bookbar
           </span>
         )}
         {availabilityState === "available" && activeDate && (
-          <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 text-xs font-medium px-2 py-0.5 rounded-full border border-emerald-200">
+          <span className="inline-flex items-center gap-1 bg-pine-light/10 text-pine text-xs font-medium px-2 py-0.5 rounded-full border border-pine-light/30">
             <CheckCircle size={12} />
             Ledig {formatDanishDate(activeDate)}
           </span>
         )}
         {availabilityState === "partial" && activeDate && (
-          <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 text-xs font-medium px-2 py-0.5 rounded-full border border-amber-200">
+          <span className="inline-flex items-center gap-1 bg-accent/10 text-accent-dark text-xs font-medium px-2 py-0.5 rounded-full border border-accent/25">
             Delvist ledig {formatDanishDate(activeDate)}
           </span>
         )}
@@ -267,7 +267,7 @@ export function ShelterCard({ shelter, onImageError, href, priority, availabilit
   );
 
   const bookBadge = isShelterDkBookable && (
-    <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-green-700 px-3 py-1.5 text-xs font-bold text-white shadow-lg ring-2 ring-white/20 z-10">
+    <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-pine px-3 py-1.5 text-xs font-bold text-white shadow-sm ring-1 ring-white/25 z-10">
       <CheckCircle size={13} strokeWidth={2.5} />
       Book på ShelterDK
     </div>
@@ -277,7 +277,7 @@ export function ShelterCard({ shelter, onImageError, href, priority, availabilit
   // så de to ikke overlapper.
   const nyBadge = isNew && (
     <div
-      className={`absolute left-3 ${isShelterDkBookable ? "top-12" : "top-3"} flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 text-xs font-bold text-white shadow-lg ring-2 ring-white/20 z-10`}
+      className={`absolute left-3 ${isShelterDkBookable ? "top-12" : "top-3"} flex items-center gap-1 rounded-full bg-accent-dark px-2.5 py-1 text-xs font-bold text-white shadow-sm ring-1 ring-white/25 z-10`}
     >
       <span aria-hidden="true">✨</span>
       Ny
@@ -292,7 +292,7 @@ export function ShelterCard({ shelter, onImageError, href, priority, availabilit
       <Link
         href={linkHref}
         prefetch={false}
-        className="group block overflow-hidden rounded-xl bg-white shadow-sm transition-transform duration-300 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 active:scale-[0.98] touch-manipulation"
+        className="group block overflow-hidden rounded-xl bg-white border border-primary/5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 active:scale-[0.98] touch-manipulation"
       >
         <div className="relative aspect-[4/3] overflow-hidden bg-primary/10">
           <ImageCarousel
@@ -316,7 +316,7 @@ export function ShelterCard({ shelter, onImageError, href, priority, availabilit
     <Link
       href={linkHref}
       prefetch={false}
-      className="group block overflow-hidden rounded-xl bg-white shadow-sm transition-transform duration-300 hover:scale-[1.02] md:hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 active:scale-[0.98] touch-manipulation"
+      className="group block overflow-hidden rounded-xl bg-white border border-primary/5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 active:scale-[0.98] touch-manipulation"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-primary/10">
         {!hasValidImage ? (

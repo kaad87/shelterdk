@@ -35,6 +35,7 @@ const gearGuideLinks = [
 
 const companyLinks = [
   { label: "Tilføj manglende shelter", href: "/registrer-shelter" },
+  { label: "Aktivér booking (shelter-ejere)", href: "/aktiver-booking" },
   { label: "Vandreruter", href: "/ruteplanner" },
   { label: "Turvenner", href: "/turvenner" },
   { label: "Annoncer og partnere", href: "/annoncer-og-partnere" },

@@ -6,6 +6,7 @@ import { useMemo } from "react";
 import type { MapShelter } from "@/lib/map-shelter";
 import type { StayPin } from "@/lib/nature-stays";
 import { getLocationCoords } from "@/lib/shelter-detail";
+import { getProxiedImageSrc } from "@/lib/image-proxy";
 import { slugifySegment } from "@/lib/slug";
 
 const NO_KOMMUNE_SLUG = "ukendt-kommune";
@@ -375,7 +376,7 @@ const MapInner = dynamic(
                     <div className="w-full aspect-video rounded overflow-hidden bg-primary/10 mb-2 relative">
                       {/* Rå ejer-URL via plain img — ejer-hosts er ikke i next/image-allowlisten */}
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={(s.image_url || "").trim()} alt={`Billede af ${s.name}`} loading="lazy" className="w-full h-full object-cover" />
+                      <img src={getProxiedImageSrc((s.image_url || "").trim(), { w: 360, q: 70 })} alt={`Billede af ${s.name}`} loading="lazy" className="w-full h-full object-cover" />
                     </div>
                   )}
                   <p className="font-semibold text-primary">{s.name}</p>

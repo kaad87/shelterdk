@@ -304,7 +304,7 @@ export default async function HomePage() {
       <h1 className="sr-only">{HOME_H1}</h1>
       {/* ===== MOBILE HERO (< md) ===== */}
       <header
-        className="md:hidden bg-gradient-to-br from-[#2c3e2d] to-[#1a2b1a] text-white px-4 pt-14 pb-6"
+        className="md:hidden bg-gradient-to-br from-pine to-pine-dark text-white px-4 pt-14 pb-6"
         aria-label="Introduktion"
       >
         <p className="font-serif text-2xl font-bold mb-3">{HOME_H1}</p>
@@ -326,10 +326,22 @@ export default async function HomePage() {
 
       {/* ===== DESKTOP HERO (md+) ===== */}
       <header
-        className="hidden md:flex relative bg-gradient-to-br from-primary via-primary/95 to-primary/90 text-white min-h-[420px] flex-col justify-end"
+        className="hidden md:flex relative bg-primary text-white min-h-[420px] flex-col justify-end overflow-hidden"
         aria-label="Introduktion"
       >
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1920&q=80&auto=format&fit=crop')] bg-cover bg-center opacity-25" aria-hidden />
+        {/* LCP: next/image med priority (var 730 KB uoptimeret CSS-baggrund uden
+            preload). Klart foto + mørk bund-scrim frem for udvasket 25%-opacity. */}
+        <div className="absolute inset-0" aria-hidden>
+          <Image
+            src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1920&q=75&auto=format&fit=crop"
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/55 to-primary/15" />
+        </div>
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 md:py-24 w-full">
           <div className="max-w-3xl mb-10">
             <p className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
@@ -493,10 +505,10 @@ export default async function HomePage() {
           </h2>
           <div className="grid grid-cols-2 gap-3">
             {[
-              { name: "Jylland", href: "/danmark/jylland", count: "700+", gradient: "from-[#2c3e2d] to-[#4a6b4a]" },
-              { name: "Sjælland", href: "/danmark/sjaelland", count: "500+", gradient: "from-[#2b3a5e] to-[#4a6b8a]" },
-              { name: "Fyn", href: "/danmark/fyn", count: "250+", gradient: "from-[#5e4a2b] to-[#8a7b4a]" },
-              { name: "Bornholm", href: "/danmark/bornholm", count: "30+", gradient: "from-[#4a2b5e] to-[#6b4a8a]" },
+              { name: "Jylland", href: "/danmark/jylland", count: "700+", gradient: "from-pine to-pine-light" },
+              { name: "Sjælland", href: "/danmark/sjaelland", count: "500+", gradient: "from-primary to-pine" },
+              { name: "Fyn", href: "/danmark/fyn", count: "250+", gradient: "from-accent-dark to-pine" },
+              { name: "Bornholm", href: "/danmark/bornholm", count: "30+", gradient: "from-primary to-accent-dark" },
             ].map((r) => (
               <Link
                 key={r.href}

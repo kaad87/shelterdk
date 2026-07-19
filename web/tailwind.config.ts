@@ -16,6 +16,10 @@ const config: Config = {
         "accent-dark": "#8A6A26",
         background: "#F9FAFB",
         "muted-foreground": "#6B7280",
+        // Nordisk naturgrøn — samlet token for de tidligere hardcodede
+        // skov-gradients (mobil-hero, region-kort), så hele sitet deler
+        // én rolig naturpalette (skifer + guld + gran).
+        pine: { DEFAULT: "#2C3E2D", dark: "#1A2B1A", light: "#4A6B4A" },
       },
       fontFamily: {
         // "Ampersand" forrest gør at KUN &-tegnet bruger Georgia (se @font-face

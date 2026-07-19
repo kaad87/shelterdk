@@ -350,6 +350,17 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
           )}
         </div>
       )}
+      {/* Ejer-CTA: /aktiver-booking var reelt kun linket fra demo-sider. Vises
+          kun på shelters UDEN ShelterDK-booking — højeste-intent-placering for
+          at få flere bookbare units (vækst-flaskehalsen). */}
+      {bookingUnits.length === 0 && (
+        <p className="mt-4 border-t border-primary/10 pt-3 text-xs text-primary/50">
+          Ejer eller driver du dette shelter?{" "}
+          <Link href="/aktiver-booking" className="font-medium text-accent-dark hover:underline">
+            Aktivér gratis online booking →
+          </Link>
+        </p>
+      )}
     </div>
   );
 
