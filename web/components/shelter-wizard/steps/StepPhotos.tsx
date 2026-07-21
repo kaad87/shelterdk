@@ -24,9 +24,15 @@ export function StepPhotos({
 
   function handleFiles(files: FileList | null) {
     if (!files) return;
-    for (const file of Array.from(files)) {
-      if (file.type.startsWith("image/")) onAdd(file);
-    }
+    // Cap batchen til resterende kapacitet HER — addPhoto's egen tælling læser en
+    // forældet closure-værdi ved samtidige kald, så en multi-fil-drop af 6+ ellers
+    // ville slippe forbi 5-grænsen og uploade forældreløse filer (afvist ved submit).
+    const remaining = 5 - photos.length;
+    if (remaining <= 0) return;
+    Array.from(files)
+      .filter((file) => file.type.startsWith("image/"))
+      .slice(0, remaining)
+      .forEach((file) => onAdd(file));
   }
 
   return (

@@ -1,8 +1,12 @@
-import { describe, it, expect } from "vitest";
-import { render, screen } from "@/test/test-utils";
+import { describe, it, expect, vi } from "vitest";
+import { render, screen, fireEvent } from "@/test/test-utils";
 import { StepPhotos } from "../steps/StepPhotos";
 
 const noop = () => {};
+
+function imgFile(name: string) {
+  return new File([new Uint8Array([1])], name, { type: "image/jpeg" });
+}
 
 describe("StepPhotos", () => {
   it("viser 'Hoved'-badge på det første billede", () => {
@@ -32,5 +36,32 @@ describe("StepPhotos", () => {
       />
     );
     expect(screen.getByText(/Upload fejlede — prøv igen/i)).toBeInTheDocument();
+  });
+
+  it("uploader højst op til den resterende kapacitet ved multi-fil-valg", () => {
+    const onAdd = vi.fn();
+    // 4 allerede uploadet → kun plads til 1 mere.
+    const existing = Array.from({ length: 4 }, (_, i) => ({
+      path: `pending/${i}.jpg`,
+      previewUrl: null,
+      deleteToken: "t",
+    }));
+    const { container } = render(
+      <StepPhotos
+        photos={existing}
+        uploading={false}
+        error={null}
+        onAdd={onAdd}
+        onRemove={noop}
+      />
+    );
+    const input = container.querySelector(
+      'input[type="file"]'
+    ) as HTMLInputElement;
+    fireEvent.change(input, {
+      target: { files: [imgFile("a.jpg"), imgFile("b.jpg"), imgFile("c.jpg")] },
+    });
+    // 5 − 4 = 1: kun ét kald trods tre valgte filer.
+    expect(onAdd).toHaveBeenCalledTimes(1);
   });
 });
