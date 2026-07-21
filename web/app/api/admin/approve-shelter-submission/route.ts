@@ -1,5 +1,6 @@
 // web/app/api/admin/approve-shelter-submission/route.ts
 import { NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/utils/supabase/server-admin";
 import { slugifySegment } from "@/lib/slug";
 import { sendShelterApprovedEmail } from "@/lib/email";
@@ -206,6 +207,14 @@ export async function POST(request: NextRequest) {
       }
     }
     return Response.json({ error: insertError.message }, { status: 500 });
+  }
+
+  // Revalidér listesider så det nye shelter er synligt straks (ISR er 24t ellers).
+  try {
+    revalidatePath(`/danmark/${slugifySegment(region)}`);
+    if (kommune) revalidatePath(`/danmark/${slugifySegment(region)}/${slugifySegment(kommune)}`);
+  } catch (err) {
+    console.error("Revalidering efter approve fejlede (ikke-kritisk):", err);
   }
 
   // Persist shelter_id reference back onto the submission record.

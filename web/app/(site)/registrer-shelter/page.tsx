@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ShelterSubmissionForm } from "@/components/ShelterSubmissionForm";
+import { ShelterWizard } from "@/components/shelter-wizard/ShelterWizard";
 
 export const metadata: Metadata = {
   // Plain-string title så root layout's template appender " | ShelterDK".
@@ -55,7 +55,7 @@ export default function RegistrerShelterPage() {
 
       {/* Form */}
       <div className="mx-auto max-w-2xl px-4 py-10">
-        <ShelterSubmissionForm />
+        <ShelterWizard />
       </div>
     </div>
   );
