@@ -13,6 +13,7 @@ import {
   NO_KOMMUNE_SLUG,
   getSheltersByMunicipalityName,
   shouldRedirectMunicipalityToByPage,
+  PRIORITY_BY_CITY_NAMES,
 } from "@/lib/danmark-silo";
 import { getFilterRegionCount } from "@/lib/fakta-db";
 import { getGuideCategories, getGuides } from "@/data/guides";
@@ -42,29 +43,35 @@ const BY_LANDING_SEARCH_SYNONYM_KEYS: Partial<Record<string, string>> = {
   "København": "københavn",
 };
 
+const PRIORITY_BY_CITY_NAME_SET = new Set<string>(PRIORITY_BY_CITY_NAMES);
+
 async function getRedirectingMunicipalityNames(): Promise<Set<string>> {
   const pairs = await getRegionKommunePairs(2);
   const municipalityNames = [...new Set(pairs.map((pair) => pair.kommune).filter(Boolean))] as string[];
-  const redirecting = new Set<string>();
 
-  for (const municipalityName of municipalityNames) {
-    const [municipalityShelters, byLanding] = await Promise.all([
-      getSheltersByMunicipalityName(municipalityName),
-      getByLandingData(municipalityName),
-    ]);
+  // shouldRedirectMunicipalityToByPage() afviser alt der ikke er en priority-by
+  // med det samme, så vi behøver kun de dyre per-kommune-opslag for de ~18 byer.
+  // (Tidligere kørte vi opslagene for alle ~98 kommuner sekventielt → sitemap-
+  // genereringen tippede forbi staticPageGenerationTimeout og væltede buildet.)
+  const candidates = municipalityNames.filter((name) => PRIORITY_BY_CITY_NAME_SET.has(name));
 
-    if (
-      shouldRedirectMunicipalityToByPage(
+  const results = await Promise.all(
+    candidates.map(async (municipalityName) => {
+      const [municipalityShelters, byLanding] = await Promise.all([
+        getSheltersByMunicipalityName(municipalityName),
+        getByLandingData(municipalityName),
+      ]);
+      return shouldRedirectMunicipalityToByPage(
         municipalityName,
         municipalityShelters,
         byLanding.shelters
       )
-    ) {
-      redirecting.add(municipalityName);
-    }
-  }
+        ? municipalityName
+        : null;
+    })
+  );
 
-  return redirecting;
+  return new Set(results.filter((name): name is string => name !== null));
 }
 
 const STATIC_PAGES: Array<{
@@ -383,31 +390,39 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     );
   }
 
-  for (const config of Object.values(FILTER_CONFIGS)) {
-    for (const regionSlug of REGION_SLUGS) {
+  // Uafhængige count-queries (10 filtre × 4 regioner) — kør parallelt i stedet
+  // for sekventielt, men bevar rækkefølgen i entries.
+  const filterRegionCombos = Object.values(FILTER_CONFIGS).flatMap((config) =>
+    REGION_SLUGS.flatMap((regionSlug) => {
       const regionName = REGION_NAMES[regionSlug];
-      if (!regionName) continue;
-      const count = await getFilterRegionCount(config.filterKey, regionName);
-      if (count >= config.minSheltersForRegion) {
-        entries.push(
-          entry(
-            `${BASE_URL}${config.parentHref}/${regionSlug}`,
-            "weekly",
-            0.7,
-            newestIsoDate(
-              getFileModified(
-                "app",
-                "(site)",
-                config.parentHref.replace(/^\//, ""),
-                "[region]",
-                "page.tsx"
-              )
+      return regionName ? [{ config, regionSlug, regionName }] : [];
+    })
+  );
+  const filterRegionCounts = await Promise.all(
+    filterRegionCombos.map(({ config, regionName }) =>
+      getFilterRegionCount(config.filterKey, regionName)
+    )
+  );
+  filterRegionCombos.forEach(({ config, regionSlug }, i) => {
+    if (filterRegionCounts[i] >= config.minSheltersForRegion) {
+      entries.push(
+        entry(
+          `${BASE_URL}${config.parentHref}/${regionSlug}`,
+          "weekly",
+          0.7,
+          newestIsoDate(
+            getFileModified(
+              "app",
+              "(site)",
+              config.parentHref.replace(/^\//, ""),
+              "[region]",
+              "page.tsx"
             )
           )
-        );
-      }
+        )
+      );
     }
-  }
+  });
 
   try {
     const routeIndexPath = path.join(process.cwd(), "public/data/curated-routes-index.json");
