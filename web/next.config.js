@@ -113,6 +113,19 @@ const nextConfig = {
       // til fra navigation. /registrer-shelter er den nuværende offentlige
       // landing page. Konsoliderer eksterne links og bookmarks.
       { source: "/opret-shelter", destination: "/registrer-shelter", permanent: true },
+      // Region-slug-kanonisering — FLYTTET fra middleware, så /danmark/*- og
+      // /shelter-*-sider kan ISR/CDN-caches i stedet for at gå gennem edge-
+      // funktionen på hvert request (det var årsagen til `no-store`/egress).
+      // Fyn: langt slug → kort (både hub og undersider).
+      { source: "/danmark/fyn-og-oeerne", destination: "/danmark/fyn", permanent: true },
+      { source: "/danmark/fyn-og-oeerne/:rest*", destination: "/danmark/fyn/:rest*", permanent: true },
+      // Sjælland: hub bor på KORT slug, men kommuner/shelters bor på LANGT slug.
+      { source: "/danmark/sjaelland-og-oeerne", destination: "/danmark/sjaelland", permanent: true },
+      { source: "/danmark/sjaelland/:kommune", destination: "/danmark/sjaelland-og-oeerne/:kommune", permanent: true },
+      { source: "/danmark/sjaelland/:kommune/:rest*", destination: "/danmark/sjaelland-og-oeerne/:kommune/:rest*", permanent: true },
+      // Facet-region-landingssider (fx /shelter-med-vand/fyn-og-oeerne → .../fyn).
+      { source: "/:facet(shelter-[a-z0-9-]+)/fyn-og-oeerne", destination: "/:facet/fyn", permanent: true },
+      { source: "/:facet(shelter-[a-z0-9-]+)/sjaelland-og-oeerne", destination: "/:facet/sjaelland", permanent: true },
     ];
   },
   images: {

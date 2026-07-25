@@ -1,19 +1,15 @@
 import { createServerClient } from "@supabase/ssr";
 import { findActiveRedirect } from "@/lib/custom-redirect-lookup";
-import { regionSlugRedirect } from "@/lib/region-slug-redirect";
 import { NextResponse, type NextRequest } from "next/server";
 import type { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Region-slug-kanonisering (301) — kør før alt andet.
-  const regionTarget = regionSlugRedirect(pathname);
-  if (regionTarget && regionTarget !== pathname) {
-    const url = request.nextUrl.clone();
-    url.pathname = regionTarget;
-    return NextResponse.redirect(url, 301);
-  }
+  // BEMÆRK: region-slug-kanoniseringen er flyttet til next.config.js `redirects()`,
+  // og matcheren nedenfor er snævret ind til /ejer/* + /book*. Offentlige content-
+  // sider matches IKKE længere af middleware → de kan ISR/CDN-caches (før kørte de
+  // gennem edge-funktionen pr. request = no-store/egress).
 
   const skipRedirectLookup =
     pathname.startsWith("/ejer/") ||
@@ -92,7 +88,10 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|icons|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|map|txt|xml|woff|woff2)$).*)",
-  ],
+  // Kun de ruter der reelt kræver per-request-logik. Alt andet (shelter, by,
+  // omraade, region, filtre, guides, blog, forside …) undgår middleware og kan
+  // dermed serveres fra Netlifys durable/CDN-cache.
+  //   /ejer/*  → owner-auth-gate + session-refresh
+  //   /bookN   → QR-vanity-redirects via findActiveRedirect (runtime-editérbare)
+  matcher: ["/ejer/:path*", "/book:id(\\d+)"],
 };
