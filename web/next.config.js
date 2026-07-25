@@ -78,7 +78,9 @@ const nextConfig = {
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
           { key: "Content-Security-Policy", value: baseCsp },
-          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), browsing-topics=()" },
+          // geolocation=(self): /shelter-naer-mig bruger navigator.geolocation til
+          // "find nærmeste shelter". geolocation=() (tom) blokerede det på ALLE enheder.
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(self), browsing-topics=()" },
           { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
           { key: "Cross-Origin-Resource-Policy", value: "same-site" },
           { key: "Origin-Agent-Cluster", value: "?1" },
