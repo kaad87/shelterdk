@@ -64,7 +64,7 @@ function buildByLandingMunicipalitySynonyms(placeName: string): string[] {
   return (SEARCH_SYNONYMS[synonymKey] ?? []).map((synonym) => synonym.trim()).filter(Boolean);
 }
 
-const getAllSheltersForByPages = unstable_cache(
+const getAllSheltersForByPagesCached = unstable_cache(
   async (): Promise<Shelter[]> => {
     try {
       const rows = await fetchAllShelterRows<Shelter>(BY_PAGE_SHELTER_SELECT);
@@ -79,6 +79,23 @@ const getAllSheltersForByPages = unstable_cache(
   ["all-shelters-for-by-pages"],
   { revalidate: 86400 }
 );
+
+// In-flight coalescing. Ved build kalder snesevis af sider (/by/*, /omraade/*,
+// /shelter-med-*, forsiden) denne SAMTIDIGT — før unstable_cache/Data Cache er
+// varm. Uden coalescing stampeder de alle den samme tunge query (alle kolonner
+// inkl. geofa_raw for ~1800 rækker) → DB mættes → 57014 statement-timeout →
+// sider timer ud efter 180s → deploy fejler (exit 2). Vi deler én in-flight
+// promise, så der max kører ét kald ad gangen pr. proces; efter settle nulstiller
+// vi, så unstable_cache fortsat styrer 24t-revalideringen.
+let allSheltersForByPagesInFlight: Promise<Shelter[]> | null = null;
+function getAllSheltersForByPages(): Promise<Shelter[]> {
+  if (!allSheltersForByPagesInFlight) {
+    allSheltersForByPagesInFlight = getAllSheltersForByPagesCached().finally(() => {
+      allSheltersForByPagesInFlight = null;
+    });
+  }
+  return allSheltersForByPagesInFlight;
+}
 
 async function getSheltersForByLanding(
   placeName: string,
