@@ -1,0 +1,77 @@
+name: Cache-sundhed (shelterdk)
+
+# Dagligt tjek af at de offentlige sider stadig CDN-caches. Den 25/7-2026 blev
+# en bred Next.js-middleware-matcher indsnævret så content-sider kan caches
+# (før = dynamisk SSR pr. request = høj Netlify function-compute/credit-forbrug).
+# Hvis et fremtidigt deploy bryder cachen (fx matcher udvides i web/middleware.ts,
+# eller no-store/createAdminClient tilføjes til en cachet side), falder siderne
+# tilbage til `no-store` → forbruget spiker. Dette job fanger det samme dag og
+# mailer dig (via Resend hvis RESEND_API_KEY-secret findes; ellers fejler jobbet,
+# så GitHubs indbyggede fejl-mail rammer dig). Tavs når alt er sundt.
+
+on:
+  schedule:
+    - cron: "0 6 * * *"   # dagligt 06:00 UTC = 08:00 Europe/Copenhagen
+  workflow_dispatch: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Tjek cache-headers og mail ved regression
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          ALERT_TO: kaad87@gmail.com
+          FROM_EMAIL: "ShelterDK <hej@shelterdk.dk>"
+        run: |
+          set -uo pipefail
+
+          CACHED_URLS=(
+            "https://shelterdk.dk/"
+            "https://shelterdk.dk/danmark/jylland/jammerbugt"
+            "https://shelterdk.dk/omraade/vadehavet"
+            "https://shelterdk.dk/shelter-med-vand/jylland"
+            "https://shelterdk.dk/guides/pakkeliste-til-sheltertur"
+            "https://shelterdk.dk/blog/gratis-shelters-i-danmark"
+          )
+
+          problems=""
+          report=""
+          for u in "${CACHED_URLS[@]}"; do
+            hdrs=$(curl -sS -D - -o /dev/null --max-time 30 "$u" 2>/dev/null || true)
+            code=$(printf '%s' "$hdrs" | grep -iE "^HTTP/" | tail -1 | awk '{print $2}')
+            cc=$(printf '%s' "$hdrs" | grep -i "^cache-control:" | head -1 | tr -d '\r' | cut -d' ' -f2-)
+            if [ "${code:-000}" != "200" ]; then
+              report="${report}\nFEJL(HTTP ${code:-?})  ${u}"
+              problems="${problems}\n- ${u} -> HTTP ${code:-?}"
+            elif ! printf '%s' "$cc" | grep -qi "public"; then
+              report="${report}\nIKKE CACHET  ${u}  [${cc:-mangler}]"
+              problems="${problems}\n- ${u} -> cache-control: ${cc:-(mangler)}"
+            else
+              report="${report}\nOK  ${u}"
+            fi
+          done
+
+          echo -e "Cache-tjek $(date -u +'%Y-%m-%d %H:%M') UTC:${report}"
+
+          if [ -z "$problems" ]; then
+            echo "✅ Cache-sundhed OK — alle forventet-cachede sider serveres public"
+            exit 0
+          fi
+
+          echo -e "\n⚠ REGRESSION fundet:${problems}"
+
+          if [ -n "${RESEND_API_KEY:-}" ]; then
+            body=$(printf 'ShelterDK cache-regression opdaget %s UTC.\n\nFoelgende forventet-cachede sider serveres IKKE laengere fra CDN (public):%b\n\nBetydning: Netlify function-compute/credit-forbruget stiger indtil det rettes. Tjek middleware-matcheren i web/middleware.ts og no-store/createAdminClient-fetches paa de ramte ruter.\n\nFuld rapport:%b\n\n(Automatisk fra GitHub Action: cache-health-monitor)' "$(date -u +'%Y-%m-%d %H:%M')" "$problems" "$report")
+            payload=$(jq -n --arg from "$FROM_EMAIL" --arg to "$ALERT_TO" --arg subject "⚠ ShelterDK cache-regression opdaget" --arg text "$body" '{from:$from, to:[$to], subject:$subject, text:$text}')
+            http=$(curl -sS -o /tmp/resend.json -w "%{http_code}" -X POST "https://api.resend.com/emails" \
+              -H "Authorization: Bearer ${RESEND_API_KEY}" \
+              -H "Content-Type: application/json" \
+              -d "$payload")
+            echo "Resend HTTP ${http}: $(cat /tmp/resend.json 2>/dev/null)"
+          else
+            echo "RESEND_API_KEY mangler som secret — springer mail over. GitHubs fejl-mail sendes i stedet (jobbet fejler nedenfor)."
+          fi
+
+          # Fejl altid jobbet ved regression → GitHub-fejl-mail som fallback + synlig rød status.
+          exit 1
