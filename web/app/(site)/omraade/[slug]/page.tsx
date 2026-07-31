@@ -1,4 +1,4 @@
-import { cache } from "react";
+import { cache, Fragment } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -10,6 +10,8 @@ import { getWater } from "@/lib/shelter-detail";
 import { isStructuredBookable } from "@shared/lib/shelter-detail";
 import { AreaFaq } from "@/components/AreaFaq";
 import { ShelterCard } from "@/components/ShelterCard";
+import { AdInFeed } from "@/components/AdInFeed";
+import { showInFeedAdAt } from "@/lib/adsense";
 import {
   getAllAreas,
   getAreaBySlug,
@@ -304,16 +306,18 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
 
             {featuredShelters.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                {featuredShelters.map((shelter) => (
-                  <ShelterCard
-                    key={shelter.id}
-                    shelter={shelter}
-                    href={shelterHref(
-                      shelter.region ?? null,
-                      shelter.kommune ?? null,
-                      shelter.slug
-                    )}
-                  />
+                {featuredShelters.map((shelter, i) => (
+                  <Fragment key={shelter.id}>
+                    {showInFeedAdAt(i, featuredShelters.length) && <AdInFeed />}
+                    <ShelterCard
+                      shelter={shelter}
+                      href={shelterHref(
+                        shelter.region ?? null,
+                        shelter.kommune ?? null,
+                        shelter.slug
+                      )}
+                    />
+                  </Fragment>
                 ))}
               </div>
             ) : (

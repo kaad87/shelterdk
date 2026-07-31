@@ -1,5 +1,8 @@
+import { Fragment } from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import { AdInFeed } from "@/components/AdInFeed";
+import { showInFeedAdAt } from "@/lib/adsense";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { ShelterListSchema } from "@/components/seo/ShelterListSchema";
 import { QuickAnswer } from "@/components/seo/QuickAnswer";
@@ -205,8 +208,11 @@ export function CrossFilterRegionPage({
                     {shelters.length} shelters · scroll for flere
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6">
-                    {shelters.map((s) => (
-                      <ShelterCard key={s.id} shelter={s} href={shelterHref(s.region ?? null, s.kommune ?? null, s.slug)} />
+                    {shelters.map((s, i) => (
+                      <Fragment key={s.id}>
+                        {showInFeedAdAt(i, shelters.length) && <AdInFeed />}
+                        <ShelterCard shelter={s} href={shelterHref(s.region ?? null, s.kommune ?? null, s.slug)} />
+                      </Fragment>
                     ))}
                   </div>
                 </div>

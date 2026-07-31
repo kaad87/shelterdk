@@ -18,7 +18,10 @@ import {
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 import { segmentSlugToName } from "@/lib/slug";
 import { prepositionForRegionName } from "@/lib/area-db";
+import { Fragment } from "react";
 import { ShelterCard } from "@/components/ShelterCard";
+import { AdInFeed } from "@/components/AdInFeed";
+import { showInFeedAdAt } from "@/lib/adsense";
 import { getWater, getToilet, getPetsAllowed } from "@/lib/shelter-detail";
 import { isStructuredBookable } from "@shared/lib/shelter-detail";
 import { generateMunicipalityPageFaq } from "@/lib/fakta-faq";
@@ -333,12 +336,14 @@ export default async function DanmarkMunicipalityPage({ params }: PageProps) {
 
         <section className="mb-12">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {shelters.map((shelter) => (
-              <ShelterCard
-                key={shelter.id}
-                shelter={shelter}
-                href={shelterHref(regionName, shelter.kommune ?? null, shelter.slug)}
-              />
+            {shelters.map((shelter, i) => (
+              <Fragment key={shelter.id}>
+                {showInFeedAdAt(i, shelters.length) && <AdInFeed />}
+                <ShelterCard
+                  shelter={shelter}
+                  href={shelterHref(regionName, shelter.kommune ?? null, shelter.slug)}
+                />
+              </Fragment>
             ))}
           </div>
         </section>

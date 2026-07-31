@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AdInFeed } from "@/components/AdInFeed";
+import { showInFeedAdAt } from "@/lib/adsense";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Accessibility,
@@ -395,9 +397,13 @@ export function ByShelterExplorer({
               </select>
             </div>
             <div className="grid grid-cols-1 gap-4 pb-6 sm:grid-cols-2">
-              {sortedShelters.slice(0, listDisplayCount).map((shelter) => (
-                <ShelterCard key={shelter.id} shelter={shelter} href={shelterHref(shelter)} />
-              ))}
+              {/* Stabil key på annoncen: listen re-sorteres/filtreres live, og uden
+                  den ville <AdInFeed> unmounte+remounte ved hver ændring = gentagne
+                  AdSense-kald på samme slot. */}
+              {sortedShelters.slice(0, listDisplayCount).flatMap((shelter, i, arr) => [
+                ...(showInFeedAdAt(i, arr.length) ? [<AdInFeed key="infeed-ad" />] : []),
+                <ShelterCard key={shelter.id} shelter={shelter} href={shelterHref(shelter)} />,
+              ])}
             </div>
             <div ref={sentinelRef} className="py-6" />
           </div>
@@ -434,9 +440,10 @@ export function ByShelterExplorer({
             </select>
           </div>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {sortedAllShelters.map((shelter) => (
-              <ShelterCard key={shelter.id} shelter={shelter} href={shelterHref(shelter)} />
-            ))}
+            {sortedAllShelters.flatMap((shelter, i) => [
+              ...(showInFeedAdAt(i, sortedAllShelters.length) ? [<AdInFeed key="infeed-ad" />] : []),
+              <ShelterCard key={shelter.id} shelter={shelter} href={shelterHref(shelter)} />,
+            ])}
           </div>
           <FloatingViewToggle view={view} onList={() => handleViewChange("list")} onSplit={() => handleViewChange("split")} onMap={() => handleViewChange("map")} position="fixed" />
         </>

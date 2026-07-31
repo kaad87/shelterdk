@@ -1,23 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-
-const CLIENT = "ca-pub-4295774462032317";
-
-let scriptInjected = false;
-function ensureScript() {
-  if (typeof document === "undefined") return;
-  if (scriptInjected || document.querySelector('script[src*="adsbygoogle.js"]')) {
-    scriptInjected = true;
-    return;
-  }
-  const s = document.createElement("script");
-  s.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${CLIENT}`;
-  s.async = true;
-  s.crossOrigin = "anonymous";
-  document.head.appendChild(s);
-  scriptInjected = true;
-}
+import { ADSENSE_CLIENT as CLIENT, ensureAdsenseScript, pushAd } from "@/lib/adsense";
 
 /**
  * Diskret horisontal AdSense-banner ("Annonce"). Vises altid; Google håndterer
@@ -30,15 +14,8 @@ export function AdBanner({ slot = "1359693016", className }: { slot?: string; cl
 
   useEffect(() => {
     if (pushed.current) return;
-    ensureScript();
-    try {
-      const w = window as unknown as { adsbygoogle?: unknown[] };
-      w.adsbygoogle = w.adsbygoogle || [];
-      w.adsbygoogle.push({});
-      pushed.current = true;
-    } catch {
-      /* AdSense ikke klar endnu — ignorér */
-    }
+    ensureAdsenseScript();
+    pushed.current = pushAd();
   }, []);
 
   return (
