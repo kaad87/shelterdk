@@ -12,10 +12,13 @@ const supabaseHost =
     : null;
 
 // AdSense kræver disse domæner i CSP'en (ellers blokeres ad-scriptet/iframes).
+// ep1/ep2.adtrafficquality.google er Googles invalid-traffic-detektion, som
+// adsbygoogle.js loader siden 2024. Manglede i allowlisten — blokeres den, kan
+// annoncelevering blive påvirket. googletagservices bruges af enkelte formater.
 const adsense = {
-  script: "https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.googleadservices.com https://*.g.doubleclick.net https://adservice.google.com",
-  connect: "https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.g.doubleclick.net https://*.google.com",
-  frame: "https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://*.safeframe.googlesyndication.com https://*.googlesyndication.com",
+  script: "https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.googleadservices.com https://*.g.doubleclick.net https://adservice.google.com https://www.googletagservices.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google",
+  connect: "https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.g.doubleclick.net https://*.google.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google",
+  frame: "https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://*.safeframe.googlesyndication.com https://*.googlesyndication.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google",
 };
 
 const baseCsp = [
