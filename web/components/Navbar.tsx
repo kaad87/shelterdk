@@ -153,6 +153,18 @@ export function Navbar() {
   const { openModal } = useShelterTipModal();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+
+  // Lås baggrunds-scroll mens burger-menuen er åben. Uden dette scroller siden
+  // bagved når man swiper i menuen (scroll-chaining), fordi menuen er en del af
+  // den sticky nav og bliver højere end viewporten på mobil.
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [mobileMenuOpen]);
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<{ name: string; type: "by" | "område" }[]>([]);
   const [suggestOpen, setSuggestOpen] = useState(false);
@@ -358,7 +370,7 @@ export function Navbar() {
         </div>
 
         {mobileMenuOpen && (
-          <div className="md:hidden pb-4 pt-2 -mx-4 px-4 border-t border-primary/10 mt-2">
+          <div className="md:hidden pb-4 pt-2 -mx-4 px-4 border-t border-primary/10 mt-2 max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain">
             <div className="flex flex-col gap-1">
               {navEntries.map((entry) => {
                 if (isGroup(entry)) {
