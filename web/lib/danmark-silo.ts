@@ -42,8 +42,25 @@ const BY_LANDING_SEARCH_SYNONYM_KEYS: Partial<Record<(typeof PRIORITY_BY_CITY_NA
 
 const SHELTER_SELECT =
   "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, booking_link_mode, duplicate_of_shelter_id, region, kommune, place, water, toilet, capacity, geofa_raw, display_score, featured_sort_boost, bookable_shelters(id), created_at, updated_at, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
+// By-siderne henter ALLE shelters på én gang (til filtrering + kort), så hvert
+// unødigt felt ganges med ~1700 rækker. To ting er skåret væk her:
+//   - `description`: ingen by-page-forbruger læser den (~840 kB)
+//   - `geofa_raw` som fuld blob: ~4,4 MB, hvoraf kun 6 nøgler bruges til
+//     facilitets-filtrene. De hentes i stedet enkeltvis nedenfor og samles til
+//     et minimalt geofa_raw-objekt i getAllSheltersForByPages, så resten af
+//     koden (filterShelter, getPetsAllowed, …) er uændret.
+// Payloaden falder fra ~7,4 MB til ~2,3 MB.
+const BY_PAGE_GEOFA_KEYS = [
+  "baalplads",
+  "handicap",
+  "bord_baenk",
+  "strand_naerhed",
+  "bruser_bad",
+  "hunde_tilladt",
+] as const;
 const BY_PAGE_SHELTER_SELECT =
-  "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, booking_link_mode, duplicate_of_shelter_id, region, kommune, place, water, toilet, capacity, geofa_raw, display_score, featured_sort_boost, bookable_shelters(id), created_at, updated_at, blur_data_url";
+  "id, title, slug, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, booking_link_mode, duplicate_of_shelter_id, region, kommune, place, water, toilet, capacity, display_score, featured_sort_boost, bookable_shelters(id), created_at, updated_at, blur_data_url, " +
+  BY_PAGE_GEOFA_KEYS.map((k) => `geofa_${k}:geofa_raw->>${k}`).join(", ");
 
 const SHELTER_SELECT_DETAIL =
   "id, title, slug, seo_title, description, seo_description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_id, google_place_name, booking_url, booking_provider, booking_link_mode, booking_lookup_key, booking_url_verified_at, booking_confidence, availability_provider, availability_mode, availability_lookup_key, availability_url, availability_verified_at, availability_confidence, duplicate_of_shelter_id, region, kommune, place, toilet, water, geofa_raw, area_slug, created_at, updated_at, google_places!shelters_google_place_id_fkey(photo_references), blur_data_url";
@@ -64,37 +81,66 @@ function buildByLandingMunicipalitySynonyms(placeName: string): string[] {
   return (SEARCH_SYNONYMS[synonymKey] ?? []).map((synonym) => synonym.trim()).filter(Boolean);
 }
 
-const getAllSheltersForByPagesCached = unstable_cache(
-  async (): Promise<Shelter[]> => {
-    try {
-      const rows = await fetchAllShelterRows<Shelter>(BY_PAGE_SHELTER_SELECT);
-      const shelters = (rows ?? []).slice();
-      shelters.sort(sortByImageAndScore);
-      return shelters;
-    } catch (error) {
-      console.error("Supabase error (all shelters for by pages):", error);
-      return [];
-    }
-  },
-  ["all-shelters-for-by-pages"],
-  { revalidate: 86400 }
-);
+/** Rå række fra BY_PAGE_SHELTER_SELECT: geofa-nøglerne kommer som flade felter. */
+type ByPageRow = Omit<Shelter, "geofa_raw"> & Record<string, unknown>;
 
-// In-flight coalescing. Ved build kalder snesevis af sider (/by/*, /omraade/*,
-// /shelter-med-*, forsiden) denne SAMTIDIGT — før unstable_cache/Data Cache er
-// varm. Uden coalescing stampeder de alle den samme tunge query (alle kolonner
-// inkl. geofa_raw for ~1800 rækker) → DB mættes → 57014 statement-timeout →
-// sider timer ud efter 180s → deploy fejler (exit 2). Vi deler én in-flight
-// promise, så der max kører ét kald ad gangen pr. proces; efter settle nulstiller
-// vi, så unstable_cache fortsat styrer 24t-revalideringen.
-let allSheltersForByPagesInFlight: Promise<Shelter[]> | null = null;
-function getAllSheltersForByPages(): Promise<Shelter[]> {
-  if (!allSheltersForByPagesInFlight) {
-    allSheltersForByPagesInFlight = getAllSheltersForByPagesCached().finally(() => {
-      allSheltersForByPagesInFlight = null;
-    });
+/** Samler de flade geofa_*-felter tilbage til et minimalt geofa_raw-objekt. */
+function withMinimalGeofaRaw(row: ByPageRow): Shelter {
+  const geofa_raw: Record<string, unknown> = {};
+  for (const key of BY_PAGE_GEOFA_KEYS) {
+    const value = row[`geofa_${key}`];
+    if (value != null && value !== "") geofa_raw[key] = value;
+    delete row[`geofa_${key}`];
   }
-  return allSheltersForByPagesInFlight;
+  return { ...row, geofa_raw } as Shelter;
+}
+
+async function fetchAllSheltersForByPages(): Promise<Shelter[]> {
+  try {
+    const rows = await fetchAllShelterRows<ByPageRow>(BY_PAGE_SHELTER_SELECT);
+    const shelters = (rows ?? []).map(withMinimalGeofaRaw);
+    shelters.sort(sortByImageAndScore);
+    return shelters;
+  } catch (error) {
+    console.error("Supabase error (all shelters for by pages):", error);
+    return [];
+  }
+}
+
+// BEVIDST IKKE unstable_cache: selv slanket er payloaden ~2,3 MB, og Next.js'
+// Data Cache afviser alt over 2 MB ("Failed to set Next.js data cache"). Cachen
+// har derfor aldrig virket her — queryen kørte mod databasen ved HVER render.
+// Vi cacher i stedet i proces-hukommelsen med TTL (samme mønster som
+// custom-redirect-lookup.ts). Det rammer ingen størrelsesgrænse.
+//
+// `inflight` giver samtidig coalescing: ved build kalder snesevis af sider
+// (/by/*, /omraade/*, /shelter-med-*, forsiden) denne SAMTIDIGT med kold cache,
+// og uden coalescing stampeder de alle den samme tunge query → DB mættes →
+// 57014 statement-timeout → sider timer ud → deploy fejler.
+const BY_PAGES_TTL_MS = 60 * 60 * 1000; // 1 time
+let byPagesCache: { shelters: Shelter[]; expires: number } | null = null;
+let byPagesInflight: Promise<Shelter[]> | null = null;
+
+function getAllSheltersForByPages(): Promise<Shelter[]> {
+  if (byPagesCache && byPagesCache.expires > Date.now()) {
+    return Promise.resolve(byPagesCache.shelters);
+  }
+  if (byPagesInflight) return byPagesInflight;
+
+  byPagesInflight = fetchAllSheltersForByPages()
+    .then((shelters) => {
+      // Cach kun et brugbart resultat — ellers ville en fejlet hentning låse
+      // tomme lister fast i en time.
+      if (shelters.length > 0) {
+        byPagesCache = { shelters, expires: Date.now() + BY_PAGES_TTL_MS };
+      }
+      return shelters;
+    })
+    .finally(() => {
+      byPagesInflight = null;
+    });
+
+  return byPagesInflight;
 }
 
 async function getSheltersForByLanding(
