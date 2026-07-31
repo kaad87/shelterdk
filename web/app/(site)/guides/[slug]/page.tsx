@@ -17,6 +17,7 @@ import { LastVerifiedBadge } from "@/components/LastVerifiedBadge";
 import { SpeakableSchema } from "@/components/seo/SpeakableSchema";
 import { getGuideHowToSchema } from "@/lib/guide-howto";
 import { AdBanner } from "@/components/AdBanner";
+import { IN_ARTICLE_MIN_BLOCKS } from "@/lib/adsense";
 import { Calendar } from "lucide-react";
 import { slugifySegment } from "@/lib/slug";
 
@@ -81,6 +82,12 @@ export default async function GuidePage({ params }: PageProps) {
   const midpoint = Math.floor(contentBlocks.length / 2);
   const firstHalf = contentBlocks.slice(0, midpoint);
   const secondHalf = contentBlocks.slice(midpoint);
+
+  // Annonce inde i teksten ud over den i bunden — se blog/[slug] for begrundelse.
+  const showInArticleAd = contentBlocks.length >= IN_ARTICLE_MIN_BLOCKS;
+  const adSplit = showInArticleAd ? Math.floor(secondHalf.length / 2) : secondHalf.length;
+  const secondHalfBeforeAd = secondHalf.slice(0, adSplit);
+  const secondHalfAfterAd = secondHalf.slice(adSplit);
 
   const relatedGuides = getRelatedGuides(guide.slug, 2);
 
@@ -250,8 +257,16 @@ export default async function GuidePage({ params }: PageProps) {
 
         {/* Guide content — second half */}
         <article className="prose prose-primary max-w-none">
-          {secondHalf}
+          {secondHalfBeforeAd}
         </article>
+
+        {showInArticleAd && <AdBanner />}
+
+        {secondHalfAfterAd.length > 0 && (
+          <article className="prose prose-primary max-w-none">
+            {secondHalfAfterAd}
+          </article>
+        )}
 
         {/* Diskret annonce efter indholdet (kun ved marketing-samtykke) */}
         <AdBanner />

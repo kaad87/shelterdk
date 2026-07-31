@@ -30,6 +30,12 @@ export function showInFeedAdAt(index: number, total: number): boolean {
   return index === IN_FEED_AFTER_INDEX && total >= IN_FEED_MIN_ITEMS;
 }
 
+/**
+ * Mindste antal indholdsblokke før en artikel også får en annonce inde i teksten
+ * (ud over den i bunden). Korte artikler bærer kun én.
+ */
+export const IN_ARTICLE_MIN_BLOCKS = 8;
+
 /** Beder AdSense fylde den senest renderede <ins>. Fejler stille hvis scriptet ikke er klar. */
 export function pushAd() {
   try {

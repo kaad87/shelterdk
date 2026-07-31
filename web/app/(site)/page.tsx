@@ -8,8 +8,8 @@ import { FrontPageShelterGrid } from "@/components/FrontPageShelterGrid";
 import { SearchBar } from "@/components/SearchBar";
 import { MobileHomePills } from "@/components/MobileHomePills";
 import { HomepageDatePicker } from "@/components/HomepageDatePicker";
-import { HomepageDealsWidget } from "@/components/HomepageDealsWidget";
 import { RecentExperiencesFeed } from "@/components/RecentExperiencesFeed";
+import { AdBanner } from "@/components/AdBanner";
 import { InstagramFeed } from "@/components/InstagramFeed";
 import NewsletterSignup from "@/components/NewsletterSignup";
 import { MapComponent } from "@/components/MapComponent";
@@ -548,7 +548,11 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <HomepageDealsWidget />
+      {/* Erstatter tidligere "Ugens outdoor-tilbud" (affiliate), som gav 1 klik
+          på 30 dage. Samme plads, nu som annonce. */}
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <AdBanner />
+      </div>
 
       <section
         className="py-8 bg-primary/[0.03]"

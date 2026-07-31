@@ -15,6 +15,7 @@ import { ArticleFaq } from "@/components/ArticleFaq";
 import { ShelterCTA } from "@/components/ShelterCTA";
 import { ShareExperience } from "@/components/ShareExperience";
 import { AdBanner } from "@/components/AdBanner";
+import { IN_ARTICLE_MIN_BLOCKS } from "@/lib/adsense";
 import dynamic from "next/dynamic";
 import { ArrowLeft, Calendar, Clock } from "lucide-react";
 import { slugifySegment } from "@/lib/slug";
@@ -101,6 +102,15 @@ export default async function BlogPostPage({ params }: PageProps) {
   const firstHalf = contentBlocks.slice(0, midpoint);
   const secondHalf = contentBlocks.slice(midpoint);
 
+  // Annonce inde i teksten (ud over den i bunden, som færrest scroller ned til).
+  // Placeres midt i ANDEN halvdel — ikke lige efter ShelterCTA'en på midten, så
+  // læseren ikke møder to afbrydelser i træk. Kun på artikler der er lange nok
+  // til at bære det.
+  const showInArticleAd = contentBlocks.length >= IN_ARTICLE_MIN_BLOCKS;
+  const adSplit = showInArticleAd ? Math.floor(secondHalf.length / 2) : secondHalf.length;
+  const secondHalfBeforeAd = secondHalf.slice(0, adSplit);
+  const secondHalfAfterAd = secondHalf.slice(adSplit);
+
   // Related posts — same category first, then fill from other categories
   const relatedPosts = getRelatedBlogPosts(post.slug, 3);
 
@@ -184,8 +194,16 @@ export default async function BlogPostPage({ params }: PageProps) {
 
           {/* Article content — second half */}
           <article className="prose prose-primary max-w-none">
-            {secondHalf}
+            {secondHalfBeforeAd}
           </article>
+
+          {showInArticleAd && <AdBanner />}
+
+          {secondHalfAfterAd.length > 0 && (
+            <article className="prose prose-primary max-w-none">
+              {secondHalfAfterAd}
+            </article>
+          )}
 
           {/* Diskret annonce efter indholdet (kun ved marketing-samtykke) */}
           <AdBanner />
