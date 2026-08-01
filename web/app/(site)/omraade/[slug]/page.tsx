@@ -125,6 +125,8 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
   const remainingShelters = shelters.slice(12);
   const placeCounts = new Map<string, number>();
   const municipalityCounts = new Map<string, number>();
+  /** Kommune → shelterens egen region (kan afvige fra områdets, se nedenfor). */
+  const municipalityRegions = new Map<string, string>();
   for (const shelter of shelters) {
     const place = shelter.place?.trim();
     if (place) {
@@ -133,6 +135,14 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
     const kommune = shelter.kommune?.trim();
     if (kommune) {
       municipalityCounts.set(kommune, (municipalityCounts.get(kommune) ?? 0) + 1);
+      // Kommune-linket skal bruge SHELTERENS region, ikke områdets. De to kan
+      // afvige: Bornholm-området har fx region "Sjælland og Øerne", mens
+      // shelterne ligger i region "Bornholm" — så et link bygget på områdets
+      // region pegede på /danmark/sjaelland-og-oeerne/bornholm, som er 404.
+      if (!municipalityRegions.has(kommune)) {
+        const shelterRegion = shelter.region?.trim();
+        if (shelterRegion) municipalityRegions.set(kommune, shelterRegion);
+      }
     }
   }
   const topPlaces = [...placeCounts.entries()]
@@ -148,7 +158,12 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
       return a[0].localeCompare(b[0], "da");
     })
     .slice(0, 6)
-    .map(([name, count]) => ({ name, count, slug: slugifySegment(name) }));
+    .map(([name, count]) => ({
+      name,
+      count,
+      slug: slugifySegment(name),
+      regionSlug: slugifySegment(municipalityRegions.get(name) ?? area.region),
+    }));
 
   return (
     <>
@@ -271,7 +286,7 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
                     {topMunicipalities.map((municipality) => (
                       <Link
                         key={municipality.slug}
-                        href={`/danmark/${regionSlug}/${municipality.slug}`}
+                        href={`/danmark/${municipality.regionSlug}/${municipality.slug}`}
                         className="rounded-full border border-primary/10 bg-primary/[0.02] px-4 py-2 text-sm font-medium text-primary hover:border-accent/30 hover:text-accent transition-colors"
                       >
                         {municipality.name}
@@ -370,7 +385,7 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
                               </Link>
                             ) : shelter.kommune ? (
                               <Link
-                                href={`/danmark/${regionSlug}/${slugifySegment(shelter.kommune)}`}
+                                href={`/danmark/${slugifySegment(shelter.region?.trim() || area.region)}/${slugifySegment(shelter.kommune)}`}
                                 className="hover:text-accent transition-colors"
                               >
                                 {shelter.kommune}
