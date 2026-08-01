@@ -5,6 +5,8 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { ArrowUpDown, ChevronDown, List, LayoutGrid, MapPin } from "lucide-react";
 import { SearchBar } from "@/components/SearchBar";
 import { ShelterCard } from "@/components/ShelterCard";
+import { AdInFeed } from "@/components/AdInFeed";
+import { showInFeedAdAt, inFeedAdIndex } from "@/lib/adsense";
 import { ShelterMap, type MapBounds } from "@/components/ShelterMap";
 import type { Shelter } from "@/types/shelter";
 import type { SoegFilters, ShelterPin } from "@/lib/soeg-db";
@@ -550,9 +552,10 @@ export function SoegContent({
             <SortSelect value={sortMode} onChange={setSortMode} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6">
-              {sortedShelters.slice(0, listDisplayCount).map((shelter) => (
-                <ShelterCard key={shelter.id} shelter={shelter} availabilityState={availabilityMap?.[shelter.id] ?? null} activeDate={effectiveFilters?.date ?? null} />
-              ))}
+              {sortedShelters.slice(0, listDisplayCount).flatMap((shelter, i, arr) => [
+                ...(showInFeedAdAt(i, arr.length) ? [<AdInFeed key={`infeed-ad-${inFeedAdIndex(i)}`} />] : []),
+                <ShelterCard key={shelter.id} shelter={shelter} availabilityState={availabilityMap?.[shelter.id] ?? null} activeDate={effectiveFilters?.date ?? null} />,
+              ])}
             </div>
             <div ref={sentinelRef} className="py-6 flex items-center justify-center gap-2">
               {loading && (
@@ -602,9 +605,10 @@ export function SoegContent({
             <SortSelect value={sortMode} onChange={setSortMode} />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {sortedAllShelters.map((shelter) => (
-              <ShelterCard key={shelter.id} shelter={shelter} availabilityState={availabilityMap?.[shelter.id] ?? null} activeDate={effectiveFilters?.date ?? null} />
-            ))}
+            {sortedAllShelters.flatMap((shelter, i) => [
+              ...(showInFeedAdAt(i, sortedAllShelters.length) ? [<AdInFeed key={`infeed-ad-${inFeedAdIndex(i)}`} />] : []),
+              <ShelterCard key={shelter.id} shelter={shelter} availabilityState={availabilityMap?.[shelter.id] ?? null} activeDate={effectiveFilters?.date ?? null} />,
+            ])}
           </div>
           <div ref={sentinelRef} className="py-6 flex items-center justify-center gap-2">
             {loading && (
