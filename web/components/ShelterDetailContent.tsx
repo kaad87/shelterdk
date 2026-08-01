@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { RevealContact } from "@/components/RevealContact";
 import { AdBanner } from "@/components/AdBanner";
+import { GearSuggestions } from "@/components/GearSuggestions";
+import type { GuideLink } from "@/lib/gear-suggestions";
 import { displayGuestName } from "@/lib/guest-reviews";
 import {
   ExternalLink,
@@ -72,6 +74,8 @@ interface ShelterDetailContentProps {
   facilityLinks?: { label: string; href: string }[];
   /** Vandreruter der passerer dette shelter (fra reverse index). */
   nearbyRoutes?: { slug: string; name: string; length_km: number; distance_km: number }[];
+  /** Købsguider matchet mod shelterets faciliteter (intern linking til /bedste). */
+  gearSuggestions?: GuideLink[];
   showReviews: boolean;
   allPhotoUrls: string[];
   displayDescription: string | null;
@@ -126,6 +130,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
     firewood = null,
     facilityLinks = [],
     nearbyRoutes = [],
+    gearSuggestions = [],
     showReviews,
     allPhotoUrls,
     displayDescription,
@@ -630,6 +635,8 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                 )}
               </section>
             )}
+
+            <GearSuggestions guides={gearSuggestions} />
 
             {/* Nyttige ressourcer – intern linking for SEO */}
             <section className="mb-10 bg-primary/[0.03] border border-primary/10 rounded-xl p-5">

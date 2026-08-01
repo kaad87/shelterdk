@@ -46,6 +46,7 @@ import { getWeatherForecast } from "@/lib/weather";
 import { ShelterDetailContent } from "@/components/ShelterDetailContent";
 import { ShelterSchema } from "@/components/seo/ShelterSchema";
 import { getRoutesForShelter } from "@/lib/shelter-routes";
+import { getGearSuggestions } from "@/lib/gear-suggestions";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { NearbySheltersWithinRadius } from "@/components/NearbySheltersWithinRadius";
 import { NearbyStays } from "@/components/naturophold/NearbyStays";
@@ -156,12 +157,13 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
   }
 
   const areaSlug = (shelter as { area_slug?: string | null }).area_slug?.trim() || null;
-  const [municipalitiesResult, reviews, area, bookableShelters, guestReviews] = await Promise.all([
+  const [municipalitiesResult, reviews, area, bookableShelters, guestReviews, gearSuggestions] = await Promise.all([
     regionName ? getMunicipalitiesInRegion(regionName) : Promise.resolve([]),
     getReviews(shelter.google_place_id ?? null),
     areaSlug ? getAreaBySlug(areaSlug) : Promise.resolve(null),
     listBookableSheltersByShelterDbId(shelter.id).catch(() => []),
     getPublishedGuestReviews(shelter.id).catch(() => []),
+    getGearSuggestions(shelter).catch(() => []),
   ]);
   const embeddedPlaces = shelter.google_places;
   const embeddedRefs = Array.isArray(embeddedPlaces)
@@ -299,6 +301,7 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
       firewood={getFirewood(shelter)}
       facilityLinks={facilityLinks}
       nearbyRoutes={getRoutesForShelter(shelter_slug)}
+      gearSuggestions={gearSuggestions}
       isBookable={bookingModel.requiresBooking}
       shelterFaqItems={shelterFaqItems}
       shelterFaqJsonLd={shelterFaqJsonLd}

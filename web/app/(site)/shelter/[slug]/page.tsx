@@ -38,6 +38,7 @@ import { listBookableSheltersByShelterDbId } from "@/lib/booking-db";
 import { ShelterSchema } from "@/components/seo/ShelterSchema";
 import { getPublishedGuestReviews } from "@/lib/guest-reviews";
 import { getRoutesForShelter } from "@/lib/shelter-routes";
+import { getGearSuggestions } from "@/lib/gear-suggestions";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { NearbySheltersWithinRadius } from "@/components/NearbySheltersWithinRadius";
 import { NearbyStays } from "@/components/naturophold/NearbyStays";
@@ -175,7 +176,7 @@ export default async function ShelterPage({ params }: PageProps) {
   const areaSlug = (shelter as { area_slug?: string | null }).area_slug?.trim() || null;
   // Compute coords synchronously so weather fetch can run in parallel with the others.
   const coordsEarly = getLocationCoords(shelter);
-  const [reviews, area, bookableShelters, weatherForecast, guestReviews] = await Promise.all([
+  const [reviews, area, bookableShelters, weatherForecast, guestReviews, gearSuggestions] = await Promise.all([
     getReviews(shelter.google_place_id ?? null),
     areaSlug ? getAreaBySlug(areaSlug) : Promise.resolve(null),
     listBookableSheltersByShelterDbId(shelter.id).catch(() => []),
@@ -183,6 +184,7 @@ export default async function ShelterPage({ params }: PageProps) {
       ? getWeatherForecast(coordsEarly.lat, coordsEarly.lon).catch(() => null)
       : Promise.resolve(null),
     getPublishedGuestReviews(shelter.id).catch(() => []),
+    getGearSuggestions(shelter).catch(() => []),
   ]);
 
   // Ærligt pris-offer (schema.org Offer) for ShelterDK-bookbare enheder — laveste
@@ -307,6 +309,7 @@ export default async function ShelterPage({ params }: PageProps) {
       firewood={getFirewood(shelter)}
       facilityLinks={facilityLinks}
       nearbyRoutes={getRoutesForShelter(slug)}
+      gearSuggestions={gearSuggestions}
       isBookable={bookingModel.requiresBooking}
       shelterFaqItems={shelterFaqItems}
       shelterFaqJsonLd={shelterFaqJsonLd}
