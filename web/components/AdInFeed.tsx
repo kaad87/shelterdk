@@ -7,8 +7,13 @@ const IN_FEED_SLOT = "6334579254";
 const IN_FEED_LAYOUT_KEY = "-6x+d2-2i-2d+ng";
 
 /**
- * In-feed-annonce til shelter-lister (PLP). Ligger som et element i grid'et og
- * spænder hele bredden, så den følger læseretningen mellem kort-rækkerne.
+ * In-feed-annonce til shelter-lister (PLP). Optager ÉN kort-plads i grid'et og
+ * er stylet som et shelter-kort (samme radius/kant), så den følger listens
+ * rytme i stedet for at bryde den som en fuld-bredde-stribe.
+ *
+ * Den beholder bevidst "Annonce"-mærket og en let afvigende baggrund: den skal
+ * falde naturligt ind, men aldrig kunne forveksles med et shelter — både af
+ * hensyn til brugeren og AdSense' regler om vildledende placering.
  *
  * Bruger AdSense' "fluid"-format + layout-key (i modsætning til AdBanner's
  * "auto"), fordi in-feed-blokke selv tilpasser sig listens udtryk.
@@ -25,15 +30,15 @@ export function AdInFeed({ className }: { className?: string }) {
 
   return (
     <aside
-      className={`col-span-full my-2 ${className ?? ""}`}
+      className={`flex flex-col overflow-hidden rounded-xl border border-primary/10 bg-primary/[0.02] ${className ?? ""}`}
       aria-label="Annonce"
     >
-      <p className="mb-1 text-center text-[11px] uppercase tracking-wide text-primary/40">
+      <p className="px-3 pt-2.5 text-[11px] uppercase tracking-wide text-primary/40">
         Annonce
       </p>
       <ins
         className="adsbygoogle"
-        style={{ display: "block", minHeight: 120 }}
+        style={{ display: "block", minHeight: 300 }}
         data-ad-format="fluid"
         data-ad-layout-key={IN_FEED_LAYOUT_KEY}
         data-ad-client={ADSENSE_CLIENT}

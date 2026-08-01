@@ -18,16 +18,34 @@ export function ensureAdsenseScript() {
 }
 
 /**
- * In-feed-annoncen indsættes FØR dette kort-index i shelter-lister — dvs. efter
- * to rækker på desktop (3 kolonner). Kun når listen er lang nok til at der også
- * er indhold UNDER annoncen; på korte lister ville den ellers lande i bunden og
- * ligne en footer-annonce.
+ * In-feed-annoncer i shelter-lister. Annoncen optager én kort-plads i grid'et
+ * (i stedet for en fuld-bredde-stribe), så den følger listens rytme — det er
+ * netop hvad AdSense' in-feed-format er lavet til.
+ *
+ * Første efter 6 kort, derefter for hver 6. Ingen shelters fjernes; annoncen
+ * skydes ind mellem dem, så alle kort (og deres interne links) bevares.
+ * Loftet holder sidetætheden nede — for mange annoncer skader både oplevelsen
+ * og RPM'en.
  */
-const IN_FEED_AFTER_INDEX = 6;
+const IN_FEED_FIRST_INDEX = 6;
+const IN_FEED_INTERVAL = 6;
+const IN_FEED_MAX_PER_PAGE = 3;
 const IN_FEED_MIN_ITEMS = 8;
+/** Mindst så mange kort skal ligge UNDER annoncen — ellers virker den som footer. */
+const IN_FEED_MIN_TRAILING = 2;
 
 export function showInFeedAdAt(index: number, total: number): boolean {
-  return index === IN_FEED_AFTER_INDEX && total >= IN_FEED_MIN_ITEMS;
+  if (total < IN_FEED_MIN_ITEMS) return false;
+  if (index < IN_FEED_FIRST_INDEX) return false;
+  if ((index - IN_FEED_FIRST_INDEX) % IN_FEED_INTERVAL !== 0) return false;
+  if (total - index < IN_FEED_MIN_TRAILING) return false;
+  const adNumber = (index - IN_FEED_FIRST_INDEX) / IN_FEED_INTERVAL;
+  return adNumber < IN_FEED_MAX_PER_PAGE;
+}
+
+/** Løbenummer for annoncen på et givet index — bruges til stabile React-keys. */
+export function inFeedAdIndex(index: number): number {
+  return (index - IN_FEED_FIRST_INDEX) / IN_FEED_INTERVAL;
 }
 
 /**

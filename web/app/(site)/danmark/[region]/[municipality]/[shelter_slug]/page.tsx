@@ -48,7 +48,6 @@ import { ShelterSchema } from "@/components/seo/ShelterSchema";
 import { getRoutesForShelter } from "@/lib/shelter-routes";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { NearbySheltersWithinRadius } from "@/components/NearbySheltersWithinRadius";
-import { AdBanner } from "@/components/AdBanner";
 import { NearbyStays } from "@/components/naturophold/NearbyStays";
 import { listBookableSheltersByShelterDbId } from "@/lib/booking-db";
 
@@ -308,11 +307,6 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
       coords={coords}
       weatherForecast={weatherForecast}
       />
-      {/* Annonce efter selve shelter-indholdet, før "Nærliggende shelters".
-          Booking-kortet ligger inde i ShelterDetailContent og holdes annoncefrit. */}
-      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-        <AdBanner />
-      </div>
       <Suspense
         fallback={
           <section className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-10 border-t border-primary/10">

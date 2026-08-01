@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AdInFeed } from "@/components/AdInFeed";
-import { showInFeedAdAt } from "@/lib/adsense";
+import { showInFeedAdAt, inFeedAdIndex } from "@/lib/adsense";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Accessibility,
@@ -401,7 +401,7 @@ export function ByShelterExplorer({
                   den ville <AdInFeed> unmounte+remounte ved hver ændring = gentagne
                   AdSense-kald på samme slot. */}
               {sortedShelters.slice(0, listDisplayCount).flatMap((shelter, i, arr) => [
-                ...(showInFeedAdAt(i, arr.length) ? [<AdInFeed key="infeed-ad" />] : []),
+                ...(showInFeedAdAt(i, arr.length) ? [<AdInFeed key={`infeed-ad-${inFeedAdIndex(i)}`} />] : []),
                 <ShelterCard key={shelter.id} shelter={shelter} href={shelterHref(shelter)} />,
               ])}
             </div>
@@ -441,7 +441,7 @@ export function ByShelterExplorer({
           </div>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {sortedAllShelters.flatMap((shelter, i) => [
-              ...(showInFeedAdAt(i, sortedAllShelters.length) ? [<AdInFeed key="infeed-ad" />] : []),
+              ...(showInFeedAdAt(i, sortedAllShelters.length) ? [<AdInFeed key={`infeed-ad-${inFeedAdIndex(i)}`} />] : []),
               <ShelterCard key={shelter.id} shelter={shelter} href={shelterHref(shelter)} />,
             ])}
           </div>

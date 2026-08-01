@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { RevealContact } from "@/components/RevealContact";
+import { AdBanner } from "@/components/AdBanner";
 import { displayGuestName } from "@/lib/guest-reviews";
 import {
   ExternalLink,
@@ -575,6 +576,12 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                 {llmDefinition}
               </p>
             </section>
+
+            {/* Annonce midt i indholdet: efter faciliteter, beskrivelse og
+                resumé — dvs. når læseren har fået sit svar — men mens de stadig
+                scroller. Tidligere lå den nederst på siden, hvor de færreste
+                nåede ned. Booking-fladerne holdes fortsat annoncefri. */}
+            <AdBanner className="my-8" />
 
             {accessDesc && (
               <section className="mb-10">
