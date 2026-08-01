@@ -374,23 +374,16 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
                         <p className="font-medium text-primary group-hover:text-accent transition-colors">
                           {shelter.title}
                         </p>
+                        {/* Sted/kommune vises som TEKST, ikke som link. Hele rækken
+                            er allerede et <Link> til shelteret, og et <a> inde i et
+                            <a> er ugyldig HTML: browseren omstrukturerer DOM'en, så
+                            React ikke kan hydrere ("Hydration failed … <a> cannot be
+                            a descendant of <a>"), og hele siden falder tilbage til
+                            client-rendering. By- og kommune-links findes i forvejen
+                            i chip-listerne længere oppe på siden. */}
                         {(shelter.place || shelter.kommune) && (
                           <p className="text-sm text-primary/60 mt-1">
-                            {shelter.place ? (
-                              <Link
-                                href={`/by/${slugifySegment(shelter.place)}`}
-                                className="hover:text-accent transition-colors"
-                              >
-                                {shelter.place}
-                              </Link>
-                            ) : shelter.kommune ? (
-                              <Link
-                                href={`/danmark/${slugifySegment(shelter.region?.trim() || area.region)}/${slugifySegment(shelter.kommune)}`}
-                                className="hover:text-accent transition-colors"
-                              >
-                                {shelter.kommune}
-                              </Link>
-                            ) : null}
+                            {shelter.place || shelter.kommune}
                           </p>
                         )}
                       </div>

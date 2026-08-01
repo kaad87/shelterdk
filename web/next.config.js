@@ -24,13 +24,19 @@ const adsense = {
   frame: "https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://*.safeframe.googlesyndication.com https://*.googlesyndication.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google https://www.google.com",
 };
 
+// Next.js' Fast Refresh (react-refresh) bruger eval i dev. Uden 'unsafe-eval'
+// kaster runtime'en EvalError, hydration crasher, og alle klient-komponenter er
+// døde lokalt — hvilket gør lokal test af klient-adfærd umulig. Kun i dev;
+// produktions-CSP'en er uændret.
+const devEval = process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : "";
+
 const baseCsp = [
   "default-src 'self'",
   "base-uri 'self'",
   "object-src 'none'",
   "form-action 'self' https://checkout.stripe.com",
   "frame-ancestors 'self'",
-  `script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com https://www.instagram.com https://tags.srv.stackadapt.com ${adsense.script}`,
+  `script-src 'self' 'unsafe-inline'${devEval} https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com https://www.instagram.com https://tags.srv.stackadapt.com ${adsense.script}`,
   // fonts.googleapis/gstatic: AdSense-annoncer loader egne skrifttyper i deres
   // iframes og arver denne CSP. Siden selv bruger dem ikke.
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
