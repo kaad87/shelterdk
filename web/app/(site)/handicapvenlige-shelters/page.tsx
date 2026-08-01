@@ -4,7 +4,10 @@ import { ChevronRight } from "lucide-react";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { getHandicapShelters, getFilterRegionCount } from "@/lib/fakta-db";
 import { slugifySegment } from "@/lib/slug";
+import { Fragment } from "react";
 import { ShelterCard } from "@/components/ShelterCard";
+import { AdInFeed } from "@/components/AdInFeed";
+import { showInFeedAdAt } from "@/lib/adsense";
 import { ShelterMap } from "@/components/ShelterMap";
 import { toMapShelters } from "@/lib/map-shelter";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
@@ -127,17 +130,17 @@ export default async function HandicapvenligeSheltersPage() {
                     {shelters.length} handicapvenlig{shelters.length !== 1 ? "e shelters" : "t shelter"} · scroll for flere
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6">
-                    {shelters.map((shelter) => (
-                      <ShelterCard
-                        key={shelter.id}
-                        shelter={shelter}
+                    {shelters.map((shelter, i) => (
+                    <Fragment key={shelter.id}>
+                      {showInFeedAdAt(i, shelters.length) && <AdInFeed />}
+                      <ShelterCard shelter={shelter}
                         href={shelterHref(
                           shelter.region ?? null,
                           shelter.kommune ?? null,
                           shelter.slug
-                        )}
-                      />
-                    ))}
+                        )} />
+                    </Fragment>
+                  ))}
                   </div>
                 </div>
                 <div className="lg:sticky lg:top-24 lg:self-start rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[280px] sm:min-h-[360px] lg:min-h-[420px] h-[50vh] sm:h-[60vh] lg:h-[calc(100vh-8rem)] lg:max-h-[720px] order-1 lg:order-2 mb-6 lg:mb-0 mx-4 sm:mx-6 lg:mx-0">

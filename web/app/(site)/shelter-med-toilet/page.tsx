@@ -4,7 +4,10 @@ import { ChevronRight } from "lucide-react";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { getSheltersWithToilet } from "@/lib/shelters-with-toilet";
 import { slugifySegment } from "@/lib/slug";
+import { Fragment } from "react";
 import { ShelterCard } from "@/components/ShelterCard";
+import { AdInFeed } from "@/components/AdInFeed";
+import { showInFeedAdAt } from "@/lib/adsense";
 import { ShelterMap } from "@/components/ShelterMap";
 import { toMapShelters } from "@/lib/map-shelter";
 import { getToilet } from "@/lib/shelter-detail";
@@ -130,7 +133,7 @@ export default async function ShelterMedToiletPage() {
                   {shelters.length} shelter{shelters.length !== 1 ? "s" : ""} med toilet · scroll for flere
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6">
-                  {shelters.map((shelter) => {
+                  {shelters.map((shelter, i) => {
                     const toiletType = getToilet(shelter);
                     const toiletLabel =
                       toiletType && toiletType !== "unknown" && toiletType !== "none"
@@ -138,7 +141,9 @@ export default async function ShelterMedToiletPage() {
                         : null;
 
                     return (
-                      <div key={shelter.id} className="relative">
+                      <Fragment key={shelter.id}>
+                        {showInFeedAdAt(i, shelters.length) && <AdInFeed />}
+                        <div className="relative">
                         <ShelterCard
                           shelter={shelter}
                           href={shelterHref(
@@ -152,7 +157,8 @@ export default async function ShelterMedToiletPage() {
                             {toiletLabel}
                           </p>
                         )}
-                      </div>
+                        </div>
+                      </Fragment>
                     );
                   })}
                 </div>

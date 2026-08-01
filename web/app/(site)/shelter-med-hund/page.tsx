@@ -4,7 +4,10 @@ import { ChevronRight } from "lucide-react";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { getSheltersWithPets } from "@/lib/shelters-with-pets";
 import { slugifySegment } from "@/lib/slug";
+import { Fragment } from "react";
 import { ShelterCard } from "@/components/ShelterCard";
+import { AdInFeed } from "@/components/AdInFeed";
+import { showInFeedAdAt } from "@/lib/adsense";
 import { ShelterMap } from "@/components/ShelterMap";
 import { toMapShelters } from "@/lib/map-shelter";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
@@ -104,16 +107,18 @@ export default async function ShelterMedHundPage() {
                   {shelters.length} hundevenlig{shelters.length !== 1 ? "e shelters" : " shelter"} · scroll for flere
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6">
-                  {shelters.map((shelter) => (
-                    <ShelterCard
-                      key={shelter.id}
-                      shelter={shelter}
-                      href={shelterHref(
-                        shelter.region ?? null,
-                        shelter.kommune ?? null,
-                        shelter.slug
-                      )}
-                    />
+                  {shelters.map((shelter, i) => (
+                    <Fragment key={shelter.id}>
+                      {showInFeedAdAt(i, shelters.length) && <AdInFeed />}
+                      <ShelterCard
+                        shelter={shelter}
+                        href={shelterHref(
+                          shelter.region ?? null,
+                          shelter.kommune ?? null,
+                          shelter.slug
+                        )}
+                      />
+                    </Fragment>
                   ))}
                 </div>
               </div>
