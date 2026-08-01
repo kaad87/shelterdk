@@ -101,3 +101,11 @@ body {
 }
 
 
+
+/* AdSense: når Google ikke har en annonce til et slot, sætter scriptet
+   data-ad-status="unfilled" og kollapser <ins> til 0px — men vores wrapper
+   (ramme + "Annonce"-label) ville stå tilbage som en tom kasse. Skjul hele
+   blokken i stedet, så listen/siden ser normal ud. */
+aside[aria-label="Annonce"]:has(ins.adsbygoogle[data-ad-status="unfilled"]) {
+  display: none;
+}
