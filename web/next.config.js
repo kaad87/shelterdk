@@ -18,7 +18,10 @@ const supabaseHost =
 const adsense = {
   script: "https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.googleadservices.com https://*.g.doubleclick.net https://adservice.google.com https://www.googletagservices.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google",
   connect: "https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.g.doubleclick.net https://*.google.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google",
-  frame: "https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://*.safeframe.googlesyndication.com https://*.googlesyndication.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google",
+  // www.google.com skal med i frame-src: AdSense framer den til verifikation/
+  // anti-fraud, og uden den blev annoncen blokeret ("Framing 'https://www.google.com/'
+  // violates the following Content Security Policy directive: frame-src ...").
+  frame: "https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://*.safeframe.googlesyndication.com https://*.googlesyndication.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google https://www.google.com",
 };
 
 const baseCsp = [
@@ -28,9 +31,11 @@ const baseCsp = [
   "form-action 'self' https://checkout.stripe.com",
   "frame-ancestors 'self'",
   `script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com https://www.instagram.com https://tags.srv.stackadapt.com ${adsense.script}`,
-  "style-src 'self' 'unsafe-inline'",
+  // fonts.googleapis/gstatic: AdSense-annoncer loader egne skrifttyper i deres
+  // iframes og arver denne CSP. Siden selv bruger dem ikke.
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "img-src 'self' data: blob: https:",
-  "font-src 'self' data:",
+  "font-src 'self' data: https://fonts.gstatic.com",
   `connect-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com https://www.instagram.com https://*.supabase.co https://*.ingest.sentry.io https://*.ingest.de.sentry.io https://tags.srv.stackadapt.com https://*.stackadapt.com ${adsense.connect}`,
   `frame-src 'self' https://checkout.stripe.com https://www.instagram.com ${adsense.frame}`,
   "worker-src 'self' blob:",
