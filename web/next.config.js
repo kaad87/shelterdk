@@ -37,11 +37,9 @@ const baseCsp = [
   "form-action 'self' https://checkout.stripe.com",
   "frame-ancestors 'self'",
   `script-src 'self' 'unsafe-inline'${devEval} https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com https://www.instagram.com https://tags.srv.stackadapt.com ${adsense.script}`,
-  // fonts.googleapis/gstatic: AdSense-annoncer loader egne skrifttyper i deres
-  // iframes og arver denne CSP. Siden selv bruger dem ikke.
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
-  "font-src 'self' data: https://fonts.gstatic.com",
+  "font-src 'self' data:",
   `connect-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com https://www.instagram.com https://*.supabase.co https://*.ingest.sentry.io https://*.ingest.de.sentry.io https://tags.srv.stackadapt.com https://*.stackadapt.com ${adsense.connect}`,
   `frame-src 'self' https://checkout.stripe.com https://www.instagram.com ${adsense.frame}`,
   "worker-src 'self' blob:",
