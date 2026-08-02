@@ -110,6 +110,13 @@ const STATIC_PAGES: Array<{
   { path: "/turvenner", source: "app/(site)/turvenner/page.tsx", changeFrequency: "weekly", priority: 0.6 },
   { path: "/tilbud", source: "app/(site)/tilbud/page.tsx", changeFrequency: "daily", priority: 0.7 },
   { path: "/bedste", source: "app/(site)/bedste/page.tsx", changeFrequency: "weekly", priority: 0.75 },
+  // Tema-samlesider — bygget på Search Console-huller hvor efterspørgslen fandtes
+  // men indholdet kun lå spredt på enkelte shelter-sider.
+  { path: "/teltplads", source: "app/(site)/teltplads/page.tsx", changeFrequency: "weekly", priority: 0.85 },
+  { path: "/baalhytte", source: "app/(site)/baalhytte/page.tsx", changeFrequency: "weekly", priority: 0.8 },
+  { path: "/arla-oeko-shelter", source: "app/(site)/arla-oeko-shelter/page.tsx", changeFrequency: "weekly", priority: 0.8 },
+  { path: "/haervejen", source: "app/(site)/haervejen/page.tsx", changeFrequency: "weekly", priority: 0.8 },
+  { path: "/gudenaaen", source: "app/(site)/gudenaaen/page.tsx", changeFrequency: "weekly", priority: 0.8 },
   { path: "/saadan-vurderer-vi", source: "app/(site)/saadan-vurderer-vi/page.tsx", changeFrequency: "monthly", priority: 0.3 },
   { path: "/annoncer-og-partnere", source: "app/(site)/annoncer-og-partnere/page.tsx", changeFrequency: "monthly", priority: 0.3 },
 ];
