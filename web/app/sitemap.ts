@@ -113,6 +113,7 @@ const STATIC_PAGES: Array<{
   // Tema-samlesider — bygget på Search Console-huller hvor efterspørgslen fandtes
   // men indholdet kun lå spredt på enkelte shelter-sider.
   { path: "/teltplads", source: "app/(site)/teltplads/page.tsx", changeFrequency: "weekly", priority: 0.85 },
+  { path: "/koeb-shelter", source: "app/(site)/koeb-shelter/page.tsx", changeFrequency: "monthly", priority: 0.8 },
   { path: "/baalhytte", source: "app/(site)/baalhytte/page.tsx", changeFrequency: "weekly", priority: 0.8 },
   { path: "/arla-oeko-shelter", source: "app/(site)/arla-oeko-shelter/page.tsx", changeFrequency: "weekly", priority: 0.8 },
   { path: "/haervejen", source: "app/(site)/haervejen/page.tsx", changeFrequency: "weekly", priority: 0.8 },
