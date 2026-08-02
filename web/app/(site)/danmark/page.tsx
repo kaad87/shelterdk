@@ -3,6 +3,7 @@ import Link from "next/link";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { getCountPerRegion } from "@/lib/fakta-db";
 import { slugifySegment } from "@/lib/slug";
+import { canonicalRegionSlug } from "@/lib/cross-page-config";
 import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
 export const revalidate = 86400;
@@ -56,7 +57,7 @@ export default async function DanmarkHubPage() {
             {regions.map((region) => (
               <Link
                 key={region.region}
-                href={`/danmark/${slugifySegment(region.region)}`}
+                href={`/danmark/${canonicalRegionSlug(region.region)}`}
                 className="rounded-2xl border border-primary/10 bg-white p-6 shadow-sm hover:border-accent/30 hover:shadow-md transition-all"
               >
                 <h2 className="font-serif text-2xl font-bold text-primary">

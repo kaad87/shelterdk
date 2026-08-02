@@ -20,6 +20,7 @@ import {
 } from "@/lib/area-db";
 import { faqToJsonLd, getAreaFaqItems } from "@/lib/faq";
 import { slugifySegment } from "@/lib/slug";
+import { canonicalRegionSlug } from "@/lib/cross-page-config";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -49,6 +50,9 @@ function getAreaDisplayParts(name: string) {
 function shelterHref(region: string | null, kommune: string | null, slug: string): string {
   const regionName = (region || "").trim();
   if (!regionName || regionName === "Danmark") return `/shelter/${slug}`;
+  // BEMÆRK: shelter-DETALJER bor på den lange slug (/danmark/sjaelland-og-oeerne/...),
+  // i modsætning til region-HUBBEN der bor på den korte. Brug derfor ikke
+  // canonicalRegionSlug her — det ville sende linket gennem en redirect.
   const regionSlug = slugifySegment(regionName);
   const municipalitySlug = kommune ? slugifySegment(kommune) : "ukendt-kommune";
   return `/danmark/${regionSlug}/${municipalitySlug}/${slug}`;
@@ -121,7 +125,9 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
     water: shelters.filter((s) => getWater(s) === true).length,
   });
   const featuredShelters = shelters.slice(0, 12);
-  const regionSlug = slugifySegment(area.region);
+  // Region-HUBBEN bor på kort kanonisk slug; slugifySegment ville give
+  // redirect-URL'en for "Sjælland og Øerne".
+  const regionSlug = canonicalRegionSlug(area.region);
   const remainingShelters = shelters.slice(12);
   const placeCounts = new Map<string, number>();
   const municipalityCounts = new Map<string, number>();

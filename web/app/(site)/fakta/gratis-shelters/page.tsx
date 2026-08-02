@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { FaktaPage } from "@/components/FaktaPage";
 import { getTotalShelterCount, getFacilityCounts, getCountPerRegion, getTopRatedShelters } from "@/lib/fakta-db";
 import { slugifySegment } from "@/lib/slug";
+import { canonicalRegionSlug } from "@/lib/cross-page-config";
 import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
 export const revalidate = 86400;
@@ -40,7 +41,7 @@ export default async function GratisSheltersPage() {
       breakdownRows={regions.map((r) => ({
         label: r.region,
         value: r.count,
-        href: `/danmark/${slugifySegment(r.region)}`,
+        href: `/danmark/${canonicalRegionSlug(r.region)}`,
       }))}
       topSheltersTitle="Højest bedømte gratis shelters"
       topShelters={topShelters}

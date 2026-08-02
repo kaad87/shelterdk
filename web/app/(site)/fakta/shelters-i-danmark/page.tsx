@@ -8,6 +8,7 @@ import {
   getAverageRating,
 } from "@/lib/fakta-db";
 import { slugifySegment } from "@/lib/slug";
+import { canonicalRegionSlug } from "@/lib/cross-page-config";
 import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
 export const revalidate = 86400;
@@ -45,7 +46,7 @@ export default async function SheltersIDanmarkPage() {
       breakdownRows={regions.map((r) => ({
         label: r.region,
         value: r.count,
-        href: `/danmark/${slugifySegment(r.region)}`,
+        href: `/danmark/${canonicalRegionSlug(r.region)}`,
       }))}
       topSheltersTitle="Højest bedømte shelters i Danmark"
       topShelters={topShelters}

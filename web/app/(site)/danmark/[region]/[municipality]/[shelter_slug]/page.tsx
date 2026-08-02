@@ -14,6 +14,7 @@ import {
   NO_KOMMUNE_SLUG,
 } from "@/lib/danmark-silo";
 import { segmentSlugToName } from "@/lib/slug";
+import { canonicalRegionSlug } from "@/lib/cross-page-config";
 import { getPublishedGuestReviews } from "@/lib/guest-reviews";
 import type { Shelter } from "@/types/shelter";
 import {
@@ -237,7 +238,11 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
   // Breadcrumbs prioriterer altid Danmark-silo (region → kommune). Område vises separat på siden.
   const breadcrumbs = [
     { label: "Hjem", href: "/" },
-    { label: displayRegionName, href: `/danmark/${regionSlug}` },
+    // Region-HUBBEN bor på den korte kanoniske slug (fx /danmark/sjaelland),
+    // mens kommuner/shelters bor på den lange (sjaelland-og-oeerne). Uden
+    // canonicalRegionSlug her gik hvert eneste breadcrumb-link gennem en
+    // 308-redirect, og hubben fik næsten ingen direkte interne links.
+    { label: displayRegionName, href: `/danmark/${canonicalRegionSlug(displayRegionName)}` },
     { label: displayMunicipalityName, href: `/danmark/${regionSlug}/${municipalitySlug}` },
     { label: shelter.title },
   ];

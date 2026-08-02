@@ -10,6 +10,7 @@ import { AreaFaq } from "@/components/AreaFaq";
 import { getAreaFaqItems, faqToJsonLd, type FaqItem } from "@/lib/faq";
 import dynamic from "next/dynamic";
 import { slugifySegment } from "@/lib/slug";
+import { canonicalRegionSlug } from "@/lib/cross-page-config";
 import { normalizeRegionFilter } from "@/lib/soeg-filters";
 
 const MissingShelterBanner = dynamic(
@@ -77,7 +78,7 @@ export async function generateMetadata(props: {
     const prep = prepositionForRegionName(regionTrim);
     const title = `Shelters ${prep} ${regionTrim} – Se kort og liste | ShelterDK`;
     const description = `Find shelters og overnatningspladser ${prep} ${regionTrim}. Se kort, billeder, faciliteter og book muligheder.`;
-    const canonicalPath = `/danmark/${slugifySegment(regionTrim)}`;
+    const canonicalPath = `/danmark/${canonicalRegionSlug(regionTrim)}`;
     return {
       title: { absolute: title },
       description,

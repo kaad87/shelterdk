@@ -17,6 +17,7 @@ import {
 } from "@/lib/danmark-silo";
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 import { segmentSlugToName } from "@/lib/slug";
+import { canonicalRegionSlug } from "@/lib/cross-page-config";
 import { prepositionForRegionName } from "@/lib/area-db";
 import { Fragment } from "react";
 import { ShelterCard } from "@/components/ShelterCard";
@@ -200,7 +201,7 @@ function MunicipalityProse({
           </>
         )}
         Se alle shelters{" "}
-        <Link href={`/danmark/${regionSlug}`} className="text-accent hover:underline">
+        <Link href={`/danmark/${canonicalRegionSlug(regionName)}`} className="text-accent hover:underline">
           {prep} {regionName}
         </Link>
         , eller udforsk shelters med specifikke faciliteter:{" "}
@@ -290,7 +291,7 @@ export default async function DanmarkMunicipalityPage({ params }: PageProps) {
     <>
     <BreadcrumbSchema items={[
       { label: "Hjem", href: "/" },
-      { label: regionName, href: `/danmark/${regionSlug}` },
+      { label: regionName, href: `/danmark/${canonicalRegionSlug(regionName)}` },
       { label: displayName },
     ]} />
   <ShelterListSchema
@@ -306,7 +307,7 @@ export default async function DanmarkMunicipalityPage({ params }: PageProps) {
           </Link>
           <ChevronRight size={14} className="text-primary/50 shrink-0" />
           <Link
-            href={`/danmark/${regionSlug}`}
+            href={`/danmark/${canonicalRegionSlug(regionName)}`}
             className="py-1 -my-1 hover:text-accent transition-colors touch-manipulation"
           >
             {regionName}
