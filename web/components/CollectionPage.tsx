@@ -197,6 +197,28 @@ export function CollectionPage({
             </div>
           </section>
 
+          {config.related && config.related.length > 0 && (
+            <section className="mb-10">
+              <h2 className="font-serif text-2xl font-bold text-primary mb-5">
+                Se også
+              </h2>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                {config.related.map((r) => (
+                  <Link
+                    key={r.href}
+                    href={r.href}
+                    className="group rounded-xl border border-primary/10 bg-white p-4 transition-colors hover:border-accent/30"
+                  >
+                    <span className="block font-medium text-primary group-hover:text-accent transition-colors">
+                      {r.label}
+                    </span>
+                    <span className="mt-0.5 block text-sm text-primary/55">{r.note}</span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
           <section className="rounded-xl border border-primary/10 bg-primary/[0.03] p-5">
             <h2 className="font-serif text-lg font-bold text-primary mb-3">
               Nyttige ressourcer

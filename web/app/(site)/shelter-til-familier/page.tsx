@@ -209,6 +209,10 @@ export default async function ShelterTilFamilierPage() {
               {" · "}
               <Link href="/shelter-med-strand" className="text-accent hover:underline">shelter ved strand</Link>
               {" · "}
+              <Link href="/teltplads" className="text-accent hover:underline">teltpladser</Link>
+              {" · "}
+              <Link href="/baalhytte" className="text-accent hover:underline">bålhytter</Link>
+              {" · "}
               <Link href="/shelter-booking" className="text-accent hover:underline">book shelter</Link>
               {" · "}
               <Link href="/guides/regler-for-shelter-og-teltning-i-danmark" className="text-accent hover:underline">regler for shelter</Link>

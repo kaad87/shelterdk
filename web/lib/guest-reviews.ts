@@ -1,4 +1,4 @@
-import { createAdminClient } from "@/utils/supabase/server-admin";
+import { createCacheableAdminClient } from "@/utils/supabase/server-admin";
 
 /**
  * Førsteparts gæste-anmeldelser (efter verificeret ophold booket via ShelterDK).
@@ -18,7 +18,9 @@ export async function getPublishedGuestReviews(
   shelterId: string,
   limit = 10
 ): Promise<GuestReview[]> {
-  const { data } = await createAdminClient()
+    // Cachebar variant: publicerede anmeldelser ændrer sig sjældent, og
+  // no-store-varianten tvang hele shelter-siden dynamisk.
+  const { data } = await createCacheableAdminClient()
     .from("shelter_guest_reviews")
     .select("id, rating, comment, guest_name, created_at")
     .eq("shelter_id", shelterId)

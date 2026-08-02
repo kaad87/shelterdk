@@ -74,6 +74,38 @@ export default function RutePlannerPage() {
           </div>
         )}
 
+        {/* Indgange til de to store rute-samlesider. Uden disse var de reelt
+            forældreløse — kun i sitemap, uden intern link-equity. */}
+        <div className="mb-8">
+          <h2 className="font-serif text-lg font-bold text-primary mb-4">
+            Overnatning langs de klassiske ruter
+          </h2>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Link
+              href="/haervejen"
+              className="group rounded-xl border border-primary/10 bg-white p-4 transition-colors hover:border-accent/30"
+            >
+              <span className="block font-medium text-primary group-hover:text-accent transition-colors">
+                Shelters langs Hærvejen
+              </span>
+              <span className="mt-0.5 block text-sm text-primary/55">
+                Danmarks ældste vandrerute – find overnatning etape for etape
+              </span>
+            </Link>
+            <Link
+              href="/gudenaaen"
+              className="group rounded-xl border border-primary/10 bg-white p-4 transition-colors hover:border-accent/30"
+            >
+              <span className="block font-medium text-primary group-hover:text-accent transition-colors">
+                Shelters ved Gudenåen
+              </span>
+              <span className="mt-0.5 block text-sm text-primary/55">
+                Danmarks længste å – til kano, kajak og vandreture
+              </span>
+            </Link>
+          </div>
+        </div>
+
         <h2 className="font-serif text-lg font-bold text-primary mb-4">
           Alle {index.length} vandreruter
         </h2>

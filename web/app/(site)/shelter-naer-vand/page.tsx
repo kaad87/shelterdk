@@ -180,6 +180,10 @@ export default async function ShelterNaerVandPage() {
               {" · "}
               <Link href="/shelter-med-toilet" className="text-accent hover:underline">shelter med toilet</Link>
               {" · "}
+              <Link href="/teltplads" className="text-accent hover:underline">teltpladser</Link>
+              {" · "}
+              <Link href="/baalhytte" className="text-accent hover:underline">bålhytter</Link>
+              {" · "}
               <Link href="/shelter-booking" className="text-accent hover:underline">book shelter</Link>
               {" · "}
               <Link href="/guides/pakkeliste-til-sheltertur" className="text-accent hover:underline">pakkeliste</Link>

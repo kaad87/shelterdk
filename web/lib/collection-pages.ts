@@ -37,6 +37,8 @@ export interface CollectionConfig {
   /** Kort intro over listen. */
   intro: (count: number) => string;
   faq: { question: string; answer: string }[];
+  /** Kontekstuelle links til beslægtede sider — footeren alene giver for svagt signal. */
+  related?: { label: string; href: string; note: string }[];
 }
 
 /**
@@ -140,6 +142,11 @@ export const COLLECTIONS: Record<CollectionKey, CollectionConfig> = {
           "En del af pladserne kan bookes — enten via Naturstyrelsen, udinaturen.dk eller direkte hos ejeren. Resten fungerer efter først-til-mølle. Filtrér på bookbare pladser hvis du vil være sikker på plads i højsæsonen.",
       },
     ],
+    related: [
+      { label: "Bålhytter i Danmark", href: "/baalhytte", note: "overdækket bålsted" },
+      { label: "Shelters langs Hærvejen", href: "/haervejen", note: "til vandreturen" },
+      { label: "Køb shelter", href: "/koeb-shelter", note: "priser og regler" },
+    ],
   },
   baalhytte: {
     key: "baalhytte",
@@ -166,6 +173,11 @@ export const COLLECTIONS: Record<CollectionKey, CollectionConfig> = {
         answer:
           "Bålhytter er populære til skoleklasser, spejdere og fødselsdage, så flere steder kræver booking — særligt i weekender og skoleferier. Se den enkelte plads for booking-information.",
       },
+    ],
+    related: [
+      { label: "Teltpladser i Danmark", href: "/teltplads", note: "hvor du må slå telt op" },
+      { label: "Shelter med bålplads", href: "/shelter-med-baalplads", note: "åbent bålsted" },
+      { label: "Køb shelter", href: "/koeb-shelter", note: "priser og regler" },
     ],
   },
   arla: {
@@ -199,6 +211,10 @@ export const COLLECTIONS: Record<CollectionKey, CollectionConfig> = {
           "Det afhænger af gården. Fordi der er husdyr, er hunde ofte kun tilladt i snor eller slet ikke. Tjek den enkelte plads inden du tager afsted.",
       },
     ],
+    related: [
+      { label: "Teltpladser i Danmark", href: "/teltplads", note: "flere gratis pladser" },
+      { label: "Shelter med hund", href: "/shelter-med-hund", note: "hundevenlige pladser" },
+    ],
   },
   haervejen: {
     key: "haervejen",
@@ -226,6 +242,11 @@ export const COLLECTIONS: Record<CollectionKey, CollectionConfig> = {
           "De fleste primitive pladser er først-til-mølle. I højsæsonen (juni-august) kan det være svært at finde plads på de mest populære strækninger, så overvej at booke hvor det er muligt, eller medbring telt som alternativ.",
       },
     ],
+    related: [
+      { label: "Shelters ved Gudenåen", href: "/gudenaaen", note: "en anden klassisk rute" },
+      { label: "Vandreruter", href: "/ruteplanner", note: "alle ruter med shelters" },
+      { label: "Teltpladser i Danmark", href: "/teltplads", note: "hvis du har telt med" },
+    ],
   },
   gudenaaen: {
     key: "gudenaaen",
@@ -252,6 +273,11 @@ export const COLLECTIONS: Record<CollectionKey, CollectionConfig> = {
         answer:
           "Gudenåstien følger åen fra Tinnet Krat ved kilden til Randers, cirka 175 km. Den kan gås i etaper, og mange kombinerer vandring med overnatning i shelters undervejs.",
       },
+    ],
+    related: [
+      { label: "Shelters langs Hærvejen", href: "/haervejen", note: "Danmarks ældste vandrerute" },
+      { label: "Vandreruter", href: "/ruteplanner", note: "alle ruter med shelters" },
+      { label: "Shelter nær vand", href: "/shelter-naer-vand", note: "søer, åer og kyst" },
     ],
   },
 };

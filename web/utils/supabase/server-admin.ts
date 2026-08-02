@@ -27,3 +27,29 @@ export function createAdminClient() {
     },
   });
 }
+
+/**
+ * Som createAdminClient(), men UDEN `cache: "no-store"` — så Next.js må cache
+ * svaret og ruten kan forblive statisk/ISR.
+ *
+ * Brug KUN til data der tåler at være op til `revalidate` gammel: metadata som
+ * booking-enheders titel/pris eller publicerede anmeldelser. Brug ALDRIG til
+ * availability/bookingstatus — de skal være friske, og de hentes i forvejen
+ * klient-side via /api/shelter-availability.
+ *
+ * Baggrund: no-store-varianten gør hele ruten dynamisk i Next 14. Det kostede
+ * shelter-detaljesiderne (1.683 stk) CDN-caching og gav 320-590 ms TTFB mod
+ * ~80 ms på cachede sider.
+ */
+export function createCacheableAdminClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!url || !key) {
+    throw new Error(
+      "Mangler NEXT_PUBLIC_SUPABASE_URL eller SUPABASE_SERVICE_ROLE_KEY i .env.local"
+    );
+  }
+
+  return createClient(url, key);
+}

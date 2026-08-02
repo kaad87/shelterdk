@@ -1,4 +1,4 @@
-import { createAdminClient } from "@/utils/supabase/server-admin";
+import { createAdminClient, createCacheableAdminClient } from "@/utils/supabase/server-admin";
 import { BOOKING_WINDOW_DAYS } from "@/lib/booking-config";
 import type {
   BookableShelter,
@@ -131,7 +131,11 @@ export async function getBookableShelterByShelterDbId(
 export async function listBookableSheltersByShelterDbId(
   shelterId: string
 ): Promise<BookableShelter[]> {
-  const { data } = await createAdminClient()
+  // Cachebar variant: dette er booking-enhedernes METADATA (titel, pris,
+  // kapacitet) til shelter-detaljesiden — ikke ledighed. Ledigheden hentes
+  // klient-side via /api/shelter-availability og er derfor altid frisk.
+  // no-store her tvang 1.683 shelter-sider ud af CDN-cachen.
+  const { data } = await createCacheableAdminClient()
     .from("bookable_shelters")
     .select("*")
     .eq("shelter_id", shelterId)

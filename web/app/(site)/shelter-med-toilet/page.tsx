@@ -269,6 +269,10 @@ export default async function ShelterMedToiletPage() {
             {" · "}
             <Link href="/shelter-med-bruser" className="text-accent hover:underline">shelter med bruser</Link>
             {" · "}
+            <Link href="/teltplads" className="text-accent hover:underline">teltpladser</Link>
+            {" · "}
+            <Link href="/baalhytte" className="text-accent hover:underline">bålhytter</Link>
+            {" · "}
             <Link href="/shelter-booking" className="text-accent hover:underline">book shelter</Link>
             {" · "}
             <Link href="/danmark" className="text-accent hover:underline">udforsk alle shelters i Danmark</Link>.

@@ -198,6 +198,10 @@ export default async function ShelterMedBaalpladsPage() {
             {" · "}
             <Link href="/danmark" className="text-accent hover:underline">udforsk alle shelters i Danmark
             </Link>
+            {" · "}
+            <Link href="/teltplads" className="text-accent hover:underline">teltpladser</Link>
+            {" · "}
+            <Link href="/baalhytte" className="text-accent hover:underline">bålhytter</Link>
             .
           </p>
         </section>

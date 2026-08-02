@@ -14,6 +14,9 @@ const discoverLinks = [
   { label: "Handicapvenlige shelters", href: "/handicapvenlige-shelters" },
   { label: "Shelter til familier", href: "/shelter-til-familier" },
   { label: "Shelter til cykeltur", href: "/shelter-til-cykeltur" },
+  { label: "Teltpladser", href: "/teltplads" },
+  { label: "Bålhytter", href: "/baalhytte" },
+  { label: "Arla ØKO Shelters", href: "/arla-oeko-shelter" },
 ];
 
 const contentLinks = [
@@ -21,6 +24,8 @@ const contentLinks = [
   { label: "Pakkeliste til sheltertur", href: "/guides/pakkeliste-til-sheltertur" },
   { label: "Regler for shelter og teltning", href: "/guides/regler-for-shelter-og-teltning-i-danmark" },
   { label: "Shelter for begyndere", href: "/guides/shelter-for-begyndere-forste-tur" },
+  { label: "Shelters langs Hærvejen", href: "/haervejen" },
+  { label: "Shelters ved Gudenåen", href: "/gudenaaen" },
   { label: "Fakta om shelters", href: "/fakta" },
   { label: "Blog", href: "/blog" },
 ];
@@ -31,6 +36,7 @@ const gearGuideLinks = [
   { label: "Bedste liggeunderlag", href: "/bedste/liggeunderlag" },
   { label: "Bedste pandelampe", href: "/bedste/pandelampe" },
   { label: "Bedste telt", href: "/bedste/telt" },
+  { label: "Køb shelter – priser og regler", href: "/koeb-shelter" },
 ];
 
 const companyLinks = [
