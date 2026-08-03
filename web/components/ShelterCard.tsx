@@ -7,7 +7,7 @@ import { MapPin, Star, CheckCircle, Droplets, Dog, Flame, Users } from "lucide-r
 import type { Shelter } from "@/types/shelter";
 import { getCity, getResolvedPhotoUrls, isShelterPlace, isValidImageUrl, getWater, getToilet, getPetsAllowed, isBookable } from "@/lib/shelter-detail";
 import { ShelterPlaceholder } from "@/components/ShelterPlaceholder";
-import { getProxiedImageSrc, isUnoptimizedImageUrl } from "@/lib/image-proxy";
+import { netlifyImageLoader } from "@/lib/image-proxy";
 import { ImageCarousel } from "@/components/ImageCarousel";
 
 interface ShelterCardProps {
@@ -38,7 +38,9 @@ interface ShelterCardProps {
 }
 
 const IMAGE_LOAD_TIMEOUT_MS = 2500;
-const CARD_SIZES = "(max-width: 768px) 50vw, (max-width: 1200px) 50vw, 33vw";
+// Grids'ene er 1 kolonne under sm, 2 op til lg, derefter 3. Det gamle "50vw"
+// under 768px under-bestilte derfor på telefoner, hvor kortet fylder hele bredden.
+const CARD_SIZES = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw";
 
 function FrontPageCardImage({
   src,
@@ -87,7 +89,7 @@ function FrontPageCardImage({
       fill
       sizes={CARD_SIZES}
       className="object-cover transition-transform duration-300 group-hover:scale-105"
-      unoptimized={isUnoptimizedImageUrl(src)}
+      loader={netlifyImageLoader}
       onError={() => onErrorRef.current()}
       onLoad={handleLoad}
       priority={priority}
@@ -126,9 +128,10 @@ export function ShelterCard({ shelter, onImageError, href, priority, availabilit
     const lower = u.toLowerCase();
     return !BROKEN_PATTERNS.some((pat) => lower.includes(pat));
   });
-  // Card-billeder er en af de mest sete flader på sitet. Giv proxyen en fast
-  // thumbnail-bredde, så vi ikke sender store originals rundt til lister.
-  const proxiedSrcs = displayableUrls.map((u) => getProxiedImageSrc(u, { q: 70, w: 720 }));
+  // Card-billeder er en af de mest sete flader på sitet. Bredden bages IKKE ind
+  // her længere: <Image> får den rå URL plus netlifyImageLoader, så Next udsender
+  // et rigtigt srcset og telefonen henter en 384px-variant i stedet for 720px.
+  const imageSrcs = displayableUrls;
 
   const [cardImageIndex, setCardImageIndex] = useState(0);
   const [gaveUp, setGaveUp] = useState(false);
@@ -142,13 +145,13 @@ export function ShelterCard({ shelter, onImageError, href, priority, availabilit
     return () => mq.removeEventListener("change", handler);
   }, []);
 
-  const hasImagesToTry = proxiedSrcs.length > 0;
+  const hasImagesToTry = imageSrcs.length > 0;
   const currentSrc =
-    hasImagesToTry && cardImageIndex < proxiedSrcs.length ? proxiedSrcs[cardImageIndex] : null;
+    hasImagesToTry && cardImageIndex < imageSrcs.length ? imageSrcs[cardImageIndex] : null;
   const hasValidImage = currentSrc && !gaveUp;
 
   const handleImageError = () => {
-    if (cardImageIndex < proxiedSrcs.length - 1) {
+    if (cardImageIndex < imageSrcs.length - 1) {
       setCardImageIndex((i) => i + 1);
     } else {
       setGaveUp(true);
@@ -171,7 +174,7 @@ export function ShelterCard({ shelter, onImageError, href, priority, availabilit
   // disableCarousel slukker carousel'en selv ved multi-image — bruges når
   // kortet sidder i en horisontalt-scrollende parent (forsidens
   // "Populære shelters") for at undgå nested swipe-gesture-konflikt.
-  const useCarousel = isMobile && proxiedSrcs.length >= 2 && !gaveUp && !disableCarousel;
+  const useCarousel = isMobile && imageSrcs.length >= 2 && !gaveUp && !disableCarousel;
 
   const cardBody = (
     <div className="p-4">
@@ -296,7 +299,7 @@ export function ShelterCard({ shelter, onImageError, href, priority, availabilit
       >
         <div className="relative aspect-[4/3] overflow-hidden bg-primary/10">
           <ImageCarousel
-            urls={proxiedSrcs}
+            urls={imageSrcs}
             alt={`Billede af shelter ${shelter.title}`}
             sizes={CARD_SIZES}
             blurDataUrl={shelter.blur_data_url ?? undefined}
@@ -343,7 +346,7 @@ export function ShelterCard({ shelter, onImageError, href, priority, availabilit
             fill
             sizes={CARD_SIZES}
             className="object-cover transition-transform duration-300 group-hover:scale-105"
-            unoptimized={currentSrc ? isUnoptimizedImageUrl(currentSrc) : false}
+            loader={netlifyImageLoader}
             onError={handleImageError}
             priority={priority && cardImageIndex === 0}
             {...(shelter.blur_data_url && cardImageIndex === 0

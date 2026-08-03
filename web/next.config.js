@@ -217,6 +217,30 @@ const nextConfig = {
         protocol: "https",
         hostname: "webkort.herning.dk",
       },
+      {
+        protocol: "https",
+        hostname: "webkort.sonderborg.dk",
+      },
+      {
+        protocol: "https",
+        hostname: "friluftsguiden.dk",
+      },
+      // GuideDanmark-billeder ligger som http:// i basen. Netlify Image CDN
+      // matcher på den URL vi sender, ikke på hvad den redirecter til, så
+      // begge protokoller skal med — ellers svarer CDN'en 400 "not an allowed
+      // pattern" og billedet er dødt.
+      {
+        protocol: "http",
+        hostname: "files.guidedanmark.org",
+      },
+      {
+        protocol: "https",
+        hostname: "files.guidedanmark.org",
+      },
+      {
+        protocol: "https",
+        hostname: "naturstyrelsen.dk",
+      },
       // Supabase Storage (brugeruploadede billeder) – samme host som API
       ...(supabaseHost ? [{ protocol: "https", hostname: supabaseHost }] : []),
     ],

@@ -5,7 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import { MapPin, Star, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { ShelterPhotoUpload } from "@/components/ShelterPhotoUpload";
 import { ShelterPlaceholder } from "@/components/ShelterPlaceholder";
-import { getProxiedImageSrc, isUnoptimizedImageUrl } from "@/lib/image-proxy";
+import { netlifyImageLoader } from "@/lib/image-proxy";
+import { isValidImageUrl } from "@/lib/shelter-detail";
 import { ImageCarousel } from "@/components/ImageCarousel";
 
 interface ShelterGalleryProps {
@@ -33,21 +34,21 @@ export function ShelterGallery({
   blurDataUrl,
   headingId,
 }: ShelterGalleryProps) {
-  // 900px dækker desktop-containeren (896px) og mobil-2x; halverer hero-vægten
-  // ift. 1200 (536→289 KB) uden synlig kvalitetsforskel i 4:3-visningen.
-  const HERO_W = 900;
-  const THUMB_W = 320;
   const MAX_THUMBS = 10;
 
-  const proxiedUrls = urls
-    // w/q bages ind via getProxiedImageSrc, så hero-billedet skaleres uanset
-    // proxy-sti. (Før blev w kun tilføjet for /api/image-stien — på prod
-    // returnerer proxyen /.netlify/images uden w → fuld-opløsning, ~900 KB
-    // pr. billede på mobil.)
-    .map((u) => getProxiedImageSrc(u, { w: HERO_W, q: 70 }))
-    .filter((p) => p.trim().length > 0);
+  // URL'erne holdes RÅ. Tidligere bagte vi en fast HERO_W=900 ind via
+  // getProxiedImageSrc, hvilket gjorde billedet `unoptimized` og dræbte srcset:
+  // en 375px-telefon hentede samme 900px-hero som en 27" skærm. Nu får <Image>
+  // den rå URL plus netlifyImageLoader og vælger selv bredde ud fra `sizes`.
+  //
+  // Filtreres som i ShelterCard: getResolvedPhotoUrls validerer ikke, og et par
+  // shelters har HTML-stumper ("<a>Link</a>") i billedfeltet fra importen. De
+  // slap før igennem til <Image> og gav et dødt billede.
+  const galleryUrls = urls
+    .map((u) => (u ?? "").trim())
+    .filter((u) => u.startsWith("/api/google-photo") || isValidImageUrl(u));
   const [brokenUrls, setBrokenUrls] = useState<Set<string>>(new Set());
-  const visibleUrls = proxiedUrls.filter((u) => !brokenUrls.has(u));
+  const visibleUrls = galleryUrls.filter((u) => !brokenUrls.has(u));
   const markBroken = (url: string) => setBrokenUrls((prev) => new Set([...prev, url]));
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [heroGaveUp, setHeroGaveUp] = useState(false);
@@ -212,34 +213,28 @@ export function ShelterGallery({
         const toShow = visibleUrls.slice(0, MAX_THUMBS);
         return (
           <div className="hidden md:flex gap-2 mb-6 overflow-x-auto pb-1">
-            {toShow.map((url, i) => {
-              // Skalér thumbnails ned til THUMB_W uanset proxy-sti
-              // (/.netlify/images, /api/image og google-photo).
-              const thumbUrl = url.startsWith("/api/google-photo")
-                ? url.replace(/([?&])maxwidth=\d+/i, `$1maxwidth=${THUMB_W}`)
-                : /[?&]w=\d+/i.test(url)
-                  ? url.replace(/([?&])w=\d+/i, `$1w=${THUMB_W}`)
-                  : `${url}${url.includes("?") ? "&" : "?"}w=${THUMB_W}`;
-              return (
-                <button
-                  key={`${i}-${url}`}
-                  type="button"
-                  onClick={() => setLightboxIndex(i)}
-                  aria-label={`Vis billede ${i + 1}`}
-                  className="relative flex-none w-20 h-16 rounded-lg overflow-hidden border-2 transition-all border-transparent opacity-70 hover:opacity-100 hover:border-accent/50"
-                >
-                  <Image
-                    src={thumbUrl}
-                    alt={`${title} – miniature ${i + 1}`}
-                    fill
-                    className="object-cover"
-                    sizes="80px"
-                    unoptimized={isUnoptimizedImageUrl(thumbUrl)}
-                    onError={() => markBroken(url)}
-                  />
-                </button>
-              );
-            })}
+            {/* Bredden styres nu af `sizes` + loaderen. Den tidligere manuelle
+                w=-omskrivning af den færdigproxierede URL er dermed unødvendig —
+                og var i praksis virkningsløs for hosts der sprang proxyen over. */}
+            {toShow.map((url, i) => (
+              <button
+                key={`${i}-${url}`}
+                type="button"
+                onClick={() => setLightboxIndex(i)}
+                aria-label={`Vis billede ${i + 1}`}
+                className="relative flex-none w-20 h-16 rounded-lg overflow-hidden border-2 transition-all border-transparent opacity-70 hover:opacity-100 hover:border-accent/50"
+              >
+                <Image
+                  src={url}
+                  alt={`${title} – miniature ${i + 1}`}
+                  fill
+                  className="object-cover"
+                  sizes="80px"
+                  loader={netlifyImageLoader}
+                  onError={() => markBroken(url)}
+                />
+              </button>
+            ))}
           </div>
         );
       })()}
@@ -314,7 +309,7 @@ export function ShelterGallery({
                   width={1200}
                   height={900}
                   className="max-w-full max-h-[90vh] w-auto h-auto object-contain"
-                  unoptimized={isUnoptimizedImageUrl(url)}
+                  loader={netlifyImageLoader}
                   loading={Math.abs(i - (lightboxIndex ?? 0)) <= 1 ? "eager" : "lazy"}
                 />
               </div>

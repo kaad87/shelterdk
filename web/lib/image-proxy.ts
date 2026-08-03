@@ -15,6 +15,9 @@ export function getAllowedImageHosts(): Set<string> {
     "apps.aalborgkommune.dk",
     "webkort.esbjergkommune.dk",
     "webkort.herning.dk",
+    "webkort.sonderborg.dk",
+    "friluftsguiden.dk",
+    "files.guidedanmark.org",
     "naturstyrelsen.dk",
   ]);
 
@@ -40,7 +43,6 @@ const STATIC_SKIP_PROXY_HOSTS = new Set([
   "images.unsplash.com",
   "plus.unsplash.com",
   "unsplash.com",
-  "mapcentia-www.s3-eu-west-1.amazonaws.com",
   "dynamic-media-cdn.tripadvisor.com",
   "cdn.campanyon.com",
   "media.glampinghub.com",
@@ -53,6 +55,13 @@ function getSkipProxyHosts(): Set<string> {
   // sendes 3-5 MB owner-uploadede iPhone-fotos direkte til browseren
   // til 200px thumbnails. Skip-listen er kun til hosts der allerede
   // leverer optimerede billeder (Unsplash, Tripadvisor, Glamping Hub osv).
+  //
+  // mapcentia-www.s3-eu-west-1.amazonaws.com stod HER indtil aug 2026 og var
+  // præcis den fælde kommentaren ovenfor advarer om: rå S3 er objektlager, ikke
+  // en image-CDN, og stien er /fkg/1600/ — 1600px-originaler. Målt i produktion
+  // leverede den 571 KB–1,2 MB pr. billede direkte til browseren, hvor samme
+  // billede gennem proxyen ved kortbredde vejer 92 KB. Den er hovedkilden til
+  // billeder (1.269 af 1.397 shelters), så /teltplads sendte ~359 KB pr. kort.
   return STATIC_SKIP_PROXY_HOSTS;
 }
 
@@ -129,4 +138,31 @@ export function getProxiedImageSrc(
   }
   const key = computeImageProxyKey(u, opts);
   return `/api/image/${key}?url=${encodeURIComponent(u)}${suffix}`;
+}
+
+/**
+ * Loader til `next/image` (`loader`-prop), så Next selv genererer et `srcset`.
+ *
+ * Uden den bagte vi bredden ind i src'en FØR <Image> og markerede billedet som
+ * `unoptimized` — resultatet var nul srcset på hele sitet: en 375px-telefon
+ * hentede samme w=900-hero som en desktop (153 KB mod de 25 KB den skal bruge).
+ *
+ * Kræver at kaldestedet giver <Image> den RÅ URL (ikke getProxiedImageSrc-output)
+ * og et retvisende `sizes`. Må kun bruges i klient-komponenter — funktioner kan
+ * ikke sendes som prop fra en server-komponent.
+ *
+ * URL'er vi ikke transformerer (skip-hosts, google-photo, allerede proxierede)
+ * returneres uændret for hver bredde; srcset'et bliver da ens-URL'er, hvilket er
+ * uskadeligt — browseren henter ét billede som før.
+ */
+export function netlifyImageLoader({
+  src,
+  width,
+  quality,
+}: {
+  src: string;
+  width: number;
+  quality?: number;
+}): string {
+  return getProxiedImageSrc(src, { w: width, q: quality ?? 70 });
 }

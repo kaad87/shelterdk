@@ -1,5 +1,10 @@
 import { describe, it, expect, vi } from "vitest";
-import { computeImageProxyKey, getProxiedImageSrc, isUnoptimizedImageUrl } from "../image-proxy";
+import {
+  computeImageProxyKey,
+  getProxiedImageSrc,
+  isUnoptimizedImageUrl,
+  netlifyImageLoader,
+} from "../image-proxy";
 
 describe("getProxiedImageSrc", () => {
   it("returns proxy URL without opts", () => {
@@ -86,5 +91,64 @@ describe("getProxiedImageSrc – Netlify Image CDN i produktion", () => {
 
   it("behandler /.netlify/images som allerede optimeret (ingen dobbelt-hop)", () => {
     expect(isUnoptimizedImageUrl("/.netlify/images?url=x&w=720")).toBe(true);
+  });
+});
+
+describe("mapcentia S3 skal proxies", () => {
+  const MAPCENTIA =
+    "https://mapcentia-www.s3-eu-west-1.amazonaws.com/fkg/1600/abc.jpg";
+
+  // Regression: hosten stod på skip-listen og leverede 571 KB–1,2 MB rå
+  // 1600px-originaler direkte til browseren. Den er hovedkilden til billeder
+  // (1.269 af 1.397 shelters), så den MÅ ikke tilbage på listen.
+  it("springer IKKE proxy over — rå S3 er objektlager, ikke en image-CDN", () => {
+    expect(isUnoptimizedImageUrl(MAPCENTIA)).toBe(false);
+    expect(getProxiedImageSrc(MAPCENTIA, { w: 720, q: 70 })).toContain("/api/image/");
+  });
+
+  it("går gennem Netlify Image CDN i produktion", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    try {
+      expect(getProxiedImageSrc(MAPCENTIA, { w: 720, q: 70 })).toBe(
+        `/.netlify/images?url=${encodeURIComponent(MAPCENTIA)}&q=70&w=720`
+      );
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+});
+
+describe("netlifyImageLoader", () => {
+  it("giver forskellig URL pr. bredde, så Next kan bygge et srcset", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    try {
+      const small = netlifyImageLoader({ src: "https://example.com/i.jpg", width: 384 });
+      const large = netlifyImageLoader({ src: "https://example.com/i.jpg", width: 1080 });
+      expect(small).toContain("&w=384");
+      expect(large).toContain("&w=1080");
+      expect(small).not.toBe(large);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("falder tilbage til q=70 når Next ikke giver en quality", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    try {
+      expect(netlifyImageLoader({ src: "https://example.com/i.jpg", width: 640 })).toContain(
+        "&q=70"
+      );
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("lader URL'er vi ikke transformerer være i fred", () => {
+    expect(
+      netlifyImageLoader({ src: "/api/google-photo?ref=abc", width: 640 })
+    ).toBe("/api/google-photo?ref=abc");
+    expect(
+      netlifyImageLoader({ src: "https://images.unsplash.com/photo-1", width: 640 })
+    ).toBe("https://images.unsplash.com/photo-1");
   });
 });

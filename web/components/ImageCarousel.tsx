@@ -2,7 +2,7 @@
 
 import { useRef, useState, useCallback, useEffect } from "react";
 import Image from "next/image";
-import { isUnoptimizedImageUrl } from "@/lib/image-proxy";
+import { netlifyImageLoader } from "@/lib/image-proxy";
 
 interface ImageCarouselProps {
   urls: string[];
@@ -127,7 +127,7 @@ export function ImageCarousel({
               className="object-cover"
               loading={getLoading(i)}
               priority={priority && i === 0}
-              unoptimized={isUnoptimizedImageUrl(url)}
+              loader={netlifyImageLoader}
               onError={() => handleImageError(url)}
               {...(i === 0 && blurDataUrl
                 ? { placeholder: "blur" as const, blurDataURL: blurDataUrl }
