@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useSafeSearchParams } from "@/lib/useSafeSearchParams";
 import { ArrowUpDown, ChevronDown, List, LayoutGrid, MapPin } from "lucide-react";
 import { SearchBar } from "@/components/SearchBar";
 import { ShelterCard } from "@/components/ShelterCard";
@@ -147,7 +148,7 @@ export function SoegContent({
   view: initialView,
   basePath,
 }: SoegContentProps) {
-  const searchParams = useSearchParams();
+  const searchParams = useSafeSearchParams();
   const urlFilters = useMemo(() => parseFiltersFromParams(searchParams), [searchParams]);
   const urlHasFilters = Object.values(urlFilters).some(v => v != null && v !== false && v !== 0);
   const effectiveFilters = urlHasFilters ? urlFilters : initialFilters;

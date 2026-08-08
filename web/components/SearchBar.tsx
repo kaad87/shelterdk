@@ -1,6 +1,7 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useSafeSearchParams } from "@/lib/useSafeSearchParams";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   CalendarDays,
@@ -97,7 +98,7 @@ export function SearchBar({
   filterBasePath,
 }: SearchBarProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useSafeSearchParams();
   const [region, setRegion] = useState(
     () =>
       normalizeRegionFilter(initialRegion ?? searchParams.get("region")) ??

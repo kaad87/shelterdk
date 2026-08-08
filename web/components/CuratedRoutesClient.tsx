@@ -2,7 +2,8 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useSafeSearchParams } from "@/lib/useSafeSearchParams";
 import dynamic from "next/dynamic";
 import type {
   CuratedRouteIndex,
@@ -35,7 +36,7 @@ interface Props {
 }
 
 export function CuratedRoutesClient({ initialIndex }: Props) {
-  const searchParams = useSearchParams();
+  const searchParams = useSafeSearchParams();
   const router = useRouter();
 
   const [routes] = useState(initialIndex);

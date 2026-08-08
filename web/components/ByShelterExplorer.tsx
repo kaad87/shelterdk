@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AdInFeed } from "@/components/AdInFeed";
 import { showInFeedAdAt, inFeedAdIndex } from "@/lib/adsense";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useSafeSearchParams } from "@/lib/useSafeSearchParams";
 import {
   Accessibility,
   Armchair,
@@ -179,7 +180,7 @@ export function ByShelterExplorer({
   initialFilters?: SoegFilters;
 }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useSafeSearchParams();
 
   const [view, setView] = useState<ViewMode>(initialView);
   const [sortMode, setSortMode] = useState<SortMode>("standard");

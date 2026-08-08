@@ -203,6 +203,18 @@ const MapInner = dynamic(
       useEffect(() => {
         return () => {
           try {
+            // En åben popup er den anden kilde til pending animationer: når
+            // popup-billedet er færdigindlæst justerer Leaflet positionen med
+            // panBy, og fyrer det efter unmount rammer man
+            //   TypeError: undefined is not an object (evaluating 't.classList')
+            //     at panBy  [mechanism: ...requestAnimationFrame]
+            // (Sentry JAVASCRIPT-9). Popup'en lukkes derfor FØR map.stop(),
+            // så autopan'en aldrig når at blive planlagt.
+            //
+            // BEMÆRK: dette er en plausibel årsag, ikke en verificeret én — 12
+            // hændelser på 30 dage, og racet lader sig ikke fremkalde lokalt.
+            // Holdes under observation i Sentry.
+            map.closePopup();
             map.stop();
           } catch {
             // Map kan allerede være destroyed — defensiv no-op.
