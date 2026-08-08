@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { ownerRecipients } from "../booking-email";
+import { ownerRecipients, parseNotifyEmailsInput } from "../booking-email";
 
 /**
  * Ejer-notifikationer kan gå til flere adresser (ønsket fra ejeren af Legind
@@ -45,5 +45,45 @@ describe("ownerRecipients", () => {
     // Kaldes stadig — sendLoggedEmail sender ikke til en tom modtagerliste.
     expect(ownerRecipients("", null)).toEqual([]);
     expect(ownerRecipients("ikke-en-email", null)).toEqual([]);
+  });
+});
+
+/** Admin-feltet "Ekstra notifikationsmails". */
+describe("parseNotifyEmailsInput", () => {
+  const OWNER = "lene@eksempel.dk";
+
+  it("splitter på komma, semikolon og linjeskift", () => {
+    const r = parseNotifyEmailsInput("a@x.dk, b@x.dk; c@x.dk\nd@x.dk", OWNER);
+    expect(r.emails).toEqual(["a@x.dk", "b@x.dk", "c@x.dk", "d@x.dk"]);
+    expect(r.invalid).toEqual([]);
+  });
+
+  it("frasorterer ejerens egen adresse — den er allerede modtager", () => {
+    const r = parseNotifyEmailsInput(`${OWNER}, forening@x.dk`, OWNER);
+    expect(r.emails).toEqual(["forening@x.dk"]);
+  });
+
+  it("melder ugyldige adresser tilbage frem for at smide dem væk stille", () => {
+    // En tabt adresse betyder at ejeren aldrig får sine notifikationer, så
+    // kaldestedet skal kunne afvise med en brugbar fejl.
+    const r = parseNotifyEmailsInput("god@x.dk, ikke-en-email, @også-skæv", OWNER);
+    expect(r.emails).toEqual(["god@x.dk"]);
+    expect(r.invalid).toEqual(["ikke-en-email", "@også-skæv"]);
+  });
+
+  it("dedupliker og normaliserer", () => {
+    const r = parseNotifyEmailsInput(" Forening@X.dk , forening@x.dk ", OWNER);
+    expect(r.emails).toEqual(["forening@x.dk"]);
+  });
+
+  it("håndterer tomt felt som 'ingen ekstra modtagere'", () => {
+    expect(parseNotifyEmailsInput("", OWNER)).toEqual({ emails: [], invalid: [] });
+    expect(parseNotifyEmailsInput("  ,  ; ", OWNER)).toEqual({ emails: [], invalid: [] });
+    expect(parseNotifyEmailsInput(undefined, OWNER)).toEqual({ emails: [], invalid: [] });
+  });
+
+  it("accepterer også et array (API kan kaldes programmatisk)", () => {
+    const r = parseNotifyEmailsInput(["a@x.dk", "B@X.dk"], OWNER);
+    expect(r.emails).toEqual(["a@x.dk", "b@x.dk"]);
   });
 });

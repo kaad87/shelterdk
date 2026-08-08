@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/utils/supabase/server-admin";
 import { sendOwnerPortalInviteEmail } from "@/lib/email";
 import { createOwnerClaimToken } from "@/lib/owner-claim";
+import { parseNotifyEmailsInput } from "@/lib/booking-email";
 
 export const dynamic = "force-dynamic";
 
@@ -147,21 +148,10 @@ export async function PATCH(req: NextRequest) {
     // Ekstra modtagere af bookingnotifikationer. Holdes bevidst adskilt fra
     // owner_email: dét felt er identitetsnøgle, og at ændre det nulstiller
     // auth_user_id og kobler ejerens login fra (se update_owner_email ovenfor).
-    const raw = (body as { notify_emails?: unknown }).notify_emails;
-    const list = typeof raw === "string" ? raw.split(/[,;\n]/) : Array.isArray(raw) ? raw : [];
-    const ownerEmail = shelter.owner_email?.trim().toLowerCase() ?? "";
-    const seen = new Set<string>();
-    const invalid: string[] = [];
-    for (const entry of list) {
-      const e = normalizeEmail(entry);
-      if (!e) continue;
-      if (!isValidEmail(e)) {
-        invalid.push(e);
-        continue;
-      }
-      if (e === ownerEmail) continue; // allerede modtager som ejer
-      seen.add(e);
-    }
+    const { emails, invalid } = parseNotifyEmailsInput(
+      (body as { notify_emails?: unknown }).notify_emails,
+      shelter.owner_email ?? ""
+    );
     if (invalid.length > 0) {
       return NextResponse.json(
         { error: `Ugyldig email: ${invalid.join(", ")}` },
@@ -170,7 +160,7 @@ export async function PATCH(req: NextRequest) {
     }
     const { data, error } = await admin
       .from("bookable_shelters")
-      .update({ notify_emails: seen.size > 0 ? [...seen] : null })
+      .update({ notify_emails: emails.length > 0 ? emails : null })
       .eq("id", id)
       .select("*")
       .single();

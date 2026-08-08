@@ -32,6 +32,38 @@ export function ownerRecipients(
   return [...seen];
 }
 
+/**
+ * Parser admin-feltet "Ekstra notifikationsmails" (komma/semikolon/linjeskift).
+ *
+ * Returnerer `{ emails, invalid }` så kaldestedet kan afvise med en brugbar fejl
+ * i stedet for stille at smide adresser væk — en tabt adresse her betyder at en
+ * ejer aldrig får sine bookingnotifikationer.
+ *
+ * Ejerens egen adresse frasorteres: den er allerede modtager via `owner_email`,
+ * og at have den i begge felter ville ellers ligne en dublet i admin-fladen.
+ */
+export function parseNotifyEmailsInput(
+  raw: unknown,
+  ownerEmail: string
+): { emails: string[]; invalid: string[] } {
+  const parts =
+    typeof raw === "string" ? raw.split(/[,;\n]/) : Array.isArray(raw) ? raw : [];
+  const owner = (ownerEmail ?? "").trim().toLowerCase();
+  const emails = new Set<string>();
+  const invalid: string[] = [];
+  for (const part of parts) {
+    const e = typeof part === "string" ? part.trim().toLowerCase() : "";
+    if (!e) continue;
+    if (!EMAIL_RE.test(e)) {
+      invalid.push(e);
+      continue;
+    }
+    if (e === owner) continue;
+    emails.add(e);
+  }
+  return { emails: [...emails], invalid };
+}
+
 function bookingNotificationRecipients(): string[] {
   const raw =
     process.env.BOOKING_NOTIFICATION_EMAIL?.trim() ||
