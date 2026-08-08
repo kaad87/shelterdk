@@ -492,6 +492,18 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* Erstatter tidligere "Ugens outdoor-tilbud" (affiliate), som gav 1 klik
+          på 30 dage. Samme plads, nu som annonce.
+          FLYTTET OP aug 2026: lå tidligere efter kortet — sektion syv, ~5 skærme
+          nede — og målte 5,21 % viewability på 1.321 visninger, sitets absolut
+          dårligste placering. Her ligger den efter hero, weekend-planner og de
+          populære shelters: ~2 skærme nede på mobil, klart under folden, og uden
+          at kile sig ind mellem sitets to stærkeste engagementselementer.
+          (Bemærk: by-links-sektionen ovenfor renderer aldrig i praksis —
+          cityLinks er tom — så den kan ikke bruges som skillelinje.) */}
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <AdBanner />
+      </div>
 
       <Suspense fallback={null}>
         <NyeSheltersStrip />
@@ -547,12 +559,6 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* Erstatter tidligere "Ugens outdoor-tilbud" (affiliate), som gav 1 klik
-          på 30 dage. Samme plads, nu som annonce. */}
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <AdBanner />
-      </div>
 
       <section
         className="py-8 bg-primary/[0.03]"

@@ -27,7 +27,14 @@ export function ensureAdsenseScript() {
  * Loftet holder sidetætheden nede — for mange annoncer skader både oplevelsen
  * og RPM'en.
  */
-const IN_FEED_FIRST_INDEX = 6;
+/**
+ * Første annonce efter 3 kort, ikke 6. På mobil er grid'et én kolonne, så plads
+ * 6 lå ~1.800 px nede og blev sjældent nået: in-feed-enheden målte 11,89 %
+ * viewability mod bannerets 36,99 % over 7 dage. Dens viewable CPM er samtidig
+ * HØJERE end bannerets (13,38 mod 9,54 DKK) — inventaret er altså godt, det var
+ * placeringen der var gal, så den flyttes op frem for at blive skåret væk.
+ */
+const IN_FEED_FIRST_INDEX = 3;
 const IN_FEED_INTERVAL = 6;
 const IN_FEED_MAX_PER_PAGE = 3;
 const IN_FEED_MIN_ITEMS = 8;
