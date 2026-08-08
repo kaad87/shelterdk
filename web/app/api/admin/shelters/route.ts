@@ -143,6 +143,41 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ ok: true, shelter: data });
   }
 
+  if (action === "update_notify_emails") {
+    // Ekstra modtagere af bookingnotifikationer. Holdes bevidst adskilt fra
+    // owner_email: dét felt er identitetsnøgle, og at ændre det nulstiller
+    // auth_user_id og kobler ejerens login fra (se update_owner_email ovenfor).
+    const raw = (body as { notify_emails?: unknown }).notify_emails;
+    const list = typeof raw === "string" ? raw.split(/[,;\n]/) : Array.isArray(raw) ? raw : [];
+    const ownerEmail = shelter.owner_email?.trim().toLowerCase() ?? "";
+    const seen = new Set<string>();
+    const invalid: string[] = [];
+    for (const entry of list) {
+      const e = normalizeEmail(entry);
+      if (!e) continue;
+      if (!isValidEmail(e)) {
+        invalid.push(e);
+        continue;
+      }
+      if (e === ownerEmail) continue; // allerede modtager som ejer
+      seen.add(e);
+    }
+    if (invalid.length > 0) {
+      return NextResponse.json(
+        { error: `Ugyldig email: ${invalid.join(", ")}` },
+        { status: 400 }
+      );
+    }
+    const { data, error } = await admin
+      .from("bookable_shelters")
+      .update({ notify_emails: seen.size > 0 ? [...seen] : null })
+      .eq("id", id)
+      .select("*")
+      .single();
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json({ ok: true, shelter: data });
+  }
+
   if (action === "update_payment_settings") {
     const bodyWithSettings = body as {
       payment_mode?: unknown;

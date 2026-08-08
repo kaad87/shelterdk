@@ -161,6 +161,7 @@ export async function POST(
         await Promise.all([
           sendBookingRequestToOwner({
             ownerEmail: shelter.owner_email,
+            notifyEmails: shelter.notify_emails,
             shelterTitle: shelter.title,
             ownerToken: shelter.owner_token,
             guestName: guest_name,

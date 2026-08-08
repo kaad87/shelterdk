@@ -4,7 +4,10 @@ export interface BookableShelter {
   title: string;
   description: string | null;
   shelter_id: string | null;
+  /** Ejerens identitet — bruges til login, ejer-claim og admin-opslag (lighed). Præcis én adresse. */
   owner_email: string;
+  /** Ekstra modtagere af bookingnotifikationer. KUN notifikationer — aldrig adgangskontrol. */
+  notify_emails: string[] | null;
   owner_token: string;
   auth_user_id: string | null;
   max_persons: number;

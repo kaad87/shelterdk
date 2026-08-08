@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     expiredPayments.map(async ({ id: paymentId, booking_id: bookingId }) => {
       const { data: booking } = await createAdminClient()
         .from("shelter_bookings")
-        .select("status, guest_email, guest_name, check_in, check_out, bookable_shelters!inner(id, owner_email, title, payment_mode)")
+        .select("status, guest_email, guest_name, check_in, check_out, bookable_shelters!inner(id, owner_email, notify_emails, title, payment_mode)")
         .eq("id", bookingId)
         .single();
 
@@ -49,6 +49,7 @@ export async function GET(req: NextRequest) {
           guestEmail: booking.guest_email,
           guestName: booking.guest_name,
           ownerEmail: shelter.owner_email,
+            notifyEmails: shelter.notify_emails,
           shelterTitle: shelter.title,
           checkIn: booking.check_in,
           checkOut: booking.check_out,

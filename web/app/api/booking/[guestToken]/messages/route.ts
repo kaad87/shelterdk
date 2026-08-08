@@ -60,6 +60,7 @@ export async function POST(req: NextRequest, { params }: Ctx) {
     if (shelter) {
       await sendNewMessageToOwner({
         ownerEmail: shelter.owner_email,
+            notifyEmails: shelter.notify_emails,
         shelterTitle: shelter.title,
         ownerToken: shelter.owner_token,
         guestName: booking.guest_name,

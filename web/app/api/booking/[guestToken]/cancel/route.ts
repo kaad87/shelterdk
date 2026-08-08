@@ -149,6 +149,7 @@ export async function POST(
   try {
     await sendGuestCancelledToOwner({
       ownerEmail: shelter.owner_email,
+            notifyEmails: shelter.notify_emails,
       ownerToken: shelter.owner_token,
       guestName: booking.guest_name,
       shelterTitle: shelter.title,

@@ -20,6 +20,7 @@ const DEMO_SHELTER: BookableShelter = {
   description: "Hyggelig shelterplads ved skovbrynet med udsigt over søen. Plads til 6 personer, bålplads og brænde på stedet.",
   shelter_id: null,
   owner_email: "demo@shelterdk.dk",
+  notify_emails: null,
   owner_token: "demo-token",
   auth_user_id: null,
   max_persons: 6,

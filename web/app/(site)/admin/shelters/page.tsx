@@ -8,6 +8,7 @@ interface BookableShelter {
   slug: string;
   title: string;
   owner_email: string;
+  notify_emails: string[] | null;
   owner_token: string;
   auth_user_id: string | null;
   max_persons: number;
@@ -109,6 +110,7 @@ function AdminSheltersContent() {
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   const [ownerEmailDrafts, setOwnerEmailDrafts] = useState<Record<string, string>>({});
+  const [notifyDrafts, setNotifyDrafts] = useState<Record<string, string>>({});
   const [paymentDrafts, setPaymentDrafts] = useState<Record<string, {
     payment_mode: "after_confirmation" | "upfront";
     shelter_price_dkk: string;
@@ -211,7 +213,7 @@ function AdminSheltersContent() {
 
   const handleRowAction = async (
     id: string,
-    action: "update_owner_email" | "update_payment_settings" | "send_invite" | "link_existing_user" | "unlink_owner",
+    action: "update_owner_email" | "update_notify_emails" | "update_payment_settings" | "send_invite" | "link_existing_user" | "unlink_owner",
     extra: Record<string, unknown> = {}
   ) => {
     setRowStatus(id, { loading: true, message: null, ok: false });
@@ -609,6 +611,39 @@ function AdminSheltersContent() {
                         className="rounded-lg border border-primary/20 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/5 disabled:opacity-50"
                       >
                         Gem email
+                      </button>
+                    </div>
+                    {/* Ekstra notifikationsmodtagere. Bevidst adskilt fra ejer-email:
+                        dét felt er identitetsnøgle, og ændres det, kobles ejerens
+                        login fra (auth_user_id nulstilles). */}
+                    <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_auto] gap-3 items-end">
+                      <div>
+                        <label className="block text-xs font-medium text-primary/50 mb-1">
+                          Ekstra notifikationsmails
+                          <span className="ml-1 font-normal text-primary/35">
+                            (adskil med komma — får samme mails som ejeren)
+                          </span>
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="fx forening@eksempel.dk"
+                          value={notifyDrafts[s.id] ?? (s.notify_emails ?? []).join(", ")}
+                          onChange={(e) =>
+                            setNotifyDrafts((prev) => ({ ...prev, [s.id]: e.target.value }))
+                          }
+                          className="w-full rounded-lg border border-primary/20 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                        />
+                      </div>
+                      <button
+                        onClick={() =>
+                          handleRowAction(s.id, "update_notify_emails", {
+                            notify_emails: notifyDrafts[s.id] ?? (s.notify_emails ?? []).join(", "),
+                          })
+                        }
+                        disabled={rowActionState[s.id]?.loading}
+                        className="rounded-lg border border-primary/20 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/5 disabled:opacity-50"
+                      >
+                        Gem modtagere
                       </button>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-end">

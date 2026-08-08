@@ -7,6 +7,31 @@ function bookingLink(guestToken: string): string {
   return `${SITE_URL}/min-booking/${guestToken}`;
 }
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * Modtagere af en ejer-notifikation: ejerens egen adresse plus eventuelle ekstra
+ * adresser fra `bookable_shelters.notify_emails`.
+ *
+ * `owner_email` er identitetsnøgle (login, ejer-claim, admin-opslag slår op med
+ * lighed på den), så ekstra modtagere må ALDRIG lægges ind i det felt — de bor i
+ * en separat kolonne og samles først her, ved afsendelsen.
+ *
+ * Normaliserer og dedupliker, så samme adresse i begge felter kun giver én mail.
+ * `sendLoggedEmail` tager sig af suppression-filtrering og logning pr. modtager.
+ */
+export function ownerRecipients(
+  ownerEmail: string,
+  notifyEmails?: string[] | null
+): string[] {
+  const seen = new Set<string>();
+  for (const raw of [ownerEmail, ...(notifyEmails ?? [])]) {
+    const e = (raw ?? "").trim().toLowerCase();
+    if (e && EMAIL_RE.test(e)) seen.add(e);
+  }
+  return [...seen];
+}
+
 function bookingNotificationRecipients(): string[] {
   const raw =
     process.env.BOOKING_NOTIFICATION_EMAIL?.trim() ||
@@ -156,6 +181,8 @@ function formatDate(iso: string): string {
 /** Til ejeren: ny bookingforespørgsel med accept/afvis-links */
 export async function sendBookingRequestToOwner(opts: {
   ownerEmail: string;
+  /** Ekstra modtagere fra bookable_shelters.notify_emails. */
+  notifyEmails?: string[] | null;
   shelterTitle: string;
   ownerToken: string;
   guestName: string;
@@ -210,7 +237,7 @@ export async function sendBookingRequestToOwner(opts: {
   });
   try {
     await sendLoggedEmail({
-      to: opts.ownerEmail,
+      to: ownerRecipients(opts.ownerEmail, opts.notifyEmails),
       subject,
       html,
       text,
@@ -538,6 +565,8 @@ export async function sendPaymentConfirmed(opts: {
   guestEmail: string;
   guestName: string;
   ownerEmail: string;
+  /** Ekstra modtagere fra bookable_shelters.notify_emails. */
+  notifyEmails?: string[] | null;
   ownerToken?: string;
   shelterTitle: string;
   checkIn: string;
@@ -633,7 +662,7 @@ export async function sendPaymentConfirmed(opts: {
       },
     }),
     sendLoggedEmail({
-      to: opts.ownerEmail,
+      to: ownerRecipients(opts.ownerEmail, opts.notifyEmails),
       subject: `Ny bekræftet booking: ${esc(opts.shelterTitle)}`,
       html: renderEmail({
         title: "Ny bekræftet booking",
@@ -686,6 +715,8 @@ export async function sendPaymentConfirmed(opts: {
 /** Til ejeren: ny forudbetalt booking afventer din bekræftelse */
 export async function sendUpfrontPaymentReceived(opts: {
   ownerEmail: string;
+  /** Ekstra modtagere fra bookable_shelters.notify_emails. */
+  notifyEmails?: string[] | null;
   shelterTitle: string;
   ownerToken: string;
   guestName: string;
@@ -724,7 +755,7 @@ export async function sendUpfrontPaymentReceived(opts: {
   });
   try {
     await sendLoggedEmail({
-      to: opts.ownerEmail,
+      to: ownerRecipients(opts.ownerEmail, opts.notifyEmails),
       subject,
       html,
       text,
@@ -812,6 +843,8 @@ export async function sendBookingExpired(opts: {
   guestEmail: string;
   guestName: string;
   ownerEmail: string;
+  /** Ekstra modtagere fra bookable_shelters.notify_emails. */
+  notifyEmails?: string[] | null;
   shelterTitle: string;
   checkIn: string;
   checkOut: string;
@@ -847,7 +880,7 @@ export async function sendBookingExpired(opts: {
       },
     }),
     sendLoggedEmail({
-      to: opts.ownerEmail,
+      to: ownerRecipients(opts.ownerEmail, opts.notifyEmails),
       subject: `Booking udløbet — dato er ledig igen`,
       html: renderEmail({
         title: "Booking udløbet",
@@ -955,6 +988,8 @@ export async function sendGuestCancelledToGuest(opts: {
 /** Til ejeren: en gæst har annulleret */
 export async function sendGuestCancelledToOwner(opts: {
   ownerEmail: string;
+  /** Ekstra modtagere fra bookable_shelters.notify_emails. */
+  notifyEmails?: string[] | null;
   ownerToken: string;
   guestName: string;
   shelterTitle: string;
@@ -984,7 +1019,7 @@ export async function sendGuestCancelledToOwner(opts: {
   });
   try {
     await sendLoggedEmail({
-      to: opts.ownerEmail,
+      to: ownerRecipients(opts.ownerEmail, opts.notifyEmails),
       subject,
       html,
       text,
@@ -1068,6 +1103,8 @@ export async function sendOwnerCancelledToGuest(opts: {
 /** Til ejeren: gæsten har sendt en ny besked */
 export async function sendNewMessageToOwner(opts: {
   ownerEmail: string;
+  /** Ekstra modtagere fra bookable_shelters.notify_emails. */
+  notifyEmails?: string[] | null;
   shelterTitle: string;
   ownerToken: string;
   guestName: string;
@@ -1099,7 +1136,7 @@ export async function sendNewMessageToOwner(opts: {
   });
   try {
     await sendLoggedEmail({
-      to: opts.ownerEmail,
+      to: ownerRecipients(opts.ownerEmail, opts.notifyEmails),
       subject,
       html,
       text,

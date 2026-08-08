@@ -92,7 +92,7 @@ export async function reconcileCompletedCheckoutSession(
 
   const { data: booking } = await createAdminClient()
     .from("shelter_bookings")
-    .select("id, status, guest_email, guest_name, guest_token, guest_count, check_in, check_out, bookable_shelters!inner(id, owner_email, owner_token, title, payment_mode)")
+    .select("id, status, guest_email, guest_name, guest_token, guest_count, check_in, check_out, bookable_shelters!inner(id, owner_email, notify_emails, owner_token, title, payment_mode)")
     .eq("id", payment.booking_id)
     .single();
 
@@ -113,6 +113,7 @@ export async function reconcileCompletedCheckoutSession(
   const shelter = (booking as any).bookable_shelters as {
     id: string;
     owner_email: string;
+    notify_emails: string[] | null;
     owner_token: string;
     title: string;
     payment_mode: "after_confirmation" | "upfront";
@@ -264,6 +265,7 @@ export async function reconcileCompletedCheckoutSession(
         guestEmail: booking.guest_email,
         guestName: booking.guest_name,
         ownerEmail: shelter.owner_email,
+            notifyEmails: shelter.notify_emails,
         ownerToken: shelter.owner_token,
         shelterTitle: shelter.title,
         checkIn: booking.check_in,
