@@ -67,9 +67,6 @@ export function useAdSlot(minWidth: number = AD_MIN_WIDTH) {
 
     const measure = () => {
       if (readyRef.current) return;
-      // Bredden må gerne måles og beholderen gerne udvides før den er i syne —
-      // det er kun selve hentningen der venter.
-      if (!nearViewport.current) return;
       const w = el.getBoundingClientRect().width;
       // Bredde 0 = endnu ikke layoutet (skjult fane, collapsed pane). Vent på
       // næste ResizeObserver-tik i stedet for at melde "for smal" — ellers ville
@@ -87,6 +84,13 @@ export function useAdSlot(minWidth: number = AD_MIN_WIDTH) {
         }
         return;
       }
+
+      // Bredden er god. Selve hentningen — og dermed <ins> i DOM'en — venter til
+      // pladsen nærmer sig skærmen. Bemærk at målingen og en eventuel udvidelse
+      // sker FØR denne gate: gjorde de ikke det, ville en for smal annonce først
+      // udvide sig i det øjeblik brugeren scrollede ned til den, og skubbe
+      // kortene under sig ned midt i scrollet.
+      if (!nearViewport.current) return;
 
       readyRef.current = true;
       setReady(true);

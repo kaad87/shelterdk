@@ -28,14 +28,30 @@ export function ensureAdsenseScript() {
  * og RPM'en.
  */
 /**
- * Første annonce efter 3 kort, ikke 6. På mobil er grid'et én kolonne, så plads
+ * Første annonce efter 4 kort, ikke 6. På mobil er grid'et én kolonne, så plads
  * 6 lå ~1.800 px nede og blev sjældent nået: in-feed-enheden målte 11,89 %
  * viewability mod bannerets 36,99 % over 7 dage. Dens viewable CPM er samtidig
  * HØJERE end bannerets (13,38 mod 9,54 DKK) — inventaret er altså godt, det var
  * placeringen der var gal, så den flyttes op frem for at blive skåret væk.
+ *
+ * ANNONCENS PLADS I GRID'ET SKAL VÆRE LIGE. Er kortkolonnen smallere end
+ * 250 px, spænder <AdInFeed> over hele grid-rækken (se useAdSlot). Et element
+ * der fylder to kolonner kan ikke starte midt i en række, så på en ulige plads
+ * skubbes det ned til næste række og efterlader et synligt hul hvor der mangler
+ * et kort. Alle de layouts hvor kolonnen faktisk bliver så smal — /by, /soeg's
+ * split-visning og facet-region-siderne — er 2-kolonners grids ved siden af et
+ * kort.
+ *
+ * FÆLDEN: annoncen optager SELV en plads, så den n'te annonce står på
+ * grid-plads `shelterIndex + n`, ikke på `shelterIndex`. Derfor skal intervallet
+ * være ULIGE, så pariteten holder for alle tre annoncer:
+ *   start 4, interval 5  →  shelter 4, 9, 14  →  grid-plads 4, 10, 16 (lige) ✓
+ *   start 4, interval 6  →  shelter 4, 10, 16 →  grid-plads 4, 11, 18 (11 ulige) ✗
+ * Prøvede først start 3 (hul med det samme på /by/billund), derefter start 4
+ * med interval 6 — som kun flyttede hullet ned til annonce nummer to.
  */
-const IN_FEED_FIRST_INDEX = 3;
-const IN_FEED_INTERVAL = 6;
+const IN_FEED_FIRST_INDEX = 4;
+const IN_FEED_INTERVAL = 5;
 const IN_FEED_MAX_PER_PAGE = 3;
 const IN_FEED_MIN_ITEMS = 8;
 /** Mindst så mange kort skal ligge UNDER annoncen — ellers virker den som footer. */
