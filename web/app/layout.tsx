@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { DM_Sans, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { CookieBanner } from "@/components/CookieBanner";
+import { STALE_BUILD_RECOVERY_SCRIPT } from "@/lib/stale-build-recovery-script";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -68,6 +69,33 @@ export default function RootLayout({
   return (
     <html lang="da" className={`${dmSans.variable} ${playfair.variable}`}>
       <head>
+        {/* Stale-build-recovery. Skal stå ØVERST i <head> og køre synkront, før
+            nogen chunk-scripts hentes.
+
+            Chunk-filnavne har et indholds-hash, og et deploy fjerner de gamle.
+            iOS Safari genskaber faner efter genstart, så en bruger kan møde HTML
+            fra i formiddags og forgæves hente `webpack-<gammelt hash>.js`.
+            Modul-registret fyldes aldrig, og første opslag fejler med
+            `undefined is not an object (evaluating 'l[e].call')` (Sentry
+            JAVASCRIPT-1T).
+
+            HVORFOR IKKE EN REACT-KOMPONENT: en `useEffect`-lytter registreres
+            først efter hydrering — og når en chunk mangler, hydrerer siden
+            aldrig. Lytteren ville altså aldrig nå at eksistere i netop det
+            tilfælde den er til for. Derfor inline og synkront.
+
+            HVORFOR RESSOURCE-FEJL FREM FOR FEJLBESKEDEN: `l[e].call` er et
+            minificeret navn, der skifter ved næste build. At et <script> fra
+            /_next/static/ ikke kunne hentes, er et stabilt signal.
+
+            LØKKE-SIKRING: højst én genindlæsning pr. fane. Er chunken væk af en
+            anden grund end et deploy, står brugeren med en side uden
+            interaktivitet — det mindst dårlige udfald. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: STALE_BUILD_RECOVERY_SCRIPT,
+          }}
+        />
         <link rel="preconnect" href="https://lh3.googleusercontent.com" crossOrigin="anonymous" />
         {process.env.NEXT_PUBLIC_SUPABASE_URL ? (
           <link rel="preconnect" href={process.env.NEXT_PUBLIC_SUPABASE_URL} crossOrigin="anonymous" />
