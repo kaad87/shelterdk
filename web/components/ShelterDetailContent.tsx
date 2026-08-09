@@ -24,6 +24,14 @@ import { WeatherWidget } from "@/components/WeatherWidget";
 import { ResponsiveShelterAvailabilityPanel } from "@/components/ResponsiveShelterAvailabilityPanel";
 import dynamic from "next/dynamic";
 
+/**
+ * AdSense-enheden "shelterdk-detail-deep" — den anden annonce på detaljesiden,
+ * placeret under "andre steder i nærheden". Egen enhed frem for at genbruge
+ * bannerets slot, så de to placeringer kan skelnes i AdSense-rapporterne;
+ * ellers kan man ikke afgøre om den dybe placering er værd at beholde.
+ */
+const AD_SLOT_DETAIL_DEEP = "9156075915";
+
 // Lazy-load CommunityContributionPanel — it pulls the full @supabase/supabase-js
 // (auth + realtime, ~140KB unminified). It sits below the fold and only triggers
 // when the user actually scrolls down or interacts with community features.
@@ -76,6 +84,15 @@ interface ShelterDetailContentProps {
   nearbyRoutes?: { slug: string; name: string; length_km: number; distance_km: number }[];
   /** Købsguider matchet mod shelterets faciliteter (intern linking til /bedste). */
   gearSuggestions?: GuideLink[];
+  /**
+   * "Andre steder i nærheden". Sendes ind som slot frem for at blive renderet
+   * efter siden, fordi placeringen er hele pointen: målt på mobil lå modulet
+   * 5,5 skærme nede, bag FAQ, kontaktinfo, vejrudsigt og fakta. Det er sitets
+   * mest oplagte næste klik — folk vælger shelter ved at sammenligne — og hører
+   * derfor hjemme lige efter at læseren har fået sit svar.
+   * Datahentningen bliver i ruten, hvor koordinaterne findes.
+   */
+  nearbySlot?: React.ReactNode;
   showReviews: boolean;
   allPhotoUrls: string[];
   displayDescription: string | null;
@@ -131,6 +148,7 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
     facilityLinks = [],
     nearbyRoutes = [],
     gearSuggestions = [],
+    nearbySlot = null,
     showReviews,
     allPhotoUrls,
     displayDescription,
@@ -587,6 +605,30 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                 scroller. Tidligere lå den nederst på siden, hvor de færreste
                 nåede ned. Booking-fladerne holdes fortsat annoncefri. */}
             <AdBanner className="my-8" />
+
+            {/* "Andre steder i nærheden" flyttet hertil fra bunden af ruten.
+                Målt på mobil (390×844) lå det 5,5 skærme nede på en side der er
+                11,6 skærme høj — bag FAQ, kontaktinfo, vejrudsigt og fakta.
+                Sammenligning er hele måden man vælger shelter på, så det hører
+                hjemme lige efter svaret. Det står bevidst UNDER annoncen: så har
+                læseren en grund til at scrolle forbi den, hvilket løfter dens
+                viewability (målt til 5-37 % afhængigt af flade).
+                Booking mistes ikke ved at sende folk videre — den fastgjorte
+                booking-bjælke i bunden følger med på mobil. */}
+            {nearbySlot}
+
+            {/* Anden annonce. Alt herunder når kun de grundige læsere, og indtil
+                nu var de 6,4 skærme fra annoncen ovenfor og ned til footeren helt
+                umonetiserede. Netop de læsere er de mest værdifulde, og en visning
+                her bliver reelt set. Annoncen hentes først når den nærmer sig
+                skærmen (useAdSlot), så den koster ikke viewability for de mange
+                der aldrig når herned.
+
+                EGEN ANNONCEENHED med vilje ("shelterdk-detail-deep"). Brugte den
+                samme slot som ovenfor, ville de to tælle sammen i AdSense, og så
+                kunne man ikke se om den dybe placering rent faktisk virker —
+                hvilket er hele grunden til at prøve den. */}
+            <AdBanner slot={AD_SLOT_DETAIL_DEEP} className="my-8" />
 
             {accessDesc && (
               <section className="mb-10">

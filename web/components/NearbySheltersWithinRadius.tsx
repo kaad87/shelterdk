@@ -31,6 +31,40 @@ function shelterHref(
 
 const RADIUS_KM_DEFAULT = 10;
 
+/**
+ * Suspense-fallback der reserverer plads svarende til det færdige modul.
+ *
+ * Nødvendigt fordi modulet flyttede fra bunden af siden til midten, med en
+ * annonce og alt det øvrige indhold under sig. Med en lav placeholder ville de
+ * ~2.400 px indhold, der streames ind, skubbe hele resten af siden nedad — et
+ * groft layout-hop lige over en annonce. Skelettet efterligner derfor grid'et
+ * med kort i samme størrelsesforhold, så højden er tæt på den endelige.
+ *
+ * Holdes i samme fil som modulet, så de to ikke skrider fra hinanden.
+ */
+export function NearbySheltersSkeleton({ count = 5 }: { count?: number }) {
+  return (
+    <section className="mb-10" aria-hidden>
+      <div className="h-7 w-56 bg-primary/5 rounded mb-4 animate-pulse" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {Array.from({ length: count }).map((_, i) => (
+          <div
+            key={i}
+            className="rounded-xl border border-primary/10 overflow-hidden animate-pulse"
+          >
+            <div className="aspect-[4/3] bg-primary/5" />
+            <div className="p-4 space-y-2">
+              <div className="h-5 w-3/4 bg-primary/5 rounded" />
+              <div className="h-4 w-1/2 bg-primary/5 rounded" />
+              <div className="h-4 w-1/3 bg-primary/5 rounded" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export async function NearbySheltersWithinRadius({
   shelterId,
   radiusKm = RADIUS_KM_DEFAULT,
@@ -43,19 +77,22 @@ export async function NearbySheltersWithinRadius({
   }
 
   return (
-    <section
-      className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-10 lg:py-14 border-t border-primary/10"
-      aria-labelledby="heading-nearby-shelters"
-    >
+    // Ligger inde i artikel-kolonnen på shelter-detaljesiden (som nearbySlot),
+    // ikke længere som selvstændig sektion efter siden. Derfor ingen egen
+    // sidebredde, vandret padding eller topkant — den ydre kolonne styrer det.
+    <section className="mb-10" aria-labelledby="heading-nearby-shelters">
       <h2
         id="heading-nearby-shelters"
-        className="font-serif text-2xl font-bold text-primary mb-6"
+        className="font-serif text-xl font-bold text-primary mb-4"
       >
         Andre steder inden for {radiusKm} km
       </h2>
       {nearby.length > 0 ? (
         <ul
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+          // Højst 2 kolonner: modulet bor nu i artikel-kolonnen, som deler
+          // pladsen med en 340px sidebar. Tre kolonner ville give ~204px brede
+          // kort på desktop.
+          className="grid grid-cols-1 sm:grid-cols-2 gap-4"
           aria-label={`Nærliggende shelters inden for ${radiusKm} km`}
         >
           {nearby.map((shelter) => (

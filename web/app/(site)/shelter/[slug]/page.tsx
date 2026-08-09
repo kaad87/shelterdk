@@ -40,7 +40,10 @@ import { getPublishedGuestReviews } from "@/lib/guest-reviews";
 import { getRoutesForShelter } from "@/lib/shelter-routes";
 import { getGearSuggestions } from "@/lib/gear-suggestions";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
-import { NearbySheltersWithinRadius } from "@/components/NearbySheltersWithinRadius";
+import {
+  NearbySheltersWithinRadius,
+  NearbySheltersSkeleton,
+} from "@/components/NearbySheltersWithinRadius";
 import { NearbyStays } from "@/components/naturophold/NearbyStays";
 
 interface PageProps {
@@ -317,20 +320,19 @@ export default async function ShelterPage({ params }: PageProps) {
       guestReviews={guestReviews}
       coords={coords}
       weatherForecast={weatherForecast}
+      nearbySlot={
+        /* Renderes INDE i detaljesiden (lige efter svaret), ikke efter den.
+           Datahentningen bliver her, hvor coords findes; placeringen bestemmes
+           af ShelterDetailContent. */
+        <Suspense fallback={<NearbySheltersSkeleton count={5} />}>
+          <NearbySheltersWithinRadius
+            shelterId={shelter.id}
+            limit={5}
+            coords={coords}
+          />
+        </Suspense>
+      }
       />
-      <Suspense
-        fallback={
-          <section className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-10 border-t border-primary/10">
-            <div className="h-8 w-48 bg-primary/5 rounded animate-pulse" aria-hidden />
-          </section>
-        }
-      >
-        <NearbySheltersWithinRadius
-          shelterId={shelter.id}
-          limit={5}
-          coords={coords}
-        />
-      </Suspense>
       <Suspense fallback={null}>
         <NearbyStays coords={coords ? { lat: coords.lat, lon: coords.lon } : null} />
       </Suspense>
