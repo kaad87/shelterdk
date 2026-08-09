@@ -1,5 +1,5 @@
 """
-SCOPED udinaturen-billed-scraping — KUN for de 8 nye shelters.
+SCOPED udinaturen-billed-scraping — KUN for de nye shelters i NEW_SLUGS.
 Eksisterende shelters røres ALDRIG (filtreret på NEW_SLUGS).
 Bruger source_id (= udinaturen-facilitets-id) til at bygge URL'en.
 Kræver ikke Google-billing.
@@ -8,15 +8,21 @@ import os, time, requests
 from supabase import create_client
 from fetch_udinaturen_images import extract_image_urls, _fetch_images_playwright, HEADERS
 
+# Opdateret til GeoFA-importen 2026-08-08 (11 nye shelters).
+# Forhåndstestet mod udinaturen: alle 11 har billeder via ren HTTP (49 i alt),
+# ingen krævede Playwright-fallback.
 NEW_SLUGS = [
-    "havbade-shelteret-93643",
-    "shelterplads-ved-ega-engso-to-sheltere-iv-og-v-10219",
-    "aktivitetspladsen-ved-hundslund-hallen-10055",
-    "sandgraven-i-tisted-10033",
-    "vester-assels-byshelter-86480",
-    "skamstrup-mollebakke-11489",
-    "knudepunktet-bording-92733",
-    "soerne-i-norklit-90254",
+    "sohoj-telt-og-shelterplads-11910",
+    "vorgod-primitive-lejrplads-engtoften-19-6920-videbaek-87087",
+    "vorgod-primitive-lejrplads-engtoften-19-6920-videbaek-87091",
+    "st-jyndevad-shelterplads-en-del-af-alandet-91501",
+    "hevring-shelter-10394",
+    "mejerivej-3-gredsted-6771-gredstedbro-87548",
+    "to-2-mands-shelter-ved-bjorno-vingard-10238",
+    "shelter-ved-abildhede-87309",
+    "shelter-i-larsens-skov-86609",
+    "granada-skoven-94375",
+    "shelter-bogense-havn-10076",
 ]
 
 url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
