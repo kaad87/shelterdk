@@ -51,7 +51,11 @@ export const FILTER_OPTIONS: FilterOption[] = [
   { key: "toilet", label: "Toilet", icon: <ToiletIcon size={15} />, group: "faciliteter" },
   { key: "vand", label: "Vand", icon: <Droplets size={15} />, group: "faciliteter" },
   { key: "baalplads", label: "Bålplads", icon: <Flame size={15} />, group: "faciliteter" },
-  { key: "hund", label: "Hund tilladt", icon: <Dog size={15} />, group: "faciliteter" },
+  // "Hund oplyst" frem for "Hund tilladt": kun 16 af 1.689 shelters har
+  // overhovedet et hunde-felt i GeoFA-data. Den gamle label fik filteret til at
+  // se ud som en facitliste og antydede at hunde var forbudt de resterende
+  // 1.673 steder — de er blot uoplyste. Se noten på /shelter-med-hund.
+  { key: "hund", label: "Hund oplyst tilladt", icon: <Dog size={15} />, group: "faciliteter" },
   { key: "strand", label: "Strand", icon: <Umbrella size={15} />, group: "faciliteter" },
   { key: "bruser", label: "Bruser/bad", icon: <ShowerHead size={15} />, group: "faciliteter" },
   { key: "handicap", label: "Handicapegnet", icon: <Accessibility size={15} />, group: "faciliteter" },

@@ -162,6 +162,8 @@ export function buildSeoTitle(shelter: Shelter): string {
 
 /** By/stedsnavn til visning – foretrækker præcist sted (place), ellers kommune eller GeoFA. */
 export function getCity(shelter: Shelter): string | null {
+  // Forudberegnet på serveren af slimSheltersForList() når geofa_raw er strippet.
+  if (shelter.derived_city !== undefined) return shelter.derived_city;
   const place = shelter.place && typeof shelter.place === "string" ? shelter.place.trim() : null;
   if (isValidCityName(place)) return place;
   const fromKommune = shelter.kommune && typeof shelter.kommune === "string" ? shelter.kommune.trim() : null;
@@ -251,6 +253,8 @@ export function getToilet(
 
 /** Må man have hund/dyr med? Udledt af geofa_raw eller beskrivelse. */
 export function getPetsAllowed(shelter: Shelter): boolean | null {
+  // Forudberegnet på serveren af slimSheltersForList() når geofa_raw er strippet.
+  if (shelter.derived_pets_allowed !== undefined) return shelter.derived_pets_allowed;
   const raw = RAW(shelter);
   const petKeys = ["hunde_tilladt", "hund", "dyr", "pets", "husdyr"];
   for (const key of petKeys) {

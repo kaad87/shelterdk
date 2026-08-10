@@ -12,6 +12,7 @@
 import { createPublicClient } from "@/utils/supabase/server-public";
 import type { Shelter } from "@/types/shelter";
 import { getDisplayScore, hasAnyImage } from "@/lib/shelter-detail";
+import { slimSheltersForList } from "@shared/lib/shelter-list-slim";
 
 const SHELTER_SELECT =
   "id, title, slug, description, location, image_url, image_urls, user_image_urls, google_rating, google_user_ratings_total, google_place_name, booking_url, booking_link_mode, duplicate_of_shelter_id, region, kommune, place, water, toilet, capacity, geofa_raw, display_score, featured_sort_boost, bookable_shelters(id), blur_data_url";
@@ -94,7 +95,10 @@ export async function getCollectionShelters(key: CollectionKey): Promise<Shelter
         console.error(`Supabase error (collection ${key}):`, error);
         return [];
       }
-      const list = ((data as unknown as Shelter[]) ?? []).slice();
+      // Slank FØR cachen: geofa_raw (~3 KB/shelter) skal hverken ligge i
+        // proces-cachen eller sendes til browseren. Sortering og kort
+        // bruger kun felter der overlever slankningen.
+        const list = slimSheltersForList(((data as unknown as Shelter[]) ?? []).slice());
       list.sort(sortByImageAndScore);
       if (list.length > 0) cache.set(key, { shelters: list, expires: Date.now() + TTL_MS });
       return list;

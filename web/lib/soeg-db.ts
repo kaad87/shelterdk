@@ -1,5 +1,6 @@
 import { createPublicClient } from "@/utils/supabase/server-public";
 import { createAdminClient } from "@/utils/supabase/server-admin";
+import { slimSheltersForList } from "@shared/lib/shelter-list-slim";
 import type { Shelter } from "@/types/shelter";
 import { getLocationCoords, getDisplayScore, hasAnyImage } from "@/lib/shelter-detail";
 import { isStructuredBookable } from "@shared/lib/shelter-detail";
@@ -468,7 +469,7 @@ export async function getSheltersPage(
       list = list.filter((s) => isStructuredBookable(s));
     }
     list.sort(sortByImageAndScore);
-    return { shelters: list, hasMore: false, ...(dateAvailability ? { availabilityMap: dateAvailability.availabilityMap } : {}) };
+    return { shelters: slimSheltersForList(list), hasMore: false, ...(dateAvailability ? { availabilityMap: dateAvailability.availabilityMap } : {}) };
   }
 
   if (error?.code === "42703") {
@@ -581,7 +582,7 @@ export async function getSheltersPage(
       list.sort(sortByImageAndScore);
       const pruned = prunePlaceOutliersForExactQuery(list, q);
       return {
-        shelters: pruned,
+        shelters: slimSheltersForList(pruned),
         hasMore: false,
         ...(dateAvailability ? { availabilityMap: dateAvailability.availabilityMap } : {}),
       };
@@ -592,7 +593,7 @@ export async function getSheltersPage(
       ? sliceBookableResults(list, page, pageSize)
       : { shelters: list.slice(0, pageSize), hasMore: list.length >= pageSize };
     return {
-      shelters: paged.shelters,
+      shelters: slimSheltersForList(paged.shelters),
       hasMore: paged.hasMore,
       ...(dateAvailability ? { availabilityMap: dateAvailability.availabilityMap } : {}),
     };

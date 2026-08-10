@@ -14,6 +14,7 @@ import {
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 import { segmentSlugToName } from "@/lib/slug";
 import { ByShelterExplorer } from "@/components/ByShelterExplorer";
+import { slimSheltersForList } from "@shared/lib/shelter-list-slim";
 import { getWater, getToilet } from "@/lib/shelter-detail";
 import { isStructuredBookable } from "@shared/lib/shelter-detail";
 import { generatePlacePageFaq } from "@/lib/fakta-faq";
@@ -212,7 +213,10 @@ export default async function ByPage({ params, searchParams }: PageProps) {
   const initialFilters = parseFilters(urlParams);
 
   const { shelters: mergedShelters, usesMunicipalityExpansion } = await getByLandingData(placeName);
-  const shelters = await enrichSheltersWithGooglePhotoRef(mergedShelters);
+  // Slankes efter berigelsen: geofa_raw skal ikke med i klient-payloaden.
+  const shelters = slimSheltersForList(
+    await enrichSheltersWithGooglePhotoRef(mergedShelters)
+  );
 
   if (shelters.length === 0) notFound();
 

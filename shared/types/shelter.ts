@@ -73,6 +73,20 @@ export interface Shelter {
   /** Antal pladser/sovepladser. */
   capacity?: number | null;
   geofa_raw?: Record<string, unknown> | null;
+  /**
+   * Forudberegnede værdier fra `geofa_raw`, sat af `slimSheltersForList()`.
+   *
+   * Baggrund: `geofa_raw` fylder i snit ~3 KB pr. shelter, og listesiderne
+   * sendte hele blobben til browseren for hvert kort — 529 KB af /teltplads'
+   * 928 KB HTML. ShelterCard er en klient-komponent og kaldte `getCity()` og
+   * `getPetsAllowed()`, som begge læser den rå JSON. Nu udledes de to værdier
+   * på serveren, og blobben ryger ikke med over ledningen.
+   *
+   * `undefined` = ikke forudberegnet (fx detaljesider, hvor geofa_raw er med og
+   * getterne læser den direkte). `null` = udledt, men ukendt.
+   */
+  derived_city?: string | null;
+  derived_pets_allowed?: boolean | null;
   created_at?: string;
   updated_at?: string;
   /** Ved liste-hent: join til google_places (Supabase embed kan komme som array). */

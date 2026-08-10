@@ -1,3 +1,4 @@
+import { slimSheltersForList } from "@shared/lib/shelter-list-slim";
 import type { Shelter } from "@/types/shelter";
 import { getDisplayImageUrl } from "@shared/lib/shelter-detail";
 import { slugifySegment } from "@/lib/slug";
@@ -86,5 +87,6 @@ export async function getNewShelters(opts: GetNewSheltersOpts): Promise<Shelter[
   if (error || !data) return [];
   const rows = data as unknown as Shelter[];
   const filtered = presentableOnly ? rows.filter(isPresentableShelter) : rows;
-  return filtered.slice(0, limit);
+  // isPresentableShelter er kørt FØR slankningen, så den stadig kan se geofa_raw.
+  return slimSheltersForList(filtered.slice(0, limit));
 }

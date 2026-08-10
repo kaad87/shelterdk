@@ -85,8 +85,22 @@ export default async function ShelterMedHundPage() {
             Shelter med hund i Danmark
           </h1>
           <p className="text-primary/80 text-lg">
-            Her finder du shelters og overnatningspladser i naturen hvor hunde er tilladt.
-            Tag hunden med på tur og oplev naturovernatning i Danmark.
+            Her finder du shelters og overnatningspladser i naturen hvor hunde
+            udtrykkeligt er tilladt. Tag hunden med på tur og oplev
+            naturovernatning i Danmark.
+          </p>
+          {/* Kun 16 af 1.689 shelters har overhovedet et hunde-felt i GeoFA-data.
+              Uden denne note læses listen som "hunde er forbudt de øvrige 1.673
+              steder", hvilket er forkert — de er blot uoplyste. */}
+          <p className="mt-4 rounded-lg border border-primary/10 bg-primary/[0.03] px-4 py-3 text-sm text-primary/70">
+            Listen viser kun de pladser hvor hunde er{" "}
+            <strong className="font-semibold text-primary/85">
+              udtrykkeligt nævnt som tilladt
+            </strong>{" "}
+            i det offentlige friluftsregister. På langt de fleste danske
+            shelterpladser er hunde velkomne i snor, men det fremgår sjældent af
+            registret. Er du i tvivl, så kontakt ejeren — kontaktoplysninger
+            står på den enkelte plads.
           </p>
         </header>
 
