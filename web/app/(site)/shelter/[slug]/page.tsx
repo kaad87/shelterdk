@@ -33,6 +33,7 @@ import { slugifySegment } from "@/lib/slug";
 import { NO_KOMMUNE_SLUG } from "@/lib/danmark-silo";
 import { getAreaBySlug, prepositionForArea } from "@/lib/area-db";
 import { getWeatherForecast } from "@/lib/weather";
+import { readOnsitePrice } from "@/lib/onsite-price";
 import { ShelterDetailContent } from "@/components/ShelterDetailContent";
 import { listBookableSheltersByShelterDbId } from "@/lib/booking-db";
 import { ShelterSchema } from "@/components/seo/ShelterSchema";
@@ -307,6 +308,8 @@ export default async function ShelterPage({ params }: PageProps) {
         maxPersons: unit.max_persons,
         priceDkk: unit.shelter_price_dkk ?? null,
         feeMinDkk: unit.platform_fee_min_dkk ?? null,
+        // Ejerens egen pris (fx MobilePay). Vises, men opkræves aldrig af os.
+        onsitePrice: readOnsitePrice(unit),
       }))}
       bookingFallbackHint={bookingFallbackHint}
       firewood={getFirewood(shelter)}

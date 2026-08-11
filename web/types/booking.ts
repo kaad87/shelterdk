@@ -8,6 +8,14 @@ export interface BookableShelter {
   owner_email: string;
   /** Ekstra modtagere af bookingnotifikationer. KUN notifikationer — aldrig adgangskontrol. */
   notify_emails: string[] | null;
+  /**
+   * Pris ejeren opkræver DIREKTE af gæsten (fx MobilePay ved ankomst).
+   * Indgår ALDRIG i Stripe-opkrævningen — den kender kun `shelter_price_dkk`.
+   * Se lib/onsite-price.ts.
+   */
+  onsite_price_dkk: number | null;
+  onsite_price_basis: string | null;
+  onsite_payment_note: string | null;
   owner_token: string;
   auth_user_id: string | null;
   max_persons: number;

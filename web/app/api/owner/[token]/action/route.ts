@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { readOnsitePrice } from "@/lib/onsite-price";
 import {
   getBookableShelterByOwnerToken,
   getBookingByIdForShelter,
@@ -139,6 +140,10 @@ export async function POST(
           guestToken: booking.guest_token,
           bookingId,
           shelterId: shelter.id,
+          // Ejerens egen pris skal med, ellers møder gæsten op uden at vide
+          // at der skal betales på stedet.
+          guestCount: booking.guest_count,
+          onsitePrice: readOnsitePrice(shelter),
         });
       } catch (err) {
         console.error("owner confirm (upfront): confirmation email error:", err);

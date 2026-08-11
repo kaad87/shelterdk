@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { readOnsitePrice } from "@/lib/onsite-price";
 import {
   resolveActionToken,
   markTokenUsed,
@@ -268,6 +269,10 @@ export async function GET(
         guestToken: booking.guest_token,
         bookingId: booking.id,
         shelterId: shelter.id,
+        // Ejerens egen pris skal med, ellers møder gæsten op uden at vide
+        // at der skal betales på stedet.
+        guestCount: booking.guest_count,
+        onsitePrice: readOnsitePrice(shelter),
       });
     } else {
       await sendBookingRejectedToGuest({

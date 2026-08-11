@@ -1,5 +1,6 @@
 import { sendLoggedEmail, escapeHtml, renderEmail, renderEmailText } from "./email";
 import { calculateVatIncludedBreakdown } from "./stripe";
+import { describeOnsitePayment, nightsBetween, type OnsitePrice } from "./onsite-price";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://shelterdk.dk";
 
@@ -347,9 +348,22 @@ export async function sendBookingConfirmedToGuest(opts: {
   guestToken: string;
   bookingId?: string;
   shelterId?: string;
+  /** Antal gæster — bruges til at regne ejerens egen pris ud. */
+  guestCount?: number | null;
+  /** Ejerens egen pris, opkrævet uden om os (fx MobilePay ved ankomst). */
+  onsitePrice?: OnsitePrice | null;
 }) {
   const subject = `Din booking er bekræftet!`;
   const reference = bookingReference(opts.bookingId);
+  // Ejeren kan opkræve sin egen pris uden om vores betalingsflow. Gæsten har
+  // kun betalt bookinggebyret, så uden denne besked møder de op uden at vide at
+  // der skal penge op af lommen — og det er ejeren der står med den samtale.
+  const onsiteLine = opts.onsitePrice
+    ? describeOnsitePayment(opts.onsitePrice, {
+        guests: opts.guestCount ?? undefined,
+        nights: nightsBetween(opts.checkIn, opts.checkOut),
+      })
+    : null;
   const html = renderEmail({
     title: "Din booking er bekræftet!",
     preheader: `Din booking af ${opts.shelterTitle} er bekræftet. God tur!`,
@@ -360,6 +374,7 @@ export async function sendBookingConfirmedToGuest(opts: {
         <p style="font-size:13px;font-weight:600;color:#2C3E50;margin:0;">${esc(formatDate(opts.checkIn))} → ${esc(formatDate(opts.checkOut))}</p>
       </div>
       ${reference ? `<p style="font-size:12px;color:#666;margin:0 0 8px;"><strong>Bookingreference:</strong> ${esc(reference)}</p>` : ""}
+      ${onsiteLine ? `<div style="background:#fffbeb;border-left:3px solid #d97706;border-radius:0 6px 6px 0;padding:10px 13px;margin:12px 0;"><p style="font-size:10px;color:#92400e;margin:0 0 3px;text-transform:uppercase;letter-spacing:0.5px;">Betaling ved ankomst</p><p style="font-size:13px;color:#333;margin:0;line-height:1.6;">${esc(onsiteLine)}</p><p style="font-size:11px;color:#92400e;margin:6px 0 0;">Beløbet er ikke betalt via ShelterDK — du har kun betalt bookinggebyret.</p></div>` : ""}
       <p style="font-size:13px;color:#666;margin:0 0 16px;">God tur! Denne e-mail og din bookingside kan bruges som bookingbevis ved ankomst.</p>
       <a href="${bookingLink(opts.guestToken)}" style="display:inline-block;background:#c5a059;color:white;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;">Se din booking på ShelterDK</a>
       <p style="font-size:12px;color:#999;margin:12px 0 0;">Linket åbner shelterdk.dk og viser din booking direkte. Vis siden eller denne mail ved ankomst.</p>
@@ -371,6 +386,12 @@ export async function sendBookingConfirmedToGuest(opts: {
       `Hej ${opts.guestName}! Din booking af ${opts.shelterTitle} er nu bekræftet.`,
       `Datoer: ${formatDate(opts.checkIn)} → ${formatDate(opts.checkOut)}`,
       ...(reference ? [`Bookingreference: ${reference}`] : []),
+      ...(onsiteLine
+        ? [
+            `BETALING VED ANKOMST: ${onsiteLine}`,
+            "Beløbet er ikke betalt via ShelterDK — du har kun betalt bookinggebyret.",
+          ]
+        : []),
       "Denne e-mail og din bookingside kan bruges som bookingbevis ved ankomst.",
       "God tur!",
     ],

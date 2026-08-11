@@ -44,6 +44,7 @@ import { getShelterFaqItems, faqToJsonLd } from "@/lib/faq";
 import { chooseMetaDescription, normalizeSeoTitle, DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 import { getAreaBySlug, prepositionForArea } from "@/lib/area-db";
 import { getWeatherForecast } from "@/lib/weather";
+import { readOnsitePrice } from "@/lib/onsite-price";
 import { ShelterDetailContent } from "@/components/ShelterDetailContent";
 import { ShelterSchema } from "@/components/seo/ShelterSchema";
 import { getRoutesForShelter } from "@/lib/shelter-routes";
@@ -304,6 +305,8 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
         maxPersons: unit.max_persons,
         priceDkk: unit.shelter_price_dkk ?? null,
         feeMinDkk: unit.platform_fee_min_dkk ?? null,
+        // Ejerens egen pris (fx MobilePay). Vises, men opkræves aldrig af os.
+        onsitePrice: readOnsitePrice(unit),
       }))}
       bookingFallbackHint={bookingFallbackHint}
       firewood={getFirewood(shelter)}

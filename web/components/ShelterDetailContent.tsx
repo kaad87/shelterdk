@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { RevealContact } from "@/components/RevealContact";
 import { AdBanner } from "@/components/AdBanner";
+import { describeOnsitePayment, type OnsitePrice } from "@/lib/onsite-price";
 import { GearSuggestions } from "@/components/GearSuggestions";
 import type { GuideLink } from "@/lib/gear-suggestions";
 import { displayGuestName } from "@/lib/guest-reviews";
@@ -112,6 +113,8 @@ interface ShelterDetailContentProps {
     maxPersons: number;
     /** Shelter-ejerens pris pr. nat i DKK (0/null = gratis shelter). */
     priceDkk?: number | null;
+    /** Ejerens egen pris (fx MobilePay). Vises, opkræves aldrig af os. */
+    onsitePrice?: OnsitePrice | null;
     /** Minimums-bookinggebyr i DKK. */
     feeMinDkk?: number | null;
   }[];
@@ -223,6 +226,21 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
       .filter((f): f is number => typeof f === "number" && f > 0);
     const minPrice = Math.min(...prices);
     const minFee = fees.length > 0 ? Math.min(...fees) : null;
+
+    // Ejeren kan opkræve sin egen pris uden om vores betalingsflow (fx MobilePay
+    // ved ankomst). Uden dette stod der "Gratis shelter" på pladser der koster
+    // 50 kr pr. person pr. nat — ejeren af Legind Bjerge måtte selv gøre
+    // opmærksom på fejlen.
+    const onsite = bookingUnits
+      .map((u) => u.onsitePrice)
+      .find((p): p is NonNullable<typeof p> => Boolean(p));
+    if (onsite) {
+      const gebyr = minFee
+        ? ` Via ShelterDK betaler du kun bookinggebyret fra ${minFee} kr.`
+        : "";
+      return `${describeOnsitePayment(onsite)}${gebyr}`;
+    }
+
     if (minPrice <= 0) {
       return minFee
         ? `Gratis shelter — du betaler kun et bookinggebyr fra ${minFee} kr`
