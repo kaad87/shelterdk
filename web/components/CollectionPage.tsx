@@ -28,6 +28,9 @@ const NO_KOMMUNE_SLUG = "ukendt-kommune";
  */
 const MAX_CARDS = 60;
 
+/** Antal kort der får blur-pladsholder. Se showBlur i ShelterCard. */
+const BLUR_CARDS = 6;
+
 /** Shelter-DETALJER bor på den lange region-slug — ikke den kanoniske hub-slug. */
 function shelterHref(shelter: Shelter): string {
   const region = (shelter.region ?? "").trim();
@@ -157,7 +160,18 @@ export function CollectionPage({
               {visible.map((shelter, i) => (
                 <Fragment key={shelter.id}>
                   {showInFeedAdAt(i, visible.length) && <AdInFeed />}
-                  <ShelterCard shelter={shelter} href={shelterHref(shelter)} />
+                  <ShelterCard
+                    // blur_data_url fjernes for kort der ikke viser blur — ellers
+                    // ligger de ~411 bytes stadig i RSC-payloaden uden at blive brugt.
+                    shelter={
+                      i < BLUR_CARDS ? shelter : { ...shelter, blur_data_url: null }
+                    }
+                    href={shelterHref(shelter)}
+                    // Blur koster ~1,6 KB pr. kort (base64 i RSC + inline SVG i
+                    // style). Kun værd at betale øverst — længere nede er
+                    // billedet oftest hentet inden brugeren når derned.
+                    showBlur={i < BLUR_CARDS}
+                  />
                 </Fragment>
               ))}
             </div>

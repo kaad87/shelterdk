@@ -19,6 +19,16 @@ interface ShelterCardProps {
   /** Sæt for above-the-fold kort (fx forsiden) for hurtigere LCP. */
   priority?: boolean;
   /**
+   * Vis blur-pladsholder mens billedet loader. Default true.
+   *
+   * Slå den fra på kort langt nede i lange lister: Next indlejrer blur-billedet
+   * BÅDE som base64 i RSC-payloaden og som en gaussisk-filtreret inline SVG i
+   * style-attributten — ~1,6 KB pr. kort. På /teltplads (60 kort) var det 116 KB
+   * af sidens 720 KB, altså mere end geofa_raw fyldte. Værdien er størst
+   * øverst; længere nede er billedet oftest hentet inden brugeren når derned.
+   */
+  showBlur?: boolean;
+  /**
    * Marker kortet med "Ny"-badge. Beregnes af parent (server-komponent) via
    * isNewShelter() — holdes ude af klient-bundlen, da new-shelters.ts importerer
    * server-only Supabase-klient.
@@ -105,7 +115,7 @@ function formatDanishDate(iso: string): string {
   return new Intl.DateTimeFormat("da-DK", { day: "numeric", month: "long" }).format(d);
 }
 
-export function ShelterCard({ shelter, onImageError, href, priority, availabilityState, activeDate, disableCarousel = false, isNew = false }: ShelterCardProps) {
+export function ShelterCard({ shelter, onImageError, href, priority, showBlur = true, availabilityState, activeDate, disableCarousel = false, isNew = false }: ShelterCardProps) {
   const embeddedPlaces = shelter.google_places;
   const embeddedRefs = Array.isArray(embeddedPlaces)
     ? embeddedPlaces?.[0]?.photo_references
@@ -302,7 +312,7 @@ export function ShelterCard({ shelter, onImageError, href, priority, availabilit
             urls={imageSrcs}
             alt={`Billede af shelter ${shelter.title}`}
             sizes={CARD_SIZES}
-            blurDataUrl={shelter.blur_data_url ?? undefined}
+            blurDataUrl={showBlur ? shelter.blur_data_url ?? undefined : undefined}
             priority={priority}
           />
           {bookBadge}
@@ -336,7 +346,7 @@ export function ShelterCard({ shelter, onImageError, href, priority, availabilit
             timeoutRef={timeoutRef}
             loadedRef={loadedRef}
             priority={priority && cardImageIndex === 0}
-            blurDataUrl={cardImageIndex === 0 ? shelter.blur_data_url ?? undefined : undefined}
+            blurDataUrl={showBlur && cardImageIndex === 0 ? shelter.blur_data_url ?? undefined : undefined}
           />
         ) : (
           <Image
@@ -349,7 +359,7 @@ export function ShelterCard({ shelter, onImageError, href, priority, availabilit
             loader={netlifyImageLoader}
             onError={handleImageError}
             priority={priority && cardImageIndex === 0}
-            {...(shelter.blur_data_url && cardImageIndex === 0
+            {...(showBlur && shelter.blur_data_url && cardImageIndex === 0
               ? { placeholder: "blur" as const, blurDataURL: shelter.blur_data_url }
               : {})}
           />
