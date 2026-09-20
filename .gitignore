@@ -57,3 +57,6 @@ signatur-hej.html
 .netlify
 .worktrees/
 .superpowers/
+
+# Google Search Console service-account-nøgle (gsc_fetch.py)
+gsc-service-account*.json
