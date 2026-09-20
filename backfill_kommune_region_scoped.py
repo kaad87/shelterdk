@@ -23,19 +23,13 @@ from supabase import create_client
 from backfill_kommune_from_geo import reverse_geocode
 from backfill_region_from_kommune import kommune_to_landsdel
 
-# GeoFA-importen 2026-08-08. slug -> (lat, lon)
+# GeoFA-importen 2026-09-20. slug -> (lat, lon)
 TARGETS = {
-    "sohoj-telt-og-shelterplads-11910": (55.61915, 11.91055),
-    "vorgod-primitive-lejrplads-engtoften-19-6920-videbaek-87087": (56.08807, 8.70875),
-    "vorgod-primitive-lejrplads-engtoften-19-6920-videbaek-87091": (56.08802, 8.70919),
-    "st-jyndevad-shelterplads-en-del-af-alandet-91501": (54.90028, 9.15012),
-    "hevring-shelter-10394": (56.51572, 10.39402),
-    "mejerivej-3-gredsted-6771-gredstedbro-87548": (55.40874, 8.75486),
-    "to-2-mands-shelter-ved-bjorno-vingard-10238": (55.06513, 10.23878),
-    "shelter-ved-abildhede-87309": (55.66226, 8.73095),
-    "shelter-i-larsens-skov-86609": (55.57674, 8.66100),
-    "granada-skoven-94375": (56.46438, 9.43754),
-    "shelter-bogense-havn-10076": (55.56878, 10.07683),
+    "blommeshyttens-shelter-10012": (54.9524, 10.01227),
+    "shelterplads-assens-kabel-og-vandarena-98961": (55.26266, 9.89613),
+    "shelters-i-vikingelunden-horne-85395": (55.7201, 8.53951),
+    "fjordklyngehuset-93896": (56.5811, 9.38969),
+    "shelters-ved-aebleskoven-rodkaersbro-94989": (56.35569, 9.49892),
 }
 
 # Kanoniske regionsnavne i DB: Jylland (1086), Sjælland og Øerne (406), Fyn (181),
@@ -50,7 +44,7 @@ BORNHOLM_KOMMUNER = {"bornholm", "rønne", "ronne", "allinge", "nexø", "nexo",
 KODE_TIL_KOMMUNE = {
     "350": "Lejre", "430": "Faaborg-Midtfyn", "480": "Nordfyns", "561": "Esbjerg",
     "573": "Varde", "580": "Aabenraa", "707": "Norddjurs", "760": "Ringkøbing-Skjern",
-    "791": "Viborg", "306": "Kalundborg", "316": "Holbæk", "326": "Ringsted",
+    "791": "Viborg", "540": "Sønderborg", "420": "Assens", "306": "Kalundborg", "316": "Holbæk", "326": "Ringsted",
 }
 
 

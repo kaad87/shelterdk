@@ -8,21 +8,15 @@ import os, time, requests
 from supabase import create_client
 from fetch_udinaturen_images import extract_image_urls, _fetch_images_playwright, HEADERS
 
-# Opdateret til GeoFA-importen 2026-08-08 (11 nye shelters).
-# Forhåndstestet mod udinaturen: alle 11 har billeder via ren HTTP (49 i alt),
-# ingen krævede Playwright-fallback.
+# Opdateret til GeoFA-importen 2026-09-20 (5 nye shelters).
+# Forhåndstestet mod udinaturen: 4 af 5 har billeder via ren HTTP (9 i alt);
+# Æbleskoven har ingen nogen steder.
 NEW_SLUGS = [
-    "sohoj-telt-og-shelterplads-11910",
-    "vorgod-primitive-lejrplads-engtoften-19-6920-videbaek-87087",
-    "vorgod-primitive-lejrplads-engtoften-19-6920-videbaek-87091",
-    "st-jyndevad-shelterplads-en-del-af-alandet-91501",
-    "hevring-shelter-10394",
-    "mejerivej-3-gredsted-6771-gredstedbro-87548",
-    "to-2-mands-shelter-ved-bjorno-vingard-10238",
-    "shelter-ved-abildhede-87309",
-    "shelter-i-larsens-skov-86609",
-    "granada-skoven-94375",
-    "shelter-bogense-havn-10076",
+    "blommeshyttens-shelter-10012",
+    "shelterplads-assens-kabel-og-vandarena-98961",
+    "shelters-i-vikingelunden-horne-85395",
+    "fjordklyngehuset-93896",
+    "shelters-ved-aebleskoven-rodkaersbro-94989",
 ]
 
 url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
