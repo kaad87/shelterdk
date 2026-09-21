@@ -65,6 +65,14 @@ describe("resolveAwards", () => {
     expect(out.find((x) => x.id === "b")!.award_label).toBe("Bedst til prisen");
   });
 
+  it("udnævner en vinder når ingen af de tilbageværende har et topprædikat", () => {
+    // Sker når topproduktet er slettet helt (afmeldt fra feedet). Svarkapslen
+    // udnævner altid et førstevalg, så badgen skal sige det samme.
+    const out = resolveAwards([e("a", 0, true, "Bedst til prisen", 8.1), e("b", 1, true, null, 8.4), e("c", 2, true, null, 8.2)]);
+    expect(out.find((x) => x.id === "b")!.award_label).toBe("Vores valg");
+    expect(out.find((x) => x.id === "a")!.award_label).toBe("Bedst til prisen");
+  });
+
   it("efterlader topprædikatet ubrugt hvis intet produkt kan købes", () => {
     const out = resolveAwards([e("a", 0, false, "Bedst i test", 9), e("b", 1, false, "Bedst til prisen", 8)]);
     expect(out.every((x) => x.award_label === null)).toBe(true);

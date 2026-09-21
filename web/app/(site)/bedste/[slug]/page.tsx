@@ -74,7 +74,11 @@ export default async function BuyingGuidePage({
   // faktisk kan købe — rankGuideEntries demoterer udsolgte, så entries[0] er
   // kun et sikkert førstevalg hvis det er på lager.
   const available = entries.filter((e) => e.product.in_stock && !e.product.is_blocked);
-  const topPick = available[0] ?? null;
+  // Højeste score blandt de købbare — ikke bare den første i rangeringen.
+  // Rank 0 kan være udsolgt og demoteret, og så pegede svarkapslen på
+  // budgetvalget, mens en højere scorende model stod længere nede på siden.
+  const topPick =
+    [...available].sort((a, b) => (b.score ?? -Infinity) - (a.score ?? -Infinity))[0] ?? null;
   const budgetPick = available.find((e) => /budget|pris/i.test(e.award_label ?? "")) ?? null;
   // "Vores valg", ikke "testvinder": scoren er en redaktionel vurdering ud fra
   // en fast rubrik, ikke en labtest — sådan står der også på /saadan-vurderer-vi.

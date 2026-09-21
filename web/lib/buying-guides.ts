@@ -51,6 +51,7 @@ export function rankGuideEntries(entries: GuideEntryWithProduct[]): GuideEntryWi
 }
 
 /** Prædikater der betegner guidens hovedvinder — flyttes til et levende produkt. */
+const DEFAULT_TOP_AWARD = "Vores valg";
 const TOP_AWARDS = [/^vores valg$/i, /^bedst i test$/i, /^testvinder$/i, /^redaktionens valg$/i];
 
 /**
@@ -67,9 +68,16 @@ export function resolveAwards(entries: GuideEntryWithProduct[]): GuideEntryWithP
   const available = (e: GuideEntryWithProduct) => e.product.in_stock && !e.product.is_blocked;
   const isTop = (label: string | null) => !!label && TOP_AWARDS.some((re) => re.test(label.trim()));
 
-  const orphanedTop = entries.find((e) => isTop(e.award_label) && !available(e))?.award_label ?? null;
+  // Topprædikatet mangler enten fordi det sidder på noget udsolgt, eller fordi
+  // produktet er slettet helt (afmeldt fra forhandlerens feed). Begge dele skal
+  // ende samme sted: svarkapslen udnævner altid et førstevalg, så badgen skal
+  // sige det samme.
+  const hasLivingTop = entries.some((e) => isTop(e.award_label) && available(e));
+  const vacantTop = hasLivingTop
+    ? null
+    : entries.find((e) => isTop(e.award_label))?.award_label ?? DEFAULT_TOP_AWARD;
 
-  const heir = orphanedTop
+  const heir = vacantTop
     ? entries
         .filter((e) => available(e) && !e.award_label)
         .sort((a, b) => (b.score ?? -Infinity) - (a.score ?? -Infinity))[0] ?? null
@@ -77,7 +85,7 @@ export function resolveAwards(entries: GuideEntryWithProduct[]): GuideEntryWithP
 
   return entries.map((e) => {
     if (!available(e)) return e.award_label === null ? e : { ...e, award_label: null };
-    if (heir && e.id === heir.id) return { ...e, award_label: orphanedTop };
+    if (heir && e.id === heir.id) return { ...e, award_label: vacantTop };
     return e;
   });
 }
