@@ -592,7 +592,7 @@ Wild camping — at overnatte frit i naturen uden for udpegede pladser — er ge
 - Private skove over 5 hektar (med begrænsningerne ovenfor)
 - Steder hvor du har ejerens udtrykkelige tilladelse
 
-Der findes desuden et netværk af fri teltning-områder udpeget specifikt til formålet — se [Naturstyrelsens kort](https://naturstyrelsen.dk/) eller [Ud i Naturen](https://udinaturen.dk/).
+Der findes desuden **313 statsskove med fri teltning**, hvor du må slå telt op for natten uden booking og uden at betale — efter 1-2-3-reglen (én nat, højst to telte, højst tre personer pr. telt) og med teltet skjult under træer. Vi har samlet dem alle på [kortet over fri teltning i Danmark](/fri-teltning), fordelt på landsdele og kommuner.
 
 ## Bålregler
 

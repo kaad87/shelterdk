@@ -157,6 +157,7 @@ export const COLLECTIONS: Record<CollectionKey, CollectionConfig> = {
       },
     ],
     related: [
+      { label: "Fri teltning – kort over 313 skove", href: "/fri-teltning", note: "telt uden plads og uden booking" },
       { label: "Bålhytter i Danmark", href: "/baalhytte", note: "overdækket bålsted" },
       { label: "Shelters langs Hærvejen", href: "/haervejen", note: "til vandreturen" },
       { label: "Køb shelter", href: "/koeb-shelter", note: "priser og regler" },

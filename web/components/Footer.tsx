@@ -15,6 +15,7 @@ const discoverLinks = [
   { label: "Shelter til familier", href: "/shelter-til-familier" },
   { label: "Shelter til cykeltur", href: "/shelter-til-cykeltur" },
   { label: "Teltpladser", href: "/teltplads" },
+  { label: "Fri teltning – kort", href: "/fri-teltning" },
   { label: "Bålhytter", href: "/baalhytte" },
   { label: "Arla ØKO Shelters", href: "/arla-oeko-shelter" },
 ];
