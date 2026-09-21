@@ -9,9 +9,9 @@ import { faqToJsonLd } from "@/lib/faq";
 
 export const revalidate = 86400;
 
-const TITLE = "Køb shelter – priser, typer og regler for shelter i haven";
+const TITLE = "Køb shelter: priser fra 9.000 kr., byg selv & regler (2026)";
 const DESCRIPTION =
-  "Hvad koster et shelter? Se prisniveauer for byggesæt og samlesæt, hvilke typer der findes, og hvornår du må stille et shelter i haven uden byggetilladelse.";
+  "Hvad koster et shelter? Byggesæt fra ca. 9.000 kr., samlesæt 11-15.000 kr., byg helt selv fra ca. 5.000 kr. med gratis tegninger. Se typer og reglerne for shelter i haven.";
 
 /**
  * Priser er indhentet fra danske byggemarkeder august 2026 og bruges som
@@ -40,6 +40,11 @@ const FAQ = [
     question: "Skal jeg søge byggetilladelse til et shelter?",
     answer:
       "Normalt ikke, så længe du holder dig under 50 m² samlet sekundær bebyggelse, placerer det på terræn og overholder afstanden til skel. Men lokalplanen for dit område kan stille strengere krav, og bygningen må ikke bruges til beboelse. Tjek altid med din kommune inden du går i gang.",
+  },
+  {
+    question: "Findes der gratis tegninger til at bygge et shelter selv?",
+    answer:
+      "Ja. Naturstyrelsen lægger tegninger og statiske beregninger til sine egne shelters (type 7.1 small, 7.2 medium og 7.3 big) frit tilgængelige som PDF. Det er de samme konstruktioner, du møder på shelterpladserne, og statikken er allerede regnet, så du kan bruge dem direkte som grundlag for et byggeri i haven.",
   },
   {
     question: "Hvad er forskellen på byg-selv og samlesæt?",
@@ -91,6 +96,7 @@ export default async function KoebShelterPage() {
           <section className="mb-10 rounded-xl border border-accent/15 bg-accent/[0.04] p-5">
             <h2 className="font-serif text-lg font-bold text-primary mb-2">Kort fortalt</h2>
             <ul className="space-y-1.5 text-primary/85">
+              <li>Byg helt selv efter <a href="#byg-selv" className="text-accent hover:underline">gratis tegninger</a>: fra ca. <strong>5.000 kr</strong> i materialer</li>
               <li>Byg-selv-sæt i træ: typisk <strong>9.000–20.000 kr</strong></li>
               <li>Samlesæt med tilskårne dele: typisk <strong>11.000–15.000 kr</strong></li>
               <li>Du må have op til <strong>50 m²</strong> sekundær bebyggelse uden byggetilladelse</li>
@@ -145,6 +151,79 @@ export default async function KoebShelterPage() {
               Prisniveauer indhentet {PRICE_DATE} fra danske byggemarkeder. Tjek aktuelle
               priser hos forhandleren.
             </p>
+          </section>
+
+          <section className="mb-10" id="byg-selv">
+            <h2 className="font-serif text-2xl font-bold text-primary mb-4">
+              Byg selv shelter: gratis tegninger, materialer og pris
+            </h2>
+            <p className="text-primary/85 leading-relaxed mb-4">
+              Vil du bygge fra bunden, behøver du ikke tegne selv. Naturstyrelsen lægger
+              tegninger <em>og</em> statiske beregninger til sine egne shelters frit
+              tilgængelige — det er de konstruktioner, du kender fra shelterpladserne, i tre
+              størrelser: type 7.1 (small), 7.2 (medium) og 7.3 (big). Fordi statikken
+              allerede er regnet, er de et sikkert udgangspunkt, også hvis kommunen spørger.
+            </p>
+            <ul className="mb-4 space-y-2 text-primary/85">
+              <li className="flex gap-2">
+                <span className="text-accent" aria-hidden>•</span>
+                <span>
+                  <strong>Materialer:</strong> et klassisk A-shelter bygges af trykimprægnerede
+                  stolper, reglar til ramme og gulv, brædder til beklædning og krydsfiner med
+                  tagpap til taget. Gør Det Selv-magasinets byg-selv-shelter opgør
+                  materialerne til ca. 5.700 kr. — et realistisk niveau for et shelter til
+                  3-4 personer, hvis du køber alt nyt.
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-accent" aria-hidden>•</span>
+                <span>
+                  <strong>Tid:</strong> regn med omkring en uges arbejde for én person, eller
+                  en lang weekend for to, når fundamentet er på plads. Punktfundament
+                  (fliser eller betonklodser under stolperne) er nok — shelteret skal stå
+                  på terræn, ikke graves ned.
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-accent" aria-hidden>•</span>
+                <span>
+                  <strong>Værktøj:</strong> kap-/geringssav, skruemaskine, vaterpas, vinkel og
+                  en god hammer rækker. Brug rustfri eller varmgalvaniserede skruer og beslag —
+                  det er dem, der afgør om shelteret holder 20 år eller 5.
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-accent" aria-hidden>•</span>
+                <span>
+                  <strong>Placering:</strong> åbningen væk fra vestenvinden, og husk de 2,5 m
+                  til skel (se reglerne nedenfor). Et lag grus under gulvet holder fugten
+                  nede.
+                </span>
+              </li>
+            </ul>
+            <div className="rounded-xl border border-primary/15 bg-primary/[0.03] p-4">
+              <p className="text-sm font-semibold text-primary mb-2">Gratis tegninger (PDF, print i A3)</p>
+              <ul className="space-y-1 text-sm">
+                {[
+                  { label: "Naturstyrelsen: Shelter type 7.1 – small", href: "https://naturstyrelsen.dk/media/5lrdydvc/240129_nst_small_71_printkval.pdf" },
+                  { label: "Naturstyrelsen: Shelter type 7.2 – medium", href: "https://naturstyrelsen.dk/media/esrlgowp/240129_nst_medium_72_printkval.pdf" },
+                  { label: "Naturstyrelsen: Shelter type 7.3 – big", href: "https://naturstyrelsen.dk/media/4ntfducb/231010_nst_big_73.pdf" },
+                  { label: "Alle tegninger og statik-beregninger (Naturstyrelsen)", href: "https://naturstyrelsen.dk/regler-og-tilladelser/skilte-borde-og-baenke-smaabygninger/smaabygninger-i-skoven" },
+                ].map((l) => (
+                  <li key={l.href}>
+                    <a
+                      href={l.href}
+                      target="_blank"
+                      rel="noopener noreferrer nofollow"
+                      className="inline-flex items-center gap-1 text-accent hover:underline"
+                    >
+                      {l.label}
+                      <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </section>
 
           <AdBanner />
