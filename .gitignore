@@ -60,3 +60,7 @@ signatur-hej.html
 
 # Google Search Console service-account-nøgle (gsc_fetch.py)
 gsc-service-account*.json
+
+# Oplæg til købsguide-huller: genereres af scripts/guide_candidates.py.
+# Dine udfyldte valg holdes ude af git (kan indeholde arbejdsnoter).
+koebsguide-valg.json

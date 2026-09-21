@@ -1,0 +1,122 @@
+{
+  "campingstol": [
+    {
+      "produkt_id": "outmore-5709388158406",
+      "praedikat": "Bedste premium",
+      "score": 8.4,
+      "bedst_til": "Lange aftener ved bålet",
+      "note": "SKRIV SELV — hvad gør netop denne stol værd at anbefale?",
+      "plus": [
+        "…",
+        "…"
+      ],
+      "minus": [
+        "…"
+      ]
+    },
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    }
+  ],
+  "drikkedunk": [
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    },
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    }
+  ],
+  "gamacher": [
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    }
+  ],
+  "liggeunderlag-til-vinter": [
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    }
+  ],
+  "myggenet": [
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    }
+  ],
+  "sovepude": [
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    }
+  ],
+  "tarp": [
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    },
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    }
+  ],
+  "telt": [
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    }
+  ]
+}
