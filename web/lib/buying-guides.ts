@@ -50,6 +50,38 @@ export function rankGuideEntries(entries: GuideEntryWithProduct[]): GuideEntryWi
   });
 }
 
+/** Prædikater der betegner guidens hovedvinder — flyttes til et levende produkt. */
+const TOP_AWARDS = [/^vores valg$/i, /^bedst i test$/i, /^testvinder$/i, /^redaktionens valg$/i];
+
+/**
+ * Prædikater må aldrig sidde på noget, man ikke kan købe.
+ *
+ * Guidernes picks er statiske, mens feed'et er levende: da 37 produkter forsvandt
+ * fra forhandlernes feeds, blev "Bedst i test" hængende på varer, der havde været
+ * udsolgt i op til 162 dage — og /bedste/campingstol udpegede to forskellige
+ * vindere på samme side. Her løses det ved render-tid, så det ikke kan rådne igen:
+ * udsolgte mister deres prædikat, og topprædikatet gives til det højest scorende
+ * produkt, der faktisk er på lager og ikke allerede har et.
+ */
+export function resolveAwards(entries: GuideEntryWithProduct[]): GuideEntryWithProduct[] {
+  const available = (e: GuideEntryWithProduct) => e.product.in_stock && !e.product.is_blocked;
+  const isTop = (label: string | null) => !!label && TOP_AWARDS.some((re) => re.test(label.trim()));
+
+  const orphanedTop = entries.find((e) => isTop(e.award_label) && !available(e))?.award_label ?? null;
+
+  const heir = orphanedTop
+    ? entries
+        .filter((e) => available(e) && !e.award_label)
+        .sort((a, b) => (b.score ?? -Infinity) - (a.score ?? -Infinity))[0] ?? null
+    : null;
+
+  return entries.map((e) => {
+    if (!available(e)) return e.award_label === null ? e : { ...e, award_label: null };
+    if (heir && e.id === heir.id) return { ...e, award_label: orphanedTop };
+    return e;
+  });
+}
+
 const PRODUCT_COLS =
   "id, retailer, brand, product_name, description, category_mapped, price, price_original, discount_pct, in_stock, stock_count, image_url, affiliate_url, is_blocked, shipping_cost, updated_at, last_seen_at, specs";
 
@@ -108,7 +140,7 @@ export async function getGuideBySlug(
     })
     .filter((e): e is GuideEntryWithProduct => e !== null);
 
-  return { guide: guide as BuyingGuide, entries: rankGuideEntries(entries) };
+  return { guide: guide as BuyingGuide, entries: resolveAwards(rankGuideEntries(entries)) };
 }
 
 export interface GuideTeaser {

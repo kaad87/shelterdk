@@ -70,11 +70,16 @@ export default async function BuyingGuidePage({
   );
   const faqItems: FaqItem[] = (guide.faq ?? []).map((f) => ({ question: f.q, answer: f.a }));
 
-  // GEO-svarkapsel: kort, citerbar anbefaling bygget fra testvinderen + et budgetvalg.
-  const topPick = entries[0] ?? null;
-  const budgetPick = entries.find((e) => /budget|pris/i.test(e.award_label ?? "")) ?? null;
+  // GEO-svarkapsel: kort, citerbar anbefaling. Den skal pege på noget, man
+  // faktisk kan købe — rankGuideEntries demoterer udsolgte, så entries[0] er
+  // kun et sikkert førstevalg hvis det er på lager.
+  const available = entries.filter((e) => e.product.in_stock && !e.product.is_blocked);
+  const topPick = available[0] ?? null;
+  const budgetPick = available.find((e) => /budget|pris/i.test(e.award_label ?? "")) ?? null;
+  // "Vores valg", ikke "testvinder": scoren er en redaktionel vurdering ud fra
+  // en fast rubrik, ikke en labtest — sådan står der også på /saadan-vurderer-vi.
   const answerText = topPick
-    ? `Vores testvinder er ${topPick.product.product_name}${topPick.score != null ? ` (${formatScore(topPick.score)}/10)` : ""} — det bedste alround-valg.${budgetPick && budgetPick.id !== topPick.id ? ` Bedst til prisen: ${budgetPick.product.product_name}.` : ""}`
+    ? `Vores førstevalg er ${topPick.product.product_name}${topPick.score != null ? ` (${formatScore(topPick.score)}/10)` : ""} — det bedste alround-valg.${budgetPick && budgetPick.id !== topPick.id ? ` Bedst til prisen: ${budgetPick.product.product_name}.` : ""}`
     : guide.intro ?? "";
   const body = guide.body_md ? await renderContent(guide.body_md) : null;
 
@@ -146,9 +151,14 @@ export default async function BuyingGuidePage({
           {guide.intro && <p className="text-lg text-primary/80">{guide.intro}</p>}
           <p className="mt-2 text-xs text-primary/50">
             {guide.author && <>Af {guide.author} · </>}
+            {/* To forskellige datoer med hver sin betydning: den redaktionelle
+                gennemgang (sjælden) og pris/lager-synken (dagligt). Før stod
+                kun den første, så alle 30 guider sagde "Sidst opdateret 9.6."
+                selv om priserne var fra i nat. */}
             {guide.last_reviewed_at && (
-              <>Sidst opdateret {new Date(guide.last_reviewed_at).toLocaleDateString("da-DK")} · </>
+              <>Gennemgået {new Date(guide.last_reviewed_at).toLocaleDateString("da-DK")} · </>
             )}
+            {priceCheckedLabel && <>priser tjekket {priceCheckedLabel} · </>}
             <Link href="/saadan-vurderer-vi" className="underline hover:text-accent">
               Sådan vurderer vi
             </Link>

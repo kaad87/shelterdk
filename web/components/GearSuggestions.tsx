@@ -21,7 +21,7 @@ export function GearSuggestions({ guides }: { guides: GuideLink[] }) {
         Grej til turen
       </h2>
       <p className="mb-4 text-sm text-primary/70">
-        Vi har testet og sammenlignet udstyr til netop denne type overnatning.
+        Vi har sammenlignet og scoret udstyr til netop denne type overnatning.
       </p>
       <ul className="space-y-2">
         {guides.map((guide) => (

@@ -56,6 +56,7 @@ export function AdminBuyingGuides() {
   const [search, setSearch] = useState("");
   const [results, setResults] = useState<ProductLite[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
+  const [health, setHealth] = useState<Record<string, { dead: number; total: number; problems: string[] }>>({});
 
   const authFetch = useCallback(
     (url: string, opts: RequestInit = {}) =>
@@ -72,13 +73,25 @@ export function AdminBuyingGuides() {
     else setMsg("Kunne ikke hente guider (tjek secret).");
   }, [authFetch]);
 
+  // Døde produktpladser var kun synlige ved at åbne hver guide for sig — derfor
+  // nåede 37 af dem at hobe sig op. Nu står de i listen.
+  const loadHealth = useCallback(async () => {
+    const r = await authFetch("/api/admin/buying-guides/health");
+    if (!r.ok) return;
+    const rows = ((await r.json()).health ?? []) as Array<{ slug: string; dead: number; total: number; problems: string[] }>;
+    setHealth(Object.fromEntries(rows.map((h) => [h.slug, h])));
+  }, [authFetch]);
+
   useEffect(() => {
     const s = sessionStorage.getItem(STORAGE_KEY);
     if (s) setSecret(s);
   }, []);
   useEffect(() => {
-    if (secret) loadGuides();
-  }, [secret, loadGuides]);
+    if (secret) {
+      loadGuides();
+      loadHealth();
+    }
+  }, [secret, loadGuides, loadHealth]);
 
   const loadEntries = useCallback(
     async (guideId: string) => {
@@ -220,6 +233,14 @@ export function AdminBuyingGuides() {
           >
             <span className="font-medium text-primary">{g.title || g.slug}</span>
             <span className="ml-1 text-xs text-primary/50">{g.status}</span>
+            {health[g.slug]?.dead ? (
+              <span className="ml-1 rounded bg-amber-100 px-1 text-xs font-medium text-amber-900">
+                {health[g.slug].dead}/{health[g.slug].total} udsolgt
+              </span>
+            ) : null}
+            {health[g.slug]?.problems.length ? (
+              <span className="mt-0.5 block text-xs text-amber-700">{health[g.slug].problems.join(" · ")}</span>
+            ) : null}
           </button>
         ))}
       </aside>
