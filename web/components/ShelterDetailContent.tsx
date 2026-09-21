@@ -635,6 +635,13 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                 booking-bjælke i bunden følger med på mobil. */}
             {nearbySlot}
 
+            {/* Grej-forslagene lå som 7. overskrift, under både nærheds-listen,
+                anden annonce og vandreruterne. De er den eneste affiliate-flade
+                på 1.609 shelter-sider, som tilsammen står for 32 % af sidens
+                Google-klik, så de flyttes op til lige efter nærheds-listen —
+                stadig efter læserens eget ærinde, men før alt det valgfrie. */}
+            <GearSuggestions guides={gearSuggestions} />
+
             {/* Anden annonce. Alt herunder når kun de grundige læsere, og indtil
                 nu var de 6,4 skærme fra annoncen ovenfor og ned til footeren helt
                 umonetiserede. Netop de læsere er de mest værdifulde, og en visning
@@ -695,8 +702,6 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                 )}
               </section>
             )}
-
-            <GearSuggestions guides={gearSuggestions} />
 
             {/* Nyttige ressourcer – intern linking for SEO */}
             <section className="mb-10 bg-primary/[0.03] border border-primary/10 rounded-xl p-5">
