@@ -4,7 +4,11 @@ import { ChevronRight } from "lucide-react";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import { DataSummaryBlock } from "@/components/DataSummaryBlock";
-import { getFilterRegionCount, getCountPerRegion } from "@/lib/fakta-db";
+import { getFilterRegionCount, getCountPerRegion, getSheltersForFilterRegion } from "@/lib/fakta-db";
+import { mergeTopByScore } from "@/lib/top-bookable";
+import { ShelterCard } from "@/components/ShelterCard";
+import { slugifySegment } from "@/lib/slug";
+import { prepositionForRegionName } from "@/lib/area-db";
 import { REGION_SLUGS, REGION_NAMES, REGION_SHORT_NAMES } from "@/lib/cross-page-config";
 import { LastVerifiedBadge } from "@/components/LastVerifiedBadge";
 import { SpeakableSchema } from "@/components/seo/SpeakableSchema";
@@ -19,22 +23,42 @@ const BOOKING_FAQ: FaqItem[] = [
   { question: "Kan man booke shelter til en gruppe?", answer: "Ja, mange shelterpladser kan bookes til grupper. Nogle pladser har flere shelters der kan bookes samlet. Ved booking angiver du typisk antal personer. For større grupper (spejder, firmatur) kan det være en god idé at kontakte pladsen direkte." },
 ];
 
-const PAGE_TITLE = "Book shelter i Danmark – find bookbare shelters | ShelterDK";
+// Titlen bygges i generateMetadata med det aktuelle antal bookbare — "book
+// shelter" har 1.800 visn/md, og forsiden vandt over denne side fordi den
+// havde listen. Nu står listen øverst her, og titlen siger det.
+const TOP_BOOKABLE = 12;
+
+function shelterHref(region: string | null, kommune: string | null, slug: string): string {
+  const r = (region || "").trim();
+  if (!r || r === "Danmark") return `/shelter/${slug}`;
+  return `/danmark/${slugifySegment(r)}/${kommune ? slugifySegment(kommune) : "ukendt-kommune"}/${slug}`;
+}
 const PAGE_OG_IMAGE =
   "https://images.unsplash.com/photo-1504851149312-7a075b496cc7?w=1200&q=80&auto=format&fit=crop";
-export const metadata: Metadata = {
-  title: { absolute: PAGE_TITLE },
-  description:
-    "Find bookbare shelters i Danmark og se hvor du booker, hvad det koster, og hvornår du bør reservere. Guide til Naturstyrelsen, Udinaturen og andre bookinglinks.",
-  alternates: { canonical: "https://shelterdk.dk/shelter-booking" },
-  openGraph: {
-    title: PAGE_TITLE,
+async function countBookable(): Promise<number> {
+  const counts = await Promise.all(REGION_SLUGS.map((slug) => getFilterRegionCount("booking", REGION_NAMES[slug])));
+  return counts.reduce((a, b) => a + b, 0);
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const total = await countBookable();
+  const title = total > 0
+    ? `Book shelter – ${total} bookbare shelters i Danmark | ShelterDK`
+    : "Book shelter i Danmark – find bookbare shelters | ShelterDK";
+  return {
+    title: { absolute: title },
     description:
-      "Guide til shelter-booking i Danmark. Hvor, hvornår og hvordan du booker dit næste shelter.",
-    url: "/shelter-booking",
-    images: [{ url: PAGE_OG_IMAGE, width: 1200, height: 630, alt: "Shelter-booking i Danmark" }],
-  },
-};
+      "Se bookbare shelters i Danmark med kort og ledighed, og find ud af hvor du booker, hvad det koster, og hvornår du bør reservere. Guide til Naturstyrelsen, Udinaturen og andre bookinglinks.",
+    alternates: { canonical: "https://shelterdk.dk/shelter-booking" },
+    openGraph: {
+      title,
+      description:
+        "Bookbare shelters i Danmark – liste, kort og guide til hvor, hvornår og hvordan du booker.",
+      url: "/shelter-booking",
+      images: [{ url: PAGE_OG_IMAGE, width: 1200, height: 630, alt: "Shelter-booking i Danmark" }],
+    },
+  };
+}
 
 export default async function ShelterBookingPage() {
   // Fetch summary data for DataSummaryBlock
@@ -46,6 +70,10 @@ export default async function ShelterBookingPage() {
   );
   const totalForFilter = regionCounts.reduce((sum, r) => sum + r.count, 0);
   const lastVerified = getSitePageModified("/shelter-booking");
+  const topBookable = mergeTopByScore(
+    await Promise.all(REGION_SLUGS.map((slug) => getSheltersForFilterRegion("booking", REGION_NAMES[slug], 6))),
+    TOP_BOOKABLE
+  );
 
   return (
     <>
@@ -64,14 +92,49 @@ export default async function ShelterBookingPage() {
             Book shelter i Danmark
           </h1>
           <p className="text-primary/80 text-lg leading-relaxed">
-            Vil du være sikker på at have en plads klar når du ankommer? Her er alt du skal vide
-            om shelter-booking i Danmark — hvor du booker, hvad det koster, og hvornår du bør
-            reservere.
+            {totalForFilter} shelters i Danmark kan bookes på forhånd. Her er de bedst bedømte lige nu,
+            og nedenunder alt du skal vide om shelter-booking — hvor du booker, hvad det koster, og
+            hvornår du bør reservere.
           </p>
           <div className="mt-4">
             <LastVerifiedBadge isoDate={lastVerified} />
           </div>
         </header>
+
+        {topBookable.length > 0 && (
+          <section className="mb-10" aria-labelledby="top-bookbare">
+            <h2 id="top-bookbare" className="font-serif text-2xl font-bold text-primary mb-4">
+              Bookbare shelters lige nu
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {topBookable.map((s, i) => (
+                <ShelterCard
+                  key={s.id}
+                  shelter={s}
+                  href={shelterHref(s.region ?? null, s.kommune ?? null, s.slug)}
+                  showBlur={i < 4}
+                />
+              ))}
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {REGION_SLUGS.map((slug) => (
+                <Link
+                  key={slug}
+                  href={`/shelter-booking/${slug}`}
+                  className="text-sm bg-accent/10 text-accent font-medium px-3 py-1 rounded-full hover:bg-accent/20"
+                >
+                  Bookbare {prepositionForRegionName(REGION_NAMES[slug])} {REGION_SHORT_NAMES[slug] ?? REGION_NAMES[slug]}
+                </Link>
+              ))}
+              <Link
+                href="/soeg?bookbar=1"
+                className="text-sm bg-primary text-white font-medium px-3 py-1 rounded-full hover:bg-primary/90"
+              >
+                Alle {totalForFilter} på kort →
+              </Link>
+            </div>
+          </section>
+        )}
 
         <section className="mb-8 rounded-2xl border border-accent/20 bg-accent/5 p-6">
           <h2 className="font-serif text-2xl font-bold text-primary mb-3">
