@@ -42,7 +42,7 @@ const BLOG_CATEGORY_DESCRIPTIONS: Record<BlogCategory, string> = {
 const BLOG_POSTS: BlogPost[] = [
   {
     slug: "gratis-shelters-i-danmark",
-    title: "Gratis sheltertur: sådan overnatter du gratis i naturen",
+    title: "Sheltertur i Danmark: sådan planlægger du din første tur",
     excerpt:
       "Sådan planlægger du en sheltertur helt uden udgifter: find de gratis pladser, kend først-til-mølle-reglerne og pak rigtigt.",
     date: "2026-02-15",
