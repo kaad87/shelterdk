@@ -5,6 +5,7 @@ import { getFilterRegionCount, getSheltersForFilterRegion, getKommuneBreakdownFo
 import { generateCrossPageFaq } from "@/lib/fakta-faq";
 import { FILTER_CONFIGS, REGION_NAMES, REGION_SLUGS, getOtherRegionLinks, getOtherFilterLinks } from "@/lib/cross-page-config";
 import { prepositionForRegionName } from "@/lib/area-db";
+import { regionDisplayName } from "@/data/region-content";
 
 const FILTER = FILTER_CONFIGS["toilet"];
 const MIN_SHELTERS = FILTER.minSheltersForRegion;
@@ -28,8 +29,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const regionName = REGION_NAMES[regionSlug];
   if (!regionName) return {};
   const prep = prepositionForRegionName(regionName);
-  const title = `Shelter med toilet ${prep} ${regionName} – kort og faciliteter | ShelterDK`;
-  const description = `Find shelters med toilet ${prep} ${regionName}. Se kort, liste, faciliteter og praktisk info.`;
+  const displayName = regionDisplayName(regionName); // "Sjælland", ikke "Sjælland og Øerne"
+  const title = `Shelter med toilet ${prep} ${displayName} – kort og faciliteter | ShelterDK`;
+  const description = `Find shelters med toilet ${prep} ${displayName}. Se kort, liste, faciliteter og praktisk info.`;
   const canonical = `${FILTER.parentHref}/${regionSlug}`;
   return {
     title: { absolute: title },
@@ -85,7 +87,7 @@ export default async function Page({ params }: PageProps) {
       otherRegions={getOtherRegionLinks(FILTER, regionSlug, validSlugs)}
       otherFilters={getOtherFilterLinks(FILTER.filterKey, regionSlug)}
       relatedLinks={[
-        { label: regionName, href: `/danmark/${regionSlug}` },
+        { label: `Alle shelters ${prep} ${regionDisplayName(regionName)}`, href: `/danmark/${regionSlug}` },
         ...FILTER.relatedBlogLinks,
       ]}
     />

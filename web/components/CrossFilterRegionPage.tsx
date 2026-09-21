@@ -12,6 +12,8 @@ import { toMapShelters } from "@/lib/map-shelter";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import { buildQuickAnswer } from "@/lib/quick-answer";
 import { slugifySegment } from "@/lib/slug";
+import { canonicalRegionSlug } from "@/lib/cross-page-config";
+import { regionDisplayName } from "@/data/region-content";
 import { isStructuredBookable } from "@shared/lib/shelter-detail";
 import type { Shelter } from "@/types/shelter";
 
@@ -54,8 +56,13 @@ export function CrossFilterRegionPage({
   otherFilters,
   relatedLinks,
 }: CrossFilterRegionPageProps) {
-  const inRegion = `${preposition} ${regionName}`;
+  // Overskrifter bruger den korte form ("på Sjælland") — det er søgefrasen.
+  // regionSlug (lang form) bruges til kommune-URL'er; hubSlug (kort) til hub-URL'er.
+  const displayName = regionDisplayName(regionName);
+  const inRegion = `${preposition} ${displayName}`;
   const regionSlug = slugifySegment(regionName);
+  const hubSlug = canonicalRegionSlug(regionName);
+  const hubHref = `/danmark/${hubSlug}`;
   const topShelters = shelters.slice(0, 5);
   const placeCounts = new Map<string, number>();
   for (const shelter of shelters) {
@@ -82,7 +89,7 @@ export function CrossFilterRegionPage({
   // Facet-region-sider har altid >= MIN_SHELTERS (3+), så ental-bøjning
   // trigger aldrig — facetNoun (flertal) kan trygt bruges til begge.
   const quickAnswer = buildQuickAnswer(
-    `${capPrep} ${regionName}`,
+    `${capPrep} ${displayName}`,
     {
       count: shelters.length,
       // "kan bookes" er redundant på selve booking-facetten.
@@ -99,7 +106,7 @@ export function CrossFilterRegionPage({
       <BreadcrumbSchema items={[
         { label: "Hjem", href: "/" },
         { label: filterLabelLong, href: parentFilterHref },
-        { label: regionName },
+        { label: displayName },
       ]} />
       <ShelterListSchema
         name={`${filterLabelLong} ${inRegion}`}
@@ -116,7 +123,7 @@ export function CrossFilterRegionPage({
             <ChevronRight size={14} className="text-primary/50 shrink-0" />
             <Link href={parentFilterHref} className="py-1 -my-1 hover:text-accent transition-colors">{filterLabelLong}</Link>
             <ChevronRight size={14} className="text-primary/50" />
-            <span className="text-primary font-medium">{regionName}</span>
+            <span className="text-primary font-medium">{displayName}</span>
           </nav>
 
           <header className="mb-8">
@@ -127,10 +134,17 @@ export function CrossFilterRegionPage({
               {shelters.length} {filterLabel === "booking" ? "bookbare shelters" : `shelters med ${filterLabel}`} {inRegion}.
               {avgRating && ` Gennemsnitlig bedømmelse: ${avgRating} ud af 5.`}
             </p>
+            {/* Facet-siderne udkonkurrerede region-hubben på "shelter sjælland" —
+                giv hubben ét tydeligt link over folden, ikke kun en pill i bunden. */}
+            <p className="mt-3">
+              <Link href={hubHref} className="text-accent font-medium hover:underline">
+                Se alle shelters {inRegion} →
+              </Link>
+            </p>
           </header>
 
           <QuickAnswer
-            url={`https://shelterdk.dk${parentFilterHref}/${regionSlug}`}
+            url={`https://shelterdk.dk${parentFilterHref}/${hubSlug}`}
             heading={`Hurtigt svar om ${facetNoun} ${inRegion}`}
             answer={quickAnswer}
             questionHint={`Siden besvarer spørgsmål som “${facetNoun} ${inRegion}” og “hvor mange ${facetNoun} findes der ${inRegion}”.`}

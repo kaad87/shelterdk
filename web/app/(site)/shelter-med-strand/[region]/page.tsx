@@ -5,6 +5,7 @@ import { getFilterRegionCount, getSheltersForFilterRegion, getKommuneBreakdownFo
 import { generateCrossPageFaq } from "@/lib/fakta-faq";
 import { FILTER_CONFIGS, REGION_NAMES, REGION_SLUGS, getOtherRegionLinks, getOtherFilterLinks } from "@/lib/cross-page-config";
 import { prepositionForRegionName } from "@/lib/area-db";
+import { regionDisplayName } from "@/data/region-content";
 
 const FILTER = FILTER_CONFIGS["strand"];
 const MIN_SHELTERS = FILTER.minSheltersForRegion;
@@ -28,8 +29,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const regionName = REGION_NAMES[regionSlug];
   if (!regionName) return {};
   const prep = prepositionForRegionName(regionName);
-  const title = `${FILTER.filterLabelLong} ${prep} ${regionName} | ShelterDK`;
-  const description = `Find ${FILTER.filterLabelLong.toLowerCase()} ${prep} ${regionName}. Se kort, liste og faciliteter.`;
+  const displayName = regionDisplayName(regionName); // "Sjælland", ikke "Sjælland og Øerne"
+  const title = `${FILTER.filterLabelLong} ${prep} ${displayName} | ShelterDK`;
+  const description = `Find ${FILTER.filterLabelLong.toLowerCase()} ${prep} ${displayName}. Se kort, liste og faciliteter.`;
   const canonical = `${FILTER.parentHref}/${regionSlug}`;
   return {
     title: { absolute: title },
@@ -85,7 +87,7 @@ export default async function Page({ params }: PageProps) {
       otherRegions={getOtherRegionLinks(FILTER, regionSlug, validSlugs)}
       otherFilters={getOtherFilterLinks(FILTER.filterKey, regionSlug)}
       relatedLinks={[
-        { label: regionName, href: `/danmark/${regionSlug}` },
+        { label: `Alle shelters ${prep} ${regionDisplayName(regionName)}`, href: `/danmark/${regionSlug}` },
         ...FILTER.relatedBlogLinks,
       ]}
     />

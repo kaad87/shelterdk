@@ -13,7 +13,7 @@ import { ShelterListSchema } from "@/components/seo/ShelterListSchema";
 import { QuickAnswer } from "@/components/seo/QuickAnswer";
 import { buildQuickAnswer } from "@/lib/quick-answer";
 import { SoegContent } from "@/components/SoegContent";
-import { getRegionContent } from "@/data/region-content";
+import { getRegionContent, regionDisplayName } from "@/data/region-content";
 import { DataSummaryBlock } from "@/components/DataSummaryBlock";
 import { getFacilityCountsForRegion, getTopRatedShelters, getTopPlacesForRegion, getNewestShelterUpdatedAt } from "@/lib/fakta-db";
 import { generateRegionPageFaq } from "@/lib/fakta-faq";
@@ -99,6 +99,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const regionName = resolveRegionName(regionSlug, regions);
   if (!regionName) return { title: { absolute: "Region ikke fundet" } };
   const prep = prepositionForRegionName(regionName);
+  // Titel/H1 bruger den korte form ("Sjælland", ikke "Sjælland og Øerne") —
+  // det er formen folk søger på. DB-opslag bruger stadig regionName.
+  const displayName = regionDisplayName(regionName);
   // CTR: konkret antal + aktuelt årstal (samme mønster som by-siderne, der har
   // bedst CTR). Let head-count (ingen rækker overføres); begge dele dynamiske.
   const year = new Date().getFullYear();
@@ -115,12 +118,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
   const title =
     shelterCount > 0
-      ? `Shelters ${prep} ${regionName} (${year}) – ${shelterCount} pladser | ShelterDK`
-      : `Shelters ${prep} ${regionName} (${year}) – kort & liste | ShelterDK`;
+      ? `Shelters ${prep} ${displayName} (${year}) – ${shelterCount} pladser | ShelterDK`
+      : `Shelters ${prep} ${displayName} (${year}) – kort & liste | ShelterDK`;
   const description =
     shelterCount > 0
-      ? `${shelterCount} shelters ${prep} ${regionName} – gratis og bookbare pladser med kort, billeder og faciliteter. Opdateret ${year}.`
-      : `Find alle shelters ${prep} ${regionName}. Kort, billeder, faciliteter og booking. Opdateret ${year}.`;
+      ? `${shelterCount} shelters ${prep} ${displayName} – gratis og bookbare pladser med kort, billeder og faciliteter. Opdateret ${year}.`
+      : `Find alle shelters ${prep} ${displayName}. Kort, billeder, faciliteter og booking. Opdateret ${year}.`;
   const canonicalRegionSlug = resolveCanonicalRegionSlug(regionName, regionSlug);
   const canonicalPath = `/danmark/${canonicalRegionSlug}`;
   return {
@@ -154,6 +157,7 @@ export default async function DanmarkRegionPage({ params, searchParams }: PagePr
   const childRegionSlug = slugifySegment(regionName);
 
   const prep = prepositionForRegionName(regionName);
+  const displayName = regionDisplayName(regionName);
   const q = urlParams.q?.trim() || null;
   const viewParam = (urlParams.view ?? "split").toLowerCase();
   const view: ViewMode =
@@ -237,18 +241,18 @@ export default async function DanmarkRegionPage({ params, searchParams }: PagePr
   const crossPageLinks = Object.values(FILTER_CONFIGS)
     .slice(0, 5)
     .map((c) => ({
-      label: `${c.filterLabelLong} ${prep} ${regionName}`,
+      label: `${c.filterLabelLong} ${prep} ${displayName}`,
       href: `${c.parentHref}/${regionSlug}`,
     }));
 
   const breadcrumbItems = [
     { label: "Hjem", href: "/" },
     { label: "Danmark", href: "/danmark" },
-    { label: regionName },
+    { label: displayName },
   ];
 
   const capPrep = `${prep.charAt(0).toUpperCase()}${prep.slice(1)}`;
-  const quickAnswer = buildQuickAnswer(`${capPrep} ${regionName}`, {
+  const quickAnswer = buildQuickAnswer(`${capPrep} ${displayName}`, {
     count: totalCount,
     bookable: facilityCounts.bookbar,
     toilet: facilityCounts.toilet,
@@ -259,7 +263,7 @@ export default async function DanmarkRegionPage({ params, searchParams }: PagePr
     <>
       <BreadcrumbSchema items={breadcrumbItems} />
       <ShelterListSchema
-        name={`Shelters ${prep} ${regionName}`}
+        name={`Shelters ${prep} ${displayName}`}
         shelters={initialShelters}
         url={`https://shelterdk.dk/danmark/${childRegionSlug}`}
         dateModified={regionDataUpdatedAt}
@@ -282,10 +286,10 @@ export default async function DanmarkRegionPage({ params, searchParams }: PagePr
           </nav>
 
           <h1 className="font-serif text-3xl font-bold text-primary mb-2">
-            Shelters {prep} {regionName}
+            Shelters {prep} {displayName}
           </h1>
           <p className="text-primary/80 mb-8">
-            Udforsk overnatningspladser i naturen {prep} {regionName} på kort og liste.{" "}
+            Udforsk overnatningspladser i naturen {prep} {displayName} på kort og liste.{" "}
             <Link href="/omraade" className="text-accent hover:underline">
               Shelter efter område →
             </Link>
@@ -293,20 +297,20 @@ export default async function DanmarkRegionPage({ params, searchParams }: PagePr
 
           <QuickAnswer
             url={`https://shelterdk.dk/danmark/${canonicalRegionSlug}`}
-            heading={`Hurtigt svar om shelters ${prep} ${regionName}`}
+            heading={`Hurtigt svar om shelters ${prep} ${displayName}`}
             answer={quickAnswer}
-            questionHint={`Siden besvarer spørgsmål som “shelter ${prep} ${regionName}”, “kan man booke shelter ${prep} ${regionName}” og “findes der shelter med toilet eller vand ${prep} ${regionName}”.`}
+            questionHint={`Siden besvarer spørgsmål som “shelter ${prep} ${displayName}”, “kan man booke shelter ${prep} ${displayName}” og “findes der shelter med toilet eller vand ${prep} ${displayName}”.`}
           />
 
           <DataSummaryBlock
-            headline={`${regionName} har ${totalCount} shelters. ${freeCount} er gratis, ${facilityCounts.toilet} har toilet.`}
+            headline={`${displayName} har ${totalCount} shelters. ${freeCount} er gratis, ${facilityCounts.toilet} har toilet.`}
             crossPageLinks={crossPageLinks}
           />
 
           {topPlaces.length > 0 && (
             <section className="mb-10">
               <h2 className="font-serif text-xl font-bold text-primary mb-4">
-                Populære byer i {regionName}
+                Populære byer i {displayName}
               </h2>
               <div className="flex flex-wrap gap-2">
                 {topPlaces.map((place) => (
@@ -327,7 +331,7 @@ export default async function DanmarkRegionPage({ params, searchParams }: PagePr
           {municipalities.length > 0 && (
             <section className="mb-10">
               <h2 className="font-serif text-xl font-bold text-primary mb-4">
-                Kommuner med shelters {prep} {regionName}
+                Kommuner med shelters {prep} {displayName}
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                 {municipalities.map((m) => (
@@ -385,6 +389,19 @@ export default async function DanmarkRegionPage({ params, searchParams }: PagePr
                   <div key={s.heading}>
                     <h2 className="font-serif text-xl font-bold text-primary mt-8 mb-3">{s.heading}</h2>
                     <p>{s.text}</p>
+                    {s.links && s.links.length > 0 && (
+                      <p className="not-prose mt-3 flex flex-wrap gap-2">
+                        {s.links.map((l) => (
+                          <Link
+                            key={l.href}
+                            href={l.href}
+                            className="text-sm text-accent bg-accent/10 hover:bg-accent/20 px-3 py-1 rounded-full"
+                          >
+                            {l.label}
+                          </Link>
+                        ))}
+                      </p>
+                    )}
                   </div>
                 ))}
 
@@ -415,7 +432,7 @@ export default async function DanmarkRegionPage({ params, searchParams }: PagePr
           {/* FAQ with JSON-LD */}
           <section className="mt-12 pt-8 border-t border-primary/10">
             <h2 className="font-serif text-xl font-bold text-primary mb-6">
-              Ofte stillede spørgsmål om shelters {prep} {regionName}
+              Ofte stillede spørgsmål om shelters {prep} {displayName}
             </h2>
             <dl className="space-y-6">
               {faqItems.map((item) => (
