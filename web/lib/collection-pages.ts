@@ -40,6 +40,16 @@ export interface CollectionConfig {
   faq: { question: string; answer: string }[];
   /** Kontekstuelle links til beslægtede sider — footeren alene giver for svagt signal. */
   related?: { label: string; href: string; note: string }[];
+  /**
+   * Redaktionelle sektioner under listen (før FAQ). Bruges når en samleside
+   * også fanger søgninger med anden intent end "find en plads" — fx købs-
+   * intent på /baalhytte — så den intent får sit eget H2 i stedet for nul klik.
+   */
+  sections?: {
+    heading: string;
+    paragraphs: string[];
+    links?: { label: string; href: string; external?: boolean }[];
+  }[];
 }
 
 /**
@@ -182,6 +192,24 @@ export const COLLECTIONS: Record<CollectionKey, CollectionConfig> = {
       { label: "Teltpladser i Danmark", href: "/teltplads", note: "hvor du må slå telt op" },
       { label: "Shelter med bålplads", href: "/shelter-med-baalplads", note: "åbent bålsted" },
       { label: "Køb shelter", href: "/koeb-shelter", note: "priser og regler" },
+    ],
+    // "bålhytte pris/tilbud/priser", "bålhuse", "billige bålhuse" = ~450 visn/md
+    // med nul klik (GSC sep. 2026). Priser er bevidst intervaller: leverandørerne
+    // sælger på tilbud, ikke listepris.
+    sections: [
+      {
+        heading: "Køb bålhytte: priser, byggesæt og gratis tegninger",
+        paragraphs: [
+          "Leder du efter en bålhytte til haven, institutionen eller spejderhytten, sælges de fleste som byggesæt i lærk, douglas eller trykimprægneret fyr – sekskantede eller ottekantede, typisk 15-30 m² og 4-7 meter i diameter. Der er sjældent en fast listepris: leverandører som Oksbøl Savværk, Shelterbyg og Bålbyg giver tilbud ud fra størrelse, træsort, tag (tagpap eller shingles) og om de skal montere. Regn med at et mindre byggesæt til haven starter i titusinderne, mens en stor hytte med montering og fundament ligger over 100.000 kr.",
+          "Vil du bygge selv, behøver du ikke købe tegninger. Naturstyrelsen lægger tegninger til sine egne bålhytter frit tilgængelige som PDF – både den almindelige bålhytte, en bålhytte med indbygget shelter og en stor model. Det er konstruktioner, der står i skovene i dag, så du ved, at de holder til dansk vejr. Husk at en bålhytte tæller med i de 50 m² sekundær bebyggelse, du må have uden byggetilladelse, og at der skal være 2,5 meter til skel.",
+        ],
+        links: [
+          { label: "Naturstyrelsen: Bålhytte – tegninger (PDF)", href: "https://naturstyrelsen.dk/media/f2rpwpcu/type4vers2008.pdf", external: true },
+          { label: "Naturstyrelsen: Bålhytte med shelter (PDF)", href: "https://naturstyrelsen.dk/media/z1iah4ik/type5vers2008.pdf", external: true },
+          { label: "Naturstyrelsen: Bålhytte – stor (PDF)", href: "https://naturstyrelsen.dk/media/shbacmv1/type62vers2008.pdf", external: true },
+          { label: "Regler for shelter og bålhytte i haven", href: "/koeb-shelter#byg-selv" },
+        ],
+      },
     ],
   },
   arla: {
