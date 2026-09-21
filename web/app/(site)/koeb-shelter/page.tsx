@@ -4,6 +4,7 @@ import { ChevronRight, ExternalLink } from "lucide-react";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { AdBanner } from "@/components/AdBanner";
 import { GearCardView } from "@/components/GearCardClient";
+import { PartnerShelterCards } from "@/components/PartnerShelterCards";
 import { getShelterAlternatives } from "@/lib/buy-shelter";
 import { faqToJsonLd } from "@/lib/faq";
 
@@ -97,7 +98,7 @@ export default async function KoebShelterPage() {
             <h2 className="font-serif text-lg font-bold text-primary mb-2">Kort fortalt</h2>
             <ul className="space-y-1.5 text-primary/85">
               <li>Byg helt selv efter <a href="#byg-selv" className="text-accent hover:underline">gratis tegninger</a>: fra ca. <strong>5.000 kr</strong> i materialer</li>
-              <li>Byg-selv-sæt i træ: typisk <strong>9.000–20.000 kr</strong></li>
+              <li>Byg-selv-sæt i træ: typisk <strong>9.000–20.000 kr</strong> — <a href="#koeb" className="text-accent hover:underline">se modeller</a></li>
               <li>Samlesæt med tilskårne dele: typisk <strong>11.000–15.000 kr</strong></li>
               <li>Du må have op til <strong>50 m²</strong> sekundær bebyggelse uden byggetilladelse</li>
               <li>Mindst <strong>2,5 meter</strong> til skel</li>
@@ -151,6 +152,19 @@ export default async function KoebShelterPage() {
               Prisniveauer indhentet {PRICE_DATE} fra danske byggemarkeder. Tjek aktuelle
               priser hos forhandleren.
             </p>
+          </section>
+
+          <section className="mb-10" id="koeb">
+            <h2 className="font-serif text-2xl font-bold text-primary mb-4">
+              Hvor køber du et shelter i træ?
+            </h2>
+            <p className="text-primary/85 leading-relaxed mb-4">
+              Færdige samlesæt i træ sælges af danske træhus-forhandlere og savværker — ikke af
+              outdoor-butikkerne. Nedenfor er de modeller vi selv linker til, med aktuelle priser.
+              Leder du efter fuldtømmer eller rundtømmer (massive stammer frem for brædder), skal du
+              typisk til et lokalt savværk; det er en anden og dyrere konstruktion.
+            </p>
+            <PartnerShelterCards />
           </section>
 
           <section className="mb-10" id="byg-selv">
