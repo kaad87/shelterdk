@@ -36,6 +36,7 @@ export const REGION_CONTENT: Record<string, RegionContent> = {
         heading: "Shelters i Sønderjylland",
         text: "Sønderjylland har godt 100 shelters fordelt på Sønderborg, Aabenraa, Tønder og Haderslev. Sønderborg alene har over 40 – mange af dem ved kysten på Als og Sundeved. Mod vest ligger Vadehavets UNESCO-natur med shelters ved marsken, Rømø og Tønder.",
         links: [
+          { label: "Alle shelters i Sønderjylland", href: "/omraade/soenderjylland" },
           { label: "Vadehavet", href: "/omraade/vadehavet" },
           { label: "Sønderborg", href: "/danmark/jylland/soenderborg" },
           { label: "Aabenraa", href: "/danmark/jylland/aabenraa" },

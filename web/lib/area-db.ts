@@ -8,6 +8,27 @@ export interface Area {
   name: string;
   description: string | null;
   region: string;
+  /**
+   * Landsdels-områder (fx Sønderjylland) defineres ved kommuner i stedet for
+   * area_slug: area_slug er én-værdi pr. shelter og allerede brugt af
+   * overlappende områder (Vadehavet, Hærvejen). Null/tom → area_slug-opslag.
+   */
+  kommuner?: string[] | null;
+}
+
+export type AreaFilterSource = Pick<Area, "slug" | "kommuner">;
+
+/** Filtrerer en shelters-query til områdets pladser — kommune-liste eller area_slug. */
+/**
+ * Hvilket filter et områdes shelters findes med. Returneres som data (ikke som
+ * builder-mutation) fordi supabase-js' generics bliver "excessively deep" når
+ * builderen sendes gennem en generisk funktion.
+ */
+export function areaShelterFilter(
+  area: AreaFilterSource
+): { column: "kommune"; op: "in"; value: string[] } | { column: "area_slug"; op: "eq"; value: string } {
+  if (area.kommuner && area.kommuner.length > 0) return { column: "kommune", op: "in", value: area.kommuner };
+  return { column: "area_slug", op: "eq", value: area.slug };
 }
 
 const SHELTER_SELECT =
@@ -19,7 +40,7 @@ export async function getAllAreas(): Promise<Area[]> {
   const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("areas")
-    .select("slug, name, description, region")
+    .select("slug, name, description, region, kommuner")
     .order("name", { ascending: true });
   if (error || !data) return [];
   return data as Area[];
@@ -32,7 +53,7 @@ const cachedAreaBySlug = unstable_cache(
     const supabase = createPublicClient();
     const { data, error } = await supabase
       .from("areas")
-      .select("slug, name, description, region")
+      .select("slug, name, description, region, kommuner")
       .eq("slug", slug)
       .single();
     if (error || !data) return null;
@@ -50,11 +71,10 @@ export async function getAreaBySlug(slug: string): Promise<Area | null> {
 /** Antal shelters i et område (area_slug, ekskl. dubletter). */
 export async function getShelterCountByAreaSlug(areaSlug: string): Promise<number> {
   const supabase = createPublicClient();
-  const { count, error } = await supabase
-    .from("shelters")
-    .select("id", { count: "exact", head: true })
-    .eq("area_slug", areaSlug)
-    .is("duplicate_of_shelter_id", null);
+  const area = (await getAreaBySlug(areaSlug)) ?? { slug: areaSlug, kommuner: null };
+  const f = areaShelterFilter(area);
+  const base = supabase.from("shelters").select("id", { count: "exact", head: true }).is("duplicate_of_shelter_id", null);
+  const { count, error } = await (f.op === "in" ? base.in(f.column, f.value) : base.eq(f.column, f.value));
   if (error) return 0;
   return count ?? 0;
 }
@@ -62,15 +82,17 @@ export async function getShelterCountByAreaSlug(areaSlug: string): Promise<numbe
 /** Hent alle shelters i et område (til embed-kort). ISR/cache. */
 export async function getSheltersByAreaSlug(areaSlug: string): Promise<Shelter[]> {
   const supabase = createPublicClient();
-  const { data, error } = await supabase
+  const area = (await getAreaBySlug(areaSlug)) ?? { slug: areaSlug, kommuner: null };
+  const f = areaShelterFilter(area);
+  const base = supabase
     .from("shelters")
     .select(SHELTER_SELECT)
-    .eq("area_slug", areaSlug)
     .is("duplicate_of_shelter_id", null)
     .order("featured_sort_boost", { ascending: false, nullsFirst: false })
     .order("display_score", { ascending: false, nullsFirst: false })
     .order("title", { ascending: true })
     .limit(EMBED_SHELTER_LIMIT);
+  const { data, error } = await (f.op === "in" ? base.in(f.column, f.value) : base.eq(f.column, f.value));
   if (error) return [];
   return (data ?? []) as Shelter[];
 }
