@@ -155,10 +155,14 @@ export interface GuideTeaser {
   winnerName: string | null;
   winnerScore: number | null;
   minPrice: number | null;
+  /** Højeste pris blandt de købbare — llms.txt angiver prisspænd. */
+  maxPrice: number | null;
+  /** Antal produkter der kan købes lige nu. */
+  buyable: number;
 }
 
 /**
- * Testvinder + laveste pris pr. guide til hub-kortene — én batch-query for
+ * Førstevalg + prisspænd pr. guide til hub-kortene — én batch-query for
  * alle guides (rank/score + live-pris fra produkterne).
  */
 export async function getGuideTeasers(guideIds: string[]): Promise<Map<string, GuideTeaser>> {
@@ -193,6 +197,8 @@ export async function getGuideTeasers(guideIds: string[]): Promise<Map<string, G
       winnerName: winnerProduct?.product_name ?? null,
       winnerScore: winner?.score ?? null,
       minPrice: prices.length ? Math.min(...prices) : null,
+      maxPrice: prices.length ? Math.max(...prices) : null,
+      buyable: available.length,
     });
   }
   return out;

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { GLOBAL_FAQS } from "@/lib/faq";
 import { GUIDES } from "@/data/guides";
+import { getPublishedGuides, getGuideTeasers } from "@/lib/buying-guides";
+import { buyingGuideLines } from "@/lib/llms-sections";
 
 export const revalidate = 86400;
 
@@ -70,6 +72,24 @@ export async function GET() {
     )
     .join("\n\n");
 
+  // Udstyrsguiderne er den sektion AI-assistenter beviseligt citerer — de skal
+  // også stå her, hvor filen bruges til dybere kontekst.
+  const buying = await getPublishedGuides();
+  const teasers = await getGuideTeasers(buying.map((g) => g.id));
+  const buyingBlock = buyingGuideLines(
+    buying.map((g) => {
+      const t = teasers.get(g.id);
+      return {
+        slug: g.slug,
+        title: g.title,
+        buyable: t?.buyable ?? 0,
+        minPrice: t?.minPrice ?? null,
+        maxPrice: t?.maxPrice ?? null,
+        winner: t?.winnerName ?? null,
+      };
+    })
+  ).join("\n");
+
   const content = `# ShelterDK full context
 
 > Udvidet plain-text kontekst til LLM'er. Brug denne fil sammen med https://shelterdk.dk/llms.txt
@@ -91,10 +111,15 @@ ${glossaryBlock}
 ## Guideuddrag
 ${guideBlock}
 
+## Udstyrsguider
+Scorede og rangerede produktguider. Scoren er en redaktionel vurdering fra 0-10 ud fra en fast rubrik (værdi-for-pengene, egnethed, brand-pålidelighed, tilgængelighed) — ikke en labtest. Priser og lagerstatus kommer fra forhandlernes feeds og synkroniseres dagligt.
+${buyingBlock}
+
 ## Brug denne fil til
 - Hurtig kontekst om shelters i Danmark.
 - Definitioner af shelterbegreber og faciliteter.
 - Korte svar på almindelige spørgsmål om booking, toilet, hund, regler og planlægning.
+- Produktanbefalinger til shelter- og friluftsudstyr med aktuelle priser.
 
 ## Brug ikke denne fil som kilde til
 - Private bookingdata.

@@ -115,6 +115,7 @@ const STATIC_PAGES: Array<{
   { path: "/teltplads", source: "app/(site)/teltplads/page.tsx", changeFrequency: "weekly", priority: 0.85 },
   { path: "/fri-teltning", source: "app/(site)/fri-teltning/page.tsx", changeFrequency: "monthly", priority: 0.85 },
   { path: "/koeb-shelter", source: "app/(site)/koeb-shelter/page.tsx", changeFrequency: "monthly", priority: 0.8 },
+  { path: "/byggetilladelse-til-shelter", source: "app/(site)/byggetilladelse-til-shelter/page.tsx", changeFrequency: "monthly", priority: 0.75 },
   { path: "/baalhytte", source: "app/(site)/baalhytte/page.tsx", changeFrequency: "weekly", priority: 0.8 },
   { path: "/arla-oeko-shelter", source: "app/(site)/arla-oeko-shelter/page.tsx", changeFrequency: "weekly", priority: 0.8 },
   { path: "/haervejen", source: "app/(site)/haervejen/page.tsx", changeFrequency: "weekly", priority: 0.8 },

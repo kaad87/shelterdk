@@ -1,4 +1,4 @@
-const BASE_URL = "https://shelterdk.dk";
+import { BASE_URL, ORGANIZATION_ID } from "@/components/seo/organization";
 
 /**
  * JSON-LD WebSite + Organization schema for the homepage.
@@ -24,13 +24,13 @@ export function WebSiteSchema() {
     inLanguage: "da",
     description:
       "Find og udforsk shelters i hele Danmark. Se billeder, anmeldelser og praktisk info for overnatning i naturen.",
-    publisher: { "@id": `${BASE_URL}#organization` },
+    publisher: { "@id": ORGANIZATION_ID },
   };
 
   const organization = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "@id": `${BASE_URL}#organization`,
+    "@id": ORGANIZATION_ID,
     name: "ShelterDK",
     url: BASE_URL,
     inLanguage: "da",
@@ -52,12 +52,14 @@ export function WebSiteSchema() {
       email: "hej@shelterdk.dk",
       availableLanguage: ["da"],
     },
-    // TODO: udfyld med brandets faktiske profiler — fx
-    //   "https://www.instagram.com/<handle>/",
-    //   "https://www.facebook.com/<handle>/",
-    // Tomme arrays sender et signal til Google om at vi IKKE har sociale
-    // profiler, så det er bedre helt at udelade feltet indtil URL'erne
-    // er kendte. Sletter derfor sameAs frem for at lade det stå tomt.
+    // sameAs udelades med vilje indtil brandets egne profil-URL'er er kendte.
+    // Et tomt array er et dårligere signal end ingen oplysning, og de
+    // instagram_posts vi viser, er kuraterede opslag fra ANDRE konti — de kan
+    // ikke bruges som sitets egne profiler. Udfyld når handles foreligger:
+    //   sameAs: ["https://www.instagram.com/<handle>/", ...]
+    //
+    // Artikler, guides og forsiden peger nu alle på dette ene @id, så
+    // entiteten står som ét objekt med logo, kontaktpunkt og areaServed.
   };
 
   return (

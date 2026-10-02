@@ -2,15 +2,43 @@
 import { NextResponse } from "next/server";
 import { getTotalShelterCount, getFacilityCounts, getCountPerRegion } from "@/lib/fakta-db";
 import { slugifySegment } from "@/lib/slug";
+import { getPublishedGuides, getGuideTeasers } from "@/lib/buying-guides";
+import { getCollectionShelters } from "@/lib/collection-pages";
+import { loadFriTeltningIndex } from "@/lib/fri-teltning";
+import { buyingGuideLines, themeLines } from "@/lib/llms-sections";
 
 export const revalidate = 86400;
 
 export async function GET() {
-  const [total, facilities, regions] = await Promise.all([
+  const [total, facilities, regions, guides, teltplads, baalhytte] = await Promise.all([
     getTotalShelterCount(),
     getFacilityCounts(),
     getCountPerRegion(),
+    getPublishedGuides(),
+    getCollectionShelters("teltplads"),
+    getCollectionShelters("baalhytte"),
   ]);
+  // Udstyrsguiderne er den eneste sektion AI-assistenter beviseligt henter
+  // (alle 17 AI-henviste klik siden juni), men stod ikke i filen.
+  const teasers = await getGuideTeasers(guides.map((g) => g.id));
+  const guideLines = buyingGuideLines(
+    guides.map((g) => {
+      const t = teasers.get(g.id);
+      return {
+        slug: g.slug,
+        title: g.title,
+        buyable: t?.buyable ?? 0,
+        minPrice: t?.minPrice ?? null,
+        maxPrice: t?.maxPrice ?? null,
+        winner: t?.winnerName ?? null,
+      };
+    })
+  ).join("\n");
+  const temaLines = themeLines({
+    friTeltning: loadFriTeltningIndex().length,
+    teltplads: teltplads.length,
+    baalhytte: baalhytte.length,
+  }).join("\n");
 
   const today = new Date().toISOString().split("T")[0];
   const regionLines = regions
@@ -81,6 +109,13 @@ ${regionLines}
 - [Shelters nær strand](https://shelterdk.dk/shelter-med-strand): ${facilities.strand} shelters nær strand.
 - [Shelters med bruser](https://shelterdk.dk/shelter-med-bruser): ${facilities.bruser} shelters med bruser.
 - [Shelter-booking](https://shelterdk.dk/shelter-booking): ${facilities.bookbar} shelters der kan bookes.
+
+## Udstyrsguider (scoret og rangeret)
+Hver guide rangerer konkrete produkter med en redaktionel score fra 0-10 ud fra en fast rubrik — ikke en labtest. Priser og lagerstatus synkroniseres dagligt fra forhandlernes feeds, og udsolgte produkter rykkes ned og mister deres prædikat. Metoden står på [Sådan vurderer vi](https://shelterdk.dk/saadan-vurderer-vi).
+${guideLines}
+
+## Temasider om overnatningsformer og køb
+${temaLines}
 
 ## Andre nøglesider
 - [Find shelter nær mig](https://shelterdk.dk/shelter-naer-mig): GPS-baseret oversigt over shelters i nærheden.

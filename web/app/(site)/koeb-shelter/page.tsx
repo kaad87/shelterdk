@@ -33,16 +33,6 @@ const FAQ = [
       "Ja, i langt de fleste tilfælde. Et shelter regnes som sekundær bebyggelse, og på en almindelig parcelhusgrund må du opføre op til 50 m² sekundær bebyggelse i alt uden byggetilladelse. Et typisk shelter fylder 5-10 m², så det er sjældent arealet der er problemet — men det tæller sammen med carport, skur og drivhus.",
   },
   {
-    question: "Hvor tæt på skel må shelteret stå?",
-    answer:
-      "Sekundær bebyggelse skal som udgangspunkt placeres mindst 2,5 meter fra skel, medmindre andet er aftalt med naboen eller fremgår af lokalplanen. Står det tættere, kan kommunen kræve det flyttet.",
-  },
-  {
-    question: "Skal jeg søge byggetilladelse til et shelter?",
-    answer:
-      "Normalt ikke, så længe du holder dig under 50 m² samlet sekundær bebyggelse, placerer det på terræn og overholder afstanden til skel. Men lokalplanen for dit område kan stille strengere krav, og bygningen må ikke bruges til beboelse. Tjek altid med din kommune inden du går i gang.",
-  },
-  {
     question: "Findes der gratis tegninger til at bygge et shelter selv?",
     answer:
       "Ja. Naturstyrelsen lægger tegninger og statiske beregninger til sine egne shelters (type 7.1 small, 7.2 medium og 7.3 big) frit tilgængelige som PDF. Det er de samme konstruktioner, du møder på shelterpladserne, og statikken er allerede regnet, så du kan bruge dem direkte som grundlag for et byggeri i haven.",
@@ -242,65 +232,28 @@ export default async function KoebShelterPage() {
 
           <AdBanner />
 
+          {/* Reglerne bor nu på /byggetilladelse-til-shelter. De stod her og trak
+              807 visninger på regel-queries med NUL klik ind på en købsside —
+              samme selvkannibalisering som på region-hubbene. Konklusionen
+              bliver stående, så køberen ikke efterlades uden svar. */}
           <section className="mb-10">
             <h2 className="font-serif text-2xl font-bold text-primary mb-4">
               Må man stille et shelter op i haven?
             </h2>
             <p className="text-primary/85 leading-relaxed mb-4">
-              Ja — et shelter regnes i bygningsreglementet som <em>sekundær bebyggelse</em>,
-              på linje med skure, carporte, drivhuse og overdækkede terrasser. På en grund
-              med enfamiliehus må du opføre op til <strong>50 m² sekundær bebyggelse i alt</strong>{" "}
-              uden at søge byggetilladelse. Et typisk shelter fylder 5-10 m², så arealet er
-              sjældent forhindringen — men husk at det er det <em>samlede</em> areal på
-              grunden der tæller, så carport og skur skal regnes med.
+              Ja, i de fleste tilfælde uden byggetilladelse. Et shelter regnes som{" "}
+              <em>sekundær bebyggelse</em>, og på en grund med enfamiliehus må du opføre op til{" "}
+              <strong>50 m² sekundær bebyggelse i alt</strong> uden at søge. Et typisk shelter
+              fylder 5-10 m². Betingelserne er mindst <strong>2,5 meter til skel</strong>,
+              at bygningen står på terræn, og at den ikke bruges til beboelse.
             </p>
-            <p className="text-primary/85 leading-relaxed mb-4">
-              Der er tre betingelser du skal være opmærksom på:
+            <p className="text-primary/85 leading-relaxed">
+              <Link href="/byggetilladelse-til-shelter" className="text-accent hover:underline">
+                Se hele gennemgangen af reglerne
+              </Link>{" "}
+              — hvad der tæller med i de 50 m², hvornår lokalplanen vejer tungere, og hvad der
+              gælder i landzone.
             </p>
-            <ul className="mb-4 space-y-2 text-primary/85">
-              <li className="flex gap-2">
-                <span className="text-accent" aria-hidden>•</span>
-                <span>
-                  <strong>Afstand til skel:</strong> mindst 2,5 meter, medmindre andet er
-                  aftalt med naboen eller fremgår af lokalplanen.
-                </span>
-              </li>
-              <li className="flex gap-2">
-                <span className="text-accent" aria-hidden>•</span>
-                <span>
-                  <strong>Placering på terræn:</strong> bygningen skal stå på jorden — ikke
-                  hæves eller graves ned.
-                </span>
-              </li>
-              <li className="flex gap-2">
-                <span className="text-accent" aria-hidden>•</span>
-                <span>
-                  <strong>Ikke til beboelse:</strong> sekundær bebyggelse må ikke bruges som
-                  bolig. Overnatning i ny og næ er noget andet end at bo der.
-                </span>
-              </li>
-            </ul>
-            <div className="rounded-xl border border-primary/15 bg-primary/[0.03] p-4">
-              <p className="text-sm text-primary/80">
-                <strong>Vigtigt:</strong> lokalplanen for dit område kan stille strengere
-                krav end bygningsreglementet — fx om placering, højde eller materialer. Og
-                ligger grunden i landzone, tæt på strand, fortidsminder eller beskyttet
-                natur, gælder der helt andre regler. Ring til teknisk forvaltning i din
-                kommune inden du går i gang; det tager ti minutter og kan spare dig for at
-                skulle rive det ned igen.
-              </p>
-              <p className="mt-3 text-sm">
-                <a
-                  href="https://www.bygningsreglementet.dk/administrative-bestemmelser/brv/sekundaer-bebyggelse/2_0_hvor_meget_maa_man_bygge/"
-                  target="_blank"
-                  rel="noopener noreferrer nofollow"
-                  className="inline-flex items-center gap-1 text-accent hover:underline"
-                >
-                  Læs reglerne i Bygningsreglementet
-                  <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-                </a>
-              </p>
-            </div>
           </section>
 
           <section className="mb-10">

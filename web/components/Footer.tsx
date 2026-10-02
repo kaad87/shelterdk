@@ -37,7 +37,8 @@ const gearGuideLinks = [
   { label: "Bedste liggeunderlag", href: "/bedste/liggeunderlag" },
   { label: "Bedste pandelampe", href: "/bedste/pandelampe" },
   { label: "Bedste telt", href: "/bedste/telt" },
-  { label: "Køb shelter – priser og regler", href: "/koeb-shelter" },
+  { label: "Køb shelter – priser og typer", href: "/koeb-shelter" },
+  { label: "Byggetilladelse til shelter", href: "/byggetilladelse-til-shelter" },
 ];
 
 const companyLinks = [

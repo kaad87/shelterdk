@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ORGANIZATION_REF } from "@/components/seo/organization";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -107,7 +108,7 @@ export default async function GuidePage({ params }: PageProps) {
       name: "Christian",
       url: `${BASE_URL}/om-os`,
     },
-    publisher: { "@type": "Organization", name: "ShelterDK", url: BASE_URL },
+    publisher: ORGANIZATION_REF,
     mainEntityOfPage: {
       "@type": "WebPage",
       "@id": `${BASE_URL}${canonicalPath}`,
