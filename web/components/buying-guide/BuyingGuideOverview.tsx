@@ -40,7 +40,12 @@ export function BuyingGuideOverview({
               height={96}
               className="mx-auto h-24 w-full object-contain"
             />
-            <h3 className="mt-2 line-clamp-2 text-sm font-semibold text-primary">
+            {/* Tre linjer, ikke to: kortet er ~160 px bredt, så to linjer klippede
+                126 af 157 produktnavne (80%) — typisk netop sæson, størrelse
+                eller model, som er det der adskiller produkterne. Med tre
+                linjer klippes 27%. Titlen bliver aldrig lang nok til at
+                skubbe CTA'en ud af kortet, fordi grid'et er ens-højt. */}
+            <h3 className="mt-2 line-clamp-3 text-sm font-semibold text-primary">
               {e.product.product_name}
             </h3>
             {e.score != null && (

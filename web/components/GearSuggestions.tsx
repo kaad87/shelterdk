@@ -1,12 +1,11 @@
-import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { GearSuggestionLink } from "@/components/GearSuggestionLink";
 import type { GuideLink } from "@/lib/gear-suggestions";
 
 /**
  * Grej-forslag matchet mod shelterets faciliteter, med link til købsguiderne
  * (/bedste). Vises kun når der er noget at foreslå.
  */
-export function GearSuggestions({ guides }: { guides: GuideLink[] }) {
+export function GearSuggestions({ guides, shelterSlug }: { guides: GuideLink[]; shelterSlug: string }) {
   if (guides.length === 0) return null;
 
   return (
@@ -26,23 +25,7 @@ export function GearSuggestions({ guides }: { guides: GuideLink[] }) {
       <ul className="space-y-2">
         {guides.map((guide) => (
           <li key={guide.slug}>
-            <Link
-              href={`/bedste/${guide.slug}`}
-              className="group flex items-center gap-2 rounded-lg bg-white/60 px-3 py-2.5 transition-colors hover:bg-white"
-            >
-              <span className="min-w-0 flex-1">
-                <span className="block text-sm font-medium text-primary group-hover:text-accent transition-colors">
-                  {guide.title}
-                </span>
-                <span className="block text-xs text-primary/55">
-                  — {guide.reason}
-                </span>
-              </span>
-              <ChevronRight
-                className="h-4 w-4 shrink-0 text-accent/60 transition-transform group-hover:translate-x-0.5"
-                aria-hidden
-              />
-            </Link>
+            <GearSuggestionLink guide={guide} shelterSlug={shelterSlug} />
           </li>
         ))}
       </ul>

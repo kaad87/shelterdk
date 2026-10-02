@@ -103,13 +103,16 @@ function ProductVariant({ product, className }: { product: AffiliateProduct; cla
         </div>
         <div className="mt-auto pt-2 md:pt-4">
           {outOfStock ? (
-            <div className="rounded-lg bg-primary/5 px-3 md:px-4 py-2 md:py-2.5 text-center text-xs md:text-sm font-medium text-primary/50">Udsolgt lige nu</div>
+            <div className="flex min-h-11 items-center justify-center rounded-lg bg-primary/5 px-3 md:px-4 py-2 md:py-2.5 text-center text-xs md:text-sm font-medium text-primary/50">Udsolgt lige nu</div>
           ) : (
             <a
               href={product.affiliate_url}
               target="_blank"
               rel="sponsored nofollow noopener"
-              className="block rounded-lg bg-primary px-3 md:px-4 py-2 md:py-2.5 text-center text-xs md:text-sm font-semibold text-white hover:bg-accent"
+              // min-h-11 = 44 px: kortet er ikke selv et link, så knappen er
+              // det eneste trykmål. Den målte 207×32 px på mobil, under
+              // anbefalet minimum. py-2 holdes, så desktop er uændret.
+              className="flex min-h-11 items-center justify-center rounded-lg bg-primary px-3 md:px-4 py-2 md:py-2.5 text-center text-xs md:text-sm font-semibold text-white hover:bg-accent"
               onClick={() => fireAffiliate(product, "product")}
             >
               Se tilbud

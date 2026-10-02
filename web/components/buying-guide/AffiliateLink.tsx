@@ -51,7 +51,11 @@ export function AffiliateLink({
           priceDkk: typeof product.price === "number" ? product.price : undefined,
         })
       }
-      className={`inline-flex items-center justify-center gap-1 rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-white hover:bg-accent/90 ${className ?? ""}`}
+      // Mørk baggrund, ikke accent-guld: hvid tekst på #C5A059 giver 2,46:1,
+      // under WCAG AA's 4,5:1 ved 12 px. bg-primary giver ~11:1 og er samme
+      // mønster som GearCardClient og tilbudskortene allerede bruger — guld
+      // beholdes som hover, så accenten stadig markerer handlingen.
+      className={`inline-flex items-center justify-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-accent ${className ?? ""}`}
     >
       {label} <ExternalLink size={12} aria-hidden="true" />
     </a>

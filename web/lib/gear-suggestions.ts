@@ -114,3 +114,20 @@ export async function getGearSuggestions(
 
   return out;
 }
+
+/**
+ * Link fra grej-blokken til en købsguide, mærket med hvor klikket kom fra.
+ *
+ * Blokken ligger på 1.609 shelter-sider, som tilsammen står for omkring en
+ * tredjedel af sitets Google-klik, men den havde ingen måling overhovedet —
+ * hverken på klikket eller på hvad det førte til. `?fra=shelter` følger med
+ * ind i `affiliate_clicks.path`, så et køb kan henføres til tragten uden ny
+ * infrastruktur. Guidens canonical peger på den rene URL, så parameteren
+ * skaber ikke en dublet i indekset.
+ */
+export function gearSuggestionHref(slug: string): string {
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+    throw new Error(`gearSuggestionHref: ugyldigt guide-slug "${slug}"`);
+  }
+  return `/bedste/${slug}?fra=shelter`;
+}

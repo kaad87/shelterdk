@@ -118,6 +118,24 @@ export function trackAffiliateClick(args: {
   });
 }
 
+/**
+ * Klik i grej-blokken på shelter-siderne — en intern overgang til en købsguide,
+ * ikke et affiliate-klik, så den holdes ude af affiliate_clicks. Linket bærer
+ * desuden ?fra=shelter, så et efterfølgende affiliate-klik kan henføres til
+ * tragten via affiliate_clicks.path.
+ */
+export function trackGearSuggestionClick(args: {
+  guideSlug: string;
+  shelterSlug: string;
+  reason: string;
+}) {
+  push("gear_suggestion_click", {
+    guide_slug: args.guideSlug,
+    shelter_slug: args.shelterSlug,
+    reason: args.reason,
+  });
+}
+
 export function trackCommunitySubmit(type: "comment" | "photo" | "facilities") {
   push("community_submit", { submission_type: type });
 }
