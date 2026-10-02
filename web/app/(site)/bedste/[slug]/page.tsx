@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { guideFacts } from "@/lib/guide-facts";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getGuideBySlug, getPublishedGuideSlugs, getPublishedGuides } from "@/lib/buying-guides";
@@ -180,6 +181,26 @@ export default async function BuyingGuidePage({
                 authorName={guide.author}
               />
             </div>
+          )}
+
+          {/* Kort fakta: tallene en assistent kan citere direkte. /bedste er den
+              eneste sektion AI-assistenter beviseligt henter, og de citerer
+              tal frem for prosa. Står før indholdsfortegnelsen, så den også er
+              det første efter svarkapslen i den rå tekst. */}
+          {entries.length > 0 && (
+            <section aria-labelledby="kort-fakta" className="mt-6 rounded-xl border border-primary/10 bg-primary/[0.03] p-4">
+              <h2 id="kort-fakta" className="mb-3 font-serif text-sm font-bold uppercase tracking-wide text-primary/70">
+                Kort fakta
+              </h2>
+              <dl className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
+                {guideFacts(entries, priceCheckedLabel).map((f) => (
+                  <div key={f.label} className="text-sm">
+                    <dt className="inline font-semibold text-primary">{f.label}: </dt>
+                    <dd className="inline text-primary/80">{f.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
           )}
 
           {/* Indholdsfortegnelse med jump-links — hjælper Google generere sitelinks. */}

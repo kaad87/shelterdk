@@ -17,8 +17,9 @@ Brug:
   python3 gsc_fetch.py query [--days 28] [--dim page|query|page,query] [--filter-page /danmark/] [--limit 50]
   python3 gsc_fetch.py inspect <url> [<url> ...]   # indekseringsstatus (URL Inspection API)
   python3 gsc_fetch.py sitemaps
+  python3 gsc_fetch.py report [--days 28]        # CTR pr. position + spørgsmåls-andel
 """
-import argparse, datetime as dt, json, os, sys, time
+import argparse, collections, datetime as dt, json, os, re, sys, time
 
 import jwt, requests
 
@@ -135,6 +136,89 @@ def cmd_inspect(a):
         time.sleep(0.3)  # kvote: 2000/dag, 600/min
 
 
+QUESTION_RE = re.compile(
+    r"^(hvad|hvor|hvordan|hvornår|hvilke|hvilken|kan man|må man|er der|skal man|hvem|hvorfor|findes der)\b",
+    re.I,
+)
+POS_BUCKETS = [(1, 2.5, "1-2"), (2.5, 4.5, "3-4"), (4.5, 7.5, "5-7"), (7.5, 10.5, "8-10"),
+               (10.5, 14.5, "11-14"), (14.5, 20.5, "15-20"), (20.5, 1e9, "21+")]
+
+
+def _bucket(pos):
+    for lo, hi, label in POS_BUCKETS:
+        if lo <= pos < hi:
+            return label
+    return "21+"
+
+
+def cmd_report(a):
+    """Ugentlig status på de to ting vi styrer efter: CTR pr. position og AI-synlighed.
+
+    CTR pr. position siger om svaret gives i resultatsiden frem for hos os —
+    et fald ved uændret position er signalet. Spørgsmåls-queries vises separat,
+    fordi de konverterer markant dårligere end andre på samme plads.
+    """
+    from urllib.parse import quote as _q
+    P = _q(prop(), safe="")
+    end = dt.date.today() - dt.timedelta(days=2)
+
+    def window(days, offset=0):
+        e = end - dt.timedelta(days=offset)
+        s = e - dt.timedelta(days=days - 1)
+        rows = call("POST", f"/webmasters/v3/sites/{P}/searchAnalytics/query",
+                    {"startDate": s.isoformat(), "endDate": e.isoformat(),
+                     "dimensions": ["query"], "rowLimit": 25000, "dataState": "final"}).get("rows", [])
+        return rows, s, e
+
+    cur, s1, e1 = window(a.days)
+    prev, s2, e2 = window(a.days, a.days)
+
+    def agg(rows, pred=None):
+        out = collections.defaultdict(lambda: [0, 0])
+        for r in rows:
+            if pred and not pred(r["keys"][0]):
+                continue
+            b = _bucket(r["position"])
+            out[b][0] += r["clicks"]
+            out[b][1] += r["impressions"]
+        return out
+
+    def line(d, label):
+        cells = []
+        for _, _, b in POS_BUCKETS:
+            c, i = d[b]
+            cells.append(f"{(c / i * 100 if i else 0):6.2f}%")
+        return f"  {label:14}" + "".join(cells)
+
+    tc, ti = sum(r["clicks"] for r in cur), sum(r["impressions"] for r in cur)
+    pc, pi = sum(r["clicks"] for r in prev), sum(r["impressions"] for r in prev)
+    print(f"ShelterDK — {a.days} dage\n")
+    print(f"  nu   {s1}–{e1}: {tc:6.0f} klik · {ti:8.0f} visn · CTR {tc / ti * 100:.2f}%")
+    print(f"  før  {s2}–{e2}: {pc:6.0f} klik · {pi:8.0f} visn · CTR {pc / pi * 100:.2f}%\n")
+
+    header = "  " + " " * 14 + "".join(f"{b:>7}" for _, _, b in POS_BUCKETS)
+    print("CTR pr. position")
+    print(header)
+    print(line(agg(cur), "nu"))
+    print(line(agg(prev), "før"))
+    print(line(agg(cur, lambda q: QUESTION_RE.match(q)), "spørgsmål nu"))
+    print(line(agg(cur, lambda q: not QUESTION_RE.match(q)), "øvrige nu"))
+
+    qs = [r for r in cur if QUESTION_RE.match(r["keys"][0])]
+    qi = sum(r["impressions"] for r in qs)
+    qc = sum(r["clicks"] for r in qs)
+    print(f"\n  spørgsmåls-queries: {len(qs)} · {qi:.0f} visn ({qi / ti * 100:.1f}% af alle) · {qc:.0f} klik")
+
+    rows = call("POST", f"/webmasters/v3/sites/{P}/searchAnalytics/query",
+                {"startDate": s1.isoformat(), "endDate": e1.isoformat(),
+                 "dimensions": ["searchAppearance"], "rowLimit": 25, "dataState": "final"}).get("rows", [])
+    if rows:
+        print("\nRich results")
+        for r in rows:
+            print(f"  {r['keys'][0]:22} {r['clicks']:5.0f} klik · {r['impressions']:7.0f} visn · CTR {r['ctr'] * 100:.1f}%")
+    print("\nAI-henviste klik tælles i affiliate_clicks (utm_source) — se scripts/ai_referrals.py")
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -147,6 +231,9 @@ def main():
     q.add_argument("--limit", type=int, default=50)
     q.add_argument("--json", action="store_true")
     q.set_defaults(fn=cmd_query)
+    rep = sub.add_parser("report")
+    rep.add_argument("--days", type=int, default=28)
+    rep.set_defaults(fn=cmd_report)
     i = sub.add_parser("inspect")
     i.add_argument("urls", nargs="+")
     i.set_defaults(fn=cmd_inspect)

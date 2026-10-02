@@ -16,6 +16,14 @@ export interface BlogPost {
   coverImage: string;
   readingTime: number;
   faq?: { question: string; answer: string }[];
+  /**
+   * Kort, citerbart svar vist øverst (`.llm-quote`, SpeakableSchema).
+   * Sættes på de indlæg der fanger spørgsmåls-søgninger: dem konverterer
+   * 7× dårligere end andre ved samme position, fordi svaret gives i
+   * resultatsiden — så skal det i det mindste være vores formulering.
+   * Ingen links, max ~400 tegn.
+   */
+  quickAnswer?: string;
 }
 
 export const BLOG_CATEGORIES: BlogCategory[] = [
@@ -43,6 +51,8 @@ const BLOG_POSTS: BlogPost[] = [
   {
     slug: "gratis-shelters-i-danmark",
     title: "Sheltertur i Danmark: sådan planlægger du din første tur",
+    quickAnswer:
+      "Langt de fleste shelters i Danmark er gratis og fungerer efter først-til-mølle. Du booker ikke og betaler ikke — du møder op, og er pladsen optaget, må du videre. Betaling og booking er undtagelsen og gælder typisk pladser med toilet, bad eller andre faciliteter. Tjek altid den enkelte plads, og medbring vand hvis der ikke er oplyst en vandhane.",
     excerpt:
       "Sådan planlægger du en sheltertur helt uden udgifter: find de gratis pladser, kend først-til-mølle-reglerne og pak rigtigt.",
     date: "2026-02-15",
@@ -153,6 +163,8 @@ Gratis shelters er en fantastisk ressource for alle, der vil opleve dansk natur 
   {
     slug: "shelter-vs-teltplads",
     title: "Shelter vs teltplads – hvad er forskellen?",
+    quickAnswer:
+      "Et shelter er en fast træhytte med tag og åben forside, som du ikke skal medbringe eller sætte op — til gengæld deler du den ofte med andre og kan sjældent reservere den. En teltplads er et udpeget sted, hvor du slår dit eget telt op: mere privatliv og læ mod vejret, men mere at bære og mere at rigge til. Vælg shelter til korte ture og dårligt vejr, telt når I er flere eller vil være for jer selv.",
     excerpt:
       "En sammenligning af shelter og teltplads – fordele, ulemper og hvornår du bør vælge hvad.",
     date: "2026-02-28",

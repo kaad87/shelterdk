@@ -10,6 +10,7 @@ import {
   getRelatedBlogPosts,
 } from "@/data/blog";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
+import { QuickAnswer } from "@/components/seo/QuickAnswer";
 import { renderContent } from "@/lib/renderContent";
 import { AuthorBio } from "@/components/AuthorBio";
 import { ArticleFaq } from "@/components/ArticleFaq";
@@ -184,6 +185,21 @@ export default async function BlogPostPage({ params }: PageProps) {
             <ArrowLeft size={16} />
             Tilbage til blog
           </Link>
+
+          {/* Svarkapsel på de indlæg der fanger spørgsmåls-søgninger. De
+              konverterer 7× dårligere end andre ved samme position, fordi
+              svaret gives i resultatsiden — så skal det være vores
+              formulering, markeret som citerbar (.llm-quote + Speakable). */}
+          {post.quickAnswer && (
+            <QuickAnswer
+              url={`https://shelterdk.dk/blog/${rawSlug}`}
+              heading="Kort svar"
+              answer={post.quickAnswer}
+              datePublished={post.date}
+              dateModified={post.updatedAt ?? post.date}
+              authorName="ShelterDK Redaktionen"
+            />
+          )}
 
           {/* Article content — first half */}
           <article className="prose prose-primary max-w-none">
