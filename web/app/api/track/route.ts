@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendGa4Event } from "@/lib/server-analytics";
 import { createClient } from "@supabase/supabase-js";
+import { INTERNAL_EVENTS, internalEventRow } from "@/lib/internal-events";
 
 export const dynamic = "force-dynamic";
 
@@ -85,6 +86,23 @@ export async function POST(req: NextRequest) {
         })
         .then(({ error }) => {
           if (error) console.warn("affiliate_clicks insert:", error.message);
+        });
+    }
+  }
+
+  // Events vi træffer beslutninger på skrives også anonymt til Supabase.
+  // GA4-kaldet nedenfor er bag en samtykkeport, og cookien sættes først når
+  // nogen trykker i banneret — målt giver det ~3% af den reelle optælling.
+  if (INTERNAL_EVENTS.has(event)) {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (url && key) {
+      const row = internalEventRow(event, body.params, body.path);
+      createClient(url, key, { auth: { persistSession: false } })
+        .from("internal_events")
+        .insert(row)
+        .then(({ error }) => {
+          if (error) console.warn("internal_events insert:", error.message);
         });
     }
   }
