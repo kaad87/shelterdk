@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * Udfyld shelters.municipality og shelters.area_slug fra DAWA reverse geocoding.
+ * Udfyld shelters.municipality og shelters.area_slug via reverse geocoding.
  *
- * Henter alle shelters hvor municipality er null, kalder DAWA kommuner/reverse
+ * Henter alle shelters hvor municipality er null, kalder Nominatim reverse
  * med (x=longitude, y=latitude), og opdaterer rækken med kommunenavn + area_slug.
  *
  * Kræver: .env med NEXT_PUBLIC_SUPABASE_URL og SUPABASE_SERVICE_ROLE_KEY
@@ -11,7 +11,7 @@
  * Kør: npm run backfill:municipality
  *   --dry-run     vis kun hvad der ville blive opdateret
  *   --alle        fuld genkørsel: alle shelters med location (ikke kun dem uden municipality)
- *   --delay=300   ms mellem hvert DAWA-kald (standard 300)
+ *   --delay=1100  ms mellem hvert kald (standard 1100 — Nominatim tillader 1/sek)
  */
 
 const fs = require("fs");
@@ -50,8 +50,14 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-const DAWA_BASE = "https://api.dataforsyningen.dk/kommuner/reverse";
-const DEFAULT_DELAY_MS = 300;
+// DAWA (api.dataforsyningen.dk) lukkede permanent 1. oktober 2026 og svarer 410
+// Gone på alle endpoints. Reverse-geokodning sker nu via Nominatim, som
+// backfill_kommune_from_geo.py i forvejen bruger — zoom=10 giver kommuneniveau.
+// Nominatims brugspolitik tillader maks. 1 kald i sekundet og kræver en
+// identificerbar User-Agent, så standardforsinkelsen er hævet fra 300 ms.
+const NOMINATIM_BASE = "https://nominatim.openstreetmap.org/reverse";
+const USER_AGENT = "shelterdk-backfill/1.0 (https://shelterdk.dk)";
+const DEFAULT_DELAY_MS = 1100;
 
 /** Parse POINT(lon lat) → { lon, lat } or null */
 function parseLocation(location) {
@@ -149,32 +155,35 @@ function municipalityToAreaSlug(municipality) {
   return slug || null;
 }
 
-/** Ét DAWA-kald for (lon, lat). Returnerer { municipality } eller null. */
-async function dawaReverseOne(lon, lat) {
-  // DAWA eksempel bruger x=12.58 (lon), y=55.68 (lat) – altså x=lon, y=lat
-  const url = `${DAWA_BASE}?x=${encodeURIComponent(lon)}&y=${encodeURIComponent(lat)}`;
+/** Ét Nominatim-kald for (lon, lat). Returnerer { municipality } eller null. */
+async function reverseOne(lon, lat) {
+  const url =
+    `${NOMINATIM_BASE}?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}` +
+    `&format=jsonv2&addressdetails=1&zoom=10&accept-language=da`;
   const res = await fetch(url, {
-    headers: { Accept: "application/json" },
-    signal: AbortSignal.timeout(10000),
+    headers: { Accept: "application/json", "User-Agent": USER_AGENT },
+    signal: AbortSignal.timeout(15000),
   });
   if (!res.ok) return null;
   const data = await res.json();
-  const item = Array.isArray(data) ? data[0] : data;
-  if (!item || typeof item !== "object") return null;
-  const navn = item.navn ?? item.nome ?? item.name;
-  if (typeof navn === "string" && navn.trim()) return { municipality: navn.trim() };
-  return null;
+  const a = data?.address;
+  if (!a || typeof a !== "object") return null;
+  // Nominatim svarer "Syddjurs Kommune"; resten af scriptet forventer bare navnet,
+  // og municipalityToAreaSlug normaliserer selv til "<navn> kommune".
+  const navn = a.municipality ?? a.city ?? a.town ?? a.county;
+  if (typeof navn !== "string" || !navn.trim()) return null;
+  return { municipality: navn.replace(/\s+kommune$/i, "").trim() };
 }
 
 /** Hent kommune for (lon, lat). Ved 404 (punkt i vand) prøves forskydninger mod land. */
-async function dawaReverse(lon, lat) {
-  let r = await dawaReverseOne(lon, lat);
+async function reverseLookup(lon, lat) {
+  let r = await reverseOne(lon, lat);
   if (r) return r;
   // Fallback: prøv 200 m og 500 m i fire retninger (havne ligger ofte lige ved land)
   for (const offset of [0.002, 0.005]) {
     for (const [dlat, dlon] of [[offset, 0], [-offset, 0], [0, offset], [0, -offset]]) {
       await sleep(150);
-      r = await dawaReverseOne(lon + dlon, lat + dlat);
+      r = await reverseOne(lon + dlon, lat + dlat);
       if (r) return r;
     }
   }
@@ -205,7 +214,7 @@ async function main() {
     try {
       createClient = require(path.join(webModules, "@supabase", "supabase-js")).createClient;
     } catch (e2) {
-      console.error("Supabase-pakken findes ikke. Kør fra repo-rod: node scripts/backfill-municipality-dawa.js");
+      console.error("Supabase-pakken findes ikke. Kør fra repo-rod: node scripts/backfill-municipality.js");
       console.error("  eller fra web: cd web && npm run backfill:municipality");
       process.exit(1);
     }
@@ -250,7 +259,7 @@ async function main() {
     const { id, title } = row;
     process.stdout.write(`[${i + 1}/${withCoords.length}] ${(title || id).slice(0, 40)}... `);
 
-    const result = await dawaReverse(coords.lon, coords.lat);
+    const result = await reverseLookup(coords.lon, coords.lat);
     await sleep(delayMs);
 
     if (!result) {
@@ -278,7 +287,13 @@ async function main() {
     ok++;
   }
 
-  console.log(`\nFærdig: ${ok} opdateret, ${fail} uden kommune/fejl.`);
+  // Ordlyden skal afspejle om der faktisk blev skrevet — "opdateret" i en
+  // tørkørsel fik mig til at tro at databasen var ændret.
+  console.log(
+    dryRun
+      ? `\nFærdig (tørkørsel, intet skrevet): ${ok} kunne opdateres, ${fail} uden kommune/fejl.`
+      : `\nFærdig: ${ok} opdateret, ${fail} uden kommune/fejl.`
+  );
 }
 
 main().catch((err) => {

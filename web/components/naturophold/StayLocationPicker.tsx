@@ -4,10 +4,7 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
 
-interface DawaItem {
-  tekst: string;
-  adgangsadresse?: { x?: number; y?: number; postnrnavn?: string };
-}
+import type { AddressHit } from "@/lib/address-search";
 
 /** Leaflet-kort med klik/træk-markør. Dynamisk (kun browser). */
 const MapPicker = dynamic(
@@ -52,33 +49,37 @@ interface Props {
   onChange: (lat: string, lng: string, meta?: { place?: string }) => void;
 }
 
-/** Adresse-autocomplete (DAWA) + kort-picker → udfylder lat/lng (+ by). */
+/** Adresse-autocomplete + kort-picker → udfylder lat/lng (+ by). */
 export function StayLocationPicker({ lat, lng, onChange }: Props) {
   const [q, setQ] = useState("");
-  const [suggestions, setSuggestions] = useState<DawaItem[]>([]);
+  const [suggestions, setSuggestions] = useState<AddressHit[]>([]);
   const [open, setOpen] = useState(false);
 
   const coords = lat && lng && Number.isFinite(Number(lat)) && Number.isFinite(Number(lng)) ? { lat: Number(lat), lng: Number(lng) } : null;
 
   useEffect(() => {
     if (q.trim().length < 3) { setSuggestions([]); return; }
+    // 600 ms, ikke 250: Nominatim tillader ét kald i sekundet, og feltet
+    // bruges kun i admin. DAWA, der tidligere svarede her, lukkede 1/10-2026.
     const t = setTimeout(async () => {
       try {
-        const r = await fetch(`https://api.dataforsyningen.dk/adgangsadresser/autocomplete?q=${encodeURIComponent(q)}&per_side=6&srid=4326`);
-        if (r.ok) { setSuggestions(await r.json()); setOpen(true); }
+        // Samme oprindelse: CSP'ens connect-src er lukket, og Nominatim kræver
+        // en User-Agent som browseren ikke må sætte. Ruten gør begge dele.
+        const r = await fetch(`/api/address-search?q=${encodeURIComponent(q.trim())}`);
+        if (r.ok) {
+          setSuggestions((await r.json()).results ?? []);
+          setOpen(true);
+        }
       } catch { /* ignorér netværksfejl */ }
-    }, 250);
+    }, 600);
     return () => clearTimeout(t);
   }, [q]);
 
-  function selectAddress(item: DawaItem) {
-    const a = item.adgangsadresse;
+  function selectAddress(item: AddressHit) {
     setQ(item.tekst);
     setSuggestions([]);
     setOpen(false);
-    if (a?.x != null && a?.y != null) {
-      onChange(String(a.y), String(a.x), { place: a.postnrnavn });
-    }
+    onChange(String(item.lat), String(item.lon), { place: item.place ?? undefined });
   }
 
   return (

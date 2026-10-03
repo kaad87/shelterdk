@@ -231,30 +231,28 @@ export function lookupPostnummer(code: string): string | null {
 }
 
 /**
- * Henter bounding box for et postnummer fra DAWA (Danmarks Adressers Web API).
- * Returnerer null hvis postnummeret ikke findes eller API'et fejler.
- * Postal code bbox ændres aldrig — caches i 30 dage via Next.js fetch-cache.
+ * Bounding box for et postnummer. Returnerer altid null.
+ *
+ * Boksen blev hentet fra DAWA (api.dataforsyningen.dk), som Klimadatastyrelsen
+ * lukkede permanent 1. oktober 2026 — alle endpoints svarer nu 410 Gone, uden
+ * overgangsperiode og uden redirects. Der findes ikke en åben afløser med
+ * postnummer-polygoner: officielle data ligger i Datafordeleren og kræver
+ * registrering og token, og Nominatim returnerer kun en fast ~10×10 km kasse
+ * om postnummerets centrum — identisk stor for København S og et landsogn,
+ * hvilket ville gøre søgningen dårligere end ingen boks.
+ *
+ * Funktionen beholdes frem for at fjernes, så kaldstedet i /api/soeg beholder
+ * sin faldbagsvej uændret: er der ingen boks, slås postnummeret op i
+ * POSTNUMMER_BY og der søges på bynavnet i stedet. Det er præcis det der sker
+ * i produktion i dag.
+ *
+ * Vil I have geografisk præcision tilbage, kræver det enten et
+ * Datafordeler-token eller en statisk polygon-tabel importeret én gang.
  */
 export async function fetchPostnummerBbox(
-  code: string
+  _code: string
 ): Promise<PostnummerBbox | null> {
-  try {
-    const res = await fetch(
-      `https://api.dataforsyningen.dk/postnumre/${encodeURIComponent(code)}`,
-      { next: { revalidate: 60 * 60 * 24 * 30 } } // 30 dage cache
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
-    // DAWA bbox format: [minLon, minLat, maxLon, maxLat]
-    const bbox = data?.bbox;
-    if (!Array.isArray(bbox) || bbox.length !== 4) return null;
-    const [minLon, minLat, maxLon, maxLat] = bbox.map(Number);
-    if ([minLon, minLat, maxLon, maxLat].some((n) => !Number.isFinite(n)))
-      return null;
-    return { minLat, maxLat, minLon, maxLon };
-  } catch {
-    return null;
-  }
+  return null;
 }
 
 /**
