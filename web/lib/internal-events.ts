@@ -12,8 +12,19 @@
  * affiliate_clicks.
  */
 
-/** Hvilke events der dubleres til internal_events. Affiliate-klik har sin egen tabel. */
-export const INTERNAL_EVENTS = new Set(["gear_suggestion_click"]);
+/**
+ * Hvilke events der dubleres til internal_events.
+ *
+ * Affiliate-klik står ikke på listen — de har deres egen tabel med
+ * produkt- og prisfelter. Book-knappen gør, fordi GA4 kun så 71 klik på 28
+ * dage; det tal er en stikprøve af de samtykkende, ikke virkeligheden, og
+ * forholdet mellem klik og faktiske bookinger i shelter_bookings er det
+ * eneste, der viser om booking-flowet taber folk undervejs.
+ */
+export const INTERNAL_EVENTS = new Set([
+  "gear_suggestion_click",
+  "book_button_clicked",
+]);
 
 /** Parametre der aldrig må logges, uanset hvor de kommer fra. */
 const FORBUDTE = new Set([

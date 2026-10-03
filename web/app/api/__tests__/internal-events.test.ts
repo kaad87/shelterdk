@@ -5,6 +5,9 @@ describe("INTERNAL_EVENTS", () => {
   it("omfatter grej-blokkens klik", () => {
     expect(INTERNAL_EVENTS.has("gear_suggestion_click")).toBe(true);
   });
+  it("omfatter book-knappen — GA4 så 71 på 28 dage, og det tal er en stikprøve", () => {
+    expect(INTERNAL_EVENTS.has("book_button_clicked")).toBe(true);
+  });
   it("omfatter ikke affiliate_click — den har sin egen tabel", () => {
     expect(INTERNAL_EVENTS.has("affiliate_click")).toBe(false);
   });
@@ -17,6 +20,17 @@ describe("internalEventRow", () => {
       event: "gear_suggestion_click",
       path: "/danmark/a/b/c",
       params: { guide_slug: "sovepose", shelter_slug: "x-1" },
+    });
+  });
+
+  it("beholder shelter_id — det er vores eget id, ikke en person", () => {
+    const r = internalEventRow("book_button_clicked", {
+      shelter_id: "abc-123", shelter_slug: "sminge-so-96666",
+      booking_type: "shelterdk", cta_position: "sticky_mobile",
+    }, "/danmark/jylland/silkeborg/sminge-so-96666");
+    expect(r.params).toEqual({
+      shelter_id: "abc-123", shelter_slug: "sminge-so-96666",
+      booking_type: "shelterdk", cta_position: "sticky_mobile",
     });
   });
 
