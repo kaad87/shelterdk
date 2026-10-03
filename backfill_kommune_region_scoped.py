@@ -23,13 +23,13 @@ from supabase import create_client
 from backfill_kommune_from_geo import reverse_geocode
 from backfill_region_from_kommune import kommune_to_landsdel
 
-# GeoFA-importen 2026-09-20. slug -> (lat, lon)
+# GeoFA-importen 2026-10-03. slug -> (lat, lon)
 TARGETS = {
-    "blommeshyttens-shelter-10012": (54.9524, 10.01227),
-    "shelterplads-assens-kabel-og-vandarena-98961": (55.26266, 9.89613),
-    "shelters-i-vikingelunden-horne-85395": (55.7201, 8.53951),
-    "fjordklyngehuset-93896": (56.5811, 9.38969),
-    "shelters-ved-aebleskoven-rodkaersbro-94989": (56.35569, 9.49892),
+    "kalo-hovedgard-shelter-nr-3-ikke-bookbar-10499": (56.29722, 10.49989),
+    "shelter-ved-foreningshus-11978": (55.32893, 11.97888),
+    "shelter-ved-poppelvej-88797": (56.74869, 8.87973),
+    "shelterplads-ved-skovsoen-i-farvang-97345": (56.26173, 9.73458),
+    "udsigtsshelter-ved-albaek-10167": (56.48458, 10.16785),
 }
 
 # Kanoniske regionsnavne i DB: Jylland (1086), Sjælland og Øerne (406), Fyn (181),
@@ -45,6 +45,7 @@ KODE_TIL_KOMMUNE = {
     "350": "Lejre", "430": "Faaborg-Midtfyn", "480": "Nordfyns", "561": "Esbjerg",
     "573": "Varde", "580": "Aabenraa", "707": "Norddjurs", "760": "Ringkøbing-Skjern",
     "791": "Viborg", "540": "Sønderborg", "420": "Assens", "306": "Kalundborg", "316": "Holbæk", "326": "Ringsted",
+    "706": "Norddjurs", "320": "Faxe", "779": "Skive", "740": "Silkeborg", "730": "Randers",
 }
 
 
