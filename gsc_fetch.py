@@ -81,6 +81,31 @@ def prop():
     return os.environ.get("GSC_PROPERTY", "sc-domain:shelterdk.dk")
 
 
+_sidste_dag = {"value": None}
+
+
+def latest_final_date():
+    """Seneste dag der faktisk HAR færdige data.
+
+    Forsinkelsen på dataState=final er ikke fast — den var 5 dage da det her
+    blev skrevet, ikke de 2 scriptet antog. Forskellen gjorde, at de nyeste
+    dage i et vindue stod tomme, mens sammenligningsvinduet var fuldt: en
+    rapport viste et fald på 47%, som udelukkende skyldtes manglende dage.
+    Slå derfor den reelle slutdato op én gang pr. kørsel.
+    """
+    if _sidste_dag["value"]:
+        return _sidste_dag["value"]
+    from urllib.parse import quote as _q
+    end = dt.date.today()
+    rows = call("POST", f"/webmasters/v3/sites/{_q(prop(), safe='')}/searchAnalytics/query",
+                {"startDate": (end - dt.timedelta(days=14)).isoformat(),
+                 "endDate": end.isoformat(), "dimensions": ["date"],
+                 "rowLimit": 30, "dataState": "final"}).get("rows", [])
+    datoer = [r["keys"][0] for r in rows]
+    _sidste_dag["value"] = dt.date.fromisoformat(max(datoer)) if datoer else end - dt.timedelta(days=5)
+    return _sidste_dag["value"]
+
+
 def cmd_sites(_):
     sites = call("GET", "/webmasters/v3/sites").get("siteEntry", [])
     if not sites:
@@ -101,7 +126,7 @@ def cmd_sitemaps(_):
 
 def cmd_query(a):
     from urllib.parse import quote
-    end = dt.date.today() - dt.timedelta(days=2)  # GSC har ~2 dages forsinkelse
+    end = latest_final_date()
     start = end - dt.timedelta(days=a.days - 1)
     dims = [d.strip() for d in a.dim.split(",")]
     body = {"startDate": start.isoformat(), "endDate": end.isoformat(),
@@ -160,7 +185,7 @@ def cmd_report(a):
     """
     from urllib.parse import quote as _q
     P = _q(prop(), safe="")
-    end = dt.date.today() - dt.timedelta(days=2)
+    end = latest_final_date()
 
     def window(days, offset=0):
         e = end - dt.timedelta(days=offset)
