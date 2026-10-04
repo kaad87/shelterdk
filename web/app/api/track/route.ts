@@ -15,6 +15,7 @@ const ALLOWED_EVENTS = new Set([
   "outbound_click",
   "affiliate_click",
   "gear_suggestion_click",
+  "guide_view",
   "community_submit",
   "book_button_clicked",
   "wishlist_changed",

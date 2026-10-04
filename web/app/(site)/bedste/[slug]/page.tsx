@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GuideViewTracker } from "@/components/buying-guide/GuideViewTracker";
 import { guideFacts } from "@/lib/guide-facts";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -106,6 +107,9 @@ export default async function BuyingGuidePage({
 
   return (
     <>
+      {/* Tæller besøget via /api/track. GA4 ser kun en tredjedel af
+          guide-besøgene, så den duer ikke som nævner for konvertering. */}
+      <GuideViewTracker slug={guide.slug} />
       <BreadcrumbSchema
         items={[
           { label: "Hjem", href: "/" },

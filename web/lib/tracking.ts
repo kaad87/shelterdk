@@ -136,6 +136,14 @@ export function trackGearSuggestionClick(args: {
   });
 }
 
+/**
+ * Besøg på en købsguide — nævneren til affiliate-konvertering.
+ * Se GuideViewTracker for hvorfor GA4 ikke kan bruges til det.
+ */
+export function trackGuideView(args: { guideSlug: string; fra?: string }) {
+  push("guide_view", { guide_slug: args.guideSlug, ...(args.fra ? { fra: args.fra } : {}) });
+}
+
 export function trackCommunitySubmit(type: "comment" | "photo" | "facilities") {
   push("community_submit", { submission_type: type });
 }

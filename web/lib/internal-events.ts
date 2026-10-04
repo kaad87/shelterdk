@@ -24,6 +24,13 @@
 export const INTERNAL_EVENTS = new Set([
   "gear_suggestion_click",
   "book_button_clicked",
+  // Nævneren til affiliate-konvertering. Målt over 28 dage fik /bedste-siderne
+  // 0,65 GA4-visninger pr. Google-klik — færre visninger end klik, altså
+  // fysisk umuligt. Alle andre sidetyper lå på 1,5-4,8. Forskellen er
+  // samtykkeløse pings og annonceblokering, der rammer googletagmanager.com
+  // hårdest netop hos folk der søger på grej. Samme oprindelse slipper
+  // igennem: affiliate-klik står 191 i Supabase mod 7 i GA4.
+  "guide_view",
 ]);
 
 /** Parametre der aldrig må logges, uanset hvor de kommer fra. */
