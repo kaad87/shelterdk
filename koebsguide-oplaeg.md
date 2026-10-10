@@ -6,51 +6,6 @@ Kolonnen **id** er `affiliate_product_id` — den skal du bruge i valg.json.
 Forhandler: `backpackerlife` foretrækkes ved ellers lige kandidater.
 Feed'et har **ingen specs** (vægt, temperatur, mål). Beskrivelsen er forhandlerens egen tekst og er råmateriale, ikke noget der kan bruges ordret.
 
-## /bedste/campingstol — Bedste campingstol 2026
-
-**0 købbare af 5. Mangler 5.**
-
-Nu på siden:
-
-- `Bedst til prisen` · Easy Camp Spruce Arm Chair Olivine - Campingstol · 243 kr · 8.1/10 — **UDSOLGT**
-- `Bedste mellemklasse` · Outwell Cardiel Forest Green - Campingstol · 335 kr · 8.2/10 — **UDSOLGT**
-- `Bedste komfort u. polstring` · Easy Camp Oak Chair Olivine - Campingstol · 363 kr · 8.3/10 — **UDSOLGT**
-- `Bedste XL` · Outwell Catamarca Xl - Campingstol · 379 kr · 8.4/10 — **UDSOLGT**
-- `Bedste premium` · Outwell Tidal - Campingstol · 680 kr · 8.5/10 — **UDSOLGT**
-
-Kandidater (18 relevante i feed'et, 12 vist fordelt på pris):
-
-| id | produkt | pris | før | forhandler |
-|---|---|---|---|---|
-| `outdoortid-49281850179916` | Nordic Peak Festivalstol - 2 kopholdere - Ekstra robust model - Brun | 149 kr |  | outdoortid |
-| `outdoortid-49093043913036` | Nordic Peak Festivalstol - 2 kopholdere - Ekstra robust model - Grøn | 149 kr |  | outdoortid |
-| `outdoortid-44184836243767` | Naturehike Træstol - Hvid / Small | 349 kr |  | outdoortid |
-| `outdoortid-44184836342071` | Naturehike Træstol - Rød / Small | 349 kr |  | outdoortid |
-| `backpackerlife-299940` | Stol - Treklife Low-back UL Chair | 449 kr |  | backpackerlife |
-| `outdoortid-52709285396812` | Naturehike Foldestol - letvægt - Grøn | 549 kr |  | outdoortid |
-| `outdoortid-49278573707596` | Nordic Peak Campingstol - Positionsstol med 5 indstillinger | 549 kr |  | outdoortid |
-| `outdoortid-52709285429580` | Naturehike Foldestol - letvægt - Brun | 549 kr |  | outdoortid |
-| `backpackerlife-299939` | Stol - Treklife High-back UL Chair | 599 kr |  | backpackerlife |
-| `backpackerlife-516075` | Stol - Treklife Luxe Chair | 799 kr |  | backpackerlife |
-| `outdoortid-52709547770188` | Naturehike Foldestol - dobbelt - Sort | 849 kr |  | outdoortid |
-| `outmore-8718685011403` | Travelsafe Travel Chair Calais - Black - Str. Stk - Campingstol | 850 kr | 944 | outmore |
-
-<details><summary>Forhandlerens beskrivelser (råmateriale)</summary>
-
-- **Nordic Peak Festivalstol - 2 kopholdere - Ekstra robust model - Brun**: Ekstra robust festivalstol med 2 kopholdere Stærkt stål - kapacitet på 150 kg Foldes sammen med fastmonteret elastik Fastmonteret bærerem Højde: 87 cm. Bredde: 50 cm Dybde: 50 cm Vægt: 3,5 kg Farve: Grøn, brun og beige Sammenfoldet: 87 x 14 x 12 cm
-- **Nordic Peak Festivalstol - 2 kopholdere - Ekstra robust model - Grøn**: Ekstra robust festivalstol med 2 kopholdere Stærkt stål - kapacitet på 150 kg Foldes sammen med fastmonteret elastik Fastmonteret bærerem Højde: 87 cm. Bredde: 50 cm Dybde: 50 cm Vægt: 3,5 kg Farve: Grøn, brun og beige Sammenfoldet: 87 x 14 x 12 cm
-- **Naturehike Træstol - Hvid / Small**: Elegant og robust træstol designet til glamping, hvor komfort og stil går hånd i hånd. Lavet af kvalitetsmaterialer og med et foldbart design, der gør den nem at transportere og perfekt til udendørs hygge med et luksuriøst præg. &bull; Størrelse small: 45
-- **Naturehike Træstol - Rød / Small**: Elegant og robust træstol designet til glamping, hvor komfort og stil går hånd i hånd. Lavet af kvalitetsmaterialer og med et foldbart design, der gør den nem at transportere og perfekt til udendørs hygge med et luksuriøst præg. &bull; Størrelse small: 45
-- **Stol - Treklife Low-back UL Chair**: Low-Back UL stol fra Treklife, som er en foldestol, der er perfekt til outdoor liv, festival, camping, fisketuren eller andre ture, hvor den sikrer en god siddekomfort. Stolen er foldbar og vejer kun 1030 g, hvorfor den er nem at medbringe på turen. Den k
-- **Naturehike Foldestol - letvægt - Grøn**: Kvadratisk design lav vægt og høj stabilitet Slidstærkt Oxford-stof og ramme i aluminiumslegering Foldes fladt sammen på få sekunder Ideel til både børn og voksne Kompakt nok til rygsæk, strandtaske eller festivalgear Specifikationer: Mål (opslået): Ca.
-- **Nordic Peak Campingstol - Positionsstol med 5 indstillinger**: Campingstol med 5 positioner Nakkestøtte Kapacitet: 110 kg Kraftige armlæn Slidstærkt textilene materiale (kan tåle regn) Robust aluminiumsstel Letvægt kun 4,72 kg. Farve: Olive green Rustfrie materialer Størrelse: 48 x 39 x 121 cm. Sammenfoldet: 84 x 57
-- **Naturehike Foldestol - letvægt - Brun**: Kvadratisk design lav vægt og høj stabilitet Slidstærkt Oxford-stof og ramme i aluminiumslegering Foldes fladt sammen på få sekunder Ideel til både børn og voksne Kompakt nok til rygsæk, strandtaske eller festivalgear Specifikationer: Mål (opslået): Ca.
-- **Stol - Treklife High-back UL Chair**: High-Back UL stol fra Treklife er en letvægts foldestol, som er perfekt til outdoor liv, festival, camping, fisketuren eller hvad du mangler en stol til. Stolen er foldbar og vejer
-- **Stol - Treklife Luxe Chair**: Stolen Luxe Chair fra Treklife er en letvægts foldestol, som er perfekt til outdoor liv, festival, camping, fisketuren eller hvad du mangler en stol til. Stolen er foldbar og vejer kun 1850 g, hvorfor den er nem at medbringe på turen. Den kan nemt og hurt
-- **Naturehike Foldestol - dobbelt - Sort**: Plads til 2 personer Slidstærkt Oxford-stof og kraftig aluminiumsramme Foldes hurtigt sammen og pakkes kompakt Ideel til festival, camping, glamping og strand Specifikationer: Vægt: Ca. 3,3 kg Maks. belastning: 200 kg Materiale: 600D Oxford + aluminium Må
-
-</details>
-
 ## /bedste/drikkedunk — Bedste drikkedunk 2026
 
 **3 købbare af 5. Mangler 2.**
