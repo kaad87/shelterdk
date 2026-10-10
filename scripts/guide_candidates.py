@@ -37,7 +37,10 @@ NAME_FILTER = {
     "sovepude": r"pude|pillow|lagenpose|liner",
     "telt": r"\btelt\b|tent",
     "gamacher": r"gamache|gaiter",
-    "liggeunderlag-til-vinter": r"liggeunderlag|selvoppustelig|sleeping mat",
+    # Vinterguiden skal kun foreslå isolerede underlag. Det brede filter
+    # foreslog uisolerede skumm-måtter til en guide om vinterbrug.
+    "liggeunderlag-til-vinter": r"(?=.*(?:liggeunderlag|sleeping mat|selvoppustelig))"
+                               r"(?=.*(?:insulated|isoleret|vinter|extreme|thermal))",
     "liggeunderlag": r"liggeunderlag|selvoppustelig|sleeping mat",
     "sovepose": r"sovepose",
     "sommersovepose": r"sovepose",
@@ -45,14 +48,32 @@ NAME_FILTER = {
     "sovepose-til-boern": r"sovepose",
 }
 # Udelukker tilbehør og varianter der ikke hører til guiden.
+#
+# Listerne er vokset, fordi navnefilteret nu søger hele lageret og dermed også
+# finder alt det, der blot har guidens ord i navnet. Målt på oplægget foreslog
+# drikkedunk-guiden et låg, en bidventil og en brændstofflaske; gamacher-guiden
+# halsedisser og cykel-skoovertræk; sovepude-guiden sokker og handsker. Et
+# oplæg man ikke kan bruge er lige så ubrugeligt som intet oplæg.
 EXCLUDE = {
     # Hængekøjestole ligner campingstole i navnet og er noget helt andet; de
     # kom med da navnefilteret begyndte at søge hele lageret.
     "campingstol": r"bord|table|seng|\bbed\b|cover|taske|pude|hynde|"
                    r"h[æa]ngek[øo]je|hammock|tilbeh[øo]r",
-    "telt": r"underlag|footprint|stang|pløk|pegs|reparation|telttæppe|fortelt|tarp",
-    "sovepude": r"liggeunderlag|sovepose",
-    "drikkedunk": r"filter|rens",
+    "telt": r"underlag|footprint|stang|pløk|pegs|reparation|telttæppe|fortelt|tarp|"
+            r"hammer|wire|\bbox\b|kasse|survival|overlevelses|glamping|oppustelig|"
+            r"tilbeh[øo]r|clips|impr[æa]gnering",
+    "sovepude": r"liggeunderlag|sovepose|\bsok|\bsock|handske|glove|betr[æa]k|"
+                r"plush|\belf\b|dinosaur|animal|foam pad|eye mask",
+    # Alt der har "flaske" i navnet er ikke en drikkedunk: låg, bidventiler,
+    # flaskeholdere og brændstofflasker kom alle med.
+    "drikkedunk": r"filter|rens|\blid\b|l[åa]g|valve|ventil|sheath|holder|"
+                  r"fuel|br[æa]ndstof|tilbeh[øo]r|accessory|betr[æa]k|b[æa]lt|belt",
+    # Halsedisser og cykel-skoovertræk hedder også "gaiter" på engelsk.
+    "gamacher": r"neck|\bhals|halsedisse|bike|cykel|shoecover|skoovertr[æa]k",
+    # Sommerguiden skal ikke foreslå børne- eller vintersoveposer.
+    "sommersovepose": r"b[øo]rne|\bkids\b|junior|survival",
+    "liggeunderlag-til-vinter": r"siddeunderlag|sidde",
+    "tarp": r"clips|stang|stange|\bpole\b|poncho|h[æa]ngek[øo]je|hammock|tilbeh[øo]r",
 }
 
 

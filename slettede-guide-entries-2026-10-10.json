@@ -1,0 +1,434 @@
+[
+  {
+    "guide": "tarp",
+    "dage_ude": 49,
+    "produkt": "Robens Tarp 2.5 X 2.5 M Pro - Tarp",
+    "pris": 489.95,
+    "forhandler": "outmore",
+    "entry": {
+      "id": "8681f750-340f-4381-9566-0ca06cd5afdf",
+      "guide_id": "5b565a77-a7d2-4210-abe1-b9d3ac3358ee",
+      "affiliate_product_id": "outmore-5709388145161",
+      "rank": 2,
+      "award_label": "Bedste letvægt-kompakt",
+      "editorial_note": "Robens Pro i 2,5x2,5 m er solo-formatet: mindre, lettere og hurtigere at spænde op — perfekt over bivuakken eller som shelter-fortelt for én.",
+      "pros": [
+        "Let og kompakt",
+        "Pro-stof med god vandsøjle",
+        "Hurtig opsætning"
+      ],
+      "cons": [
+        "For lille til grupper",
+        "Mindre fleksibel end 3x3"
+      ],
+      "created_at": "2026-06-12T06:14:34.022889+00:00",
+      "score": 8.2,
+      "best_for": "Solo / bivuak"
+    }
+  },
+  {
+    "guide": "sovepose",
+    "dage_ude": 43,
+    "produkt": "Sovepose - Sea to Summit Boab -9 grader - Regular",
+    "pris": 1099.0,
+    "forhandler": "backpackerlife",
+    "entry": {
+      "id": "0bee5a0a-7227-41d8-a873-a9e85e27b95b",
+      "guide_id": "38497e09-4cc5-4cc8-9596-55f361b78027",
+      "affiliate_product_id": "backpackerlife-613165",
+      "rank": 5,
+      "award_label": "Bedste til vinter",
+      "editorial_note": "Sea to Summit Boab -9 holder dig varm når temperaturen falder — til dig der sover ude i skuldersæsonen og vinter.",
+      "pros": [
+        "Varm i minusgrader",
+        "Kvalitetsbrand",
+        "God til vinter-shelter"
+      ],
+      "cons": [
+        "For varm om sommeren",
+        "Tungere"
+      ],
+      "created_at": "2026-06-09T17:36:05.711072+00:00",
+      "score": 8.6,
+      "best_for": "Koldt vejr / sen efterår"
+    }
+  },
+  {
+    "guide": "telt",
+    "dage_ude": 72,
+    "produkt": "Robens Lodge 2 Exp - Telt",
+    "pris": 2042.95,
+    "forhandler": "outmore",
+    "entry": {
+      "id": "945d67df-a813-4d1f-9296-4ce5c311cdab",
+      "guide_id": "3e0e0852-3cb4-4872-97e2-d699570da665",
+      "affiliate_product_id": "outmore-5709388144911",
+      "rank": 5,
+      "award_label": "Bedste premium",
+      "editorial_note": "Robens Lodge 2 Exp er et robust, gennemtænkt 2-personers til længere og mere krævende ture.",
+      "pros": [
+        "Robust kvalitet",
+        "God ventilation",
+        "Holdbar"
+      ],
+      "cons": [
+        "Højere pris",
+        "Tungere"
+      ],
+      "created_at": "2026-06-09T17:36:09.897679+00:00",
+      "score": 8.5,
+      "best_for": "Robust til længere ture"
+    }
+  },
+  {
+    "guide": "regntoj",
+    "dage_ude": 66,
+    "produkt": "Regnjakke unisex - Trespass Qikpac - Sort",
+    "pris": 289.0,
+    "forhandler": "backpackerlife",
+    "entry": {
+      "id": "10b99bed-60cc-44b0-8f95-abe19f8f76f9",
+      "guide_id": "60e33937-c0c5-490c-a930-b0db767d6bf4",
+      "affiliate_product_id": "backpackerlife-49106",
+      "rank": 3,
+      "award_label": "Bedste pakbare",
+      "editorial_note": "Trespass Qikpac er kendt for at pakke ned til næsten ingenting — den unisex-jakke du glemmer du har med, indtil regnen kommer.",
+      "pros": [
+        "Ekstremt lille pakmål",
+        "Let",
+        "Unisex pasform"
+      ],
+      "cons": [
+        "Tyndt stof",
+        "Enkel hætte"
+      ],
+      "created_at": "2026-06-13T16:15:48.190815+00:00",
+      "score": 8.3,
+      "best_for": "Mindst pakmål"
+    }
+  },
+  {
+    "guide": "sovepose-til-boern",
+    "dage_ude": 74,
+    "produkt": "Outwell Contour Junior Deep Blue - Left Side Zipper - Sovepose",
+    "pris": 499.95,
+    "forhandler": "outmore",
+    "entry": {
+      "id": "15d872e7-ac1b-42a8-9113-fe7dde46d10d",
+      "guide_id": "bf1fc140-2521-4761-8ca6-fe940b36c487",
+      "affiliate_product_id": "outmore-5709388159038",
+      "rank": 4,
+      "award_label": "Bedste komfort",
+      "editorial_note": "Outwell Contour Junior er behagelig og rummelig — god til campingpladsen.",
+      "pros": [
+        "Behagelig",
+        "God plads",
+        "Kvalitet"
+      ],
+      "cons": [
+        "Fylder",
+        "Mest til camping"
+      ],
+      "created_at": "2026-06-09T17:36:15.595556+00:00",
+      "score": 8.1,
+      "best_for": "Komfort / camping"
+    }
+  },
+  {
+    "guide": "campingstol",
+    "dage_ude": 74,
+    "produkt": "Outwell Catamarca Xl - Campingstol",
+    "pris": 378.95,
+    "forhandler": "outmore",
+    "entry": {
+      "id": "ae13e00b-00bc-428a-9cfb-c374019845a0",
+      "guide_id": "18d25b68-ecf2-48c9-9274-d94431a8dbd5",
+      "affiliate_product_id": "outmore-5709388146915",
+      "rank": 5,
+      "award_label": "Bedste XL",
+      "editorial_note": "Catamarca XL er den velkendte klassiker i stor: højere ryg, bredere sæde og 150 kg maksvægt — campingstolen til store folk, der er trætte af for små stole.",
+      "pros": [
+        "150 kg maksvægt",
+        "Bredt, højt sæde",
+        "Samme gode pris-DNA"
+      ],
+      "cons": [
+        "Stor og tung",
+        "Overkill til små personer"
+      ],
+      "created_at": "2026-06-12T06:14:33.38469+00:00",
+      "score": 8.4,
+      "best_for": "Høje / op til 150 kg"
+    }
+  },
+  {
+    "guide": "vandresokker",
+    "dage_ude": 62,
+    "produkt": "Vandrestrømper - Ulvang Liner - Sort",
+    "pris": 149.0,
+    "forhandler": "backpackerlife",
+    "entry": {
+      "id": "adbb381b-f36d-44eb-a958-6780df8aac35",
+      "guide_id": "26adf6a9-c729-4036-83e0-26a17165e001",
+      "affiliate_product_id": "backpackerlife-617206",
+      "rank": 5,
+      "award_label": "Bedste tynde liner",
+      "editorial_note": "Ulvang Liner er en kvalitets-liner fra et stærkt norsk uldmærke — tynd, let og perfekt under en tykkere sok eller solo i varmen.",
+      "pros": [
+        "Kvalitetsmærke (Ulvang)",
+        "Meget tynd og let",
+        "God svedtransport"
+      ],
+      "cons": [
+        "Minimal polstring",
+        "Pris pr. tykkelse"
+      ],
+      "created_at": "2026-06-13T16:15:49.539407+00:00",
+      "score": 8.2,
+      "best_for": "Letvægt sommer"
+    }
+  },
+  {
+    "guide": "telt",
+    "dage_ude": 72,
+    "produkt": "Easy Camp Hidra 4 - Telt",
+    "pris": 1847.95,
+    "forhandler": "outmore",
+    "entry": {
+      "id": "5574d8a6-420b-4cbe-9734-2bd6b4dd4826",
+      "guide_id": "3e0e0852-3cb4-4872-97e2-d699570da665",
+      "affiliate_product_id": "outmore-5709388144836",
+      "rank": 6,
+      "award_label": "Bedste familie",
+      "editorial_note": "Easy Camp Hidra 4 er et rummeligt familietelt til campingpladsen og længere ophold.",
+      "pros": [
+        "God familieplads",
+        "Ståhøjde",
+        "Nem"
+      ],
+      "cons": [
+        "Tungt",
+        "Til camping, ikke vandring"
+      ],
+      "created_at": "2026-06-09T17:36:10.044583+00:00",
+      "score": 8.1,
+      "best_for": "4 personer / camping"
+    }
+  },
+  {
+    "guide": "campingstol",
+    "dage_ude": 63,
+    "produkt": "Outwell Tidal - Campingstol",
+    "pris": 679.95,
+    "forhandler": "outmore",
+    "entry": {
+      "id": "e926d63d-93a2-4ab2-b8c6-e5d4b9733352",
+      "guide_id": "18d25b68-ecf2-48c9-9274-d94431a8dbd5",
+      "affiliate_product_id": "outmore-5709388160584",
+      "rank": 6,
+      "award_label": "Bedste premium",
+      "editorial_note": "Outwell Tidal er polstret hele vejen og føles mere som en lænestol end en campingstol — til basecampen, sommerhuset og den lange bålaften hvor komfort vinder over vægt.",
+      "pros": [
+        "Polstret ægte komfort",
+        "Høj ryg",
+        "Holdbar kvalitet"
+      ],
+      "cons": [
+        "Tung og stor pakket",
+        "Skal holdes tør"
+      ],
+      "created_at": "2026-06-12T06:14:33.50202+00:00",
+      "score": 8.5,
+      "best_for": "Basecamp-luksus"
+    }
+  },
+  {
+    "guide": "regntoj",
+    "dage_ude": 72,
+    "produkt": "Regnponcho - Ralka",
+    "pris": 249.0,
+    "forhandler": "backpackerlife",
+    "entry": {
+      "id": "188961b8-12f3-4ea6-bada-518733f917a6",
+      "guide_id": "60e33937-c0c5-490c-a930-b0db767d6bf4",
+      "affiliate_product_id": "backpackerlife-8637",
+      "rank": 6,
+      "award_label": "Bedste poncho",
+      "editorial_note": "Ralka-regnponchoen dækker både dig og rygsækken og fylder ingenting — den billige backup der bor permanent i sidelommen.",
+      "pros": [
+        "Dækker også rygsækken",
+        "Meget billig",
+        "Fylder intet"
+      ],
+      "cons": [
+        "Flagrer i blæst",
+        "Ingen pasform"
+      ],
+      "created_at": "2026-06-13T16:15:48.598612+00:00",
+      "score": 7.6,
+      "best_for": "Backup / lejr"
+    }
+  },
+  {
+    "guide": "tarp",
+    "dage_ude": 74,
+    "produkt": "Easy Camp Norddal Tarp 3 X 3 M - Tarp",
+    "pris": 424.95,
+    "forhandler": "outmore",
+    "entry": {
+      "id": "f6217e41-efe9-46be-8011-08866336a8b4",
+      "guide_id": "5b565a77-a7d2-4210-abe1-b9d3ac3358ee",
+      "affiliate_product_id": "outmore-5709388144652",
+      "rank": 1,
+      "award_label": "Bedst til prisen",
+      "editorial_note": "Easy Camp Norddal giver 3x3 meter regnly til den laveste pris i testen — stoffet er enklere, men den holder dig tør, og det er hele pointen.",
+      "pros": [
+        "Billigste 3x3 i testen",
+        "Komplet med barduner",
+        "Let at sætte op"
+      ],
+      "cons": [
+        "Enklere stof og søm",
+        "Færre ophængspunkter"
+      ],
+      "created_at": "2026-06-12T06:14:33.910791+00:00",
+      "score": 8,
+      "best_for": "Budget / første tarp"
+    }
+  },
+  {
+    "guide": "vandfilter",
+    "dage_ude": 53,
+    "produkt": "LifeStraw Go 2.0 Water Filter Bottle 22o - Icelandic Blue - Str. .65L - Vandfilter",
+    "pris": 472.95,
+    "forhandler": "outmore",
+    "entry": {
+      "id": "2604014d-3b88-40d2-8f32-6803111f68e6",
+      "guide_id": "cdd45e93-0a55-4d06-815c-97aca5e06f20",
+      "affiliate_product_id": "outmore-7640144287078",
+      "rank": 3,
+      "award_label": "Bedste filter-flaske",
+      "editorial_note": "LifeStraw Go 2.0 kombinerer flaske og filter — fyld op, drik rent. Praktisk til dagsture.",
+      "pros": [
+        "Alt-i-en flaske",
+        "Praktisk til dagsture",
+        "Genopfyldelig"
+      ],
+      "cons": [
+        "Tungere end bar filter",
+        "Begrænset volumen"
+      ],
+      "created_at": "2026-06-09T17:36:11.028288+00:00",
+      "score": 8.5,
+      "best_for": "Filter i flasken"
+    }
+  },
+  {
+    "guide": "sommersovepose",
+    "dage_ude": 55,
+    "produkt": "Outwell Campion Lux Xl Blue - Left Side Zipper - Sovepose",
+    "pris": 510.95,
+    "forhandler": "outmore",
+    "entry": {
+      "id": "a02c3ebc-11e7-486c-a792-868ee4135eb8",
+      "guide_id": "28be702c-dccc-4b15-a16d-3e83c14ac49b",
+      "affiliate_product_id": "outmore-5709388160706",
+      "rank": 3,
+      "award_label": "Bedste komfort",
+      "editorial_note": "Outwell Campion Lux XL giver ekstra plads at vende sig i — behagelig til den der ikke kan lide stramme mumieposer på lune nætter.",
+      "pros": [
+        "God plads (XL)",
+        "Behagelig komfort",
+        "Fin til sommer/camping"
+      ],
+      "cons": [
+        "Fylder mere",
+        "Kun mildt vejr"
+      ],
+      "created_at": "2026-06-09T17:36:16.456648+00:00",
+      "score": 8.4,
+      "best_for": "Plads + komfort"
+    }
+  },
+  {
+    "guide": "drikkedunk",
+    "dage_ude": 36,
+    "produkt": "Drikkedunk - Camelbak Eddy+ - 1 liter",
+    "pris": 179.0,
+    "forhandler": "backpackerlife",
+    "entry": {
+      "id": "afcd9c5a-3467-49a1-9a3e-c9c1db1ed9ba",
+      "guide_id": "c4a47574-f402-41db-9f0c-a6e003177006",
+      "affiliate_product_id": "backpackerlife-48456",
+      "rank": 2,
+      "award_label": "Bedste med bidventil",
+      "editorial_note": "CamelBak Eddy+ 1L lader dig drikke håndfrit gennem en bidventil — bid og sug uden at skrue låg af. Rart under gang og cykling, og ventilen kan lukkes mod lækage.",
+      "pros": [
+        "Håndfri bidventil",
+        "Låsbar mod lækage",
+        "1 liters kapacitet"
+      ],
+      "cons": [
+        "Flere dele at rengøre",
+        "Ventil kan tilstoppe over tid"
+      ],
+      "created_at": "2026-06-13T21:37:22.260085+00:00",
+      "score": 8.5,
+      "best_for": "Drik håndfrit"
+    }
+  },
+  {
+    "guide": "tarp",
+    "dage_ude": 72,
+    "produkt": "Robens Tarp 3 X 3 M Exp - Tarp",
+    "pris": 637.95,
+    "forhandler": "outmore",
+    "entry": {
+      "id": "57965390-4b16-4742-b903-3e0a97f0e4c2",
+      "guide_id": "5b565a77-a7d2-4210-abe1-b9d3ac3358ee",
+      "affiliate_product_id": "outmore-5709388144959",
+      "rank": 0,
+      "award_label": "Vores valg",
+      "editorial_note": "Robens Tarp 3x3 Exp er den rigtige størrelse, det rigtige stof og den rigtige pris: kvadratiske 9 m² med solide ophængspunkter, der dækker alt fra hængekøje til bålplads. Tarpen til de fleste.",
+      "pros": [
+        "Alsidig 3x3-størrelse",
+        "Solide ophængspunkter",
+        "God pris for kvaliteten"
+      ],
+      "cons": [
+        "Ikke den letteste",
+        "Kun én farve"
+      ],
+      "created_at": "2026-06-12T06:14:33.744073+00:00",
+      "score": 8.7,
+      "best_for": "Alround 3x3 standard"
+    }
+  },
+  {
+    "guide": "drikkedunk",
+    "dage_ude": 31,
+    "produkt": "Drikkedunk - Nalgene Wide Mouth - 1000 ml",
+    "pris": 109.0,
+    "forhandler": "backpackerlife",
+    "entry": {
+      "id": "fb34f702-922c-414c-90b7-0b66faa1b711",
+      "guide_id": "c4a47574-f402-41db-9f0c-a6e003177006",
+      "affiliate_product_id": "backpackerlife-754651",
+      "rank": 0,
+      "award_label": "Vores valg",
+      "editorial_note": "Nalgene Wide Mouth 1L er friluftsflaskernes guldstandard: nærmest uopslidelig BPA-fri Tritan, tæt skruelåg, og en bred åbning der er let at fylde og rense. Holder i årevis — vores alround-vinder.",
+      "pros": [
+        "Stort set uopslidelig",
+        "Tæt skruelåg",
+        "Bred åbning — let at fylde/rense"
+      ],
+      "cons": [
+        "Plasker lidt i bevægelse",
+        "Isolerer ikke"
+      ],
+      "created_at": "2026-06-13T21:37:21.70614+00:00",
+      "score": 8.8,
+      "best_for": "Alround vandring"
+    }
+  }
+]
