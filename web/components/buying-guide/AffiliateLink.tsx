@@ -51,11 +51,16 @@ export function AffiliateLink({
           priceDkk: typeof product.price === "number" ? product.price : undefined,
         })
       }
-      // Mørk baggrund, ikke accent-guld: hvid tekst på #C5A059 giver 2,46:1,
-      // under WCAG AA's 4,5:1 ved 12 px. bg-primary giver ~11:1 og er samme
-      // mønster som GearCardClient og tilbudskortene allerede bruger — guld
-      // beholdes som hover, så accenten stadig markerer handlingen.
-      className={`inline-flex items-center justify-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-accent ${className ?? ""}`}
+      // accent-dark #8A6A26: 5,04:1 med hvid tekst, altså over WCAG AA's 4,5:1
+      // — og stadig guld. Den oprindelige accent #C5A059 gav 2,46:1 og bestod
+      // ikke. Mellemliggende forsøg med bg-primary gav 10,98:1, men tallene
+      // efter udrulningen pegede på at knappen holdt op med at ligne en knap:
+      // konverteringen på denne flade og tabellen faldt fra 39,2% til 26,3% af
+      // trafikken, mens den urørte product-flade steg fra 6,9% til 12,3%.
+      // Ikke statistisk sikkert (p≈0,09), men accentfarven bærer "her handler
+      // du" i det her designsystem, og accent-dark giver begge dele.
+      // Kontrastkravet er låst i lib/__tests__/cta-kontrast.test.ts.
+      className={`inline-flex items-center justify-center gap-1 rounded-lg bg-accent-dark px-3 py-1.5 text-xs font-semibold text-white hover:bg-accent-dark/90 ${className ?? ""}`}
     >
       {label} <ExternalLink size={12} aria-hidden="true" />
     </a>
