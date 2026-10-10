@@ -190,26 +190,6 @@
       "minus": []
     }
   ],
-  "pandelampe": [
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    },
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    }
-  ],
   "regntoj": [
     {
       "produkt_id": "",
@@ -250,38 +230,7 @@
       "minus": []
     }
   ],
-  "sovepose": [
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    }
-  ],
   "sovepose-til-boern": [
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    },
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    }
-  ],
-  "sovepose-til-vinter": [
     {
       "produkt_id": "",
       "praedikat": "",
@@ -321,58 +270,7 @@
       "minus": []
     }
   ],
-  "taendstaal": [
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    },
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    }
-  ],
-  "telt": [
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    }
-  ],
   "uldundertoj": [
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    },
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    }
-  ],
-  "vandfilter": [
     {
       "produkt_id": "",
       "praedikat": "",

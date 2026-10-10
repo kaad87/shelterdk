@@ -47,7 +47,37 @@ NAME_FILTER = {
     "sovepose": r"sovepose",
     "sommersovepose": r"sovepose",
     "sovepose-til-vinter": r"sovepose",
-    "sovepose-til-boern": r"sovepose",
+    # Børnevarianten må ikke falde tilbage på den brede sovepose-søgning;
+    # de andre forhandlere har masser af voksenposer og næsten ingen børne.
+    "sovepose-til-boern": r"(?=.*sovepose)(?=.*(?:b[øo]rn|kids|junior|barn))",
+
+    # De 17 guider nedenfor havde intet navnefilter og faldt derfor tilbage på
+    # category_mapped, som mangler på 6.722 af feedets 16.772 varer. Resultatet
+    # var ubrugelige oplæg, der så ud som om feedet intet havde: tændstål-guiden
+    # fik foreslået sporks og stegepander, pandelampe-guiden en væge til en
+    # lanterne. Målt med filtrene her har outmore 23 tændstål og 278
+    # pandelamper, så koncentrationen var et værktøjsproblem og ikke en
+    # begrænsning i feedet.
+    "taendstaal": r"t[æa]ndst[åa]l|ildst[åa]l|fire ?steel|firesteel|ferro|"
+                  r"opt[æa]nding|tinder|fire starter",
+    "pandelampe": r"pandelampe|headlamp|hovedlampe",
+    "kompas": r"kompas|compass",
+    "hue": r"\bhue\b|beanie|\bcap\b",
+    "handsker": r"handske|glove|mitten|luffe",
+    "dry-bag": r"dry.?bag|vandt[æa]t pose|pakpose|stuff sack",
+    "frysetorret-mad": r"fryset[øo]rret|freeze.?dried|expedition meal",
+    "uldundertoj": r"undertr[øo]je|underbukser|merino|base ?layer|uldunder",
+    "siddeunderlag": r"siddeunderlag|sit ?pad|siddepude",
+    "vandresokker": r"sokker|sock|str[øo]mper",
+    "regntoj": r"regnjakke|regnbukser|regnt[øo]j|rain ?jacket|rain ?pant|regns[æa]t|poncho",
+    "vandfilter": r"vandfilter|water ?filter|lifestraw|vandrens|purifier|squeeze filter",
+    "haengekoje": r"h[æa]ngek[øo]je|hammock",
+    "vandrestovler": r"vandrest[øo]vle|vandresko|hiking boot|trekking.?st[øo]vle|hiking shoe",
+    "kniv": r"\bkniv\b|\bknife\b|multiv[æa]rkt[øo]j|multi.?tool",
+    "campingstol": r"campingstol|klapstol|festivalstol|foldestol|lejrstol|"
+                   r"camp chair|camping chair|\bstol\b",
+    "stormkoekken": r"stormk[øo]kken|trangia|brænder|br[æa]nder|gasbr[æa]nder|jetboil|"
+                    r"primus|gryde|koges[æa]t|cook ?set|cook ?pot",
 }
 # Udelukker tilbehør og varianter der ikke hører til guiden.
 #
@@ -76,6 +106,20 @@ EXCLUDE = {
     "sommersovepose": r"b[øo]rne|\bkids\b|junior|survival",
     "liggeunderlag-til-vinter": r"siddeunderlag|sidde",
     "tarp": r"clips|stang|stange|\bpole\b|poncho|h[æa]ngek[øo]je|hammock|tilbeh[øo]r",
+    # Optænding og tændstål deler guide, men ikke pander og gryder.
+    "taendstaal": r"spork|bestik|snack|jug|skillet|\bpan\b|gryde|pot\b|br[æa]nder|"
+                  r"lanterne|v[æa]ge|tilbeh[øo]r",
+    "pandelampe": r"batteri|\bcell\b|opladning|tilbeh[øo]r|lanterne|v[æa]ge|"
+                  r"lommelampe|flashlight",
+    "hue": r"\bcap\b.*skrue|h[æa]tte til|d[æa]ksel",
+    "handsker": r"ovnhandske|handskerum",
+    "vandresokker": r"sutsko|skosnor|indl[æa]gss[åa]l",
+    "uldundertoj": r"\bsokker\b|\bsock\b|\bhue\b|handske|t-shirt til hund",
+    "siddeunderlag": r"liggeunderlag",
+    "haengekoje": r"stativ|monteringss[æa]t|treemount|strop|tilbeh[øo]r|tarp",
+    "kniv": r"skede|slibe|whetstone|tilbeh[øo]r|lommelygte",
+    "stormkoekken": r"tilbeh[øo]r|rengøring|rens|gasd[åa]se|br[æa]ndstof|fuel|v[æa]ge",
+    "vandfilter": r"reservedel|erstatnings|replacement|tilbeh[øo]r",
 }
 
 
@@ -192,6 +236,16 @@ def main():
             har.get(c["retailer"], 0),
             0 if c["retailer"] == "backpackerlife" else 1,
         ))
+        # Når guidens problem ER koncentration, skal kortlisten vise det der
+        # løser det. Uden dette fyldte prisspredningen listen med netop den
+        # forhandler, guiden havde for meget af: pandelampe-guiden fik ét
+        # alternativ, skønt backpackerlife har 41 pandelamper i feedet.
+        if for_samlet and har:
+            top_forh = har.most_common(1)[0][0]
+            fra_andre = [c for c in cands if c["retailer"] != top_forh]
+            if len(fra_andre) >= mangler:
+                cands = fra_andre
+
         step = max(1, len(cands) // 12)
         shortlist = cands[::step][:12]
 
