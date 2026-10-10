@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { GuideViewTracker } from "@/components/buying-guide/GuideViewTracker";
 import { guideFacts } from "@/lib/guide-facts";
+import { friskBeskrivelse, friskTitel } from "@/lib/guide-title";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getGuideBySlug, getPublishedGuideSlugs, getPublishedGuides } from "@/lib/buying-guides";
@@ -34,15 +35,20 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const data = await getGuideBySlug(params.slug);
   if (!data) return {};
-  const { guide } = data;
+  const { guide, entries } = data;
+  // Titel og beskrivelse lover et antal produkter og en startpris. Begge
+  // ændrer sig med den natlige feed-synkronisering, så de regnes om her i
+  // stedet for at blive vedligeholdt i hånden i basen.
+  const titel = friskTitel(guide.seo_title, entries) || guide.title;
+  const beskrivelse = friskBeskrivelse(guide.seo_description, entries) ?? guide.intro ?? undefined;
   return {
-    title: { absolute: guide.seo_title || guide.title },
-    description: guide.seo_description ?? guide.intro ?? undefined,
+    title: { absolute: titel },
+    description: beskrivelse,
     alternates: { canonical: `https://shelterdk.dk/bedste/${guide.slug}` },
     openGraph: {
       images: [DEFAULT_OG_IMAGE],
-      title: guide.seo_title || guide.title,
-      description: guide.seo_description ?? guide.intro ?? undefined,
+      title: titel,
+      description: beskrivelse,
       url: `/bedste/${guide.slug}`,
     },
   };

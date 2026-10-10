@@ -576,6 +576,11 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
               </section>
             )}
 
+            {/* Lige under Faciliteter, fordi forslagene udledes af dem — og
+                fordi blokken på sin gamle plads seks sektioner længere ned
+                blev set af næsten ingen: kun 4,4% scroller så dybt. */}
+            <GearSuggestions guides={gearSuggestions} shelterSlug={slug} />
+
             <div className="mb-6">
               <CommunityContributionPanel slug={slug} />
               <CommunityApprovedSection slug={slug} />
@@ -640,8 +645,6 @@ export function ShelterDetailContent(props: ShelterDetailContentProps) {
                 på 1.609 shelter-sider, som tilsammen står for 32 % af sidens
                 Google-klik, så de flyttes op til lige efter nærheds-listen —
                 stadig efter læserens eget ærinde, men før alt det valgfrie. */}
-            <GearSuggestions guides={gearSuggestions} shelterSlug={slug} />
-
             {/* Anden annonce. Alt herunder når kun de grundige læsere, og indtil
                 nu var de 6,4 skærme fra annoncen ovenfor og ned til footeren helt
                 umonetiserede. Netop de læsere er de mest værdifulde, og en visning

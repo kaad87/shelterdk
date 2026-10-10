@@ -120,6 +120,11 @@ const nextConfig = {
       { source: "/blog/hvordan-v%C3%A6lge-shelter", destination: "/guides/saadan-finder-du-det-perfekte-shelter", permanent: true },
       // Tom guide-kategori fjernet (ingen guides i Udstyr — købsguider bor i /bedste)
       { source: "/guides/kategori/udstyr", destination: "/guides", permanent: true },
+      // To guide-slugs med ø skrevet som "oe" er indekseret og giver 404.
+      // /bedste/vandrestoevler stod på plads 3,2 med 23 visninger og nul klik,
+      // fordi Google viste en fejlside; den rigtige side lå på plads 12,1.
+      { source: "/bedste/vandrestoevler", destination: "/bedste/vandrestovler", permanent: true },
+      { source: "/bedste/frysetoerret-mad", destination: "/bedste/frysetorret-mad", permanent: true },
       { source: "/danmark/jylland/ny-hammersholt", destination: "/danmark/jylland", permanent: true },
       { source: "/danmark/jylland/fons", destination: "/danmark/jylland", permanent: true },
       { source: "/danmark/fyn/dybbol", destination: "/danmark/fyn", permanent: true },

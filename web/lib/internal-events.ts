@@ -23,6 +23,11 @@
  */
 export const INTERNAL_EVENTS = new Set([
   "gear_suggestion_click",
+  // Nævneren til grej-blokken. Blokken fik ét klik på otte dages måling, men
+  // uden en visning kan "ingen bruger den" ikke skelnes fra "ingen ser den".
+  // Den lå seks sektioner nede, og kun 4,4% af de 7255 visninger på
+  // shelter-siderne scroller så dybt — så den anden forklaring var den rigtige.
+  "gear_block_seen",
   "book_button_clicked",
   // Nævneren til affiliate-konvertering. Målt over 28 dage fik /bedste-siderne
   // 0,65 GA4-visninger pr. Google-klik — færre visninger end klik, altså

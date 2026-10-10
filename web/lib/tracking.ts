@@ -137,6 +137,20 @@ export function trackGearSuggestionClick(args: {
 }
 
 /**
+ * Grej-blokken kom ind i viewporten. Sendes højst én gang pr. sidevisning.
+ *
+ * Et klik alene kan ikke bedømme blokken: vi ved ikke om folk afviser den
+ * eller aldrig når den. Med visningen bliver forholdet mellem de to målbart,
+ * så en flytning kan vurderes på den rate den påvirker.
+ */
+export function trackGearBlockSeen(args: { shelterSlug: string; guideCount: number }) {
+  push("gear_block_seen", {
+    shelter_slug: args.shelterSlug,
+    guide_count: args.guideCount,
+  });
+}
+
+/**
  * Besøg på en købsguide — nævneren til affiliate-konvertering.
  * Se GuideViewTracker for hvorfor GA4 ikke kan bruges til det.
  */
