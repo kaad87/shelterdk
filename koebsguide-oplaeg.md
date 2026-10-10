@@ -47,54 +47,6 @@ Kandidater (93 relevante i feed'et, 12 vist fordelt på pris):
 
 </details>
 
-## /bedste/frysetorret-mad — Bedste frysetørrede mad 2026
-
-**6 købbare af 6. Mangler 2.**
-
-Forhandlere nu: backpackerlife 6 — kun **0** ville overleve uden backpackerlife. Vælg fra en anden forhandler, så guiden ikke kan gå i nul.
-
-
-Nu på siden:
-
-- `Vores valg` · Frysetørret mad - Pasta carbonara · 39 kr · 8.7/10
-- `Bedste premium` · Frysetørret mad - Trek'N Eat - Chicken Tikka Masala med ris - Glutenfri · 79 kr · 8.8/10
-- `Bedst til prisen` · Frysetørret mad - Kyllingesuppe · 29 kr · 8.1/10
-- `Bedste dessert` · Frysetørret mad - Chokolademousse · 25 kr · 8.4/10
-- `Bedste snack` · Kiks - Trek'N Eat Trekking Kiks - 12 stk · 19 kr · 8.2/10
-- `Bedste morgenmad` · Frysetørret mad - Trek'N Eat - Fuldkorns Müsli med frugt og mælk · 59 kr · 8.3/10
-
-Kandidater (11 relevante i feed'et, 11 vist fordelt på pris):
-
-| id | produkt | pris | før | forhandler |
-|---|---|---|---|---|
-| `outdoortid-56432170697036` | Food Force Frysetørret mad - Pasta med pesto | 39 kr |  | outdoortid |
-| `outdoortid-53065837445452` | Food Force Frysetørret mad  Pasta med kylling | 39 kr |  | outdoortid |
-| `outdoortid-53065883222348` | Food Force Frysetørret mad  Stegte ris med kylling | 49 kr |  | outdoortid |
-| `outdoortid-53065896395084` | Food Force Frysetørret mad  Gullash med kartofler og oksekød | 49 kr |  | outdoortid |
-| `outdoortid-53102698234188` | Food Force Frysetørret mad  Pasta med ost (vegetarisk) | 49 kr |  | outdoortid |
-| `outdoortid-53065828041036` | Food Force Frysetørret mad  Thai ret med kylling og ris | 49 kr |  | outdoortid |
-| `outdoortid-55869240312140` | Food Force Frysetørret mad - cremet pastaret med scramble æg | 49 kr |  | outdoortid |
-| `outdoortid-53065861464396` | Food Force Frysetørret mad  Pasta carbonara | 49 kr |  | outdoortid |
-| `outdoortid-55869271867724` | Food Force Frysetørret mad - Risret med oksekød | 49 kr |  | outdoortid |
-| `outdoortid-53065872539980` | Food Force Frysetørret mad  Pasta Bolognese | 49 kr |  | outdoortid |
-| `outdoortid-53549496992076` | Food Force Frysetørret mad  Cremet pasta med oksekød | 49 kr |  | outdoortid |
-
-<details><summary>Forhandlerens beskrivelser (råmateriale)</summary>
-
-- **Food Force Frysetørret mad - Pasta med pesto**: Velsmagende pasta med cremet pesto Klar på 15 minutter tilsæt 300 ml kogende vand Perfekt til vandreture eller prepping Rig på energi 579 kcal pr. pakke Nettovægt: 150 g
-- **Food Force Frysetørret mad  Pasta med kylling**: Cremet pastaret med kylling og fløde Klar på 515 minutter tilsæt blot kogende vand Lang holdbarhed op til 5 år uåbnet Energi-boost med hele 608 kcal pr. portion Let og praktisk måltid til tur, festival eller nødsituation Nettovægt: 146g
-- **Food Force Frysetørret mad  Stegte ris med kylling**: Velsmagende ret med ris, grøntsager og kylling Hurtig og nem klar på 515 minutter Giver masser af energi 600 kcal pr. portion Praktisk til tur, festival eller beredskab Holdbarhed 5 år Nettovægt: 148g
-- **Food Force Frysetørret mad  Gullash med kartofler og oksekød**: Kraftig og varmende ret med oksekød og kartoffelmos Høj energi 610 kcal pr. portion Klar på 15 minutter kun kogende vand kræves Perfekt på friluftsturen eller til nødberedskab Holdbarhed: 5 år Nettovægt: 150g
-- **Food Force Frysetørret mad  Pasta med ost (vegetarisk)**: Kraftig og varmende ret med pasta og grøntsager Høj energi 610 kcal pr. portion Klar på 15 minutter kun kogende vand kræves Perfekt på friluftsturen eller til nødberedskab Holdbarhed: 5 år Nettovægt: 150g
-- **Food Force Frysetørret mad  Thai ret med kylling og ris**: Eksotisk smag med kokos, grønt og krydderier Letvægtsmåltid med hele 585 kcal pr. portion Klar på kun 515 minutter tilsæt varmt vand Op til 5 års holdbarhed ideel til tur og beredskab Serveres direkte fra posen ingen opvask Nettovægt: 147g
-- **Food Force Frysetørret mad - cremet pastaret med scramble æg**: Cremet pastaret med æg Klar på 8 minutter tilsæt 280 ml kogende vand God som varm frokost eller aftensmad på turen Indeholder 20 g protein pr. 100 g Nettovægt: 100 g
-- **Food Force Frysetørret mad  Pasta carbonara**: Cremet og klassisk carbonara med pasta og kylling Nem tilberedning tilsæt blot kogende vand Høj energiværdi 613 kcal pr. portion Lang holdbarhed 5 år uåbnet Let at tage med vejer kun 150 gram
-- **Food Force Frysetørret mad - Risret med oksekød**: Smagfuld risret med oksekød og grøntsager Klar på 15 minutter tilsæt 300 ml kogende vand Perfekt til vandreture eller camping Rig på energi 418 kcal pr. 100 g Nettovægt: 150 g
-- **Food Force Frysetørret mad  Pasta Bolognese**: Klassisk italiensk smag med tomat, oksekød og krydderier Klar på 515 minutter tilsæt blot kogende vand Holdbarhed: 5 år. Giver masser af energi 582 kcal pr. portion Nem opbevaring og servering direkte fra posen Nettovægt: 150g
-- **Food Force Frysetørret mad  Cremet pasta med oksekød**: Cremet pastaret med oksekød Klar på 515 minutter tilsæt blot kogende vand Lang holdbarhed op til 5 år uåbnet Energi-boost med hele 621 kcal pr. portion Let og praktisk måltid til tur eller prepping Nettovægt: 150g
-
-</details>
-
 ## /bedste/gamacher — Bedste gamacher 2026
 
 **5 købbare af 5. Mangler 2.**
@@ -128,54 +80,6 @@ Kandidater (23 relevante i feed'et, 12 vist fordelt på pris):
 | `outmore-4052285834463` | Vaude Watzmann Gaiter Iii - Black - Str. M - Gaiter | 483 kr | 524 | outmore |
 
 _Ingen af kandidaterne har beskrivelse i feed'et — produktnavn og pris er alt vi ved._
-
-## /bedste/haengekoje — Bedste hængekøje 2026
-
-**5 købbare af 6. Mangler 2.**
-
-Forhandlere nu: outmore 5 — kun **0** ville overleve uden outmore. Vælg fra en anden forhandler, så guiden ikke kan gå i nul.
-
-
-Nu på siden:
-
-- `Vores valg` · Cocoon Travel Hammock Single,285x150cm,cypress - Hængekøje · 398 kr · 8.8/10
-- `Bedst til prisen` · Easy Camp Pine Hammock Xl - Hængekøje · 263 kr · 8/10 — **UDSOLGT**
-- `Bedste letvægt` · ENO Hængekøje Sub6 - 0811201017359 · 381 kr · 8.5/10
-- `Bedste premium` · Ticket To The Moon Lightest Hammock 2024 - Forest Green - Hængekøje · 764 kr · 8.9/10
-- `Bedste til to / komfort` · Cocoon Travel Hammock Double,285x190cm,cypress - Hængekøje · 472 kr · 8.4/10
-- `Bedste til lejr` · Chillounge Green Bay - Single Spreader Bar Hammock - Hængekøje · 388 kr · 8/10
-
-Kandidater (11 relevante i feed'et, 11 vist fordelt på pris):
-
-| id | produkt | pris | før | forhandler |
-|---|---|---|---|---|
-| `backpackerlife-209712` | Hængekøje til udstyr | 129 kr |  | backpackerlife |
-| `backpackerlife-2049` | Hængekøje - Trekker kompakt - Til 120 kg | 249 kr |  | backpackerlife |
-| `backpackerlife-236469` | Hængekøje - Parachute Single | 249 kr |  | backpackerlife |
-| `backpackerlife-62958` | Hængekøje - Klymit Traverse Single Hammock | 489 kr |  | backpackerlife |
-| `backpackerlife-152917` | Hængekøje - Sea to Summit Hammock Set Pro - 1 person | 649 kr |  | backpackerlife |
-| `backpackerlife-58491` | Snugpak Tropical Hammock hængekøje | 649 kr |  | backpackerlife |
-| `backpackerlife-58517` | Hængekøje underlag - Snugpak Hammock Quilt | 679 kr |  | backpackerlife |
-| `backpackerlife-51334` | Hængekøje og sovesystem - The Crusader - Med myggenet | 699 kr |  | backpackerlife |
-| `backpackerlife-58527` | Snugpak Hammock Underblanket hængekøje omslag | 799 kr |  | backpackerlife |
-| `backpackerlife-58506` | Hængekøje - Snugpak Jungle Hammock | 849 kr |  | backpackerlife |
-| `backpackerlife-58681` | Isolerende hængekøje system - Snugpak Hammock Cocoon | 1.149 kr |  | backpackerlife |
-
-<details><summary>Forhandlerens beskrivelser (råmateriale)</summary>
-
-- **Hængekøje til udstyr**: En lille og let hængekøje til at opbevare dit udstyr fra det skotske mærke Highlander. Hængekøjen hjælper med at holde dit udstyr væk fra jorden, samt at holde det tørt og beskyttet i våde og mudrede områder. Hængekøjen er ideel til camping eller backp
-- **Hængekøje - Trekker kompakt - Til 120 kg**: Highlanders Trekker kompakt hængekøje får du en høj value for money hængekøje lavet til backpacking, outdoor ture og rejser. Trekker hængekøjen er en simpelt hængekøje at hænge op, som er lavet af stærkt polyamide som kan holde til en personvægt på 120 kg
-- **Hængekøje - Parachute Single**: Denne hængekøje fra Treklife i modellen Parachute Single er en letvægts hængekøje til 1 person. Parachute hængekøjen er designet i et slidstærkt 70D parachute (faldskærms) nylon, som gør hængekøjen både slidstærk og let. En hængekøje er et letvægtig al
-- **Hængekøje - Klymit Traverse Single Hammock**: Hængekøjen fra amerikanske Klymit er istedet for det traditionelle trepaneldesign lavet som et enkeltpanelsdesign. Selve hængekøjen kommer i en pose som er monteret på hængekøjen, det gør det muligt at bruge posen som en lomme inde i hængekøjen til værdig
-- **Hængekøje - Sea to Summit Hammock Set Pro - 1 person**: Sea to Summit har lavet den fedeste Hammock 1 personers hængekøje. Denne hængekøje kommer med stropper til ophængning. Den er åndbar, behagelig og nem at sætte op udenfor. Den kan både bruges i haven, i skoven eller der hvor din næste backpackerrejse går
-- **Snugpak Tropical Hammock hængekøje**: Hængekøjen i modellen âTropical hammockâ er en særdeles slidstærk, letvægts og kompakt hængekøje. Hængekøjen har en vægt på kun 600 gram inklusiv diverse karabinhager, ophængningssystem og træbeskyttere. Samtidig har hængekøjen en kompakt størrelse, s
-- **Hængekøje underlag - Snugpak Hammock Quilt**: Hammock Quilt er et alternativ til soveposen i din hængekøje, og Quilt'en gør det meget lettere at hoppe ned i din sovepose, end hvis du eksempelvis bruger en sovepose. Snugpaks Hammock Quilt er et særdeles varmt, behageligt og slidstærkt tæppe beregnet t
-- **Hængekøje og sovesystem - The Crusader - Med myggenet**: Dette er ikke blot en hængekøje, men et decideret sovesystem i modellen "The Crusader". Systemet består grundlæggende af en hængekøje, en presenning og et integreret myggenet. Med dette sovesystem er du sikret en god nats søvn på outdoor turen eller trekk
-- **Snugpak Hammock Underblanket hængekøje omslag**: Snugpacks Hammock underblanket er et omslag til din hængekøje, som afskærmer vind og hjælper med at isolerer din kropsvarme. Omslaget er lavet af det engelske mærke Snugpa
-- **Hængekøje - Snugpak Jungle Hammock**: Hængekøjen Jungle hammock er fra det engelske mærke Snugpak. Hængekøjen har en vægt på kun 900 gram inklusiv karabinhager, ophængningssystem og træbeskyttere. Hængekøjen kan pakkes ned til en kompakt størrelse, og det gør den helt ideel at have med på out
-- **Isolerende hængekøje system - Snugpak Hammock Cocoon**: Hammock Cocoon hængekøje systemet er lavet af det engelske mærke Snugpak. Det er en ny løsning på problemet med sovepose og beklædningsisolering, der komprimeres under spændingen fra en hængekøje. Det er derfor et nyudviklet system til hvordan man holder
-
-</details>
 
 ## /bedste/handsker — Bedste handsker til friluftsliv 2026
 
@@ -246,56 +150,6 @@ Kandidater (228 relevante i feed'et, 12 vist fordelt på pris):
 
 _Ingen af kandidaterne har beskrivelse i feed'et — produktnavn og pris er alt vi ved._
 
-## /bedste/kniv — Bedste friluftskniv 2026
-
-**6 købbare af 6. Mangler 1.**
-
-Forhandlere nu: outmore 5, backpackerlife 1 — kun **1** ville overleve uden outmore. Vælg fra en anden forhandler, så guiden ikke kan gå i nul.
-
-
-Nu på siden:
-
-- `Vores valg` · Morakniv Companion (c) Military Green · 154 kr · 9.2/10
-- `Bedst til prisen` · Foldekniv - Opinel No 8 Trekking - 8,5 cm - Khaki - Rustfrit stål · 139 kr · 8.8/10
-- `Bedste til bushcraft` · Morakniv Companion FxF (S) · 157 kr · 8.6/10
-- `Bedste kompakt` · Victorinox Pocket Knife Bantam, Red 84 Mm - Kniv · 144 kr · 8.2/10
-- `Bedste lette foldekniv` · Gerber Mini Paraframe Fe (mini Packaging) - Kniv · 142 kr · 8/10
-- `Bedste med skede` · Opinel N8 stainless 8,5 cm. m.skede bøg - Bøg - Opinel · 310 kr · 8.5/10
-
-Kandidater (15 relevante i feed'et, 12 vist fordelt på pris):
-
-| id | produkt | pris | før | forhandler |
-|---|---|---|---|---|
-| `backpackerlife-103524` | Kniv - Sea to Summit Camp Cutlery Knife | 12 kr |  | backpackerlife |
-| `backpackerlife-842` | Spisesæt - kniv, gaffel, ske - Highlander | 39 kr |  | backpackerlife |
-| `backpackerlife-16860` | Multitool - 5 foon in 1 | 39 kr |  | backpackerlife |
-| `backpackerlife-51269` | Bestiksæt i stål til outdoor - Kniv, gaffel, ske og dåseåbner | 49 kr |  | backpackerlife |
-| `backpackerlife-46290` | Lommekniv - Black German Pocket Knife - Stål | 59 kr |  | backpackerlife |
-| `backpackerlife-45945` | Karabin kniv - Merlin - Sort | 129 kr |  | backpackerlife |
-| `backpackerlife-46297` | Kniv - One-hand Knife With Clip - Rustfrit stål | 139 kr |  | backpackerlife |
-| `backpackerlife-45935` | Kniv - Eagle Black - Rustfrit stål | 149 kr |  | backpackerlife |
-| `backpackerlife-64439` | Multi-tool - Trespass Gazonty - 10 funktioner | 149 kr |  | backpackerlife |
-| `backpackerlife-61777` | Multi Tool - 9 funktioner | 179 kr |  | backpackerlife |
-| `backpackerlife-631788` | Multi-tool - Gerber Vise Pocket - Sort | 199 kr |  | backpackerlife |
-| `backpackerlife-46225` | Multi-tool - Dime Black | 239 kr |  | backpackerlife |
-
-<details><summary>Forhandlerens beskrivelser (råmateriale)</summary>
-
-- **Kniv - Sea to Summit Camp Cutlery Knife**: Sea to Summit's Camp Cutlery Knife er en kniv fremstillet af BPA-fri, glasforstærket polypropylen. Materialet gør, at bestikket er holdbart, let og en fornøjelse at bruge. Sea to Summit's gaffel tåler opvaskemaskine. Bestikkets greb er designet i samme fo
-- **Spisesæt - kniv, gaffel, ske - Highlander**: Solidt bestik i rustfrit stål med inkluderet oplukker. Sættet kan klikkes sammen for minimalt fylde og dermed ikke raslerÂ under transport. Velegnet til brugÂ i det fri samt påÂ diverse gadekøkkener og hostels, der endnu ikke besidder en glad smiley for h
-- **Multitool - 5 foon in 1**: Dette multitool fra skotske Highlander indeholder en gaffel, ske, oplukker, skruetrækker og et lille mini brækjern til at åbne gear og lignende. Ved at benytte dig af at multitool kan du spare massere af plads i din rygsæk, men stadig har et multiværktøj
-- **Bestiksæt i stål til outdoor - Kniv, gaffel, ske og dåseåbner**: Bestiksæt til outdoor bestående af fire dele - kniv, gaffel, ske og dåseåbner / oplukker. Sættet er lavet i et kompakt design der kan klipses sammen, og er lavet i stål.
-- **Lommekniv - Black German Pocket Knife - Stål**: En black german lommekniv i sort med "bundesadler" graveret i håndtaget. Lommekniven har 6 funktioner i én kniv: Proptrækker Fil Oplukker med lille skruetrækker Lille træsav Kniv med et blad på 8 cm og 3CR13-stål Opsprætter
-- **Karabin kniv - Merlin - Sort**: Highlanders Merlin karabinkniv i sort kommer med et blad på 7 cm. Kniven kan foldes sammen og har låsefunktion, og du behøver derfor ikke bekymre dig om, om kniven forvolder skade på dit indhold i rygsækken. Vægten er 40 gram, så kniven vil ikke give mege
-- **Kniv - One-hand Knife With Clip - Rustfrit stål**: Mil-Tec's one-hand kniv kan som navnet siger betjenes med én hånd. Bladet sidder i håndtagets midte, og kan hurtigt foldes ud ved brug. Kniven har et blad på 8,5 cm. Længden egne
-- **Kniv - Eagle Black - Rustfrit stål**: Highlanders Eagle Black kniv er i farven sort og kommer med et blad på 8 cm. Kniven kan foldes sammen, og har i udfoldet position mål på 19 x 3,5 x 27 cm. Er kniven foldet sammen måler den 11,5 x 3,5 x 7 cm. Kniven har låsefunktion. Knivens vægt er 130 gr
-- **Multi-tool - Trespass Gazonty - 10 funktioner**: Multi-tool fra skotske Trespass i modellen Gazonty. Gazonty kommer med 10 funktioner, og er derfor ideel til at have med på overlevelsesture, rejser med indtjekket bagage eller outdoor turen. Gazonty har bl.a. en skruetrækker, kniv, fil, optrækker og mege
-- **Multi Tool - 9 funktioner**: Multi tool med 9 funktioner har en kompakt størrelse, og fylder derfor minimal i rygsækken. Multiværktøjet indeholder 3 forskellige skruetrækkere, en metalfil, bidetang, nåletang, en syl, dåseåbner og en saks. Multi tool'et kommer i et nylon etui for besk
-- **Multi-tool - Gerber Vise Pocket - Sort**: Med dette Vise Pocket multi-tool fra Gerber er du altid sikret at have små, forskellige værktøjer på dig. Vise Pocket kommer med 9 forskellige værktøjer og er kompatibel med nøglering, så du kan hænge den fast. Dette multi-tool giver dig mulighed for a
-- **Multi-tool - Dime Black**: Gerbers multi-tool kniv i modellen "Dime" har et simpelt budskab: Hjælpe dig under turen, og sørger for du altid har et redskab når du er på rejse eller outdoor tur. D
-
-</details>
-
 ## /bedste/kompas — Bedste kompas 2026
 
 **6 købbare af 6. Mangler 2.**
@@ -362,74 +216,6 @@ Kandidater (27 relevante i feed'et, 12 vist fordelt på pris):
 | `outmore-9327868162543` | Sea To Summit Ether Light Xr Pro Insulated Asc Mat - Large Black - Liggeunderlag | 2.208 kr | 2.400 | outmore |
 | `outmore-811666035028` | Nemo Tensor Extreme Conditions Regular - Liggeunderlag | 2.414 kr |  | outmore |
 | `outmore-811666034137` | Nemo Tensor Extreme Conditions Long Wide - Liggeunderlag | 2.415 kr | 2.624 | outmore |
-
-_Ingen af kandidaterne har beskrivelse i feed'et — produktnavn og pris er alt vi ved._
-
-## /bedste/myggenet — Bedste myggenet 2026
-
-**5 købbare af 5. Mangler 2.**
-
-Forhandlere nu: backpackerlife 5 — kun **0** ville overleve uden backpackerlife. Vælg fra en anden forhandler, så guiden ikke kan gå i nul.
-
-
-Nu på siden:
-
-- `Vores valg` · Myggenet til hovedet - Lifesystems · 129 kr · 8.7/10
-- `Bedste finmaskede` · Myggenet til hoved - Sea to Summit Ultra-Fine Mesh Headnet - Sort · 139 kr · 8.6/10
-- `Bedst til prisen` · Myggenet til hovedet - Treklife · 39 kr · 8.1/10
-- `Bedste sovenet` · Myggenet - Lifesystems MicroNet Single - 1 person · 249 kr · 8.5/10
-- `Bedste imprægnerede` · Imprægneret myggenet - Pharmavoyage Trek 1 - 1 personer · 339 kr · 8.3/10
-
-Kandidater (41 relevante i feed'et, 12 vist fordelt på pris):
-
-| id | produkt | pris | før | forhandler |
-|---|---|---|---|---|
-| `outmore-8712318014786` | TravelSafe Monterings kit til myggenet | 37 kr | 41 | outmore |
-| `outmore-056389086883` | Coghlan's Coghlans Mosquito Coil Holder - Myggenet | 82 kr | 93 | outmore |
-| `outmore-8712318007108` | TravelSafe Mini Myggenet til hovedet | 104 kr |  | outmore |
-| `outmore-5031863050654` | Lifesystems Midge/mosquito Head Net Hat - Myggenet | 137 kr |  | outmore |
-| `outmore-056389096400` | Coghlan's Coghlans Cg Mosquito Net - Sgl White - Myggenet | 188 kr |  | outmore |
-| `outmore-056389025066` | Coghlan's Coghlans Bug Jacket - Extra Large - Myggenet | 209 kr |  | outmore |
-| `outmore-5031863160728` | Littlelife Buggy Mosquito Net - Myggenet | 284 kr |  | outmore |
-| `outmore-8712318979818` | TravelSafe Mosquito Sun Hat med aftageligt myggenet | 331 kr | 367 | outmore |
-| `outmore-5031863360203` | Lifesystems SoloNet Single Myggenet | 420 kr |  | outmore |
-| `outmore-8712318067614` | Travelsafe Box Style, 2 Pers. - Myggenet | 514 kr | 577 | outmore |
-| `outmore-8712318067621` | Travelsafe Pyramid Style, 1 Pers. - Myggenet | 524 kr |  | outmore |
-| `outmore-8712318067652` | TravelSafe Mosquito Net Box - 2 personer | 577 kr |  | outmore |
-
-_Ingen af kandidaterne har beskrivelse i feed'et — produktnavn og pris er alt vi ved._
-
-## /bedste/regntoj — Bedste regntøj 2026
-
-**5 købbare af 5. Mangler 2.**
-
-Forhandlere nu: backpackerlife 5 — kun **0** ville overleve uden backpackerlife. Vælg fra en anden forhandler, så guiden ikke kan gå i nul.
-
-
-Nu på siden:
-
-- `Vores valg` · Regnjakke herre - Treklife Rain Packaway - Sort · 199 kr · 8.6/10
-- `Bedste value (sæt)` · Regnsæt herre - Treklife Rain Packaway - Sort · 249 kr · 8.7/10
-- `Bedst til prisen` · Regnjakke - Stormguard Stowaway - Mænd - Sort · 199 kr · 8/10
-- `Bedste robuste` · Jakke herre - Highlander Stow&Go - Vandtæt - Rød · 349 kr · 8.2/10
-- `Bedste regnbukser` · Regnbukser herre - Treklife Rain Packaway - Sort · 149 kr · 8.1/10
-
-Kandidater (51 relevante i feed'et, 12 vist fordelt på pris):
-
-| id | produkt | pris | før | forhandler |
-|---|---|---|---|---|
-| `outmore-056389002425` | Coghlan's Coghlans Poncho For Kids - Poncho | 27 kr | 30 | outmore |
-| `outmore-4012013597572` | Reisenthel Mini Maxi Poncho Lemon Dots - Poncho | 150 kr | 249 | outmore |
-| `outmore-4013236985245` | Tatonka Poncho 1 (xs-s) - Cub - Str. Stk. - Regnslag | 449 kr | 493 | outmore |
-| `outmore-4021573754882` | Vaude Valdipino Poncho - Lemon - Str. M - Poncho | 467 kr | 524 | outmore |
-| `outmore-4052285109318` | Vaude Valdipino Poncho - Marine - Str. S - Regnslag | 483 kr | 524 | outmore |
-| `outmore-4062218092662` | Vaude Valdipino Poncho - Black - Str. S - Poncho | 524 kr |  | outmore |
-| `outmore-4052285457327` | Vaude Valdipino Poncho - Indian red - Str. S - Poncho | 524 kr |  | outmore |
-| `outmore-4062218092709` | Vaude Valdipino Poncho - Black - Str. XXL - Poncho | 524 kr |  | outmore |
-| `outmore-9327868051342` | Diverse Poncho 15D Blue - blå - | 660 kr | 750 | outmore |
-| `outmore-9327868042197` | Diverse Ultra-Sil 15D Tarp Poncho Lime - lime - | 801 kr | 900 | outmore |
-| `outmore-4021573995421` | Vaude V Men's Escape Light Jacket - Black - Str. L - Regnjakke | 1.146 kr | 1.259 | outmore |
-| `outmore-7045953302279` | Helsport Pro Fjell Poncho Insulated - Dark Shadow / Ruby Red - Str. S/M - Poncho | 1.276 kr | 1.386 | outmore |
 
 _Ingen af kandidaterne har beskrivelse i feed'et — produktnavn og pris er alt vi ved._
 
@@ -581,44 +367,6 @@ Kandidater (330 relevante i feed'et, 12 vist fordelt på pris):
 <details><summary>Forhandlerens beskrivelser (råmateriale)</summary>
 
 - **Trek Trail Vandresokker - 60% Merino uld - Grå - 43-46**: 80% Merino uld 17% Nylon 3% Elastan
-
-</details>
-
-## /bedste/vandresokker — Bedste vandresokker 2026
-
-**5 købbare af 5. Mangler 2.**
-
-Forhandlere nu: backpackerlife 5 — kun **0** ville overleve uden backpackerlife. Vælg fra en anden forhandler, så guiden ikke kan gå i nul.
-
-
-Nu på siden:
-
-- `Vores valg` · Vandrestrømper - Treklife Wool Hiker - Merino uld · 129 kr · 8.6/10
-- `Bedste liner` · Vandrestrømper - Treklife Wool Liner - Merino uld · 129 kr · 8.3/10
-- `Bedst til prisen` · Vandresokker - Highlander Crusader - Sort · 99 kr · 8/10
-- `Bedste til støvler` · Vandresokker - Highlander Combat Sock - Uld - Sort · 119 kr · 8.1/10
-- `Bedste til vinter` · Vandresokker - Norwegian Army - 80% uld - Sort · 149 kr · 8.4/10
-
-Kandidater (366 relevante i feed'et, 12 vist fordelt på pris):
-
-| id | produkt | pris | før | forhandler |
-|---|---|---|---|---|
-| `outmore-7394123037078` | Svensk Husman Christmas Socks Lussebulle Lussekatt Luciaboller Lussekat - 36-40 | 42 kr | 63 | outmore |
-| `outdoortid-57028512219468` | Trek Trail Vandresokker - 80% Merino uld - Beige - 35-38 | 99 kr |  | outdoortid |
-| `outmore-7045952480831` | Ulvang Ultra Jr 2 Pk - Fig/Grey Melange - Str. 25-27 - Strømper | 139 kr | 158 | outmore |
-| `outmore-7045952480879` | Ulvang Ultra Jr 2 Pk - Fig/Grey Melange - Str. 37-39 - Strømper | 158 kr |  | outmore |
-| `outmore-4550170315733` | Shimano Performance Wool Socks Navy L-xl (size 45-48) - Sokker | 183 kr |  | outmore |
-| `outmore-4550170303471` | Shimano S-phyre Flash Socks Black L-xl ( Size 45-48) - Strømper | 208 kr | 210 | outmore |
-| `outmore-7045953022665` | Ulvang Hero Thin Crew Sock - Cathay Spice / Navy Blue - Str. 43-45 - Sokker | 235 kr | 263 | outmore |
-| `outmore-0642249190502` | Darn Tough Hiker Boot Sock Cushion Black L - Sokker - Str L | 250 kr | 280 | outmore |
-| `outmore-7045953022627` | Ulvang Hero Warm Crew Sock - Navy Blue/Chili Red/Granite Green - Str. 46-48 - Sokker | 287 kr | 315 | outmore |
-| `outmore-7045953022276` | Lundhags Merino Trekking Sock High - Light Grey Melange - Str. 34-36 - Sokker | 315 kr |  | outmore |
-| `outmore-7045952022239` | Ulvang Hunting - Tea Green - Str. 34-36 - Strømper | 368 kr |  | outmore |
-| `outmore-5055754464481` | Sealskinz Scoulton - Black - Str. L - Sokker | 420 kr |  | outmore |
-
-<details><summary>Forhandlerens beskrivelser (råmateriale)</summary>
-
-- **Trek Trail Vandresokker - 80% Merino uld - Beige - 35-38**: 80% Merino uld 17% Nylon 3% Elastan
 
 </details>
 

@@ -19,47 +19,7 @@
       "minus": []
     }
   ],
-  "frysetorret-mad": [
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    },
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    }
-  ],
   "gamacher": [
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    },
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    }
-  ],
-  "haengekoje": [
     {
       "produkt_id": "",
       "praedikat": "",
@@ -119,17 +79,6 @@
       "minus": []
     }
   ],
-  "kniv": [
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    }
-  ],
   "kompas": [
     {
       "produkt_id": "",
@@ -151,46 +100,6 @@
     }
   ],
   "liggeunderlag-til-vinter": [
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    },
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    }
-  ],
-  "myggenet": [
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    },
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    }
-  ],
-  "regntoj": [
     {
       "produkt_id": "",
       "praedikat": "",
@@ -271,26 +180,6 @@
     }
   ],
   "uldundertoj": [
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    },
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    }
-  ],
-  "vandresokker": [
     {
       "produkt_id": "",
       "praedikat": "",
