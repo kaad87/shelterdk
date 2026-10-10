@@ -1,24 +1,4 @@
 {
-  "dry-bag": [
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    },
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    }
-  ],
   "gamacher": [
     {
       "produkt_id": "",
@@ -79,66 +59,6 @@
       "minus": []
     }
   ],
-  "kompas": [
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    },
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    }
-  ],
-  "liggeunderlag-til-vinter": [
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    },
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    }
-  ],
-  "siddeunderlag": [
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    },
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    }
-  ],
   "sovepose-til-boern": [
     {
       "produkt_id": "",
@@ -160,26 +80,6 @@
     }
   ],
   "sovepude": [
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    },
-    {
-      "produkt_id": "",
-      "praedikat": "",
-      "score": null,
-      "bedst_til": "",
-      "note": "",
-      "plus": [],
-      "minus": []
-    }
-  ],
-  "uldundertoj": [
     {
       "produkt_id": "",
       "praedikat": "",
