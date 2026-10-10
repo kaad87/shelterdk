@@ -1,4 +1,5 @@
 import type { AffiliateProduct } from "@/lib/affiliate-products";
+import { helTekst } from "@/lib/feed-beskrivelse";
 
 type P = Pick<
   AffiliateProduct,
@@ -122,13 +123,15 @@ export function buildProductSchema(p: P, opts: ProductSchemaOpts = {}): Record<s
   const { score, pros, cons, reviewBody } = opts;
   const brand = p.brand || inferBrandFromName(p.product_name);
   const gtin = gtin13FromId(p.id);
-  const description = (p.description ?? "").trim();
+  // Forhandlernes feeds klipper beskrivelsen midt i et ord; teksten går ellers
+  // ordret videre til Google. Se lib/feed-beskrivelse.ts.
+  const description = helTekst(p.description, 500);
   return {
     "@type": "Product",
     name: p.product_name,
     ...(brand ? { brand: { "@type": "Brand", name: brand } } : {}),
     ...(gtin ? { gtin13: gtin } : {}),
-    ...(description ? { description: description.slice(0, 500) } : {}),
+    ...(description ? { description } : {}),
     image: p.image_url,
     ...(score != null
       ? {
