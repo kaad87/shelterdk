@@ -8,34 +8,48 @@ Feed'et har **ingen specs** (vægt, temperatur, mål). Beskrivelsen er forhandle
 
 ## /bedste/campingstol — Bedste campingstol 2026
 
-**3 købbare af 5. Mangler 2.**
+**0 købbare af 5. Mangler 5.**
 
 Nu på siden:
 
-- `Bedst til prisen` · Easy Camp Spruce Arm Chair Olivine - Campingstol · 243 kr · 8.1/10
-- `Bedste mellemklasse` · Outwell Cardiel Forest Green - Campingstol · 335 kr · 8.2/10
-- `Bedste komfort u. polstring` · Easy Camp Oak Chair Olivine - Campingstol · 363 kr · 8.3/10
+- `Bedst til prisen` · Easy Camp Spruce Arm Chair Olivine - Campingstol · 243 kr · 8.1/10 — **UDSOLGT**
+- `Bedste mellemklasse` · Outwell Cardiel Forest Green - Campingstol · 335 kr · 8.2/10 — **UDSOLGT**
+- `Bedste komfort u. polstring` · Easy Camp Oak Chair Olivine - Campingstol · 363 kr · 8.3/10 — **UDSOLGT**
 - `Bedste XL` · Outwell Catamarca Xl - Campingstol · 379 kr · 8.4/10 — **UDSOLGT**
 - `Bedste premium` · Outwell Tidal - Campingstol · 680 kr · 8.5/10 — **UDSOLGT**
 
-Kandidater (29 relevante i feed'et, 12 vist fordelt på pris):
+Kandidater (18 relevante i feed'et, 12 vist fordelt på pris):
 
 | id | produkt | pris | før | forhandler |
 |---|---|---|---|---|
-| `outmore-5709388148926` | Easy Camp Maple Chair - Campingstol | 191 kr | 216 | outmore |
-| `outmore-5709388148957` | Easy Camp Spruce Arm Chair Clay Red - Campingstol | 222 kr | 243 | outmore |
-| `outmore-5709388148933` | Easy Camp Spruce Arm Chair Fjord Blue - Campingstol | 243 kr |  | outmore |
-| `outmore-5709388158482` | Outwell Sauntons Lux Ocean Blue - Campingstol | 305 kr | 338 | outmore |
-| `outmore-5709388157027` | Easy Camp Oak Chair Fjord Blue - Campingstol | 352 kr | 399 | outmore |
-| `outmore-5709388158444` | Outwell Blackpool Toffee Tint - Campingstol | 352 kr | 382 | outmore |
-| `outmore-5709388157003` | Easy Camp Maple Arm Chair - Campingstol | 360 kr | 399 | outmore |
-| `outmore-5709388160577` | Outwell Ripple - Campingstol | 488 kr | 530 | outmore |
-| `outmore-5709388158406` | Outwell Nomadnest Misty Grey - Campingstol | 516 kr | 561 | outmore |
-| `outmore-5709388160560` | Outwell Breaker - Campingstol | 552 kr | 600 | outmore |
-| `outmore-5709388159854` | Robens Observer Carbon - Campingstol | 828 kr | 900 | outmore |
+| `outdoortid-49281850179916` | Nordic Peak Festivalstol - 2 kopholdere - Ekstra robust model - Brun | 149 kr |  | outdoortid |
+| `outdoortid-49093043913036` | Nordic Peak Festivalstol - 2 kopholdere - Ekstra robust model - Grøn | 149 kr |  | outdoortid |
+| `outdoortid-44184836243767` | Naturehike Træstol - Hvid / Small | 349 kr |  | outdoortid |
+| `outdoortid-44184836342071` | Naturehike Træstol - Rød / Small | 349 kr |  | outdoortid |
+| `backpackerlife-299940` | Stol - Treklife Low-back UL Chair | 449 kr |  | backpackerlife |
+| `outdoortid-52709285396812` | Naturehike Foldestol - letvægt - Grøn | 549 kr |  | outdoortid |
+| `outdoortid-49278573707596` | Nordic Peak Campingstol - Positionsstol med 5 indstillinger | 549 kr |  | outdoortid |
+| `outdoortid-52709285429580` | Naturehike Foldestol - letvægt - Brun | 549 kr |  | outdoortid |
+| `backpackerlife-299939` | Stol - Treklife High-back UL Chair | 599 kr |  | backpackerlife |
+| `backpackerlife-516075` | Stol - Treklife Luxe Chair | 799 kr |  | backpackerlife |
+| `outdoortid-52709547770188` | Naturehike Foldestol - dobbelt - Sort | 849 kr |  | outdoortid |
 | `outmore-8718685011403` | Travelsafe Travel Chair Calais - Black - Str. Stk - Campingstol | 850 kr | 944 | outmore |
 
-_Ingen af kandidaterne har beskrivelse i feed'et — produktnavn og pris er alt vi ved._
+<details><summary>Forhandlerens beskrivelser (råmateriale)</summary>
+
+- **Nordic Peak Festivalstol - 2 kopholdere - Ekstra robust model - Brun**: Ekstra robust festivalstol med 2 kopholdere Stærkt stål - kapacitet på 150 kg Foldes sammen med fastmonteret elastik Fastmonteret bærerem Højde: 87 cm. Bredde: 50 cm Dybde: 50 cm Vægt: 3,5 kg Farve: Grøn, brun og beige Sammenfoldet: 87 x 14 x 12 cm
+- **Nordic Peak Festivalstol - 2 kopholdere - Ekstra robust model - Grøn**: Ekstra robust festivalstol med 2 kopholdere Stærkt stål - kapacitet på 150 kg Foldes sammen med fastmonteret elastik Fastmonteret bærerem Højde: 87 cm. Bredde: 50 cm Dybde: 50 cm Vægt: 3,5 kg Farve: Grøn, brun og beige Sammenfoldet: 87 x 14 x 12 cm
+- **Naturehike Træstol - Hvid / Small**: Elegant og robust træstol designet til glamping, hvor komfort og stil går hånd i hånd. Lavet af kvalitetsmaterialer og med et foldbart design, der gør den nem at transportere og perfekt til udendørs hygge med et luksuriøst præg. &bull; Størrelse small: 45
+- **Naturehike Træstol - Rød / Small**: Elegant og robust træstol designet til glamping, hvor komfort og stil går hånd i hånd. Lavet af kvalitetsmaterialer og med et foldbart design, der gør den nem at transportere og perfekt til udendørs hygge med et luksuriøst præg. &bull; Størrelse small: 45
+- **Stol - Treklife Low-back UL Chair**: Low-Back UL stol fra Treklife, som er en foldestol, der er perfekt til outdoor liv, festival, camping, fisketuren eller andre ture, hvor den sikrer en god siddekomfort. Stolen er foldbar og vejer kun 1030 g, hvorfor den er nem at medbringe på turen. Den k
+- **Naturehike Foldestol - letvægt - Grøn**: Kvadratisk design lav vægt og høj stabilitet Slidstærkt Oxford-stof og ramme i aluminiumslegering Foldes fladt sammen på få sekunder Ideel til både børn og voksne Kompakt nok til rygsæk, strandtaske eller festivalgear Specifikationer: Mål (opslået): Ca.
+- **Nordic Peak Campingstol - Positionsstol med 5 indstillinger**: Campingstol med 5 positioner Nakkestøtte Kapacitet: 110 kg Kraftige armlæn Slidstærkt textilene materiale (kan tåle regn) Robust aluminiumsstel Letvægt kun 4,72 kg. Farve: Olive green Rustfrie materialer Størrelse: 48 x 39 x 121 cm. Sammenfoldet: 84 x 57
+- **Naturehike Foldestol - letvægt - Brun**: Kvadratisk design lav vægt og høj stabilitet Slidstærkt Oxford-stof og ramme i aluminiumslegering Foldes fladt sammen på få sekunder Ideel til både børn og voksne Kompakt nok til rygsæk, strandtaske eller festivalgear Specifikationer: Mål (opslået): Ca.
+- **Stol - Treklife High-back UL Chair**: High-Back UL stol fra Treklife er en letvægts foldestol, som er perfekt til outdoor liv, festival, camping, fisketuren eller hvad du mangler en stol til. Stolen er foldbar og vejer
+- **Stol - Treklife Luxe Chair**: Stolen Luxe Chair fra Treklife er en letvægts foldestol, som er perfekt til outdoor liv, festival, camping, fisketuren eller hvad du mangler en stol til. Stolen er foldbar og vejer kun 1850 g, hvorfor den er nem at medbringe på turen. Den kan nemt og hurt
+- **Naturehike Foldestol - dobbelt - Sort**: Plads til 2 personer Slidstærkt Oxford-stof og kraftig aluminiumsramme Foldes hurtigt sammen og pakkes kompakt Ideel til festival, camping, glamping og strand Specifikationer: Vægt: Ca. 3,3 kg Maks. belastning: 200 kg Materiale: 600D Oxford + aluminium Må
+
+</details>
 
 ## /bedste/drikkedunk — Bedste drikkedunk 2026
 
@@ -49,34 +63,26 @@ Nu på siden:
 - `Bedste enhåndsbetjening` · Drikkedunk - Nalgene OTF Sustain - 700 ml · 149 kr · 8.4/10
 - `Bedste til børn` · Drikkedunk til børn - Nalgene Kids OTF - 350 ml · 119 kr · 8.1/10
 
-Kandidater (42 relevante i feed'et, 12 vist fordelt på pris):
+Kandidater (448 relevante i feed'et, 12 vist fordelt på pris):
 
 | id | produkt | pris | før | forhandler |
 |---|---|---|---|---|
-| `backpackerlife-165256` | Drikkeflaske - 500 ml - Alu | 59 kr |  | backpackerlife |
-| `backpackerlife-67285` | Drikkeflaske - 1 liter - Aluminium - Highlander | 79 kr |  | backpackerlife |
-| `backpackerlife-629806` | Drikkeflaske - OMM Ultra Flexi Flask Bite Valve - 350 ml | 119 kr | 149 | backpackerlife |
-| `outmore-5060394270736` | Gift Republic Flask Insects - Termoflaske | 131 kr | 218 | outmore |
-| `backpackerlife-754665` | Drikkedunk - Nalgene Narrow Mouth - 1000 ml | 149 kr |  | backpackerlife |
-| `backpackerlife-368564` | Drikkeflaske - Tritan Flask - 1000 ml | 149 kr |  | backpackerlife |
-| `backpackerlife-754642` | Drikkedunk - Nalgene Wide Mouth - 1500 ml | 169 kr |  | backpackerlife |
-| `backpackerlife-618960` | Drikkedunk - Camelbak Thrive Flip Straw - 1 liter | 189 kr |  | backpackerlife |
-| `backpackerlife-58711` | Termoflaske - Esbit Classic Stainless Steel Vacuum Flask - 1L | 279 kr |  | backpackerlife |
-| `backpackerlife-64421` | Drikkeflaske - Camelbak Vacuum Insulated - 750 ml | 299 kr |  | backpackerlife |
-| `outmore-5031863745451` | Lifeventure Tiv Vacuum Flask 1000 (dark Grey) - Termoflaske | 322 kr | 357 | outmore |
-| `outmore-6939236347891` | Stanley Classic Bottle Vacuum Bottle .47L - Matte Sort | 388 kr | 440 | outmore |
+| `outmore-886798044019` | Camelbak Thrive Leakproof Tumbler Accessory Lid, - Clear/Black - Str. ONE SIZE - Tilbehør til drikkeflaske | 25 kr |  | outmore |
+| `outmore-8020775045695` | Elite Bottle Fly Tex Clear, Black Cap 550ml - Drikkeflaske | 55 kr |  | outmore |
+| `outmore-0834456003281` | Hydrapak Comet Bite Valve Sheath 2-pack N/a - Tilbehør til drikkeflaske | 66 kr |  | outmore |
+| `backpackerlife-101449` | Opbevaringsflaske til brændstof - Trangia Fuel Bottle 0.3L | 99 kr |  | backpackerlife |
+| `outmore-0840276163746` | Contigo Cortland tritan ReNew Monaco, 720ml - AUTOSEAL - Drikkeflaske | 133 kr | 190 | outmore |
+| `outmore-5056237051020` | MONTANE SOFTFLASK LONG STRAW - MONTANE LOGO - Str. ONE SIZE - Tilbehør til drikkeflaske | 158 kr |  | outmore |
+| `outmore-9414202057501-lilla` | Sistema Stainless Steel 750ml - Lilla - Drikkeflaske | 188 kr | 206 | outmore |
+| `outmore-4013236994377` | Tasmanian Tiger Tt Bottle Holder 1l - Olive - Str. Stk - Taske | 209 kr |  | outmore |
+| `outmore-5031863744386` | Lifeventure 1 Litre Flask Light Grey - Drikkeflaske | 242 kr |  | outmore |
+| `outmore-7330033000849` | Primus Classic Light Vacuum Bottle 1.0 L Pale P - Termoflaske | 314 kr |  | outmore |
+| `outmore-1210001997899` | Stanley The Iceflowâ¢ Bottle Twist Flip 0.7l Rose Quartz - Drikkeflaske | 380 kr |  | outmore |
+| `outmore-7640144289195` | LifeStraw Go Series Tumbler 18oz Stainle - Thistle Purple - Str. .5L - Drikkeflaske | 468 kr | 525 | outmore |
 
 <details><summary>Forhandlerens beskrivelser (råmateriale)</summary>
 
-- **Drikkeflaske - 500 ml - Alu**: Drikkeflaske på 500 ml, som er lavet i letvægtigt og hårdført aluminium. Med toplåg der skrues på, samt inklusiv karabinhage. Drikkeflasken har dimensionerne 19 x 7 x 7 cm. Ikke beregnet til opvaskemaskine.
-- **Drikkeflaske - 1 liter - Aluminium - Highlander**: Drikkeflaske i aluminium på 1 liter. Lavet i et letvægtigt og hårdført materiale, med toplåg der skrues på. Flasken har dimensionerne 26 x 8 x 8 cm.
-- **Drikkeflaske - OMM Ultra Flexi Flask Bite Valve - 350 ml**: Denne smarte Ultra Flexi drikkeflaske på 350 ml er perfekt til dig, som går meget op i vægt på dit udstyr. Drikkeflasken vejer ikke mere end 37 g, og så er den komprimerbar og let. Den har et godt greb og en bite valve, så man nemt kan komme til vand på t
-- **Drikkedunk - Nalgene Narrow Mouth - 1000 ml**: Verdenskendte Nalgene har lavet en holdbar og robust drikkedunk til alle behov. Om du skal på vandretur, skole, arbejde eller camping, så er det denne drikkedunk, der holder dig hydreret gennem hele dagen. Selve flasken er lavet med harpiks drevet af genb
-- **Drikkeflaske - Tritan Flask - 1000 ml**: Denne Tritan Flask fra LifeVenture er en praktisk drikkeflaske til din tur. Drikkeflasken har en hård skal, som ikke holder på smag eller lugt. Du kan stole på det vandtætte design, og det slagfaste materiale for at forblive stærkt under de hårdeste forho
-- **Drikkedunk - Nalgene Wide Mouth - 1500 ml**: Verdenskendte Nalgene har lavet en holdbar og robust drikkedunk til alle behov. Om du skal på vandretur, skole, arbejde eller camping, så er det denne drikkedunk, der holder dig hydreret gennem hele dagen. Selve flasken er lavet med harpiks drevet af genb
-- **Drikkedunk - Camelbak Thrive Flip Straw - 1 liter**: Denne Camelbak Thrive Flip Straw drikkeflaske er perfekt til dig, som gerne vil have vand med på turen eller i hverdagen. Du får fedt design samt smarte funktioner. Drikkeflasken er robust, slidstærk og praktisk. Med det smarte bærehåndtag er drikkeflaske
-- **Termoflaske - Esbit Classic Stainless Steel Vacuum Flask - 1L**: Termoflasken Classic Stainless Steel Vacuum Flask er lavet af det tyske mærke Esbit, som laver solide produkter til outdoor og sport. Termoflasken har en kapacitet på
-- **Drikkeflaske - Camelbak Vacuum Insulated - 750 ml**: Camelbak Vacuum drikkeflaske på 750 ml er lavet i Camelbaks stærke materialer, som holder temperaturen på drikken i flasken kold eller varm i timevis. Drikkeflasken er designet med en flot pulverlakering, og kommer med non-slip silicone på flaskens bund f
+- **Opbevaringsflaske til brændstof - Trangia Fuel Bottle 0.3L**: Opbevaringsflaske til brændstof fra Trangia i 0,3L med sikkerhedsventil. Denne brændstofflaske giver en sikker påfyldning af spritbrænderen og kan bruges til spritbrænder og multifuel brænder. Designet af flasken gør, at man har mulighed for at hælde væsk
 
 </details>
 
@@ -86,25 +92,31 @@ Kandidater (42 relevante i feed'et, 12 vist fordelt på pris):
 
 Nu på siden:
 
-- `Vores valg` · Gaiters  -  Black Diamond Frontpoint GTX V2  -  Sort · 495 kr · 8.6/10
+- `Vores valg` · Gaiters  -  Black Diamond Frontpoint GTX V2  -  Sort · 649 kr · 8.6/10
 - `Bedst til prisen` · Gaiters - Highlander Walking · 199 kr · 8/10
 - `Bedste letvægt` · Gaiters - Montane Cetus Gaiter · 749 kr · 8.3/10
 - `Bedste premium` · Gaiters - Montane Alta Gaiter · 899 kr · 8.4/10
 
-Kandidater (6 relevante i feed'et, 6 vist fordelt på pris):
+Kandidater (43 relevante i feed'et, 12 vist fordelt på pris):
 
 | id | produkt | pris | før | forhandler |
 |---|---|---|---|---|
-| `backpackerlife-626408` | Gaiters til børn - Glenshee - Sort | 149 kr | 199 | backpackerlife |
-| `outmore-4021573585776` | Vaude Bike Gaiter Short - Black - Str. 36-39 - Tøj | 262 kr |  | outmore |
-| `outmore-4021573542571` | Vaude Bike Gaiter Long - Black - Str. 47-49 - Tøj | 354 kr | 388 | outmore |
-| `outmore-4021573542540` | Vaude Bike Gaiter Long - Black - Str. 36-39 - Tøj | 388 kr |  | outmore |
-| `outmore-4021573542564` | Vaude Bike Gaiter Long - Black - Str. 44-46 - Tøj | 388 kr |  | outmore |
+| `outmore-5056601019328` | Montane Protium Neck Gaiter - BLACK - Str. ONE SIZE - Halsedisse | 192 kr | 210 | outmore |
+| `outmore-4052285197308` | Vaude V Bike Gaiter Short - Neon yellow - Str. 47-49 - Gaiter | 234 kr | 262 | outmore |
+| `outmore-4052285197292` | Vaude V Bike Gaiter Short - Neon yellow - Str. 44-46 - Gaiter | 239 kr | 262 | outmore |
+| `backpackerlife-1047654` | Halsedisse - Smartwool Thermal Long Neck Gaiter - Sort | 259 kr |  | backpackerlife |
+| `outmore-4052285197285` | Vaude V Bike Gaiter Short - Neon yellow - Str. 40-43 - Gaiter | 262 kr |  | outmore |
+| `outmore-5056237097042` | Montane Trail Lite Gaiter - BLACK - Str. S/M - Gaiter | 263 kr |  | outmore |
 | `outmore-4021573542557` | Vaude Bike Gaiter Long - Black - Str. 40-43 - Tøj | 388 kr |  | outmore |
+| `outmore-4021574214026` | Vaude Albona Gaiter Ii - Anthracite - Str. M - Gaiter | 419 kr |  | outmore |
+| `outmore-5056237097028` | Montane Trail Gaiter - BLACK - Str. M - Gaiter | 420 kr |  | outmore |
+| `outmore-4052285921033` | Vaude Shoecover Palade - Black - Str. 47-49 - Gaiter | 453 kr | 503 | outmore |
+| `outmore-4052285834463` | Vaude Watzmann Gaiter Iii - Black - Str. M - Gaiter | 483 kr | 524 | outmore |
+| `outmore-7045952495347` | Swix Blizzard Gaiters Unisex - Dark navy - Str. L/XL - Gaiter | 525 kr |  | outmore |
 
 <details><summary>Forhandlerens beskrivelser (råmateriale)</summary>
 
-- **Gaiters til børn - Glenshee - Sort**: Disse gaiters er lavet af skotske Highlander og er i modellen Glenshee til børn. Glenshee er et par letvægtige og vandtætte gaiters, som holder barnet tør i vådt og mudret terræn på turen. Disse gaiters kommer med en flere indstillingsmuligheder såsom
+- **Halsedisse - Smartwool Thermal Long Neck Gaiter - Sort**: Smartwool Thermal Long Neck Gaiter er en halsedisse i 100% merinould, der er udviklet med fokus på komfort, åndbarhed, temperaturregulering og modvirkning af lugt. Den er velegnet til brug i koldt vejr, blandt andet til skiløb og snowboarding, men også i
 
 </details>
 
@@ -115,72 +127,75 @@ Kandidater (6 relevante i feed'et, 6 vist fordelt på pris):
 Nu på siden:
 
 - `Vores valg` · Liggeunderlag - Klymit Insulated Static V2 · 999 kr · 8.5/10
-- `Bedst til prisen` · Liggeunderlag - Treklife Extreme RV - Insulated · 999 kr · 8/10
-- `Bedste letvægt` · Liggeunderlag - Treklife Insulated Light Air - Large · 799 kr · 8.2/10
+- `Bedst til prisen` · Liggeunderlag - Treklife Extreme RV - Insulated · 599 kr · 8/10
+- `Bedste letvægt` · Liggeunderlag - Treklife Insulated Light Air - Large · 495 kr · 8.2/10
 - `Bedste alternativ` · Liggeunderlag - Primaloft Insulated Nap-Pak · 579 kr · 7.8/10
 
-Kandidater (159 relevante i feed'et, 12 vist fordelt på pris):
+Kandidater (169 relevante i feed'et, 12 vist fordelt på pris):
 
 | id | produkt | pris | før | forhandler |
 |---|---|---|---|---|
-| `outmore-9327868045167` | Sea to Summit Mat Coupler Kit Loops - grey - Tilbehør liggeunderlag - sea to summit | 75 kr |  | outmore |
-| `backpackerlife-265340` | Liggeunderlag - Treklife Alu XPE mat - Sort | 249 kr |  | backpackerlife |
-| `outmore-5709388128379` | Outwell Classic Double - Liggeunderlag | 402 kr |  | outmore |
-| `backpackerlife-168504` | Liggeunderlag - Treklife Insulated Light Air - Regular | 699 kr |  | backpackerlife |
-| `outmore-9327868139668` | Sea To Summit Camp Plus Si Reg Moss Green - Liggeunderlag | 801 kr | 900 | outmore |
-| `outdoortid-57108231192908` | Nordic Peak Selvoppustelig liggeunderlag til bil - Deluxe 10 cm. - Grøn | 999 kr |  | outdoortid |
-| `backpackerlife-918887` | Liggeunderlag - Sea to Summit Ultralight XR Insulated Mat - Regular | 1.199 kr |  | backpackerlife |
+| `outdoortid-53332597768524` | Nordic Peak Selvoppustelig siddeunderlag | 39 kr |  | outdoortid |
+| `backpackerlife-499485` | Liggeunderlag - Treklife IXPE Alu mat - Grøn | 299 kr |  | backpackerlife |
+| `backpackerlife-165279` | Liggeunderlag - Highlander Nap-Pak - Grøn | 439 kr |  | backpackerlife |
+| `backpackerlife-56827` | Liggeunderlag - Klymit Static V | 699 kr |  | backpackerlife |
+| `outmore-9327868168255` | Sea To Summit Camp Plus Self Inflating Mat - Large Cypress - Liggeunderlag | 836 kr | 950 | outmore |
+| `backpackerlife-57304` | Letvægtig liggeunderlag - Klymit Insulated Static V Lite | 1.049 kr |  | backpackerlife |
+| `outmore-0841487144234` | Big Agnes Divide Insulated 20x72 Regular - Liggeunderlag | 1.267 kr |  | outmore |
 | `outmore-0841487147068` | Big Agnes Rapide Sl Insulated 51x183 Regular R=4,8 - Liggeunderlag | 1.534 kr | 1.743 | outmore |
-| `outmore-811666034953` | Nemo Tensor Trail Regular 2024 - Liggeunderlag | 1.679 kr |  | outmore |
-| `backpackerlife-926758` | Liggeunderlag - Nemo Tensor Elite - Short | 1.899 kr |  | backpackerlife |
-| `outmore-9327868168439` | Sea To Summit Comfort Deluxe Self Inflating Mat - Reg Rectangular Wide Rain Forest - Liggeunderlag | 2.000 kr |  | outmore |
-| `backpackerlife-631657` | Liggeunderlag - Sea to Summit Comfort Plus ASC Insulated Mat - Large | 2.299 kr |  | backpackerlife |
+| `backpackerlife-634390` | Liggeunderlag - Sea to Summit Pursuit Plus SI Mat - Regular | 1.699 kr |  | backpackerlife |
+| `outmore-9327868162123` | Sea To Summit Pursuit Plus Si Mat - Large Zinnia - Liggeunderlag | 1.900 kr |  | outmore |
+| `outmore-7045952913568` | Helsport Explorer R4 Sleeping Mat - Liggeunderlag | 2.056 kr | 2.310 | outmore |
+| `outmore-811666035028` | Nemo Tensor Extreme Conditions Regular - Liggeunderlag | 2.414 kr |  | outmore |
 
 <details><summary>Forhandlerens beskrivelser (råmateriale)</summary>
 
-- **Liggeunderlag - Treklife Alu XPE mat - Sort**: Treklife Alu XPE liggeunderlaget er lavet i et blødt skum-materiale, og er et såkaldt "æggebakke liggeunderlag" som kan foldes sammen, så underlaget fylder meget lidt. Liggeunderlag
-- **Liggeunderlag - Treklife Insulated Light Air - Regular**: Dette liggeunderlag fra Treklife er i modellen Insulated Light Air Regular, som er et isoleret helårs-liggeunderlag. Insulated Air Light er designet som et all-round, letvægtig underlag - som kan bruges til alt fra backpacking jordomrejsen, outdoor turen
-- **Nordic Peak Selvoppustelig liggeunderlag til bil - Deluxe 10 cm. - Grøn**: Designet til at passe til Tesla model Y, Tesla 3, Skoda Enyaq, ID 5, Polestar 2 og lignende modeller. Selvoppustelig memoryfoam Længde: 193 cm 10 cm tykkelse Bredde: 94 - 132 cm Dobbelt ventil for hurtig opfyldning / tømning af madras Transportpose medføl
-- **Liggeunderlag - Sea to Summit Ultralight XR Insulated Mat - Regular**: Dette Ultralight XR Insulated Mat Regular fra Sea to Summit er en opgraderet version af den tidligere Ultralight, hvor alt bare er gjort bedre. Til trods for at tykkelse og isolering er øget, er underlaget samtidig blevet lettere og mere kompakt, når det
-- **Liggeunderlag - Nemo Tensor Elite - Short**: Nemo Tensor Elite Short er et ultralet liggeunderlag til dig, der ønsker høj komfort uden at fylde eller veje unødigt i oppakningen. Med en vægt på kun 215 gram, er det et oplagt valg til vandreture, bikepacking eller andre ture hvor hvert gram tæller.
-- **Liggeunderlag - Sea to Summit Comfort Plus ASC Insulated Mat - Large**: Comfort Plus ASC Insulated Mat Large fra populære Sea to Summit er et fantastisk og komfortabelt liggeunderlag, der kan bruges året rundt. Liggeunderlaget kommer med en R-værdi på 4,0 og e
+- **Nordic Peak Selvoppustelig siddeunderlag**: Selvoppustelig 40 x 30 x 3,5 cm Polyester / PVC coating Transportpose medfølger 160g Puster sig selv op på 1 minut
+- **Liggeunderlag - Treklife IXPE Alu mat - Grøn**: Treklife IXPE Alu mat liggeunderlaget er lavet i et blødt skum-materiale, og er et såkaldt "æggebakke liggeunderlag" som kan foldes sammen, så underlaget fylder meget lidt. Treklife IXPE Alu's foldbare design gør, at det er let at tage liggeunderlaget med
+- **Liggeunderlag - Highlander Nap-Pak - Grøn**: Nap-Pak er et oppusteligt liggeunderlag fra skotske Highlander. Nap-Pak er letvægtigt og har en tykkelse på 5 cm. Den er perfekt til både lange og korte ture i naturen
+- **Liggeunderlag - Klymit Static V**: Static Vâ¢ Recon liggeunderlaget fra amerikanske Klymit er verdens første letvægtige og foldbare liggeunderlag, som er lavet ud fra en såkaldt "luft-kamre" design. Det
+- **Letvægtig liggeunderlag - Klymit Insulated Static V Lite**: Klymits Insulated Static V Lite er et letvægtig liggeunderlag beregnet til helårsbrug - inklusiv vinter. Liggeunderlaget har en har en R-værdi på hele 4.4. Klymit Insu
+- **Liggeunderlag - Sea to Summit Pursuit Plus SI Mat - Regular**: Pursuit Plus SI Mat er et letvægtig og høj kvalitets liggeunderlag fra Sea to Summit. Liggeunderlaget er selvoppusteligt og kommer i en Regular version, hvor dimensio
 
 </details>
 
-## /bedste/myggenet — Bedste myggenet 2026
+## /bedste/sommersovepose — Bedste sommersovepose 2026
 
-**4 købbare af 5. Mangler 1.**
+**4 købbare af 6. Mangler 1.**
 
 Nu på siden:
 
-- `Vores valg` · Myggenet til hovedet - Lifesystems · 129 kr · 8.7/10
-- `Bedste finmaskede` · Myggenet til hoved - Sea to Summit Ultra-Fine Mesh Headnet - Sort · 139 kr · 8.6/10
-- `Bedst til prisen` · Myggenet til hovedet - Treklife · 39 kr · 8.1/10
-- `Bedste sovenet` · Myggenet - Lifesystems MicroNet Single - 1 person · 249 kr · 8.5/10
-- `Bedste imprægnerede` · Imprægneret myggenet - Pharmavoyage Trek 1 - 1 personer · 229 kr · 8.3/10 — **UDSOLGT**
+- `Vores valg` · Sovepose - Nordisk Bjarni +10 - Mummy - XL · 799 kr · 8.6/10
+- `Bedst til prisen` · Sovepose - Sleepline 250 - 2 sæsons · 299 kr · 8/10
+- `Bedste letvægt` · Sovepose - Snugpak Travelpak 2 kompakt · 649 kr · 8.3/10 — **UDSOLGT**
+- `Bedste komfort` · Outwell Campion Lux Xl Blue - Left Side Zipper - Sovepose · 511 kr · 8.4/10 — **UDSOLGT**
+- `Bedste enkle` · Sovepose - Treklife Voyage - 2 sæsons · 249 kr · 7.9/10
+- `Bedste lagenpose` · Lifeventure Cotton Sleeping Bag Liner, Mummy (blue) - Sovepose · 420 kr · 7.8/10
 
-Kandidater (51 relevante i feed'et, 12 vist fordelt på pris):
+Kandidater (307 relevante i feed'et, 12 vist fordelt på pris):
 
 | id | produkt | pris | før | forhandler |
 |---|---|---|---|---|
-| `outmore-8712318014786` | TravelSafe Monterings kit til myggenet | 37 kr | 41 | outmore |
-| `outmore-5031863050609` | Lifesystems Midge/mosquito Head Net - Myggenet | 84 kr | 94 | outmore |
-| `outmore-5031863051507` | Lifesystems Mosquito Net Hanging Kit monterings kit til myggenet | 107 kr | 116 | outmore |
-| `outmore-056389025059` | Coghlan's Coghlans Bug Jacket - Large - Myggenet | 186 kr | 209 | outmore |
-| `backpackerlife-5667` | Myggenet inkl. hængekit | 199 kr |  | backpackerlife |
-| `outmore-5031863160728` | Littlelife Buggy Mosquito Net - Myggenet | 284 kr |  | outmore |
-| `backpackerlife-17766` | Myggenet - Lifesystems MicroNet Double - 2 personer | 369 kr |  | backpackerlife |
-| `outmore-8712318067584` | TravelSafe Myggenet til baby og børn - 1 person | 419 kr |  | outmore |
-| `backpackerlife-631686` | Myggenet - Sea to Summit Nano Pyramid Net - Single | 449 kr |  | backpackerlife |
-| `outmore-8712318067614` | Travelsafe Box Style, 2 Pers. - Myggenet | 514 kr | 577 | outmore |
-| `outmore-8712318067638` | TravelSafe Pyramid Style myggenet - 2 personer | 531 kr | 577 | outmore |
-| `outmore-8712318081344` | Travelsafe Pop-out, 1-2 Pers. Pyramid Style. - Myggenet | 577 kr |  | outmore |
+| `outmore-5031863020909` | Lifesystems Survival Bag - Sovepose | 94 kr | 105 | outmore |
+| `backpackerlife-527237` | Børnesovepose - Highlander Creature | 399 kr |  | backpackerlife |
+| `backpackerlife-499690` | Sovepose - Treklife Compact Short | 599 kr |  | backpackerlife |
+| `backpackerlife-212386` | Sovepose  -  Nordisk Puk -2 Curve  -  XL | 839 kr |  | backpackerlife |
+| `outmore-4062218851245` | Vaude Sioux 400 Xl Ii Syn - Baltic sea - Str. Left - Sovepose | 1.121 kr | 1.259 | outmore |
+| `backpackerlife-99119` | Sovepose - Snugpak Softie Elite 2 | 1.349 kr |  | backpackerlife |
+| `backpackerlife-64446` | Sovepose - Klymit KSB 20 - Dunsovepose - 3-4 sæsoner | 1.699 kr |  | backpackerlife |
+| `outmore-811666036216` | Nemo Soul 30/40 Regular Endless Promise - Sovepose | 2.204 kr |  | outmore |
+| `outmore-9002647055482` | Carinthia Sof 1 M - OLIVE - Str. Left - Sovepose | 2.685 kr | 2.918 | outmore |
+| `outmore-9002647003889` | Carinthia Brenta M Lz - Sovepose | 3.225 kr |  | outmore |
+| `outmore-9002647032612` | Carinthia G 145 M - Moss - Str. Left - Sovepose | 3.840 kr |  | outmore |
+| `outmore-9327868157853` | Sea To Summit Ascent Women's -9c Down Sleeping Bag - Large Celery Green - Sovepose | 4.860 kr | 5.400 | outmore |
 
 <details><summary>Forhandlerens beskrivelser (råmateriale)</summary>
 
-- **Myggenet inkl. hængekit**: Stort myggenet der kan bruges til de fleste dobbeltsenge og enkeltsenge. Måler 240 (længde) x 170 (bredde) x 130 (højde) cm i udfoldet tilstand og 26 x 10 x 10 cm når det er pakket
-- **Myggenet - Lifesystems MicroNet Double - 2 personer**: Lifesystems superlight myggenet double, er til dig, der er træt af de søvnløse nætter med hvislen for ørerne og kløe på benene. Nettet hængesÂ i en kegleform over din dobbeltseng (som anvist på billedet), og dermed er det umuligt for myg og andre insekte
-- **Myggenet - Sea to Summit Nano Pyramid Net - Single**: Nano Pyramid Net er et populært myggenet fra Sea to Summit. Myggenettet er konstrueret af finvævet multifilament 15 Denier polyester med 500 huller pr. kvadrattomme. Nano Pyramid kommer med flere funktioner som farvekodede hjørner for nemmere opsætning
+- **Børnesovepose - Highlander Creature**: Creature fra Higlander er en sovepose til børn, der både er blød, varm og praktisk. Soveposen kommer i smarte forskellige designs af mariehøne, haj, panda og krokodille. Derudover kommer soveposen i en smart rygsæk, så det er nemt for dit barn at bære sov
+- **Sovepose - Treklife Compact Short**: Treklife Compact Short er en letvægtig og kompakt sovepose, perfekt til at tage med på tur og spare plads i rygsækken. Soveposen måler kun 18 x 15 x 15 cm når soveposen er nedpakket i den medfølgende kompressionspose. Soveposen er en 1 sæsons sovepose, so
+- **Sovepose  -  Nordisk Puk -2 Curve  -  XL**: Denne sovepose fra det danske mærke Nordisk, er en meget alsidig sovepose, hvor du får virkelig meget for pengene. Den kurvede form sikre en tætsluttende pasform, hvilket sikre en god isolationsevne og som giver den ideelle komfort og plads. Soveposens
+- **Sovepose - Snugpak Softie Elite 2**: Engelske Snugpak har lavet en letvægtig 2-3 sæsons sovepose - Softie Elite 2. Soveposen vejer kun 1300 gram og har en længde på 220cm - soveposen kan laves om til en længde på 175 cm efter ønske. Softie Elite 2 er lavet i et mumie-design, hvilket gør
+- **Sovepose - Klymit KSB 20 - Dunsovepose - 3-4 sæsoner**: KSB 20 soveposen fra amerikanske Klymit er en solid sovepose, som kan klare næsten alle sæsoner. Soveposen kan gå ned til -7 grader, og er primært fremstillet i grå andedun og har samtidig et solidt nylon ydre materiale. Soveposen har en mumiehætte med tr
 
 </details>
 
@@ -192,47 +207,38 @@ Nu på siden:
 
 - `Vores valg` · Mikropude - Highlander · 69 kr · 8.6/10
 - `Bedste oppustelige` · Oppustelig hovedpude - Klymit X Pillow · 199 kr · 8.5/10
-- `Bedste store pude` · Mikropude L - Grøn · 129 kr · 8.3/10 — **UDSOLGT**
-- `Bedste lagenpose` · Lagenpose - Mummy - Letvægtig · 129 kr · 8.5/10
+- `Bedste store pude` · Mikropude L - Grøn · 129 kr · 8.3/10
+- `Bedste lagenpose` · Lagenpose - Mummy - Letvægtig · 129 kr · 8.5/10 — **UDSOLGT**
 - `Bedste rummelige` · Lagenpose - Envelope - Kvadratisk · 129 kr · 8.2/10
 
-Kandidater (57 relevante i feed'et, 12 vist fordelt på pris):
+Kandidater (223 relevante i feed'et, 12 vist fordelt på pris):
 
 | id | produkt | pris | før | forhandler |
 |---|---|---|---|---|
-| `backpackerlife-987491` | Nakkepude med memory foam - Aquipe | 99 kr |  | backpackerlife |
-| `backpackerlife-251983` | Oppustelig pude - Highlander Air pillow | 149 kr |  | backpackerlife |
-| `backpackerlife-1609` | Lagenpose - Kvadratisk inkl. pudeindlæg | 159 kr |  | backpackerlife |
-| `backpackerlife-919230` | Pude - Sea to Summit Aeros Ultralight Pillow - Regular | 239 kr | 299 | backpackerlife |
-| `backpackerlife-918933` | Hovedpude - Sea to Summit Foam Core - Regular - Gul | 279 kr |  | backpackerlife |
-| `backpackerlife-363829` | Lagenpose - LifeVenture Cotton Mummy | 299 kr |  | backpackerlife |
-| `backpackerlife-631463` | Hovedpude - Sea to Summit FoamCore - Large | 319 kr |  | backpackerlife |
-| `backpackerlife-150963` | Pude - Klymit Drift Camp - Regular | 349 kr |  | backpackerlife |
-| `backpackerlife-918948` | Lagenpose - Sea to Summit Reactor Midweight Liner - Regular | 399 kr | 499 | backpackerlife |
-| `backpackerlife-483811` | Hovedpude - Sea to Summit Aeros Down Pillow - Regular | 449 kr |  | backpackerlife |
-| `backpackerlife-396269` | Lagenpose - Sea to Summit Reactor Sleeping Bag Liner - Mummy - S - Sort | 495 kr |  | backpackerlife |
-| `backpackerlife-918950` | Lagenpose - Sea to Summit Reactor Fleeceweight Liner - Regular | 599 kr |  | backpackerlife |
+| `outmore-5704049907287` | Suprabeam S-series Foam Pads 3M puder - 3 stk. | 56 kr | 79 | outmore |
+| `outmore-5055071759796` | Relaxeazzz Christmas Elf Plush Travel Pillow & Eye Mask - Nakkepude | 118 kr | 131 | outmore |
+| `outmore-7045953022085` | Lundhags Merino Liner Sock - Black - Str. 37-39 - Sokker | 144 kr | 158 | outmore |
+| `outmore-5018404002891` | Travel Blue Travelblue Trunky The Elephant Travel Pillow - Nakkepude | 185 kr | 196 | outmore |
+| `outmore-4025122944700` | LA SIESTA CariÃ±o (zebra) - Pudebetræk | 195 kr |  | outmore |
+| `outmore-5031863129114` | LittleLife Animal Snooze Pillow - Dinosaur | 226 kr | 251 | outmore |
+| `backpackerlife-631778` | Rejsepude - Carinthia - Travel Pillow - Camouflage | 269 kr |  | backpackerlife |
+| `outmore-799696101879` | Cocoon Travelsheet,100% Organic Cotton Heater G - Lagenpose | 304 kr |  | outmore |
+| `outmore-7072621000717` | Vallerret Power Stretch Pro Liner with touch XS - Handsker | 355 kr | 394 | outmore |
+| `backpackerlife-918928` | Hovedpude - Sea to Summit Aeros Down Pillow - Large | 429 kr | 479 | backpackerlife |
+| `outmore-9327868167197` | Sea To Summit Aeros Down Pillow - Large Neutral Grey - Pude | 526 kr | 590 | outmore |
+| `backpackerlife-363831` | Silkelagenpose - LifeVenture Compact Silk Rectangular | 699 kr |  | backpackerlife |
 
 <details><summary>Forhandlerens beskrivelser (råmateriale)</summary>
 
-- **Nakkepude med memory foam - Aquipe**: Denne nakkepude fra Aquipe er fremstillet i komfortabel memory foam, som former sig efter nakken og giver optimal støtte under transport. Den praktiske knap holder puden samlet omkring halsen, mens det aftagelige betræk gør at det kan vaskes, og at den
-- **Oppustelig pude - Highlander Air pillow**: Oppustelig Air pillow fra Highlander er lavet i et lækkert og behageligt materiale, der sikrer en komfortabel søvn. Puden er letvægtig og fylder meget lidt, når den er pakket sammen, så den er nem at have med på turen. Puden har en tovejsventil, som gør d
-- **Lagenpose - Kvadratisk inkl. pudeindlæg**: Treklifes lagenpose kan både benyttes som et ekstra indvendigt lag i din sovepose, men kan ligeledes benyttes som en lagensovepose i varmere klima. Lagenposen tilføjer ekstra varme til din sovepose, forlænger levetiden på soveposen samt holder den ren. De
-- **Pude - Sea to Summit Aeros Ultralight Pillow - Regular**: Aeros Ultralight pillow fra Sea to Summit er en oppustelig hovedpude i en ultralet og kompakt udgave, som fylder og vejer minimalt. Den er derfor super praktisk at have med til flyveturen, på teltturen eller i bilen. Den er lavet af TPU Lamineret recyc
-- **Hovedpude - Sea to Summit Foam Core - Regular - Gul**: Denne Foam Core pillow fra Sea to Summit er en blød og behagelig hovedpude til turen. Denne pude er lavet i vatteret genanvendt 50D polyester med fyld af skumrester fra Sea to Summits RCS-certificeret liggeunderlag, samt et ekstra lag polyesterfiber. F
-- **Lagenpose - LifeVenture Cotton Mummy**: Let, åndbar og holdbar lagenpose fra LifeVenture, som kan bruges alene eller i en sovepose. Lagenposen er lavet i 100% bomuld og behandlet med Polygiene-lugthæmmer, der modvirker lugtdannende bakterier og på den måde bevarer stoffet rent og friskt i længe
-- **Hovedpude - Sea to Summit FoamCore - Large**: Med FoamCore fra Sea to Summit, får du en blød og komfortabel hovedpude. Selve betrækket er lavet af 50D polyester og kommer med fyld fra genanvendt skum samt et polyester fiber lag. Selve puden kommer med en smart rullelukning og er udstyret med indve
-- **Pude - Klymit Drift Camp - Regular**: Pude fra det amerikanske mærke Klymit som nemt kan gå fra at være en ren og blød pude at sove på, til en holdbar og vejr resistent pude. Puden har en yderside der kan holde til slid, er nem at gøre ren og vejr resistent. Samt en inderside der er komfor
-- **Lagenpose - Sea to Summit Reactor Midweight Liner - Regular**: Reactor Midweight Liner regular fra Sea to Summit er en varm og behagelig lagenpose, som er god til køligere vejr. Denne lagenpose giver op til +6 graders ekstra varme. Den er kompakt og letvægtig, så den er nem at have med i oppakningen. Den er lavet af
-- **Hovedpude - Sea to Summit Aeros Down Pillow - Regular**: Aeros Down Pillow fra Sea to Summit. Hovedpuden du ikke kan undvære når du er på tur. Komprimeret har hovedpuden dimensionerne 9,5 x 5,5 cm, derfor er den nem at have med i rygsækken. Hovedpuden kommer i et let og kompakt design, med ekstra god komfort i
-- **Lagenpose - Sea to Summit Reactor Sleeping Bag Liner - Mummy - S - Sort**: Denne Reactor Sleeping Bag Liner er en mummyformet lagenpose, som er god til diverse vandre- og outdoorture. Lagenposen er lavet i et blødt strækstof, som giver stor
-- **Lagenpose - Sea to Summit Reactor Fleeceweight Liner - Regular**: Reactor Fleeceweight Liner regular fra Sea to Summit er en varm og behagelig lagenpose, som er god til køligere vejr. Denne lagenpose giver op til +8 graders ekstra varme. Den er kompakt og blød, så den er fantastisk til diverse vandre- og outdoorture. De
+- **Rejsepude - Carinthia - Travel Pillow - Camouflage**: Rejsepuden 'Travel Pillow' er lavet af det ekstremt populære østrigske outdoor mærke Carinthia. Det er en super kompakt rejsepude, som både giver god støtte og komfort til dit hoved og nakke. Rejsepuden er både rigtig god til outdoor ture, teltture og she
+- **Hovedpude - Sea to Summit Aeros Down Pillow - Large**: Aeros Down Pillow fra Sea to Summit. Hovedpuden du ikke kan undvære når du er på tur. Komprimeret har hovedpuden dimensionerne 10 x 6,5 cm, derfor er den nem at have med i rygsækken. Hovedpuden kommer i et let og kompakt design, med ekstra god komfort i f
+- **Silkelagenpose - LifeVenture Compact Silk Rectangular**: Denne LifeVenture lagenpose i silke er en såkaldt silkelagenpose. En silkelagenpose er kendetegnet ved at være svedtransporterende, ultra-let og samtidig også åndbar. Den er med til at regulere kropstemperaturen, når du sover. Den er derudover hurtigtørre
 
 </details>
 
 ## /bedste/tarp — Bedste tarp 2026
 
-**3 købbare af 7. Mangler 2.**
+**2 købbare af 7. Mangler 3.**
 
 Nu på siden:
 
@@ -240,66 +246,78 @@ Nu på siden:
 - `Bedst til prisen` · Easy Camp Norddal Tarp 3 X 3 M - Tarp · 425 kr · 8/10 — **UDSOLGT**
 - `Bedste letvægt-kompakt` · Robens Tarp 2.5 X 2.5 M Pro - Tarp · 490 kr · 8.2/10 — **UDSOLGT**
 - `Bedste i blæst` · Trekmates Hexagon Tarp · 668 kr · 8.3/10
-- `Bedste til grupper` · Easy Camp Totak Tarp 4 X 4 M - Tarp · 815 kr · 8.4/10
+- `Bedste til grupper` · Easy Camp Totak Tarp 4 X 4 M - Tarp · 815 kr · 8.4/10 — **UDSOLGT**
 - `Bedste kvalitet` · Tatonka Tarp 4 - Light olive - Tarp · 1.049 kr · 8.5/10 — **UDSOLGT**
 - `Bedste ultralet` · Escapist 15D Tarp Medium 2m x 2.6m - lime - Shelters & tarps - sea to summit · 1.472 kr · 8.6/10
 
-Kandidater (14 relevante i feed'et, 12 vist fordelt på pris):
+Kandidater (19 relevante i feed'et, 12 vist fordelt på pris):
 
 | id | produkt | pris | før | forhandler |
 |---|---|---|---|---|
-| `outmore-5709388002723` | Robens Tarp teleskopstang 3 sektioner | 293 kr |  | outmore |
-| `outmore-5709388057181` | Robens Tarp stang 210 cm | 338 kr |  | outmore |
-| `outmore-5709388057198` | Robens Tarp stang 240 cm | 357 kr | 401 | outmore |
+| `outmore-056389010147` | Coghlan's Coghlans Tarp Clips - Tilbehør til telte | 47 kr | 51 | outmore |
+| `backpackerlife-236472` | Tarp - Diagonal | 249 kr |  | backpackerlife |
+| `backpackerlife-236473` | Tarp - Rectangular | 299 kr |  | backpackerlife |
+| `backpackerlife-238893` | Hængekøje sovesystem - Hammock incl. Net & Tarp Combi | 349 kr | 598 | backpackerlife |
+| `backpackerlife-209706` | Tarp - Highlander Basha - 2,5 x 1,7 m | 389 kr |  | backpackerlife |
+| `backpackerlife-145577` | Tarp - High Peak Tarp 1 - Grå | 399 kr |  | backpackerlife |
+| `backpackerlife-124342` | Poncho - Sea to Summit 70D Tarp og Poncho | 479 kr |  | backpackerlife |
+| `outmore-4013236249613` | Tatonka Tarp-stange 220 Cm - Stk. - Str. Stk. - Tilbehør til telte | 524 kr |  | outmore |
+| `backpackerlife-144660` | Tarp - High Peak Tarp 2 - Grå | 599 kr |  | backpackerlife |
+| `outmore-9327868051373` | Diverse 70D Tarp Poncho Green - grøn - | 600 kr |  | outmore |
 | `outmore-5056369303417` | Trekmates Square Tarp Oliven - Tarp | 720 kr | 800 | outmore |
-| `outmore-5031863423410` | Lifesystems Expedition Tarp - Tarp | 893 kr |  | outmore |
-| `outmore-5709388144966` | Robens Tarp 4 X 4 M Exp - Tarp | 924 kr | 1.050 | outmore |
-| `outmore-5709388137067` | Outwell Canopy Tarp L - Tarp | 963 kr | 1.081 | outmore |
-| `outmore-5709388137050` | Outwell Canopy Tarp M - Tarp | 982 kr | 1.115 | outmore |
-| `outmore-727670921076` | Ticket To The Moon Tttm Moon Tarp - Waterproof Hammock Tarp - Green - Tarp | 1.049 kr |  | outmore |
-| `outmore-5709388159618` | Outwell Hillcrest Tarp - Tarp | 1.150 kr |  | outmore |
-| `outmore-7045952892368` | Helsport Seeker 4 Tarp - Tarp | 1.386 kr |  | outmore |
-| `outmore-9327868042043` | Sea to Summit Escapist 15D Tarp Large 3m x 3m - lime - Shelters & tarps - sea to summit | 1.628 kr | 1.850 | outmore |
+| `backpackerlife-124349` | Poncho - Sea to Summit Ultra-Sil 15D Tarp og Poncho | 749 kr |  | backpackerlife |
 
-_Ingen af kandidaterne har beskrivelse i feed'et — produktnavn og pris er alt vi ved._
+<details><summary>Forhandlerens beskrivelser (råmateriale)</summary>
+
+- **Tarp - Diagonal**: Denne Tarp fra Treklife er en tarp som giver beskyttelse og shelter mod dårlig vejr og regn. Treklife Tarp Diagonal er designet til at blive brugt som overdække til en hængekøje, men tarpen er multifunktionel og kan således bruge til mange formål på outdo
+- **Tarp - Rectangular**: Denne Tarp fra Treklife er en tarp som giver beskyttelse og shelter mod regn, grene og dårligt vejr. Treklife Tarp Rectangular er en multifunktionel tarp, som kan bruges til alt fra beskyttelse af teltet, til hængekøjen, eller til at lave et udendørsareal
+- **Hængekøje sovesystem - Hammock incl. Net & Tarp Combi**: Dette sæt er et komplet sovesystem til outdoor og backpacking fra Treklife. Sovesystemet består af en hængekøje med integreret myggenet samt en tarp. Hængekøjen er lavet i et blødt med slidstærkt parachute nylon materiale og har dimensionerne 260 x 140
+- **Tarp - Highlander Basha - 2,5 x 1,7 m**: Basha tarpen kan opsættes og bruges til mange forskellige ture. Du kan bruge den enten som selvstændigt dække til at sove under, eller som beskyttelse af teltet eller til at lave en overdækket brugsareal på turen. Den sættes fast til træer, så den holdes
+- **Tarp - High Peak Tarp 1 - Grå**: Denne Tarp er fra High Peak, og er en tarp som giver beskyttelse og dække mod dårlig vejr, regn og derudover UV-stråler og træharpiks. Tarpen kan opsættes enten som selvstændigt dække til at sove under, eller som beskyttelse af teltet eller til at lave
+- **Poncho - Sea to Summit 70D Tarp og Poncho**: Denne poncho fra Sea To Summit får du både poncho og tarp i et og samme produkt. Den er designet til at dække dig og din backpack, samtidig med at den kan foldes ud og bruges som tarp eller shelter til at få to personer i ly for regnen. Hætten på ponchoen
+- **Tarp - High Peak Tarp 2 - Grå**: Denne Tarp er fra High Peak, og er en tarp som giver beskyttelse og dække mod dårlig vejr, regn og derudover UV-stråler og træharpiks. Tarpen kan opsættes enten som selvstændigt dække til at sove under, eller som beskyttelse af teltet eller til at lave
+- **Poncho - Sea to Summit Ultra-Sil 15D Tarp og Poncho**: Denne poncho fra Sea To Summit får du både poncho og tarp i et og samme produkt. Den er designet til at dække dig og din backpack, samtidig med at den kan foldes ud og bruges som tarp eller shelter til at få to personer i ly for regnen. Den er lavet af va
+
+</details>
 
 ## /bedste/telt — Bedste telt 2026
 
-**4 købbare af 6. Mangler 1.**
+**3 købbare af 6. Mangler 2.**
 
 Nu på siden:
 
-- `Bedst til prisen` · 2 personers xl telt - Pico 2.0 Classic · 549 kr · 7.8/10
+- `Bedst til prisen` · 2 personers xl telt - Pico 2.0 Classic · 524 kr · 7.8/10 — **UDSOLGT**
 - `Bedste budget-familie` · Telt - Treklife UV Block XL 4P - 4 personer · 999 kr · 8/10
 - `Bedste letvægt` · Telt - High Peak Kite LW - 2 personer · 1.299 kr · 8.3/10
 - `Bedste premium` · Robens Lodge 2 Exp - Telt · 2.043 kr · 8.5/10 — **UDSOLGT**
 - `Bedste familie` · Easy Camp Hidra 4 - Telt · 1.848 kr · 8.1/10 — **UDSOLGT**
-- `Bedste tipi` · Tipi telt - Ranch 4.0 · 999 kr · 8/10
+- `Bedste tipi` · Tipi telt - Ranch 4.0 · 974 kr · 8/10
 
-Kandidater (225 relevante i feed'et, 12 vist fordelt på pris):
+Kandidater (227 relevante i feed'et, 12 vist fordelt på pris):
 
 | id | produkt | pris | før | forhandler |
 |---|---|---|---|---|
 | `backpackerlife-381427` | Gummihammer til telt | 29 kr |  | backpackerlife |
-| `outmore-7340001627114` | Tentipi Drying Rail 9 - Tilbehør til telte | 420 kr |  | outmore |
-| `backpackerlife-710023` | Telt  -  High Peak Nevada 4  -  4 personer - Grå | 599 kr | 799 | backpackerlife |
-| `outmore-5709388159311` | Outwell Wakefield L Side Wall W Windows - Telt | 730 kr |  | outmore |
-| `backpackerlife-666161` | Telt - Highlander Refuge - 1 person | 999 kr |  | backpackerlife |
-| `outdoortid-52546105639244` | Nordic peak 6 personers tunnel telt - Rila 6.0 Classic | 1.299 kr |  | outdoortid |
-| `backpackerlife-45284` | Caterthun - 4 personers tunnel telt | 1.899 kr |  | backpackerlife |
-| `outmore-7029983230054` | Helsport Varanger 8-10 Innertent - Telt | 2.426 kr |  | outmore |
-| `outmore-5709388159502` | Outwell Armona - Telt | 3.750 kr |  | outmore |
-| `outmore-9327868146819` | Sea To Summit Telos Tr3 Telt Green - Telt | 4.895 kr | 5.500 | outmore |
-| `backpackerlife-138935` | Telt - Nordisk Lofoten 1 ULW - 1 person - Grøn | 6.599 kr |  | backpackerlife |
-| `outmore-4013236185461` | Tatonka Alaska Family Dlx - Cocoon - Str. Stk. - Telt | 8.924 kr |  | outmore |
+| `outmore-5703852911115` | Tentipi Cross-pole Wire 6/180 9pc - Tilbehør til telte | 399 kr | 420 | outmore |
+| `backpackerlife-867919` | Telt - High Peak Narvik - 2 personer | 599 kr |  | backpackerlife |
+| `outmore-5031863423212` | Lifesystems Survival Shelter 4 overlevelses telt til 4 personer | 702 kr | 788 | outmore |
+| `outmore-7340001627831` | Tentipi Eldfell Wooden Box - Tilbehør til telte | 840 kr |  | outmore |
+| `outdoortid-57070576599372` | Trek Trail 4 personer ultralet telt - Luma 4.0 | 1.049 kr | 1.499 | outdoortid |
+| `backpackerlife-199800` | Telt - High Peak Woodpecker 3 LW - 3 personer | 1.399 kr |  | backpackerlife |
+| `backpackerlife-46112` | Telt - Cypress - 6 personer | 1.899 kr |  | backpackerlife |
+| `backpackerlife-1010254` | Telt - High Peak Tauris 6 - 6 personer | 2.999 kr |  | backpackerlife |
+| `outmore-0841487149574` | Big Agnes Tiger Wall Ul1 Mercury/evening Primrose - Telt | 4.839 kr |  | outmore |
+| `outmore-9327868143023` | Sea To Summit Telos Tr3 Plus Telt Green - Telt | 6.000 kr |  | outmore |
+| `outdoortid-56902278775116` | Nordic Peak Oppustelig glamping telt - Gen Air 12Y | 8.999 kr |  | outdoortid |
 
 <details><summary>Forhandlerens beskrivelser (råmateriale)</summary>
 
 - **Gummihammer til telt**: Denne gummihammer er god at have med i sin teltoppakning, så man altid kan få sat sit telt fast med pløkker. Den er lavet af stål og gummi. Du vil have meget nemmere ved at sætte dit telt op, hvis du har en gummihammer med i opsætningskittet.
-- **Telt  -  High Peak Nevada 4  -  4 personer - Grå**: Nevada 4 teltet fra High Peak er et solidt og skønt telt til diverse overnatninger i det fri. Teltet kan rumme 4 personer med bagage. Teltet har en vejrbeskyttet indgang samt en dør, som kan rulles op. Derudover har Nevada 4 et indertelt med myggenet i dø
-- **Telt - Highlander Refuge - 1 person**: Refuge telt fra Highlander er et rummeligt og praktisk telt til 1 person. Med dette telt får du et vandtæt, holdbart og godt telt. Teltet har et vandsøjletryk på 4000
-- **Nordic peak 6 personers tunnel telt - Rila 6.0 Classic**: 100% vandtæt 2-lags telt Plads til 6 personer 3500 mm vandsøjletryk 2 sovekabiner (begge kan låses) Myggenet og god ventilation Limede vandtætte syninger Ekstra kraftige lynlåse fra SBS Plads til beskidte sko ved indgangen Små opbevaringsrum til f.eks mob
-- **Caterthun - 4 personers tunnel telt**: Skotske Trespass har med Caterthun lavet et 4 personers telt, som kan bruges til både familieture og outdoor-ture med vennerne. Caterthun er et såkaldt tunnel-designet telt, hvilket vil sige at teltet har et stort udendørs areal som kan bruges til opbevar
-- **Telt - Nordisk Lofoten 1 ULW - 1 person - Grøn**: Det multi-prisbelønnede Nordisk Lofoten 1 ULW telt er med sin vægt på sølle 490 g. og kompakte nedpakkede størrelse på 11 x 22 cm det ultimative telt til letvægsvandre
+- **Telt - High Peak Narvik - 2 personer**: Narvik 2 fra High Peak er et rummeligt og praktisk telt til camping, festivaler og weekendture. Teltet er lavet til at beskytte mod vind og vejr, da det er udstyret med en PFC-fri vandafvisende behandling og tapede sømme. Teltet er også udstyret med et
+- **Trek Trail 4 personer ultralet telt - Luma 4.0**: 3-4 personers ultralet telt 100% vandtæt telt Vandsøjletryk ydertelt: 4000mm Vandsøjletryk bund: 5000mm Alle syninger limede 2 lags telt - åndbart indertelt Teltstænger i aluminium Ekstra stærke lynlåse fra SBS Ydertelt: 220T ripstop polyester Bund: 150D
+- **Telt - High Peak Woodpecker 3 LW - 3 personer**: Dette 3 personers telt i modellen Woodpecker Lightweight er fra High Peak. Woodpecker er et såkaldt selvstående dome telt, og teltet er designet med 2 vejr-sikrede udgange, så du let kan komme ind og ud af teltet. For at mindske kondens er der 2 ventilati
+- **Telt - Cypress - 6 personer**: Cypress 6 personers telt fra Highlander. Cypress er et godt, simpelt og nemt kvalitets-telt. Teltet tager ikke lang tid at slå op, 10-20 minutter, alt efter hvor rutineret du er. Med dens kompakte vægt på 11 kg, er det til at slæbe med på tur på trods af
+- **Telt - High Peak Tauris 6 - 6 personer**: High Peak Tauris 6 er et rummeligt familietelt med plads til op til 6 personer. Teltet er indrettet med to separate sovekabiner og et stort opholdsrum i midten, som gi
+- **Nordic Peak Oppustelig glamping telt - Gen Air 12Y**: Naturehike Gen Air 12 Y er et rummeligt og robust oppusteligt telt. Konstruktionen uden traditionelle stænger gør opsætningen lynhurtig og enkel, og de kraftige materialer sikrer god beskyttelse i vådt og blæsende vejr. Teltet har en solid bund, stærke ly
 
 </details>

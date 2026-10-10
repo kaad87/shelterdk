@@ -46,7 +46,10 @@ NAME_FILTER = {
 }
 # Udelukker tilbehør og varianter der ikke hører til guiden.
 EXCLUDE = {
-    "campingstol": r"bord|table|seng|\bbed\b|cover|taske|pude|hynde",
+    # Hængekøjestole ligner campingstole i navnet og er noget helt andet; de
+    # kom med da navnefilteret begyndte at søge hele lageret.
+    "campingstol": r"bord|table|seng|\bbed\b|cover|taske|pude|hynde|"
+                   r"h[æa]ngek[øo]je|hammock|tilbeh[øo]r",
     "telt": r"underlag|footprint|stang|pløk|pegs|reparation|telttæppe|fortelt|tarp",
     "sovepude": r"liggeunderlag|sovepose",
     "drikkedunk": r"filter|rens",
@@ -95,6 +98,19 @@ def main():
            "Feed'et har **ingen specs** (vægt, temperatur, mål). Beskrivelsen er forhandlerens egen tekst og er råmateriale, ikke noget der kan bruges ordret.",
            ""]
 
+    # Hele det købbare lager, hentet én gang. Supabase sender højst 1.000
+    # rækker pr. kald, så uden sideopdeling ser man kun toppen af feed'et.
+    lager, off = [], 0
+    while True:
+        side = sb.table("affiliate_products").select(
+            "id,brand,product_name,price,price_original,retailer,description,category_mapped"
+        ).eq("in_stock", True).eq("is_blocked", False).range(off, off + 999).execute().data
+        lager += side
+        if len(side) < 1000:
+            break
+        off += 1000
+    print(f"{len(lager)} købbare produkter i feed'et")
+
     plan = {}
     for g in sorted(guides, key=lambda x: x["slug"]):
         mine = [e for e in entries if e["guide_id"] == g["id"]]
@@ -104,18 +120,25 @@ def main():
         dead = [e for e in mine if e not in live]
         mangler = MIN_BUYABLE - len(live)
 
-        cands = []
-        for cat in (g["product_categories"] or []):
-            cands += sb.table("affiliate_products").select(
-                "id,brand,product_name,price,price_original,retailer,description"
-            ).eq("category_mapped", cat).eq("in_stock", True).eq("is_blocked", False).limit(1000).execute().data
         used = {e["affiliate_product_id"] for e in mine}
         keep = NAME_FILTER.get(g["slug"])
         drop = EXCLUDE.get(g["slug"])
-        cands = [c for c in cands
-                 if c["id"] not in used
-                 and (not keep or re.search(keep, c["product_name"] or "", re.I))
-                 and not (drop and re.search(drop, c["product_name"] or "", re.I))]
+        kats = set(g["product_categories"] or [])
+
+        # Kategorien må ikke være en port. 6.722 af feed'ets 16.766 produkter
+        # har slet ingen category_mapped, og nogle er direkte forkerte — tre
+        # Treklife-stole står som "gave". Da campingstol-guiden kun hentede
+        # kandidater via kategori, fandt den seks stole til 850-3.149 kr og
+        # ingen af de syv under 700 kr, som er netop det prisleje guiden er
+        # bygget til. Navnefilteret søger derfor hele lageret, og kategorien
+        # bruges kun hvor guiden ikke har et navnefilter.
+        cands = [
+            c for c in lager
+            if c["id"] not in used
+            and (re.search(keep, c["product_name"] or "", re.I) if keep
+                 else c.get("category_mapped") in kats)
+            and not (drop and re.search(drop, c["product_name"] or "", re.I))
+        ]
         # Spred over prisklasser: billigst, dyrest og jævnt fordelt derimellem.
         # Backpackerlife foretrækkes i kuraterede lister (se memory/aftale), så
         # ved ellers lige kandidater står de først.
