@@ -1,18 +1,40 @@
 {
   "campingstol": [
     {
-      "produkt_id": "outmore-5709388158406",
-      "praedikat": "Bedste premium",
-      "score": 8.4,
-      "bedst_til": "Lange aftener ved bålet",
-      "note": "SKRIV SELV — hvad gør netop denne stol værd at anbefale?",
-      "plus": [
-        "…",
-        "…"
-      ],
-      "minus": [
-        "…"
-      ]
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    },
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    },
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    },
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
     },
     {
       "produkt_id": "",
@@ -66,7 +88,7 @@
       "minus": []
     }
   ],
-  "myggenet": [
+  "sommersovepose": [
     {
       "produkt_id": "",
       "praedikat": "",
@@ -106,9 +128,27 @@
       "note": "",
       "plus": [],
       "minus": []
+    },
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
     }
   ],
   "telt": [
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    },
     {
       "produkt_id": "",
       "praedikat": "",

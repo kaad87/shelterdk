@@ -13,6 +13,36 @@
  */
 
 /**
+ * Alt /api/track tager imod. Står et event ikke her, svarer ruten 400, og
+ * intet bliver gemt nogen steder.
+ *
+ * Listen bor sammen med INTERNAL_EVENTS, fordi den sidste er en delmængde af
+ * den første, og den afhængighed var usynlig så længe de lå i to filer:
+ * gear_block_seen blev tilføjet til INTERNAL_EVENTS alene og blev afvist ved
+ * første port, så grej-blokkens visninger ville være målt til nul — den
+ * konklusion eventet netop skulle modbevise. event-vokabular.test.ts holder
+ * nu de to lister i trit.
+ */
+export const TRACKABLE_EVENTS = new Set([
+  "search_performed",
+  "filter_applied",
+  "shelter_viewed",
+  "view_item",
+  "newsletter_signup",
+  "share_click",
+  "outbound_click",
+  "affiliate_click",
+  "gear_suggestion_click",
+  "gear_block_seen",
+  "guide_view",
+  "community_submit",
+  "book_button_clicked",
+  "wishlist_changed",
+  "add_to_wishlist",
+  "payment_cancelled",
+]);
+
+/**
  * Hvilke events der dubleres til internal_events.
  *
  * Affiliate-klik står ikke på listen — de har deres egen tabel med

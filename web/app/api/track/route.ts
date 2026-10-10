@@ -1,27 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendGa4Event } from "@/lib/server-analytics";
 import { createClient } from "@supabase/supabase-js";
-import { INTERNAL_EVENTS, internalEventRow } from "@/lib/internal-events";
+import { INTERNAL_EVENTS, TRACKABLE_EVENTS, internalEventRow } from "@/lib/internal-events";
 
 export const dynamic = "force-dynamic";
-
-const ALLOWED_EVENTS = new Set([
-  "search_performed",
-  "filter_applied",
-  "shelter_viewed",
-  "view_item",
-  "newsletter_signup",
-  "share_click",
-  "outbound_click",
-  "affiliate_click",
-  "gear_suggestion_click",
-  "guide_view",
-  "community_submit",
-  "book_button_clicked",
-  "wishlist_changed",
-  "add_to_wishlist",
-  "payment_cancelled",
-]);
 
 type EventValue = string | number | boolean | null | undefined;
 
@@ -60,7 +42,7 @@ export async function POST(req: NextRequest) {
   }
 
   const event = typeof body.event === "string" ? body.event : "";
-  if (!ALLOWED_EVENTS.has(event)) {
+  if (!TRACKABLE_EVENTS.has(event)) {
     return NextResponse.json({ error: "Ugyldig event" }, { status: 400 });
   }
 
