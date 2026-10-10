@@ -1,0 +1,115 @@
+name: Købsguide-sundhed (shelterdk)
+
+# Dagligt tjek af at købsguiderne stadig peger på varer man kan købe.
+#
+# Findes fordi detektionen allerede var der, og ingen så på den:
+# lib/guide-health.ts kunne hele tiden fortælle at /bedste/campingstol var
+# tom, men den blev kun vist på et admin-endpoint, man selv skulle huske at
+# kalde. Resultatet var en side med 3.613 månedlige visninger, 19 "Udsolgt"
+# og nul købsknapper.
+#
+# Guiderne kan ikke holde sig selv sunde: 19% af feedets 16.772 varer er
+# udsolgte lige nu, 10,9% har været væk i over 30 dage, og en afmeldt vare
+# levede typisk 62 dage i feedet.
+#
+# Kører efter den daglige produkt-sync kl. 03:00, så lagerstatus er frisk.
+# Tavs når alt er sundt; mailer via Resend ellers. Mangler RESEND_API_KEY,
+# fejler jobbet i stedet, så GitHubs egen fejl-mail rammer dig.
+#
+# Rapporten kommer fra `npm run guide-health -- --json`, som henter sin
+# vurdering fra lib/guide-health.ts. Dermed findes der kun én definition af
+# hvad en usund guide er — den samme som admin-endpointet og testene bruger.
+# Scriptet bruger de Supabase-secrets, der allerede ligger i repoet, så
+# vagtjobbet ikke kræver endnu en hemmelighed.
+
+on:
+  schedule:
+    - cron: "30 4 * * *" # 04:30 UTC — halvanden time efter produkt-synken
+  workflow_dispatch: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+
+      - name: Hent guide-sundhed og mail ved problemer
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          ALERT_TO: kaad87@gmail.com
+          FROM_EMAIL: "ShelterDK <hej@shelterdk.dk>"
+        run: |
+          set -uo pipefail
+
+          npm run --silent guide-health -- --json > /tmp/health.json
+          if [ ! -s /tmp/health.json ]; then
+            echo "Scriptet gav intet output — se trinnet ovenfor."
+            exit 1
+          fi
+
+          antal=$(jq '.health | length' /tmp/health.json)
+          if [ "${antal:-0}" -eq 0 ]; then
+            echo "Ingen guider i svaret — det er i sig selv en fejl."
+            exit 1
+          fi
+
+          antal_syge=$(jq '[.health[] | select((.problems | length) > 0)] | length' /tmp/health.json)
+
+          rapport=$(jq -r '.health[]
+            | "\(.slug): \(.total - .dead)/\(.total) købbare"
+              + (if .topRetailer then "  ·  \(.topRetailer) \((.topRetailerShare * 100) | round)%" else "" end)
+              + (if .singleRetailerRisk then "  [én forhandler]" elif .concentrationRisk then "  [koncentration]" else "" end)
+              + (if (.problems | length) > 0 then "\n    - " + (.problems | join("\n    - ")) else "" end)' /tmp/health.json)
+
+          # Hverken koncentration eller enkelt-forhandler-risiko alarmerer: de
+          # er efterslæb man lukker redaktionelt, og en daglig mail om 24 guider
+          # bliver slået fra. De følger med i loggen og i mailen, så efterslæbet
+          # er synligt uden at støje.
+          konc=$(jq -r '[.health[] | select(.concentrationRisk)] | length' /tmp/health.json)
+          doer=$(jq -r '[.health[] | select(.singleRetailerRisk)] | length' /tmp/health.json)
+          efterslaeb=$(jq -r '[.health[] | select(.singleRetailerRisk)]
+            | sort_by(.survivesTopRetailerLoss, -(.total - .dead)) | .[]
+            | "  \(.slug): \(.survivesTopRetailerLoss) af \(.total - .dead) ville overleve uden \(.topRetailer)"' /tmp/health.json)
+
+          echo "Guide-sundhed $(date -u +'%Y-%m-%d %H:%M') UTC — ${antal} guider, ${antal_syge} med problemer"
+          echo "$rapport"
+          echo
+          echo "Efterslæb (alarmerer ikke): ${konc} guider over 60% hos én forhandler, ${doer} ville stå med under to varer hvis den forsvandt"
+
+          if [ "${antal_syge:-0}" -eq 0 ]; then
+            echo "✅ Alle ${antal} købsguider er sunde"
+            exit 0
+          fi
+
+          problemer=$(jq -r '.health[] | select((.problems | length) > 0)
+            | "- \(.slug): " + (.problems | join("; "))' /tmp/health.json)
+
+          if [ -n "${RESEND_API_KEY:-}" ]; then
+            body=$(printf 'ShelterDK: %s af %s koebsguider har et problem (%s UTC).\n\n%s\n\nSaadan retter du det:\n  python3 scripts/guide_candidates.py          # skriver koebsguide-oplaeg.md med kandidater\n  # udfyld koebsguide-valg.json og koer:\n  python3 scripts/guide_candidates.py --apply koebsguide-valg.json\n  # revalider derefter de aendrede sider via /api/revalidate\n\nEfterslaeb (alarmerer ikke): %s guider ville staa med under to varer, hvis\nderes stoerste forhandler fjernede sit sortiment — saadan gik campingstol\nfra 5 til 0 produkter.\n%s\n\nFuld status:\n%s\n\n(Automatisk fra GitHub Action: guide-health-monitor)' \
+              "$antal_syge" "$antal" "$(date -u +'%Y-%m-%d %H:%M')" "$problemer" "$doer" "$efterslaeb" "$rapport")
+            payload=$(jq -n --arg from "$FROM_EMAIL" --arg to "$ALERT_TO" \
+              --arg subject "⚠ ShelterDK: ${antal_syge} købsguide(r) kræver opmærksomhed" \
+              --arg text "$body" '{from:$from, to:[$to], subject:$subject, text:$text}')
+            http=$(curl -sS -o /tmp/resend.json -w "%{http_code}" -X POST "https://api.resend.com/emails" \
+              -H "Authorization: Bearer ${RESEND_API_KEY}" \
+              -H "Content-Type: application/json" \
+              -d "$payload")
+            echo "Resend HTTP ${http}: $(cat /tmp/resend.json 2>/dev/null)"
+          else
+            echo "RESEND_API_KEY mangler som secret — springer mail over. GitHubs fejl-mail sendes i stedet."
+          fi
+
+          # Fejl altid jobbet ved problemer → rød status i Actions + fallback-mail.
+          exit 1

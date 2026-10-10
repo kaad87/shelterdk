@@ -1,5 +1,25 @@
 {
-  "drikkedunk": [
+  "dry-bag": [
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    },
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    }
+  ],
+  "frysetorret-mad": [
     {
       "produkt_id": "",
       "praedikat": "",
@@ -28,6 +48,106 @@
       "note": "",
       "plus": [],
       "minus": []
+    },
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    }
+  ],
+  "haengekoje": [
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    },
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    }
+  ],
+  "handsker": [
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    },
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    }
+  ],
+  "hue": [
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    },
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    }
+  ],
+  "kniv": [
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    }
+  ],
+  "kompas": [
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    },
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
     }
   ],
   "liggeunderlag-til-vinter": [
@@ -39,9 +159,138 @@
       "note": "",
       "plus": [],
       "minus": []
+    },
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
     }
   ],
-  "sommersovepose": [
+  "myggenet": [
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    },
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    }
+  ],
+  "pandelampe": [
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    },
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    }
+  ],
+  "regntoj": [
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    },
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    }
+  ],
+  "siddeunderlag": [
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    },
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    }
+  ],
+  "sovepose": [
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    }
+  ],
+  "sovepose-til-boern": [
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    },
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    }
+  ],
+  "sovepose-til-vinter": [
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    },
     {
       "produkt_id": "",
       "praedikat": "",
@@ -61,9 +310,7 @@
       "note": "",
       "plus": [],
       "minus": []
-    }
-  ],
-  "tarp": [
+    },
     {
       "produkt_id": "",
       "praedikat": "",
@@ -72,7 +319,9 @@
       "note": "",
       "plus": [],
       "minus": []
-    },
+    }
+  ],
+  "taendstaal": [
     {
       "produkt_id": "",
       "praedikat": "",
@@ -93,6 +342,77 @@
     }
   ],
   "telt": [
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    }
+  ],
+  "uldundertoj": [
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    },
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    }
+  ],
+  "vandfilter": [
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    },
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    }
+  ],
+  "vandresokker": [
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    },
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    }
+  ],
+  "vandrestovler": [
     {
       "produkt_id": "",
       "praedikat": "",

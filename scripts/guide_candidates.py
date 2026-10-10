@@ -12,7 +12,7 @@ noten, ikke noget der kan kopieres direkte ind. Feed'et har ingen specs
 Brug:  python3 scripts/guide_candidates.py            # skriv oplæg
        python3 scripts/guide_candidates.py --apply valg.json   # opret entries
 """
-import json, os, re, sys
+import collections, json, os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 for p in (os.path.join(ROOT, ".env"), os.path.join(ROOT, "web", ".env.local")):
@@ -25,6 +25,8 @@ for p in (os.path.join(ROOT, ".env"), os.path.join(ROOT, "web", ".env.local")):
 from supabase import create_client
 
 MIN_BUYABLE = 5
+# Må ikke afvige fra MIN_SURVIVORS i web/lib/guide-health.ts.
+MIN_SURVIVORS = 2
 OUT = os.path.join(ROOT, "koebsguide-oplaeg.md")
 
 # Kategorierne i feed'et er brede ("beklædning" rummer alt fra huer til gamacher),
@@ -108,11 +110,11 @@ def main():
     pids = [e["affiliate_product_id"] for e in entries]
     prods = {}
     for i in range(0, len(pids), 200):
-        for r in sb.table("affiliate_products").select("id,product_name,price,in_stock,is_blocked").in_("id", pids[i:i + 200]).execute().data:
+        for r in sb.table("affiliate_products").select("id,product_name,price,in_stock,is_blocked,retailer").in_("id", pids[i:i + 200]).execute().data:
             prods[r["id"]] = r
 
     out = ["# Oplæg: huller i købsguiderne", "",
-           "Guider med under %d købbare produkter. For hver: nuværende opstilling, hvad der mangler, og kandidater fra feed'et." % MIN_BUYABLE,
+           "Guider der kræver opmærksomhed: under %d købbare produkter, eller under %d varer tilbage hvis den største forhandler forsvandt. For hver: nuværende opstilling, hvad der mangler, og kandidater fra feed'et." % (MIN_BUYABLE, MIN_SURVIVORS),
            "",
            "Kolonnen **id** er `affiliate_product_id` — den skal du bruge i valg.json.",
            "Forhandler: `backpackerlife` foretrækkes ved ellers lige kandidater.",
@@ -136,10 +138,32 @@ def main():
     for g in sorted(guides, key=lambda x: x["slug"]):
         mine = [e for e in entries if e["guide_id"] == g["id"]]
         live = [e for e in mine if (p := prods.get(e["affiliate_product_id"])) and p["in_stock"] and not p["is_blocked"]]
-        if len(live) >= MIN_BUYABLE:
+
+        # To grunde til at en guide skal med i oplægget. Den åbenlyse er for få
+        # købbare produkter. Den anden er koncentration: en guide med otte
+        # varer, der alle ligger hos samme forhandler, ser sund ud og er ét
+        # feed-skift fra nul — det var præcis campingstols tilstand ugen før
+        # den døde. Uden den anden grund kunne værktøjet ikke bruges til at
+        # rette det, som vagtjobbet rapporterer.
+        har = collections.Counter(
+            p["retailer"] for e in live
+            if (p := prods.get(e["affiliate_product_id"])) and p.get("retailer")
+        )
+        i_alt_live = sum(har.values())
+        top_n = har.most_common(1)[0][1] if har else 0
+        overlever = i_alt_live - top_n
+        for_tynd = len(live) < MIN_BUYABLE
+        for_samlet = bool(har) and overlever < MIN_SURVIVORS
+        if not for_tynd and not for_samlet:
             continue
+
         dead = [e for e in mine if e not in live]
-        mangler = MIN_BUYABLE - len(live)
+        # En koncentreret men fuldtallig guide mangler ikke antal, men nok
+        # varer fra ANDRE forhandlere til at den ikke kan gå i nul. Andelen
+        # alene er den forkerte målestok: at bringe alle koncentrerede guider
+        # under 60% kostede 93 produkter, mens gulvet på to overlevende koster
+        # 10 og fjerner netop den tilstand campingstol endte i.
+        mangler = max(MIN_BUYABLE - len(live), 0) if for_tynd else (MIN_SURVIVORS - overlever)
 
         used = {e["affiliate_product_id"] for e in mine}
         keep = NAME_FILTER.get(g["slug"])
@@ -161,14 +185,38 @@ def main():
             and not (drop and re.search(drop, c["product_name"] or "", re.I))
         ]
         # Spred over prisklasser: billigst, dyrest og jævnt fordelt derimellem.
-        # Backpackerlife foretrækkes i kuraterede lister (se memory/aftale), så
-        # ved ellers lige kandidater står de først.
-        cands.sort(key=lambda c: (c["price"] or 0, 0 if c["retailer"] == "backpackerlife" else 1))
+        # Ved ellers lige kandidater kommer den forhandler, guiden har mindst
+        # af, først; derefter backpackerlife (se memory/aftale).
+        cands.sort(key=lambda c: (
+            c["price"] or 0,
+            har.get(c["retailer"], 0),
+            0 if c["retailer"] == "backpackerlife" else 1,
+        ))
         step = max(1, len(cands) // 12)
         shortlist = cands[::step][:12]
 
+        # Sørg for at hver forhandler, guiden mangler, er repræsenteret i
+        # kortlisten — ellers kan prisspredningen alene udelukke netop den
+        # forhandler, der ville fjerne svigtpunktet.
+        for forh in sorted({c["retailer"] for c in cands} - {c["retailer"] for c in shortlist}):
+            ekstra = next((c for c in cands if c["retailer"] == forh), None)
+            if ekstra:
+                shortlist.append(ekstra)
+
+        if i_alt_live:
+            top, n = har.most_common(1)[0]
+            konc = (f"Forhandlere nu: " + ", ".join(f"{k} {v}" for k, v in har.most_common())
+                    + (f" — kun **{overlever}** ville overleve uden {top}. "
+                       f"Vælg fra en anden forhandler, så guiden ikke kan gå i nul."
+                       if overlever < MIN_SURVIVORS else ""))
+        else:
+            konc = ""
+
         out += [f"## /bedste/{g['slug']} — {g['title']}", "",
-                f"**{len(live)} købbare af {len(mine)}. Mangler {mangler}.**", "",
+                f"**{len(live)} købbare af {len(mine)}. Mangler {mangler}.**", ""]
+        if konc:
+            out += [konc, ""]
+        out += ["",
                 "Nu på siden:", ""]
         for e in sorted(mine, key=lambda x: x["rank"]):
             p = prods.get(e["affiliate_product_id"], {})

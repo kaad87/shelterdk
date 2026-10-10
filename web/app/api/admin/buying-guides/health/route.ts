@@ -12,7 +12,14 @@ function admin(req: NextRequest) {
   });
 }
 
-/** GET — sundhedsstatus pr. guide, så døde produktpladser er synlige ét sted. */
+/**
+ * GET — sundhedsstatus pr. guide, så døde produktpladser er synlige ét sted.
+ *
+ * Kaldes også af guide-health-monitor.yml hver morgen. Vagtjobbet henter sin
+ * vurdering her frem for at gentage forespørgslen, så der kun findes én
+ * definition af hvad en usund guide er — og så en fejl i dette endpoint selv
+ * bliver opdaget dagligt.
+ */
 export async function GET(req: NextRequest) {
   const sb = admin(req);
   if (!sb) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
@@ -26,7 +33,7 @@ export async function GET(req: NextRequest) {
   const ids = [...new Set(entries.map((e) => e.affiliate_product_id))];
   const { data: products } = await sb
     .from("affiliate_products")
-    .select("id, in_stock, is_blocked, last_seen_at")
+    .select("id, in_stock, is_blocked, last_seen_at, retailer")
     .in("id", ids);
   const byId = new Map((products ?? []).map((p) => [p.id, p]));
 
@@ -42,6 +49,7 @@ export async function GET(req: NextRequest) {
             isBlocked: p?.is_blocked ?? true,
             lastSeenAt: p?.last_seen_at ?? null,
             awardLabel: e.award_label,
+            retailer: p?.retailer ?? null,
           };
         });
       return guideHealth({ slug: g.slug, lastReviewedAt: g.last_reviewed_at, entries: rows }, now);
