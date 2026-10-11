@@ -62,7 +62,7 @@ NAME_FILTER = {
                   r"opt[æa]nding|tinder|fire starter",
     "pandelampe": r"pandelampe|headlamp|hovedlampe",
     "kompas": r"kompas|compass",
-    "hue": r"\bhue\b|beanie|\bcap\b",
+    "hue": r"\bhue\b|beanie|pandeb[åa]nd|headband|balaclava|elefanthue",
     "handsker": r"handske|glove|mitten|luffe",
     "dry-bag": r"dry.?bag|vandt[æa]t pose|pakpose|stuff sack",
     "frysetorret-mad": r"fryset[øo]rret|freeze.?dried|expedition meal",
@@ -111,7 +111,11 @@ EXCLUDE = {
                   r"lanterne|v[æa]ge|tilbeh[øo]r",
     "pandelampe": r"batteri|\bcell\b|opladning|tilbeh[øo]r|lanterne|v[æa]ge|"
                   r"lommelampe|flashlight",
-    "hue": r"\bcap\b.*skrue|h[æa]tte til|d[æa]ksel",
+    # Pandebånd TIL pandelamper hedder "headband" og fyldte halvdelen af
+    # hue-guidens kandidatliste: Petzl-reservedele til 89 kr.
+    "hue": r"\bcap\b.*skrue|h[æa]tte til|d[æa]ksel|til .*pandelampe|"
+           r"pandelamper|spare headband|tilbeh[øo]r|silicone|silikone|"
+           r"overheadband|safety light|lighted",
     "handsker": r"ovnhandske|handskerum",
     "vandresokker": r"sutsko|skosnor|indl[æa]gss[åa]l",
     "uldundertoj": r"\bsokker\b|\bsock\b|\bhue\b|handske|t-shirt til hund",
