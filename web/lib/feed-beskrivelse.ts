@@ -39,6 +39,22 @@ const MINDSTE_GRÆNSE = 40;
 const MINDSTE_NYTTIGE = 40;
 
 /**
+ * Længde hvorover en tekst uden sluttegn må antages at være afkortet af feedet.
+ *
+ * Tegnsætning alene er ikke nok. Feedets punktopstillinger indeholder ikke et
+ * eneste punktum — "Mål: 160 x 80 cm … Vægt: 450g" er en komplet beskrivelse,
+ * den slutter bare på sin sidste værdi. Uden dette tjek klippede reparationen
+ * et ord af hver gang og ødelagde netop de tekster, der var i orden.
+ *
+ * Målt på de 136 beskrivelser guiderne bruger: de afkortede ligger på 248-255
+ * tegn, de komplette er kortere. Grænsen sættes derfor under den gruppe.
+ */
+const FEED_AFKORTER_VED = 240;
+
+/** Kortest mulige hele beskrivelse. Under det er det et enkelt ord, ikke tekst. */
+const MINDSTE_SÆTNING = 15;
+
+/**
  * Bindeord teksten ikke må ende på. Da faldet tilbage til "drop sidste ord"
  * blev målt på de 136 rigtige tekster, endte 18 af dem på "og", "hvortil"
  * eller "derfor" — et helt ord, men midt i en tanke.
@@ -51,17 +67,34 @@ const HÆNGENDE = new RegExp(
 
 export function helTekst(raw: string | null | undefined, maxLength = 500): string | null {
   if (!raw) return null;
+
+  // Længden skal måles FØR shortcodes fjernes. Feedet afkorter ved ~255 tegn
+  // inklusive dem, og en [kad_youtube …]-shortcode er omkring 88 tegn. Målt
+  // på de 202 beskrivelser guiderne bruger: tolv af dem var afkortede midt i
+  // et ord, men stod kun til 166-187 tegn efter strip og slap derfor gennem
+  // længde-porten som "for korte til at være afkortede".
+  const råLængde = raw.replace(/\s+/g, " ").trim().length;
+
   let t = raw.replace(SHORTCODE, " ").replace(/\s+/g, " ").trim();
   if (!t) return null;
-
-  if (t.length > maxLength) t = t.slice(0, maxLength);
-  else if (SLUTTER_RENT.test(t)) return t;
 
   // Grænserne må aldrig overstige halvdelen af budgettet. Ellers kan en lille
   // maxLength gøre sætnings-stien uopnåelig, så et kort kald altid faldt ned i
   // nødudgangen og returnerede null.
   const grænse = Math.min(MINDSTE_GRÆNSE, Math.floor(maxLength / 2));
   const nyttig = Math.min(MINDSTE_NYTTIGE, Math.floor(maxLength / 2));
+
+  // Tre tilfælde hvor teksten ikke skal repareres: vi klipper den selv (så den
+  // ER afkortet og skal repareres), den slutter rent (hel), eller den er kort
+  // nok til at feedet ikke kan have afkortet den (hel, selv uden sluttegn).
+  // En hel men kort tekst skal ikke måles med reparations-stiens minimum: en
+  // forhandler kan skrive "Letvægtsstol, 1030 g." og mene det. Kravet er
+  // derfor kun, at der står en sætning og ikke et enkelt ord.
+  const hel = (x: string) =>
+    x.includes(" ") && x.length >= MINDSTE_SÆTNING ? x : null;
+  if (t.length > maxLength) t = t.slice(0, maxLength);
+  else if (SLUTTER_RENT.test(t)) return hel(t);
+  else if (råLængde < FEED_AFKORTER_VED) return hel(t);
 
   // Sidste sætningsgrænse i teksten — den giver altid et rent slutpunkt.
   let sidste = -1;
@@ -80,6 +113,21 @@ export function helTekst(raw: string | null | undefined, maxLength = 500): strin
     if (kortere === rest) break;
     rest = kortere;
   }
+
+  // Feedets punktopstillinger kommer som én linje uden et eneste punktum:
+  // "Mål: 120 x 60 cm … Vægt: 300g Nedpakket st". Når det afskårne ord er
+  // droppet, står der tit en mærkat tilbage uden sin værdi — eller et tal
+  // uden sin enhed. Begge læses som en afbrudt sætning, så de ryger med.
+  // En liste der ender på sin værdi ("Vægt: 450g") er derimod komplet og
+  // bliver stående, selv om den ikke slutter med punktum.
+  for (let i = 0; i < 2; i++) {
+    const kortere = rest
+      .replace(/\s+\p{Lu}[\p{L}-]*$/u, "")   // dinglende mærkat: ét ord med stort begyndelsesbogstav
+      .replace(/\s+\d+([,.]\d+)?$/u, "");    // efterladt tal uden enhed
+    if (kortere === rest) break;
+    rest = kortere;
+  }
+
   rest = rest.replace(/[,;:\s]+$/, "");
   return rest.length >= nyttig ? rest : null;
 }
