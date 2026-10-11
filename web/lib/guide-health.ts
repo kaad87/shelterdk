@@ -21,6 +21,13 @@ export interface HealthInput {
   slug: string;
   lastReviewedAt: string | null;
   entries: HealthEntry[];
+  /**
+   * Titel og beskrivelse, så vi kan se om deres tal-påstande faktisk kan
+   * holdes friske. Valgfrie, fordi ældre kaldere ikke sender dem — men uden
+   * dem kan tjekket nedenfor ikke køre.
+   */
+  seoTitle?: string | null;
+  seoDescription?: string | null;
 }
 
 export interface GuideHealth {
@@ -47,6 +54,23 @@ export interface GuideHealth {
    */
   singleRetailerRisk: boolean;
   problems: string[];
+}
+
+/**
+ * En tal-påstand om favoritter, som friskTitel/friskBeskrivelse kan vedligeholde.
+ *
+ * Samme mønster som ANTAL i guide-title.ts, og det er hele pointen: nævner en
+ * tekst favoritter uden et ciffer, matcher friskhedsmodulet den ikke, og
+ * påstanden kan aldrig rettes. Tre guider stod sådan — "Vi scorer favoritter
+ * — LifeStraw, Katadyn og kemisk rensning" — hvilket både læser forkert og
+ * er usynligt for maskineriet. Det er en tavs tilstand, så den skal meldes.
+ */
+const FAVORIT_UDEN_TAL = /favorit/i;
+const FAVORIT_MED_TAL = /\d+\s+favorit(?:ter)?/i;
+
+function tallosPaastand(tekst: string | null | undefined): boolean {
+  if (!tekst) return false;
+  return FAVORIT_UDEN_TAL.test(tekst) && !FAVORIT_MED_TAL.test(tekst);
 }
 
 const MIN_BUYABLE = 4;
@@ -139,6 +163,14 @@ export function guideHealth(input: HealthInput, now: Date = new Date()): GuideHe
     problems.push("siden kan ikke vise et førstevalg — alle varer på lager har allerede et prædikat");
   }
   if (delisted.length) problems.push(`${delisted.length} produkt(er) afmeldt fra feedet i over ${DELISTED_DAYS} dage`);
+  for (const [hvad, tekst] of [
+    ["titlen", input.seoTitle],
+    ["beskrivelsen", input.seoDescription],
+  ] as const) {
+    if (tallosPaastand(tekst)) {
+      problems.push(`${hvad} nævner favoritter uden et tal — friskhedsmodulet kan ikke rette den`);
+    }
+  }
   const reviewAge = daysSince(input.lastReviewedAt, now);
   if (reviewAge == null) problems.push("aldrig gennemgået");
   else if (reviewAge > REVIEW_DAYS) problems.push(`gennemgået for ${Math.round(reviewAge)} dage siden`);

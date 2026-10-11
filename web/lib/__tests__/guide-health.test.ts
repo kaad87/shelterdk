@@ -180,4 +180,35 @@ describe("guideHealth", () => {
     expect(h.delisted).toBe(1);
     expect(h.problems.some((p) => /afmeldt/.test(p))).toBe(true);
   });
+
+  it("melder en beskrivelse der nævner favoritter uden et tal", () => {
+    // friskBeskrivelse matcher kun på et ciffer foran "favoritter". Tre guider
+    // stod med "Vi scorer favoritter — LifeStraw, Katadyn og kemisk rensning":
+    // påstanden læser forkert OG er usynlig for friskhedsmodulet, så den kan
+    // aldrig rettes. En tavs tilstand skal meldes.
+    const h = guideHealth({ ...base,
+      seoDescription: "Find det bedste vandfilter. Vi scorer favoritter — LifeStraw og Katadyn.",
+    }, NOW);
+    expect(h.problems.some((p) => /beskrivelsen nævner favoritter uden et tal/.test(p))).toBe(true);
+  });
+
+  it("melder også titlen, og peger på det rigtige felt", () => {
+    const h = guideHealth({ ...base, seoTitle: "Bedste telt — favoritter testet" }, NOW);
+    expect(h.problems.some((p) => /titlen nævner favoritter uden et tal/.test(p))).toBe(true);
+    expect(h.problems.some((p) => /beskrivelsen nævner/.test(p))).toBe(false);
+  });
+
+  it("melder ikke en tekst hvor tallet står der", () => {
+    const h = guideHealth({ ...base,
+      seoTitle: "Bedste telt 2026 – 6 favoritter, fra 499 kr.",
+      seoDescription: "Vi scorer 6 favoritter — fra 499 til 2.999 kr.",
+    }, NOW);
+    expect(h.problems.some((p) => /favoritter uden et tal/.test(p))).toBe(false);
+  });
+
+  it("melder ikke når felterne mangler", () => {
+    // Begge er valgfrie; en kalder der ikke sender dem skal ikke udløse alarm.
+    const h = guideHealth(base, NOW);
+    expect(h.problems.some((p) => /favoritter uden et tal/.test(p))).toBe(false);
+  });
 });

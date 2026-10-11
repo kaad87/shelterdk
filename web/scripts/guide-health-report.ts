@@ -61,9 +61,13 @@ async function alle<T>(
 async function main() {
   const somJson = process.argv.includes("--json");
 
-  const guides = await alle<{ id: string; slug: string; last_reviewed_at: string | null }>(
+  const guides = await alle<{
+    id: string; slug: string; last_reviewed_at: string | null;
+    seo_title: string | null; seo_description: string | null;
+  }>(
     "buying_guides",
-    (f, t) => sb.from("buying_guides").select("id, slug, last_reviewed_at")
+    (f, t) => sb.from("buying_guides")
+      .select("id, slug, last_reviewed_at, seo_title, seo_description")
       .eq("status", "published").range(f, t)
   );
   const entries = await alle<{ guide_id: string; award_label: string | null; affiliate_product_id: string }>(
@@ -105,7 +109,8 @@ async function main() {
 
   const health: GuideHealth[] = guides
     .map((g) => guideHealth(
-      { slug: g.slug, lastReviewedAt: g.last_reviewed_at, entries: pr.get(g.id) ?? [] }, nu))
+      { slug: g.slug, lastReviewedAt: g.last_reviewed_at, entries: pr.get(g.id) ?? [],
+        seoTitle: g.seo_title, seoDescription: g.seo_description }, nu))
     .sort((a, b) => b.problems.length - a.problems.length || b.dead - a.dead);
 
   if (somJson) {

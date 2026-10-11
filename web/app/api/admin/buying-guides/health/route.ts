@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
   if (!sb) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   const [{ data: guides }, { data: entries }] = await Promise.all([
-    sb.from("buying_guides").select("id, slug, last_reviewed_at"),
+    sb.from("buying_guides").select("id, slug, last_reviewed_at, seo_title, seo_description"),
     sb.from("buying_guide_entries").select("guide_id, award_label, affiliate_product_id"),
   ]);
   if (!guides || !entries) return NextResponse.json({ error: "db" }, { status: 500 });
@@ -52,7 +52,8 @@ export async function GET(req: NextRequest) {
             retailer: p?.retailer ?? null,
           };
         });
-      return guideHealth({ slug: g.slug, lastReviewedAt: g.last_reviewed_at, entries: rows }, now);
+      return guideHealth({ slug: g.slug, lastReviewedAt: g.last_reviewed_at, entries: rows,
+        seoTitle: g.seo_title, seoDescription: g.seo_description }, now);
     })
     .sort((a, b) => b.problems.length - a.problems.length || b.dead - a.dead);
 
