@@ -30,6 +30,27 @@ from supabase import create_client
 
 TOP = re.compile(r"^(?:vores valg|bedst i test|testvinder|redaktionens valg)$", re.I)
 SLUG = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+HUB = os.path.join(ROOT, "web", "lib", "buying-guides-hub.ts")
+
+
+def hub_kategorier():
+    """Kategorier der har en navngiven gruppe på /bedste.
+
+    Læses ud af HUB_GROUPS i TypeScript-filen frem for at gentages her, så de
+    to lister ikke kan komme ud af trit. Står en guides kategori ikke i en
+    gruppe, lander den i hub-sidens "Andet" — synligt som en navnløs sektion,
+    og usynligt som manglende søskende-links, fordi relatedGuides kun finder
+    søskende inden for gruppen. Det skete for powerbank, håndklæde og
+    førstehjælp, og det var først synligt da hub-siden blev læst efter.
+    """
+    try:
+        kilde = open(HUB, encoding="utf-8").read()
+    except OSError:
+        return None
+    blok = re.search(r"HUB_GROUPS[^=]*=\s*\[(.*?)\n\];", kilde, re.S)
+    if not blok:
+        return None
+    return {k for k in re.findall(r'"([a-z0-9_-]+)"', blok.group(1))}
 
 
 def main():
@@ -63,6 +84,13 @@ def main():
         kat = g.get("category") or kat_for.get(g.get("parent_slug") or "")
         if not kat:
             fejl.append("category mangler og kan ikke udledes af parent_slug")
+        else:
+            kendte = hub_kategorier()
+            if kendte is None:
+                print("  [ADVARSEL] kunne ikke læse HUB_GROUPS — springer gruppe-tjek over")
+            elif kat not in kendte:
+                fejl.append(f"category '{kat}' har ingen gruppe i HUB_GROUPS — "
+                            f"guiden ville havne i hub-sidens 'Andet' uden søskende-links")
 
         entries = g.get("entries", [])
         if not entries:

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { groupGuides, relatedGuides, type HubGuide } from "@/lib/buying-guides-hub";
+import { groupGuides, relatedGuides, type HubGuide, HUB_GROUPS } from "@/lib/buying-guides-hub";
 
 const g = (slug: string, category: string, parent_slug: string | null = null): HubGuide => ({
   slug,
@@ -48,5 +48,25 @@ describe("relatedGuides", () => {
   });
   it("cap'er antal", () => {
     expect(relatedGuides("sovepose", all, 1).length).toBeLessThanOrEqual(1);
+  });
+
+  it("giver hver kategori i brug en navngiven gruppe", () => {
+    // De otte guider oprettet 10.-11. oktober indførte seks nye
+    // category-værdier. Tre af dem — elektronik, hygiejne og foerstehjaelp —
+    // stod ikke i HUB_GROUPS, så powerbank-, håndklæde- og
+    // førstehjælps-guiderne landede i "Andet". Det er synligt som en navnløs
+    // sektion og usynligt som manglende søskende-links.
+    const iBrug = [
+      "sovepose", "liggeunderlag", "haengekoje", "soveudstyr", "telt", "tarp",
+      "pandelampe", "lygte", "vandfilter", "drikkedunk", "kogeudstyr",
+      "stormkoekken", "frysetorret", "kniv", "rygsaek", "kompas", "drybag",
+      "optaending", "campingstol", "myggenet", "siddeunderlag", "uldundertoj",
+      "regntoj", "sokker", "fodtoj", "gamacher", "handsker", "hue",
+      "elektronik", "hygiejne", "foerstehjaelp",
+    ];
+    const uden = iBrug.filter(
+      (k) => !HUB_GROUPS.some((g) => g.categories.includes(k))
+    );
+    expect(uden, `kategorier uden hub-gruppe: ${uden.join(", ")}`).toEqual([]);
   });
 });

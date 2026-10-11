@@ -12,10 +12,21 @@ export const HUB_GROUPS: { group: string; categories: string[] }[] = [
   { group: "Telte & ly", categories: ["telt", "tarp"] },
   { group: "Belysning", categories: ["pandelampe", "lygte"] },
   { group: "Vand & mad", categories: ["vandfilter", "drikkedunk", "kogeudstyr", "stormkoekken", "frysetorret"] },
-  { group: "Værktøj & udstyr", categories: ["kniv", "multitool", "rygsaek", "kikkert", "kompas", "drybag", "optaending"] },
+  { group: "Værktøj & udstyr", categories: ["kniv", "multitool", "rygsaek", "kikkert", "kompas", "drybag", "optaending", "elektronik"] },
   { group: "Lejr & komfort", categories: ["campingstol", "campingmobler", "myggenet", "siddeunderlag"] },
   { group: "Tøj & lag-på-lag", categories: ["uldundertoj", "regntoj", "sokker", "fodtoj", "gamacher", "handsker", "hue"] },
+  { group: "Sikkerhed & hygiejne", categories: ["foerstehjaelp", "hygiejne"] },
 ];
+/**
+ * Gruppe for kategorier der ikke er nævnt ovenfor.
+ *
+ * Skal i praksis være tom. Da powerbank-, håndklæde- og
+ * førstehjælps-guiderne blev oprettet med kategorierne elektronik, hygiejne
+ * og foerstehjaelp, faldt alle tre herned — synligt som en navnløs
+ * "Andet"-sektion på hub-siden, og usynligt som manglende søskende-links,
+ * fordi relatedGuides finder søskende inden for gruppen. scripts/opret_guide.py
+ * nægter nu at oprette en guide, hvis dens kategori ikke har en gruppe.
+ */
 const OTHER = "Andet";
 
 function groupOf(category: string): string {
