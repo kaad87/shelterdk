@@ -70,5 +70,22 @@ export function relatedGuides<T extends HubGuide>(currentSlug: string, all: T[],
   for (const g of all) if (g.parent_slug === currentSlug) add(g);
   // 3) søskende i samme gruppe
   for (const g of all) if (groupOf(g.category) === grp) add(g);
+
+  // 4) fyld op fra hovedguider, hvis gruppen er for lille til at nå loftet.
+  //
+  // Grupperne er ikke lige store: "Sikkerhed & hygiejne" og "Belysning" har
+  // to medlemmer hver, så fire guider fik ét enkelt link og syv af 38 fik
+  // under tre — mens loftet er seks. Interne links er sitets største
+  // uudnyttede løftestang, så den tomme kapacitet var en reel udeladelse.
+  //
+  // Der fyldes kun med hovedguider (uden parent_slug). En variant af et andet
+  // emne er et svagere link end hovedguiden om samme emne, og den har i
+  // forvejen sin forælder som indgang.
+  if (out.length < cap) {
+    for (const g of all) {
+      if (out.length >= cap) break;
+      if (!g.parent_slug) add(g);
+    }
+  }
   return out.slice(0, cap);
 }

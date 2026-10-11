@@ -34,12 +34,15 @@ describe("relatedGuides", () => {
     g("liggeunderlag", "liggeunderlag"),
     g("kniv", "kniv"),
   ];
-  it("variant viser parent + søskende i samme gruppe, ekskl. sig selv og andre grupper", () => {
+  it("variant viser parent og egen gruppe FØRST, andre grupper kun som udfyldning", () => {
+    // Udelukkede før alt uden for gruppen. Det er løsnet med vilje, fordi
+    // små grupper efterlod fire guider med ét enkelt link. Kontrakten er nu
+    // rækkefølge frem for udelukkelse: forælder og egen gruppe først, og
+    // hovedguider fra andre grupper kun hvis der er plads tilbage.
     const r = relatedGuides("sovepose-til-vinter", all).map((x) => x.slug);
-    expect(r).toContain("sovepose");
-    expect(r).toContain("liggeunderlag");
     expect(r).not.toContain("sovepose-til-vinter");
-    expect(r).not.toContain("kniv");
+    expect(r.indexOf("sovepose")).toBe(0);
+    expect(r.indexOf("liggeunderlag")).toBeLessThan(r.indexOf("kniv"));
   });
   it("hovedguide viser egne varianter + søskende", () => {
     const r = relatedGuides("sovepose", all).map((x) => x.slug);
@@ -68,5 +71,37 @@ describe("relatedGuides", () => {
       (k) => !HUB_GROUPS.some((g) => g.categories.includes(k))
     );
     expect(uden, `kategorier uden hub-gruppe: ${uden.join(", ")}`).toEqual([]);
+  });
+
+  it("fylder op fra hovedguider når gruppen er for lille", () => {
+    // Gruppen "Sikkerhed & hygiejne" har kun to medlemmer, så begge fik ét
+    // enkelt link, skønt loftet er seks. Målt på de 38 guider fik syv under
+    // tre links og fire kun ét — og interne links er sitets største
+    // uudnyttede løftestang, så den ubrugte kapacitet er en reel udeladelse.
+    const alle: HubGuide[] = [
+      { slug: "haandklaede", title: "H", category: "hygiejne", intro: null, parent_slug: null },
+      { slug: "foerstehjaelp", title: "F", category: "foerstehjaelp", intro: null, parent_slug: null },
+      { slug: "sovepose", title: "S", category: "sovepose", intro: null, parent_slug: null },
+      { slug: "telt", title: "T", category: "telt", intro: null, parent_slug: null },
+      { slug: "kniv", title: "K", category: "kniv", intro: null, parent_slug: null },
+      { slug: "telt-variant", title: "TV", category: "telt", intro: null, parent_slug: "telt" },
+    ];
+    const r = relatedGuides("haandklaede", alle, 6);
+    expect(r[0].slug, "søskende i egen gruppe skal stå først").toBe("foerstehjaelp");
+    expect(r.length).toBeGreaterThan(1);
+    expect(r.map((x) => x.slug)).not.toContain("haandklaede");
+  });
+
+  it("fylder kun op med hovedguider, ikke med varianter", () => {
+    // En variant uden relation til emnet er et dårligere link end en
+    // hovedguide, og den har i forvejen sin forælder som indgang.
+    const alle: HubGuide[] = [
+      { slug: "haandklaede", title: "H", category: "hygiejne", intro: null, parent_slug: null },
+      { slug: "sovepose", title: "S", category: "sovepose", intro: null, parent_slug: null },
+      { slug: "sommersovepose", title: "SS", category: "sovepose", intro: null, parent_slug: "sovepose" },
+    ];
+    const r = relatedGuides("haandklaede", alle, 6).map((x) => x.slug);
+    expect(r).toContain("sovepose");
+    expect(r).not.toContain("sommersovepose");
   });
 });

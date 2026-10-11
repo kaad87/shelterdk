@@ -123,12 +123,6 @@ export function helTekst(raw: string | null | undefined, maxLength = 500): strin
   // uden sin enhed. Begge læses som en afbrudt sætning, så de ryger med.
   // En liste der ender på sin værdi ("Vægt: 450g") er derimod komplet og
   // bliver stående, selv om den ikke slutter med punktum.
-  // Feedets punktopstillinger kommer som én linje uden et eneste punktum:
-  // "Mål: 120 x 60 cm … Vægt: 300g Nedpakket st". Når det afskårne ord er
-  // droppet, står der tit en mærkat tilbage uden sin værdi — eller et tal
-  // uden sin enhed. Begge læses som en afbrudt sætning, så de ryger med.
-  // En liste der ender på sin værdi ("Vægt: 450g") er derimod komplet og
-  // bliver stående, selv om den ikke slutter med punktum.
   //
   // Men et mærkenavn har også stort begyndelsesbogstav, og det skal blive
   // stående: "… fra tyske Mil-Tec" må ikke ende som "… fra tyske", hvor både
