@@ -1,5 +1,5 @@
-import { describe, expect, it, afterEach } from "vitest";
-import { cleanup, render } from "@testing-library/react";
+import { describe, expect, it, afterEach, vi } from "vitest";
+import { act, cleanup, render } from "@testing-library/react";
 import {
   Soejlegraf, StabletAreal, Sparkline, Bjaelker, Varmekort, Retning,
 } from "@/components/admin/Grafer";
@@ -12,14 +12,31 @@ afterEach(cleanup);
  * noget, og lyver. Derfor tjekkes de faktiske tal i SVG'et.
  */
 describe("Soejlegraf", () => {
-  it("tegner én søjle pr. datapunkt", () => {
+  it("tegner én synlig søjle og én usynlig tooltip-ramme pr. datapunkt", () => {
+    // Rammen er fuldhøj og gennemsigtig, så man også kan pege på en dag
+    // uden klik — dens søjle er 0 px høj og ellers umulig at ramme.
     const { container } = render(
       <Soejlegraf data={[
         { dato: "2026-10-09", vaerdi: 1 },
         { dato: "2026-10-10", vaerdi: 5 },
-        { dato: "2026-10-11", vaerdi: 3 },
+        { dato: "2026-10-11", vaerdi: 0 },
       ]} />);
-    expect(container.querySelectorAll("rect")).toHaveLength(3);
+    const alle = [...container.querySelectorAll("rect")];
+    const synlige = alle.filter((r) => r.getAttribute("fill") !== "transparent");
+    const rammer = alle.filter((r) => r.getAttribute("fill") === "transparent");
+    expect(synlige).toHaveLength(3);
+    expect(rammer).toHaveLength(3);
+    // Også dagen uden klik har en ramme med en læsbar dato.
+    expect(rammer[2].querySelector("title")?.textContent).toMatch(/11\. oktober: 0/);
+  });
+
+  it("navngiver dagen på dansk i tooltip, ikke som ISO-dato", () => {
+    const { container } = render(
+      <Soejlegraf data={[{ dato: "2026-10-10", vaerdi: 4 }]} enhed=" kr." />);
+    const t = container.querySelector("rect[fill='transparent'] title")?.textContent ?? "";
+    expect(t).toContain("lørdag");
+    expect(t).toContain("10. oktober");
+    expect(t).toContain("4 kr.");
   });
 
   it("giver den højeste værdi den højeste søjle", () => {
@@ -29,6 +46,7 @@ describe("Soejlegraf", () => {
         { dato: "2026-10-11", vaerdi: 10 },
       ]} />);
     const h = [...container.querySelectorAll("rect")]
+      .filter((r) => r.getAttribute("fill") !== "transparent")
       .map((r) => Number(r.getAttribute("height")));
     expect(h[1]).toBeGreaterThan(h[0]);
   });
@@ -156,9 +174,109 @@ describe("Retning", () => {
     expect(render(<Retning nu={5} foer={0} />).container.textContent).toContain("ny aktivitet");
   });
   it("regner retningen og fortegnet", () => {
-    // Dansk format: mellemrum foran procenttegnet.
-    expect(render(<Retning nu={150} foer={100} />).container.textContent).toMatch(/▲ 50 %/);
+    // Pilen er aria-hidden og ledsages af skjult tekst, så en skærmlæser
+    // siger "op 50 %" og ikke "trekant 50 %". Dansk format: mellemrum før %.
+    const op = render(<Retning nu={150} foer={100} />).container;
+    expect(op.textContent).toMatch(/op\s*50 %/);
+    expect(op.querySelector("[aria-hidden]")?.textContent).toBe("▲");
     cleanup();
-    expect(render(<Retning nu={50} foer={100} />).container.textContent).toMatch(/▼ 50 %/);
+    const ned = render(<Retning nu={50} foer={100} />).container;
+    expect(ned.textContent).toMatch(/ned\s*50 %/);
+    expect(ned.querySelector("[aria-hidden]")?.textContent).toBe("▼");
+  });
+});
+
+describe("akse-mærkerne", () => {
+  const mærker = (c: HTMLElement) => [...c.querySelectorAll("text")]
+    .map((t) => t.textContent ?? "").filter((t) => /^[\d.]+$/.test(t));
+
+  it("giver runde tal, også når maksimum er skævt", () => {
+    // 25 som maksimum gav før 0 / 13 / 25, fordi kun toppen blev rundet.
+    // Nu vælges trinnet først, og toppen følger af trinnet.
+    const { container } = render(
+      <Soejlegraf data={[{ dato: "2026-10-11", vaerdi: 25 }]} />);
+    expect(mærker(container)).toEqual(["0", "10", "20", "30"]);
+  });
+
+  it("bruger ikke brudte trin på en akse der tæller hele ting", () => {
+    // Maksimum 1 gav 0 / 0,25 / 0,5 / 0,75 / 1 — et kvart klik findes ikke.
+    const { container } = render(
+      <Soejlegraf data={[{ dato: "2026-10-11", vaerdi: 1 }]} />);
+    expect(mærker(container)).toEqual(["0", "1"]);
+  });
+
+  it("skalerer til store beløb uden at miste runde tal", () => {
+    const { container } = render(
+      <Soejlegraf data={[{ dato: "2026-10-11", vaerdi: 196204 }]} enhed=" kr." />);
+    expect(mærker(container)[1]).toBe("50.000");
+  });
+
+  it("holder den højeste søjle inden for grafen efter oprunding", () => {
+    const { container } = render(
+      <Soejlegraf data={[{ dato: "2026-10-11", vaerdi: 25 }]} />);
+    const r = container.querySelector("rect:not([fill='transparent'])")!;
+    expect(Number(r.getAttribute("y"))).toBeGreaterThan(0);
+  });
+});
+
+describe("grafens bredde måles", () => {
+  /** ResizeObserver findes ikke i jsdom; denne kan vi selv udløse. */
+  function fakeRO() {
+    const kaldt: Array<(e: Array<{ contentRect: { width: number } }>) => void> = [];
+    class RO {
+      constructor(cb: (e: Array<{ contentRect: { width: number } }>) => void) { kaldt.push(cb); }
+      observe() {}
+      disconnect() {}
+    }
+    vi.stubGlobal("ResizeObserver", RO);
+    return (bredde: number) => act(() => {
+      for (const cb of kaldt) cb([{ contentRect: { width: bredde } }]);
+    });
+  }
+
+  afterEach(() => { vi.unstubAllGlobals(); });
+
+  it("sætter viewBox til containerens målte bredde, så skalaen bliver 1:1", () => {
+    // Et fast viewBox med w-full gjorde skriftstørrelsen afhængig af
+    // containeren: målt på dashboardet 16,3 px i en fuldbred graf og 7,7 px
+    // i en halvbred. Samme kode, dobbelt så stor skrift det ene sted.
+    const maal = fakeRO();
+    const { container } = render(
+      <Soejlegraf data={[{ dato: "2026-10-10", vaerdi: 3 }, { dato: "2026-10-11", vaerdi: 5 }]} />);
+    maal(1206);
+    expect(container.querySelector("svg")?.getAttribute("viewBox")).toBe("0 0 1206 180");
+    maal(572);
+    expect(container.querySelector("svg")?.getAttribute("viewBox")).toBe("0 0 572 180");
+  });
+
+  it("går ikke under minimumsbredden, så en telefon scroller i stedet", () => {
+    const maal = fakeRO();
+    const { container } = render(
+      <Soejlegraf data={[{ dato: "2026-10-11", vaerdi: 3 }]} />);
+    maal(343);
+    expect(container.querySelector("svg")?.getAttribute("viewBox")).toBe("0 0 560 180");
+  });
+
+  it("flytter søjlerne med, når bredden ændres", () => {
+    // Hvis kun viewBox fulgte målingen, men koordinaterne var regnet på den
+    // gamle bredde, ville grafen blive klippet eller efterlade tom plads.
+    const maal = fakeRO();
+    const { container } = render(
+      <Soejlegraf data={[{ dato: "2026-10-10", vaerdi: 3 }, { dato: "2026-10-11", vaerdi: 5 }]} />);
+    maal(1000);
+    const sidsteX = () => Number([...container.querySelectorAll("rect:not([fill='transparent'])")]
+      .pop()!.getAttribute("x"));
+    const bred = sidsteX();
+    maal(600);
+    expect(sidsteX()).toBeLessThan(bred);
+  });
+
+  it("gælder også det stablede areal", () => {
+    const maal = fakeRO();
+    const { container } = render(
+      <StabletAreal datoer={["2026-10-10", "2026-10-11"]}
+        serier={[{ navn: "a", vaerdier: [1, 2] }]} />);
+    maal(900);
+    expect(container.querySelector("svg")?.getAttribute("viewBox")).toBe("0 0 900 180");
   });
 });

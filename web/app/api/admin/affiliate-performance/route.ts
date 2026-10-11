@@ -117,13 +117,21 @@ export async function GET(req: NextRequest) {
   const fra = new Date(nu.getTime() - hentDage * 86_400_000).toISOString();
 
   try {
-    const [klik, events] = await Promise.all([
+    // Alle fire uafhængige hentninger samtidig. Sundhedsopslaget lå
+    // tidligere efter de to andre og lagde sin egen rundtur oven i
+    // svartiden, selv om det ikke afhænger af dem.
+    const [klik, events, sund, katalogIalt, koebbare] = await Promise.all([
       alle<KlikRaekke>("affiliate_clicks", (f, t) => sb.from("affiliate_clicks")
         .select("created_at, path, placement, retailer, category, price_dkk, product_name, brand")
         .gte("created_at", fra).order("created_at").range(f, t)),
       alle<EventRaekke>("internal_events", (f, t) => sb.from("internal_events")
         .select("created_at, event, path, params")
         .gte("created_at", fra).order("created_at").range(f, t)),
+      sundhed(sb, nu),
+      sb.from("affiliate_products").select("id", { count: "exact", head: true })
+        .then((r) => r.count),
+      sb.from("affiliate_products").select("id", { count: "exact", head: true })
+        .eq("in_stock", true).eq("is_blocked", false).then((r) => r.count),
     ]);
 
     const serie = dagligSerie(klik, events, nu, dage);
@@ -144,13 +152,6 @@ export async function GET(req: NextRequest) {
         : []),
     ];
 
-    // Katalogets tilstand nu — konteksten for alt det andet.
-    const { count: katalogIalt } = await sb.from("affiliate_products")
-      .select("id", { count: "exact", head: true });
-    const { count: koebbare } = await sb.from("affiliate_products")
-      .select("id", { count: "exact", head: true })
-      .eq("in_stock", true).eq("is_blocked", false);
-
     return NextResponse.json({
       genereret: nu.toISOString(),
       vindue: { dage, periode, fra: datoer[0] ?? null, til: datoer[datoer.length - 1] ?? null },
@@ -170,7 +171,7 @@ export async function GET(req: NextRequest) {
       produkter: topProdukter(klik, 25),
       varmekort: varmekort(klik),
       prisfordeling: prisfordeling(klik),
-      sundhed: await sundhed(sb, nu),
+      sundhed: sund,
       katalog: { ialt: katalogIalt ?? null, koebbare: koebbare ?? null },
       // Datagrundlagets grænser hører med i svaret: internal_events blev først
       // slået til 3. oktober 2026, så en grejblok-graf over 90 dage er tom i

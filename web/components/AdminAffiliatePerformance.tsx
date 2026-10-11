@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Soejlegraf, StabletAreal, Sparkline, Bjaelker, Varmekort, Retning, Signatur, SERIE_FARVER,
+  Soejlegraf, StabletAreal, Sparkline, Bjaelker, Varmekort, Retning, SERIE_FARVER,
 } from "@/components/admin/Grafer";
 
 const STORAGE_KEY = "shelterdk-admin-secret";
@@ -51,30 +51,69 @@ const pct = (n: number) =>
     minimumFractionDigits: n < 0.1 ? 1 : 0, maximumFractionDigits: n < 0.1 ? 1 : 0,
   })} %`;
 
-function Kort({ titel, vaerdi, under, hjaelp }: {
-  titel: string; vaerdi: string; under?: React.ReactNode; hjaelp?: string;
+/**
+ * Nøgletalskort.
+ *
+ * Tallet skal dominere. En første udgave satte titlen med versaler, fed og
+ * sperring og lagde forklaringen under som en understreget "Hvad betyder
+ * det?" — på en telefon fyldte titlen to linjer og forklaringslinket var
+ * visuelt stærkere end selve tallet. Nu er titlen lille og rolig på én
+ * linje, forklaringen ligger bag et ⓘ i hjørnet, og kortene har samme
+ * struktur, så tallene flugter på tværs af rækken.
+ */
+function Kort({ titel, periode, vaerdi, under, forklaring }: {
+  titel: string; periode?: string; vaerdi: string;
+  under?: React.ReactNode; forklaring?: string;
 }) {
+  const [åben, setÅben] = useState(false);
   return (
-    <div className="rounded-xl border border-primary/10 bg-white p-3.5">
-      <div className="text-xs font-medium uppercase tracking-wide text-primary/50"
-        title={hjaelp}>{titel}</div>
-      <div className="mt-1 font-serif text-2xl font-bold tabular-nums text-primary">{vaerdi}</div>
-      {under && <div className="mt-0.5 text-xs">{under}</div>}
+    <div className="relative flex flex-col rounded-xl border border-primary/10 bg-white p-3.5 shadow-[0_1px_2px_rgba(44,62,80,0.04)]">
+      <div className="flex items-start justify-between gap-2">
+        <h3 className="text-xs font-medium leading-tight text-primary/85">
+          {titel}
+          {periode && <span className="text-primary/70"> · {periode}</span>}
+        </h3>
+        {forklaring && (
+          <button type="button" onClick={() => setÅben((v) => !v)}
+            aria-expanded={åben} aria-label={`Forklaring til ${titel}`}
+            className="-mr-1 -mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full text-[0.65rem] font-semibold text-primary/70 outline-none ring-1 ring-primary/15 hover:bg-primary/5 hover:text-primary focus-visible:ring-2 focus-visible:ring-accent">
+            <span aria-hidden>i</span>
+          </button>
+        )}
+      </div>
+      <p className="mt-1.5 font-serif text-[1.7rem] font-bold leading-none tabular-nums text-primary">
+        {vaerdi}
+      </p>
+      {under && <div className="mt-2 text-xs text-primary/80">{under}</div>}
+      {åben && forklaring && (
+        <p className="mt-2 border-t border-primary/10 pt-2 text-[0.7rem] leading-snug text-primary/85">
+          {forklaring}
+        </p>
+      )}
     </div>
   );
 }
 
-function Panel({ titel, note, children }: {
-  titel: string; note?: string; children: React.ReactNode;
+function Panel({ titel, note, children, handling }: {
+  titel: string; note?: string; children: React.ReactNode; handling?: React.ReactNode;
 }) {
   return (
-    <section className="rounded-xl border border-primary/10 bg-white p-4">
-      <h2 className="font-serif text-base font-bold text-primary">{titel}</h2>
-      {note && <p className="mt-0.5 text-xs text-primary/55">{note}</p>}
-      <div className="mt-3">{children}</div>
+    <section className="rounded-xl border border-primary/10 bg-white p-4 shadow-[0_1px_2px_rgba(44,62,80,0.04)]">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="font-serif text-base font-bold text-primary">{titel}</h2>
+          {note && <p className="mt-0.5 max-w-prose text-xs leading-snug text-primary/75">{note}</p>}
+        </div>
+        {handling}
+      </div>
+      <div className="mt-3.5">{children}</div>
     </section>
   );
 }
+
+const TH = "py-2 pr-3 text-left text-[0.7rem] font-semibold uppercase tracking-wider text-primary/75";
+
+type Sortering = "klik" | "vaerdi" | "nu7" | "navn";
 
 export function AdminAffiliatePerformance() {
   const [secret, setSecret] = useState("");
@@ -84,25 +123,37 @@ export function AdminAffiliatePerformance() {
   const [henter, setHenter] = useState(false);
   const [dage, setDage] = useState(90);
   const [periode, setPeriode] = useState(28);
+  const [sorter, setSorter] = useState<Sortering>("klik");
+
+  // Hvert kald får et løbenummer. Uden det kunne et langsomt ældre svar
+  // lande efter et nyere og overskrive det — skifter man vindue to gange
+  // hurtigt, stod der så data for det forkerte vindue under den nye etiket.
+  const løbenr = useRef(0);
 
   const hent = useCallback(async () => {
     if (!secret) return;
+    const mit = ++løbenr.current;
     setHenter(true);
-    setFejl(null);
     try {
       const r = await fetch(`/api/admin/affiliate-performance?dage=${dage}&periode=${periode}`, {
         headers: { "x-admin-secret": secret },
         cache: "no-store",
       });
+      if (mit !== løbenr.current) return;
       if (!r.ok) {
-        setFejl(r.status === 401 ? "Forkert admin secret." : `Fejl ${r.status}: ${(await r.json()).error ?? ""}`);
+        const krop = await r.json().catch(() => ({}));
+        setFejl(r.status === 401
+          ? "Forkert admin secret."
+          : `Kunne ikke hente data (${r.status}). ${krop.error ?? ""}`.trim());
         return;
       }
       setData(await r.json());
+      setFejl(null);
     } catch (e) {
+      if (mit !== løbenr.current) return;
       setFejl(e instanceof Error ? e.message : "Kunne ikke hente data.");
     } finally {
-      setHenter(false);
+      if (mit === løbenr.current) setHenter(false);
     }
   }, [secret, dage, periode]);
 
@@ -112,103 +163,172 @@ export function AdminAffiliatePerformance() {
   }, []);
   useEffect(() => { void hent(); }, [hent]);
 
-  // Dashboardet skal vise udviklingen "løbende", så det henter sig selv igen
-  // hver 5. minut. Intervallet ryddes op ved unmount; ellers bliver der et
-  // nyt timer-kald hver gang vinduet eller perioden ændres.
+  // "Løbende opdateret": henter sig selv hvert 5. minut. Intervallet ryddes
+  // op ved unmount og ved hvert skift af vindue, så der ikke hober sig
+  // timere op.
   useEffect(() => {
     if (!secret) return;
     const t = setInterval(() => { void hent(); }, 5 * 60_000);
     return () => clearInterval(t);
   }, [secret, hent]);
 
+  const guiderSorteret = useMemo(() => {
+    if (!data) return [];
+    const r = [...data.guider];
+    if (sorter === "navn") return r.sort((a, b) => a.navn.localeCompare(b.navn, "da"));
+    return r.sort((a, b) => b[sorter] - a[sorter] || a.navn.localeCompare(b.navn, "da"));
+  }, [data, sorter]);
+
   if (!secret) {
     return (
-      <div className="max-w-sm">
-        <input type="password" value={input} onChange={(e) => setInput(e.target.value)}
-          placeholder="Admin secret"
-          className="w-full rounded-lg border border-primary/15 px-3 py-2" />
-        <button
-          onClick={() => { sessionStorage.setItem(STORAGE_KEY, input); setSecret(input); }}
-          className="mt-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white">
+      <form className="max-w-sm" onSubmit={(e) => {
+        e.preventDefault();
+        if (!input) return;
+        sessionStorage.setItem(STORAGE_KEY, input);
+        setSecret(input);
+      }}>
+        <label htmlFor="admin-secret" className="block text-sm font-medium text-primary">
+          Admin secret
+        </label>
+        <input id="admin-secret" type="password" value={input} autoComplete="current-password"
+          onChange={(e) => setInput(e.target.value)}
+          className="mt-1 w-full rounded-lg border border-primary/15 px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-accent/60" />
+        <button type="submit"
+          className="mt-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white outline-none hover:bg-accent-dark focus-visible:ring-2 focus-visible:ring-accent/60">
           Log ind
         </button>
-      </div>
+      </form>
     );
   }
 
-  if (fejl) {
+  // Et nyt forsøg der fejler må ikke tage de tal væk, der allerede står —
+  // en forbigående 500'er blankede før hele siden. Fejlen vises som et
+  // banner over de data vi har, og det siges hvor gamle de er.
+  const fejlbanner = fejl ? (
+    <div role="alert"
+      className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-[#A8744F]/35 bg-[#A8744F]/[0.07] px-3.5 py-2.5 text-sm text-primary">
+      <span className="font-medium">{fejl}</span>
+      {data && (
+        <span className="text-primary/80">
+          Viser tal fra {new Date(data.genereret).toLocaleTimeString("da-DK",
+            { hour: "2-digit", minute: "2-digit" })}.
+        </span>
+      )}
+      <button onClick={() => { sessionStorage.removeItem(STORAGE_KEY); setSecret(""); setFejl(null); }}
+        className="underline underline-offset-2">Skift secret</button>
+    </div>
+  ) : null;
+
+  if (!data) {
     return (
-      <div className="rounded-xl border border-[#A8744F]/30 bg-[#A8744F]/5 p-4 text-sm text-primary">
-        <p className="font-medium">{fejl}</p>
-        <button onClick={() => { sessionStorage.removeItem(STORAGE_KEY); setSecret(""); setFejl(null); }}
-          className="mt-2 text-xs underline">Skift secret</button>
+      <div className="space-y-4">
+        {fejlbanner}
+        {!fejl && (
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6" aria-busy="true">
+            {Array.from({ length: 6 }, (_, i) => (
+              <div key={i} className="h-[5.5rem] animate-pulse rounded-xl bg-primary/[0.05]" />
+            ))}
+          </div>
+        )}
       </div>
     );
   }
-  if (!data) return <p className="text-sm text-primary/50">Henter…</p>;
 
   const n = data.noegletal;
   const p = data.vindue.periode;
-  const grejSerie = data.serie.map((d) => ({ dato: d.dato, vaerdi: d.grejVisninger }));
   const harEvents = data.daekning.eventRaekker > 0;
+  const grejSerie = data.serie.map((d) => ({ dato: d.dato, vaerdi: d.grejVisninger }));
+  const sum = (f: (d: Dag) => number) => data.serie.reduce((s, d) => s + f(d), 0);
+
+  // Overskriften på hele siden: én sætning om hvad der er sket. Et dashboard
+  // man skal læse tre grafer i for at vide om det går frem eller tilbage,
+  // har udskudt sit eget arbejde til læseren.
+  const ændring = n.klikForrige > 0
+    ? Math.round(((n.klik - n.klikForrige) / n.klikForrige) * 100) : null;
+  const overskrift = ændring === null
+    ? `${tal(n.klik)} affiliate-klik på ${p} dage.`
+    : `${tal(n.klik)} affiliate-klik på ${p} dage — ${
+        ændring >= 0 ? "op" : "ned"} ${Math.abs(ændring)} % mod de ${p} dage før.`;
+  const vaerdiÆndring = n.vaerdiForrige > 0
+    ? Math.round(((n.vaerdi - n.vaerdiForrige) / n.vaerdiForrige) * 100) : null;
+  // Klik og værdi kan pege hver sin vej. Det er den interessante nuance, så
+  // den skal stå i klartekst og ikke udledes af to grafer ved siden af.
+  const nuance = ændring !== null && vaerdiÆndring !== null
+    && Math.sign(ændring) !== Math.sign(vaerdiÆndring)
+    ? ` Den klikkede værdi gik modsat (${vaerdiÆndring >= 0 ? "+" : "−"}${
+        Math.abs(vaerdiÆndring)} %) — færre klik, men på dyrere varer.`
+    : "";
 
   return (
     <div className="space-y-5">
+      {fejlbanner}
+
+      {/* ---- Hovedbudskab ---- */}
+      <div>
+        <p className="font-serif text-lg leading-snug text-primary">{overskrift}</p>
+        {nuance && (
+          <p className="mt-0.5 text-sm leading-snug text-primary/85">{nuance.trim()}</p>
+        )}
+      </div>
+
       {/* ---- Styring ---- */}
-      <div className="flex flex-wrap items-center gap-3 text-sm">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-primary/10 bg-white px-3.5 py-2.5 text-sm">
         <label className="flex items-center gap-1.5">
-          <span className="text-primary/60">Graf-vindue</span>
+          <span className="text-primary/85">Graf-vindue</span>
           <select value={dage} onChange={(e) => setDage(Number(e.target.value))}
-            className="rounded-lg border border-primary/15 px-2 py-1">
+            className="rounded-lg border border-primary/15 px-2 py-1 outline-none focus-visible:ring-2 focus-visible:ring-accent/60">
             {[14, 30, 60, 90, 180, 365].map((d) => <option key={d} value={d}>{d} dage</option>)}
           </select>
         </label>
         <label className="flex items-center gap-1.5">
-          <span className="text-primary/60">Nøgletals-periode</span>
+          <span className="text-primary/85">Nøgletal</span>
           <select value={periode} onChange={(e) => setPeriode(Number(e.target.value))}
-            className="rounded-lg border border-primary/15 px-2 py-1">
+            className="rounded-lg border border-primary/15 px-2 py-1 outline-none focus-visible:ring-2 focus-visible:ring-accent/60">
             {[7, 14, 28, 90].map((d) => <option key={d} value={d}>{d} dage</option>)}
           </select>
         </label>
         <button onClick={() => void hent()} disabled={henter}
-          className="rounded-lg border border-primary/15 px-3 py-1 hover:bg-primary/5 disabled:opacity-50">
+          className="rounded-lg border border-primary/15 px-3 py-1 outline-none hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-accent/60 disabled:opacity-50">
           {henter ? "Henter…" : "Opdater"}
         </button>
-        <span className="text-xs text-primary/45">
-          opdateret {new Date(data.genereret).toLocaleTimeString("da-DK",
-            { hour: "2-digit", minute: "2-digit" })} · fornyer sig selv hvert 5. minut
+        <span className="ml-auto flex items-center gap-1.5 text-xs text-primary/75"
+          aria-live="polite">
+          <span aria-hidden
+            className={`inline-block h-1.5 w-1.5 rounded-full ${henter ? "animate-pulse bg-accent" : "bg-pine/60"}`} />
+          Opdateret {new Date(data.genereret).toLocaleTimeString("da-DK",
+            { hour: "2-digit", minute: "2-digit" })} · fornyer sig hvert 5. minut
         </span>
       </div>
 
       {/* ---- Nøgletal ---- */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
-        <Kort titel={`Klik (${p} d)`} vaerdi={tal(n.klik)}
+        <Kort titel="Affiliate-klik" periode={`${p} dage`} vaerdi={tal(n.klik)}
           under={<Retning nu={n.klik} foer={n.klikForrige} />}
-          hjaelp="Affiliate-klik videre til en forhandler" />
-        <Kort titel={`Klikket værdi (${p} d)`} vaerdi={kr(n.vaerdi)}
+          forklaring="Klik videre til en forhandler. Det er det nærmeste vi kommer en salgshandling i vores egne data." />
+        <Kort titel="Klikket værdi" periode={`${p} dage`} vaerdi={kr(n.vaerdi)}
           under={<Retning nu={n.vaerdi} foer={n.vaerdiForrige} />}
-          hjaelp="Summen af listepriserne på de varer der blev klikket på — ikke omsætning" />
-        <Kort titel="Median varepris" vaerdi={n.medianPris != null ? kr(n.medianPris) : "–"} />
+          forklaring="Listepriserne på de klikkede varer lagt sammen. Ikke omsætning: kun en del bliver køb, og provisionen er en procentdel." />
+        <Kort titel="Median varepris" vaerdi={n.medianPris != null ? kr(n.medianPris) : "–"}
+          forklaring="Median og ikke gennemsnit, så en enkelt dyr vare ikke flytter tallet." />
         <Kort titel="Guider med klik" vaerdi={tal(n.guiderMedKlik)}
-          under={<span className="text-primary/55">{pct(n.andelFraGuider)} af klik fra /bedste</span>} />
+          under={<span>{pct(n.andelFraGuider)} af klik kom fra /bedste</span>} />
         <Kort titel="Grejblok-rate" vaerdi={n.grejRate != null ? pct(n.grejRate) : "–"}
-          under={<span className="text-primary/55">
-            {tal(n.grejKlik)} af {tal(n.grejVisninger)} visninger</span>}
-          hjaelp="Klik på et grej-forslag på en shelter-side, delt med antal gange blokken blev set" />
+          under={<span>{tal(n.grejKlik)} af {tal(n.grejVisninger)} visninger</span>}
+          forklaring="Klik på et grej-forslag på en shelter-side, delt med antal gange blokken blev set." />
         <Kort titel="Købbare varer" vaerdi={data.katalog.koebbare != null ? tal(data.katalog.koebbare) : "–"}
-          under={<span className="text-primary/55">af {tal(data.katalog.ialt ?? 0)} i feedet</span>} />
+          under={<span>af {tal(data.katalog.ialt ?? 0)} i feedet</span>} />
       </div>
 
       {/* ---- Udvikling ---- */}
       <Panel titel="Affiliate-klik pr. dag"
-        note={`${data.vindue.fra} – ${data.vindue.til}. Søjler er den enkelte dag, linjen er 7-dages gennemsnit.`}>
+        note={`${data.vindue.fra} – ${data.vindue.til}. Søjler er den enkelte dag, linjen er 7-dages gennemsnit. Peg på en dag for tallet.`}>
         <Soejlegraf data={data.serie.map((d) => ({ dato: d.dato, vaerdi: d.klik }))}
-          linje={data.glidende.klik} />
+          linje={data.glidende.klik} enhed=" klik" />
       </Panel>
 
       <div className="grid gap-5 lg:grid-cols-2">
         <Panel titel="Klikket værdi pr. dag"
-          note="Listepris på de klikkede varer. Et mål for købsintention, ikke for omsætning.">
+          note="Listepris på de klikkede varer — et mål for købsintention, ikke for omsætning.">
           <Soejlegraf data={data.serie.map((d) => ({ dato: d.dato, vaerdi: d.vaerdi }))}
             linje={data.glidende.vaerdi} enhed=" kr." />
         </Panel>
@@ -220,37 +340,56 @@ export function AdminAffiliatePerformance() {
 
       {/* ---- Guider ---- */}
       <Panel titel="Pr. købsguide"
-        note={`Klik i hele graf-vinduet (${data.vindue.dage} dage). "Retning" sammenligner de seneste 7 dage med de 7 før dem.`}>
+        note={`Klik i hele graf-vinduet (${data.vindue.dage} dage). “Retning” sammenligner de seneste 7 dage med de 7 før dem.`}
+        handling={
+          <label className="flex shrink-0 items-center gap-1.5 text-xs text-primary/85">
+            Sortér
+            <select value={sorter} onChange={(e) => setSorter(e.target.value as Sortering)}
+              className="rounded-lg border border-primary/15 px-2 py-1 outline-none focus-visible:ring-2 focus-visible:ring-accent/60">
+              <option value="klik">Flest klik</option>
+              <option value="vaerdi">Størst værdi</option>
+              <option value="nu7">Mest aktive nu</option>
+              <option value="navn">Navn</option>
+            </select>
+          </label>
+        }>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
+            <caption className="sr-only">
+              Affiliate-klik pr. købsguide i de seneste {data.vindue.dage} dage.
+            </caption>
             <thead>
-              <tr className="border-b border-primary/10 text-left text-xs uppercase tracking-wide text-primary/50">
-                <th className="py-1.5 pr-3 font-medium">Guide</th>
-                <th className="py-1.5 pr-3 text-right font-medium">Klik</th>
-                <th className="py-1.5 pr-3 text-right font-medium">Andel</th>
-                <th className="py-1.5 pr-3 text-right font-medium">Værdi</th>
-                <th className="py-1.5 pr-3 text-right font-medium">7 d</th>
-                <th className="py-1.5 pr-3 font-medium">Retning</th>
-                <th className="py-1.5 font-medium">Udvikling</th>
+              <tr className="border-b border-primary/15">
+                <th scope="col" className={TH}>Guide</th>
+                <th scope="col" className={`${TH} text-right`}>Klik</th>
+                <th scope="col" className={`${TH} text-right`}>Andel</th>
+                <th scope="col" className={`${TH} text-right`}>Værdi</th>
+                <th scope="col" className={`${TH} text-right`}>7 d</th>
+                <th scope="col" className={TH}>Retning</th>
+                <th scope="col" className={TH}>Udvikling</th>
               </tr>
             </thead>
             <tbody>
-              {data.guider.map((b) => (
-                <tr key={b.navn} className="border-b border-primary/5">
-                  <td className="py-1.5 pr-3">
+              {guiderSorteret.map((b) => (
+                <tr key={b.navn} className="border-b border-primary/[0.07] hover:bg-primary/[0.02]">
+                  <th scope="row" className="py-1.5 pr-3 text-left font-normal">
                     {b.navn === "(ingen)" ? (
-                      <span className="text-primary/55">uden for /bedste</span>
+                      <span className="text-primary/80">uden for /bedste</span>
                     ) : (
                       <a href={`/bedste/${b.navn}`} target="_blank" rel="noreferrer"
-                        className="text-primary hover:text-accent-dark hover:underline">{b.navn}</a>
+                        className="text-primary underline-offset-2 hover:text-accent-dark hover:underline">
+                        {b.navn}
+                      </a>
                     )}
-                  </td>
-                  <td className="py-1.5 pr-3 text-right tabular-nums">{tal(b.klik)}</td>
-                  <td className="py-1.5 pr-3 text-right tabular-nums text-primary/60">{pct(b.andel)}</td>
-                  <td className="py-1.5 pr-3 text-right tabular-nums text-primary/60">{kr(b.vaerdi)}</td>
+                  </th>
+                  <td className="py-1.5 pr-3 text-right font-medium tabular-nums">{tal(b.klik)}</td>
+                  <td className="py-1.5 pr-3 text-right tabular-nums text-primary/80">{pct(b.andel)}</td>
+                  <td className="py-1.5 pr-3 text-right tabular-nums text-primary/80">{kr(b.vaerdi)}</td>
                   <td className="py-1.5 pr-3 text-right tabular-nums">{tal(b.nu7)}</td>
-                  <td className="py-1.5 pr-3 text-xs"><Retning nu={b.nu7} foer={b.foer7} /></td>
-                  <td className="py-1.5"><Sparkline tal={b.serie} /></td>
+                  <td className="py-1.5 pr-3"><Retning nu={b.nu7} foer={b.foer7} /></td>
+                  <td className="py-1.5">
+                    <Sparkline tal={b.serie} titel={`${b.navn}: ${tal(b.klik)} klik i perioden`} />
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -260,8 +399,7 @@ export function AdminAffiliatePerformance() {
 
       {/* ---- Fordelinger ---- */}
       <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-        <Panel titel="Placering på siden"
-          note="Hvor på guiden knappen blev trykket.">
+        <Panel titel="Placering på siden" note="Hvor på guiden knappen blev trykket.">
           <Bjaelker poster={data.placeringer.map((b) => ({
             navn: b.navn, vaerdi: b.klik, note: pct(b.andel) }))} />
         </Panel>
@@ -269,7 +407,7 @@ export function AdminAffiliatePerformance() {
           <Bjaelker poster={data.forhandlere.map((b) => ({
             navn: b.navn, vaerdi: b.klik, note: pct(b.andel) }))} />
         </Panel>
-        <Panel titel="Kategori">
+        <Panel titel="Kategori" note="De tolv største.">
           <Bjaelker poster={data.kategorier.slice(0, 12).map((b) => ({
             navn: b.navn, vaerdi: b.klik, note: pct(b.andel) }))} />
         </Panel>
@@ -279,13 +417,12 @@ export function AdminAffiliatePerformance() {
         <Panel titel="Prisfordeling på klikkede varer"
           note="Faste trin, så svaret på “sælger vi billigt eller dyrt grej” ikke flytter sig med fordelingen.">
           <Bjaelker enhed="klik" poster={data.prisfordeling.map((t) => ({
-            navn: t.til === null || !Number.isFinite(t.til)
-              ? `over ${tal(t.fra)} kr.` : `${tal(t.fra)}–${tal(t.til)} kr.`,
+            navn: Number.isFinite(t.til) ? `${tal(t.fra)}–${tal(t.til)} kr.` : `over ${tal(t.fra)} kr.`,
             vaerdi: t.antal,
           }))} />
         </Panel>
         <Panel titel="Hvornår klikkes der"
-          note="Ugedag × klokketime, dansk tid, hele graf-vinduet.">
+          note="Ugedag × klokketime i dansk tid, hele graf-vinduet. Peg på en celle for tallet.">
           <Varmekort grid={data.varmekort} />
         </Panel>
       </div>
@@ -293,21 +430,21 @@ export function AdminAffiliatePerformance() {
       {/* ---- Grejblokken ---- */}
       <Panel titel="Grejblokken på shelter-siderne"
         note={harEvents
-          ? `Shelter-siderne er sitets største trafikkilde men tjener næsten intet. Blokken måles siden ${data.daekning.foersteEvent?.slice(0, 10)}.`
+          ? `Shelter-siderne er sitets største trafikkilde, men tjener næsten intet. Blokken er målt siden ${data.daekning.foersteEvent?.slice(0, 10)} — grafen er tom før det, og det er ikke et fald.`
           : "Ingen interne events i vinduet endnu."}>
-        <div className="grid gap-4 md:grid-cols-[1fr,220px]">
+        <div className="grid gap-4 lg:grid-cols-[1fr,240px]">
           <Soejlegraf data={grejSerie} linje={data.glidende.grejVisninger}
-            linjeNavn="7-dages gennemsnit (visninger)" farve={SERIE_FARVER[2]} />
-          <dl className="space-y-2 text-sm">
-            {[
-              ["Visninger", tal(data.serie.reduce((s, d) => s + d.grejVisninger, 0))],
-              ["Klik på forslag", tal(data.serie.reduce((s, d) => s + d.grejKlik, 0))],
-              ["Guide-visninger", tal(data.serie.reduce((s, d) => s + d.guideVisninger, 0))],
-              ["Booking-klik", tal(data.serie.reduce((s, d) => s + d.bookingKlik, 0))],
-            ].map(([k, v]) => (
-              <div key={k} className="flex justify-between border-b border-primary/5 pb-1">
-                <dt className="text-primary/60">{k}</dt>
-                <dd className="tabular-nums font-medium text-primary">{v}</dd>
+            linjeNavn="7-dages gns. (visninger)" farve={SERIE_FARVER[2]} enhed=" visninger" />
+          <dl className="space-y-2 self-start text-sm">
+            {([
+              ["Visninger af blokken", sum((d) => d.grejVisninger)],
+              ["Klik på et forslag", sum((d) => d.grejKlik)],
+              ["Guide-visninger", sum((d) => d.guideVisninger)],
+              ["Booking-klik", sum((d) => d.bookingKlik)],
+            ] as const).map(([k, v]) => (
+              <div key={k} className="flex items-baseline justify-between gap-3 border-b border-primary/[0.07] pb-1.5">
+                <dt className="text-primary/85">{k}</dt>
+                <dd className="font-medium tabular-nums text-primary">{tal(v)}</dd>
               </div>
             ))}
           </dl>
@@ -315,27 +452,29 @@ export function AdminAffiliatePerformance() {
       </Panel>
 
       {/* ---- Produkter ---- */}
-      <Panel titel="Mest klikkede varer" note={`Top 25 i graf-vinduet.`}>
+      <Panel titel="Mest klikkede varer" note="Top 25 i graf-vinduet.">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
+            <caption className="sr-only">De 25 mest klikkede varer i perioden.</caption>
             <thead>
-              <tr className="border-b border-primary/10 text-left text-xs uppercase tracking-wide text-primary/50">
-                <th className="py-1.5 pr-3 font-medium">Vare</th>
-                <th className="py-1.5 pr-3 font-medium">Forhandler</th>
-                <th className="py-1.5 pr-3 font-medium">Kategori</th>
-                <th className="py-1.5 pr-3 text-right font-medium">Pris</th>
-                <th className="py-1.5 text-right font-medium">Klik</th>
+              <tr className="border-b border-primary/15">
+                <th scope="col" className={TH}>Vare</th>
+                <th scope="col" className={TH}>Forhandler</th>
+                <th scope="col" className={TH}>Kategori</th>
+                <th scope="col" className={`${TH} text-right`}>Pris</th>
+                <th scope="col" className={`${TH} text-right`}>Klik</th>
               </tr>
             </thead>
             <tbody>
               {data.produkter.map((v) => (
-                <tr key={v.navn} className="border-b border-primary/5">
-                  <td className="py-1.5 pr-3 max-w-[22rem] truncate" title={v.navn}>{v.navn}</td>
-                  <td className="py-1.5 pr-3 text-primary/60">{v.forhandler ?? "–"}</td>
-                  <td className="py-1.5 pr-3 text-primary/60">{v.kategori ?? "–"}</td>
-                  <td className="py-1.5 pr-3 text-right tabular-nums text-primary/60">
+                <tr key={v.navn} className="border-b border-primary/[0.07] hover:bg-primary/[0.02]">
+                  <th scope="row" className="max-w-[22rem] truncate py-1.5 pr-3 text-left font-normal text-primary"
+                    title={v.navn}>{v.navn}</th>
+                  <td className="py-1.5 pr-3 text-primary/80">{v.forhandler ?? "–"}</td>
+                  <td className="py-1.5 pr-3 text-primary/80">{v.kategori ?? "–"}</td>
+                  <td className="py-1.5 pr-3 text-right tabular-nums text-primary/80">
                     {v.pris != null ? kr(v.pris) : "–"}</td>
-                  <td className="py-1.5 text-right tabular-nums font-medium">{v.klik}</td>
+                  <td className="py-1.5 text-right font-medium tabular-nums">{v.klik}</td>
                 </tr>
               ))}
             </tbody>
@@ -347,55 +486,55 @@ export function AdminAffiliatePerformance() {
       <Panel titel="Guidernes tilstand"
         note="Samme vurdering som vagtjobbet mailer om hver morgen — ét sted at se, om der er noget at rette.">
         <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-          {[
-            ["Guider", tal(data.sundhed.guider)],
-            ["Med problemer", tal(data.sundhed.medProblemer)],
-            ["Døde pladser", `${tal(data.sundhed.doedePladser)} / ${tal(data.sundhed.pladser)}`],
-            ["Over 60 % én forhandler", tal(data.sundhed.koncentration)],
-            ["Ville dø uden største", tal(data.sundhed.enForhandler)],
-          ].map(([k, v]) => (
-            <div key={k} className="rounded-lg bg-primary/[0.03] p-2.5">
-              <div className="text-xs text-primary/55">{k}</div>
-              <div className="mt-0.5 tabular-nums text-lg font-bold text-primary">{v}</div>
+          {([
+            ["Guider", tal(data.sundhed.guider), false],
+            ["Med problemer", tal(data.sundhed.medProblemer), data.sundhed.medProblemer > 0],
+            ["Døde pladser", `${tal(data.sundhed.doedePladser)} / ${tal(data.sundhed.pladser)}`, false],
+            ["Over 60 % én forhandler", tal(data.sundhed.koncentration), false],
+            ["Ville dø uden største", tal(data.sundhed.enForhandler), data.sundhed.enForhandler > 0],
+          ] as const).map(([k, v, advarsel]) => (
+            <div key={k} className={`rounded-lg p-2.5 ${
+              advarsel ? "bg-[#A8744F]/[0.08]" : "bg-primary/[0.04]"}`}>
+              <div className="text-xs leading-snug text-primary/85">{k}</div>
+              <div className="mt-0.5 text-lg font-bold tabular-nums text-primary">{v}</div>
             </div>
           ))}
         </div>
         {data.sundhed.problemer.length > 0 ? (
-          <ul className="mt-3 space-y-1.5 text-sm">
+          <ul className="mt-3.5 space-y-1.5 text-sm">
             {data.sundhed.problemer.map((h) => (
               <li key={h.slug}>
                 <a href={`/bedste/${h.slug}`} target="_blank" rel="noreferrer"
-                  className="font-medium text-primary hover:text-accent-dark hover:underline">{h.slug}</a>
-                <span className="text-primary/60"> — {h.problems.join(" · ")}</span>
+                  className="font-medium text-primary underline-offset-2 hover:text-accent-dark hover:underline">
+                  {h.slug}
+                </a>
+                <span className="text-primary/80"> — {h.problems.join(" · ")}</span>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="mt-3 text-sm text-pine">Ingen problemer i nogen guide.</p>
+          <p className="mt-3.5 flex items-center gap-1.5 text-sm text-pine">
+            <span aria-hidden>✓</span> Ingen problemer i nogen guide.
+          </p>
         )}
       </Panel>
 
       {/* ---- Datagrundlag ---- */}
       <Panel titel="Datagrundlag"
         note="Grænserne hører med til tallene: en graf over 90 dage er tom før første måling, og det ser ellers ud som et fald.">
-        <dl className="grid grid-cols-2 gap-2 text-sm md:grid-cols-4">
-          {[
+        <dl className="grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
+          {([
             ["Første affiliate-klik", data.daekning.foersteKlik?.slice(0, 10) ?? "–"],
             ["Første interne event", data.daekning.foersteEvent?.slice(0, 10) ?? "–"],
             ["Klik-rækker hentet", tal(data.daekning.klikRaekker)],
             ["Event-rækker hentet", tal(data.daekning.eventRaekker)],
-          ].map(([k, v]) => (
+          ] as const).map(([k, v]) => (
             <div key={k}>
-              <dt className="text-xs text-primary/55">{k}</dt>
+              <dt className="text-xs text-primary/80">{k}</dt>
               <dd className="tabular-nums text-primary">{v}</dd>
             </div>
           ))}
         </dl>
-        <p className="mt-3 text-xs text-primary/50">
-          “Klikket værdi” er summen af listepriserne på de varer, der blev klikket på.
-          Det er ikke omsætning: kun en del af klikkene bliver køb, og provisionen er
-          en procentdel af beløbet. Tallet er brugbart som retning, ikke som indtægt.
-        </p>
       </Panel>
     </div>
   );
