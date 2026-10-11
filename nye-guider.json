@@ -1,58 +1,712 @@
 {
- "vandresko": {
-  "title": "Bedste vandresko 2026",
-  "seo_title": "Bedste vandresko 2026 – 7 favoritter, fra 599 kr. | ShelterDK",
-  "seo_description": "Find de bedste vandresko til tur og hverdag. Vi scorer 7 favoritter — herre, dame og børn, vandtætte og åndbare, fra 599 til 1.599 kr.",
-  "parent_slug": "vandrestovler",
-  "category": "fodtoj",
-  "product_categories": ["fodtoj"],
-  "author": "ShelterDK Redaktionen",
-  "intro": "En lav vandresko vejer mindre, kræver ingen tilvænning og er langt mere behagelig på dansk terræn end en støvle. Her er vores scorede favoritter til herre, dame og børn — fra budget til teknisk.",
-  "body_md": "## Sko eller støvle i Danmark\n\nDanske stier er flade, bløde og sjældent stenede. Det er netop den slags terræn, hvor en **lav vandresko** vinder: den vejer typisk 200-400 gram mindre pr. fod end en støvle, den kræver ingen tilvænning, og den bliver ikke en ovn på en sommerdag.\n\nStøvlen vinder tre steder — tung oppakning, ujævnt terræn og vinterføre. Bærer du 15 kilo eller mere, giver ankelstøtten mening. Går du på markerede stier med en dagstursrygsæk, gør den ikke.\n\n## Vandtæt er ikke gratis\n\nEn membran som GORE-TEX holder vand ude, men den holder også damp inde. På en varm dag bliver en vandtæt sko mærkbart klammere end en åndbar mesh-sko, og bliver den først våd indeni — over kanten, eller af sved — tørrer den langsommere, netop fordi membranen virker.\n\nTommelfingerregel: **vandtæt til forår og efterår**, åndbar mesh til sommer. Skal du kun have ét par, er vandtæt det sikre valg i dansk klima.\n\n## Dame- og herremodeller er ikke kun farver\n\nDamemodeller har smallere hæl, højere svang og en anden lesteform. Det er ikke markedsføring — det er grunden til, at mange kvinder finder herremodeller løse i hælen og trange over vristen. Køb efter modellen, ikke efter farven.\n\n## Størrelse: en halv til en hel størrelse op\n\nFødder hæver på en vandredag, og nedad bakke skal tæerne have plads, så neglene ikke rammer skoen. Prøv med de sokker du faktisk vandrer i, sidst på dagen hvor foden er størst.\n\n## Til shelterturen\n\nPå en sheltertur er skoen det, du har på hele dagen og tager af først. En lav sko er hurtigere at få af og på ved bålet, tørrer hurtigere hvis du træder i en grøft, og fylder mindre, hvis du vil have et par lette sko med til lejren oveni.",
-  "faq": [
-   {"q": "Kan man vandre i lave sko?", "a": "Ja — på dansk terræn er det for de fleste det bedre valg. Lave vandresko vejer mindre, kræver ingen tilvænning og er køligere om sommeren. Støvlen giver mening ved tung oppakning over 15 kg, i ujævnt terræn eller om vinteren."},
-   {"q": "Skal vandresko være vandtætte?", "a": "I dansk forår og efterår, ja. Om sommeren er en åndbar mesh-sko ofte bedre, fordi en membran holder sveddamp inde og tørrer langsommere, når skoen først er våd indeni. Skal du kun have ét par, er vandtæt det sikre valg."},
-   {"q": "Hvilken størrelse vandresko skal jeg vælge?", "a": "Typisk en halv til en hel størrelse større end din hverdagssko. Fødder hæver i løbet af en vandredag, og nedad bakke skal tæerne have plads, så neglene ikke rammer forenden. Prøv skoene sidst på dagen med dine vandresokker på."},
-   {"q": "Hvad er forskellen på dame- og herremodeller?", "a": "Damemodeller har smallere hæl, højere svang og en anden lesteform — ikke bare andre farver. Mange kvinder oplever herremodeller som løse i hælen og trange over vristen. Køb efter modellen frem for efter farven."},
-   {"q": "Hvor længe holder et par vandresko?", "a": "Regn med 800-1.200 kilometer, afhængigt af terræn og vægt. Sålen er det, der går først; når knopperne er slidt flade, mister du greb på vådt græs og mudder længe før skoen ellers er slidt op."}
+ "powerbank": {
+  "title": "Bedste powerbank til friluftsliv 2026",
+  "seo_title": "Bedste powerbank til tur 2026 – 6 favoritter, fra 69 kr. | ShelterDK",
+  "seo_description": "Find den bedste powerbank til sheltertur og vandring. Vi scorer 6 favoritter — 10.000 til 30.000 mAh, med solceller og hurtigopladning, fra 69 til 249 kr.",
+  "category": "elektronik",
+  "product_categories": [
+   "elektronik"
   ],
-  "sources": [{"url": "https://naturstyrelsen.dk/naturoplevelser/vandreture", "title": "Naturstyrelsen – vandreture"}],
+  "author": "ShelterDK Redaktionen",
+  "intro": "På en sheltertur er telefonen både kort, lommelygte, kamera og vejrudsigt — og den dør hurtigst af alt det. Her er vores scorede favoritter blandt powerbanks, fra en enkelt genopladning til en uges strøm.",
+  "body_md": "## Hvor mange mAh har du brug for?\n\nEn moderne telefon har 3.000-5.000 mAh batteri. En powerbank på **10.000 mAh** giver derfor realistisk to til tre fulde opladninger — nok til en weekend med kort og kamera. **20.000 mAh** rækker til tre-fire dage eller to personer. **30.000 mAh** er til en uge, eller til at dele med en gruppe.\n\nRegn ikke med at få alle mAh ud. Omsætningen fra powerbankens batteri til din telefons taber typisk 20-30% som varme, og kulde gør det værre. Det er derfor forhandlernes \"2-3 opladninger\" på en 10.000 mAh er et realistisk tal og ikke en nedvurdering.\n\n## Hurtigopladning betyder mest, når den skal lades op\n\n**22W** mod **11W** mærker du to steder: hvor hurtigt telefonen fyldes, og hvor hurtigt powerbanken selv kan lades, når du er forbi et stikkontakt. På en tur hvor du lader i bilen eller på en café undervejs, er det forskellen på en halv time og halvanden.\n\nTil gengæld: USB-C i begge ender er vigtigere end wattallet. En powerbank med kun USB-A tvinger dig til at have et ekstra kabel med.\n\n## Solceller: realistisk forventning\n\nEt solcellepanel på størrelse med en powerbank leverer i dansk sommersol omkring **1-2 watt**. Det betyder op mod et døgn i direkte sol for at fylde en 20.000 mAh — og dansk sol er ikke direkte særlig længe.\n\nSolceller på en powerbank er altså ikke en ladekilde, de er en **nødforsyning**: nok til at få telefonen op på et par procent, så du kan ringe eller læse et kort. Skal du have reel strøm fra solen, kræver det et foldbart panel på 20 watt eller mere, og det findes ikke i det udvalg vi dækker.\n\n## Vægt og hvad du faktisk slæber\n\nEn 10.000 mAh vejer typisk 200 gram, en 20.000 mAh omkring det dobbelte, og en model med solceller lægger 100-200 gram oveni for panelet. På en weekendtur er 400 gram ekstra for kapacitet du ikke bruger den dyreste slags vægt — den gør intet godt.\n\n## Til shelterturen\n\nShelterpladser har ingen strøm. Det betyder at du skal regne baglæns fra hjemturen: hvor mange dage, hvor meget kort-brug, og om du bruger telefonen som lommelygte — det sidste er den største strømsluger og grunden til at en pandelampe er bedre end telefonen.",
+  "faq": [
+   {
+    "q": "Hvor stor en powerbank skal jeg have til en weekendtur?",
+    "a": "10.000 mAh er nok til to-tre fulde opladninger af en telefon, hvilket dækker en weekend med kort, kamera og vejrudsigt. Er I to om den, eller skal turen vare længere, så gå op til 20.000 mAh."
+   },
+   {
+    "q": "Kan man oplade en powerbank med solceller på en tur?",
+    "a": "Kun delvist. Solceller på selve powerbanken leverer i dansk sol omkring 1-2 watt, hvilket kræver op mod et døgn i direkte sol for at fylde en stor powerbank. Betragt det som nødforsyning til et par procent batteri, ikke som en ladekilde."
+   },
+   {
+    "q": "Hvorfor får jeg ikke alle mAh ud af min powerbank?",
+    "a": "Omsætningen fra powerbankens batteri til telefonens taber typisk 20-30% som varme, og kulde øger tabet. En 10.000 mAh giver derfor realistisk 2-3 opladninger af en telefon med 3.000-4.000 mAh batteri — ikke tre."
+   },
+   {
+    "q": "Er hurtigopladning værd at betale for?",
+    "a": "Hvis du lader powerbanken op undervejs — i bilen, på en café, på en campingplads — så ja. 22W mod 11W halverer tiden. Lader du den kun hjemme natten før, mærker du det ikke."
+   },
+   {
+    "q": "Hvor koldt kan en powerbank tåle?",
+    "a": "Lithium-batterier mister kapacitet under frysepunktet og kan nægte at lade under ca. 0 °C. Pak den i soveposen om vinteren frem for i rygsækkens yderlomme — det gælder også telefonen."
+   }
+  ],
+  "sources": [
+   {
+    "url": "https://naturstyrelsen.dk/naturoplevelser/overnatning-i-naturen",
+    "title": "Naturstyrelsen – overnatning i naturen"
+   }
+  ],
   "entries": [
-   {"produkt_id": "backpackerlife-737050", "praedikat": "Vores valg", "score": 8.7,
-    "bedst_til": "Den sko de fleste skal have",
-    "note": "Merrells Moab er den mest udbredte vandresko i Danmark, og tredje generation er grunden: syntetisk læder og mesh i overdelen giver både slidstyrke og luft, og snørebåndene er af 100% genbrugte materialer. Den er ikke vandtæt i denne udgave — det er GTX-versionen længere nede — og det gør den køligere om sommeren.",
-    "plus": ["Syntetisk læder og mesh — slidstærk og åndbar", "Snørebånd af 100% genbrugsmateriale (oplyst)", "Den mest udbredte model, så pasformen er nem at prøve"],
-    "minus": ["Ikke vandtæt i denne udgave", "Vægt er ikke oplyst i feedet"]},
-   {"produkt_id": "backpackerlife-58966", "praedikat": "Bedst til prisen", "score": 8.0,
-    "bedst_til": "Den første vandresko, eller et par til lejren",
-    "note": "Guidens laveste pris, og det er den korte udgave af Mil-Tecs Squad-støvle — samme konstruktion, mindre skaft, lavere vægt. Overdelen er polyester dækket med ruskind. En militærinspireret sko er ikke den letteste, men den er solid, og til prisen er det svært at komme galt afsted.",
-    "plus": ["Guidens laveste pris", "Kort udgave af en støvle — reduceret vægt (oplyst)", "Ruskind over polyester"],
-    "minus": ["Tungere end de egentlige letvægtsmodeller", "Ingen oplyst membran — ikke vandtæt"]},
-   {"produkt_id": "backpackerlife-813273", "praedikat": "Bedste til kvinder", "score": 8.6,
-    "bedst_til": "Hele det danske forår og efterår",
-    "note": "Samme Moab 3 i dameleste med GORE-TEX-membran, altså vandtæt og åndbar efter producentens angivelse. Dameleste betyder smallere hæl og højere svang, og det er netop der, en herremodel typisk sidder forkert. Til dansk vejr fra marts til november er det her kombinationen.",
-    "plus": ["GORE-TEX — vandtæt og åndbar (oplyst)", "Dameleste, ikke blot en anden farve", "Samme gennemprøvede Moab-model"],
-    "minus": ["Membranen gør den varmere om sommeren", "Guidens dyreste damemodel"]},
-   {"produkt_id": "backpackerlife-60083", "praedikat": "Bedste til kvinder til prisen", "score": 8.1,
-    "bedst_til": "Dem der vil prøve lave sko uden at investere",
-    "note": "Low-cut damemodel med vandtæt og åndbar membran til under halvdelen af guidens dyreste. Trespass er et skotsk budgetmærke, og det mærkes på detaljerne frem for på funktionen — membranen er der, lesteformen er dame, og resten er det man sparer på.",
-    "plus": ["Vandtæt og åndbar membran (oplyst)", "Damemodel i low-cut", "Under halv pris af guidens dyreste"],
-    "minus": ["Budgetmærke — slidstyrken er ikke på højde med de dyrere", "Membrantype er ikke oplyst i feedet"]},
-   {"produkt_id": "backpackerlife-100689", "praedikat": "Bedste til hverdag og tur", "score": 8.3,
-    "bedst_til": "Ét par der både kan byen og stien",
-    "note": "ECCO har designet MX-serien med et streetwear-look, og det er hele pointen: det er den eneste i guiden man kan tage på til byferie uden at ligne en der er på vej i skoven. GTX-membran, så den også kan bruges i regn. Til den der kun vil have ét par sko med på en rejse.",
-    "plus": ["Kan bruges til både by og tur", "GTX-membran", "Let model i ECCOs outdoor-serie"],
-    "minus": ["Mindre groft mønster end de egentlige terrænsko", "Vægt er ikke oplyst i feedet"]},
-   {"produkt_id": "backpackerlife-912743", "praedikat": "Bedste til ujævnt terræn", "score": 8.5,
-    "bedst_til": "Klipper, rødder og bjergture i udlandet",
-    "note": "La Sportivas TX4 Evo er en approach-sko: udviklet til ujævnt terræn hvor man har brug for ekstra støtte og præcision, med ruskind i overdelen. Den er overkill på en dansk grusvej, men hvis turen går til Norge eller Alperne — eller hvis du bare har svage ankler — er det den i guiden, der er bygget til det.",
-    "plus": ["Bygget til ujævnt terræn med ekstra støtte (oplyst)", "Ruskind i overdelen", "Fungerer fra bjergvandring til sti (oplyst)"],
-    "minus": ["Guidens dyreste", "Overkill til flade danske stier"]},
-   {"produkt_id": "backpackerlife-1015452", "praedikat": "Bedste til børn", "score": 8.2,
-    "bedst_til": "Barnet der både skal vandre og lege",
-    "note": "Vandtætte børnesko til vandretur, leg og hverdag. Det afgørende er lukningen: velcro kombineret med elastiksnøre, så barnet selv kan tage dem af og på. Et par snørebånd på en femårig bliver den voksnes opgave hver eneste gang, og på en tur er det tredive gange om dagen.",
-    "plus": ["Vandtætte børnesko", "Velcro og elastiksnøre — barnet klarer dem selv", "Både til tur, leg og hverdag (oplyst)"],
-    "minus": ["Børn vokser ud af dem på en sæson eller to", "Størrelsesudvalg er begrænset i feedet"]}
+   {
+    "produkt_id": "outdoortid-53117541810508",
+    "praedikat": "Vores valg",
+    "score": 8.6,
+    "bedst_til": "Weekendturen hvor telefonen er kortet",
+    "note": "10.000 mAh med 22W hurtigopladning og både USB-A og USB-C i begge ender. Det er de to ting der betyder noget: nok kapacitet til to-tre opladninger efter forhandlerens egen angivelse, og USB-C så du ikke skal have et ekstra kabel med. Den er dyrere end den langsomme udgave, og det er det eneste du betaler ekstra for.",
+    "plus": [
+     "10.000 mAh — 2-3 opladninger af en iPhone (oplyst)",
+     "22W hurtigopladning",
+     "USB-A og USB-C i både ind- og udgang"
+    ],
+    "minus": [
+     "Vægt er ikke oplyst i feedet",
+     "10.000 mAh rækker ikke til en uge"
+    ]
+   },
+   {
+    "produkt_id": "outdoortid-52784726245708",
+    "praedikat": "Bedst til prisen",
+    "score": 8.1,
+    "bedst_til": "Den der bare skal have strøm med",
+    "note": "Samme 10.000 mAh til guidens laveste pris, men 11W i stedet for 22W og kun USB-A. Kapaciteten er identisk med førstevalget — du betaler for ladehastighed og stikket, ikke for strøm. Har du alligevel et USB-A-kabel i tasken, er forskellen til førstevalget en halv time ved stikkontakten.",
+    "plus": [
+     "Guidens laveste pris",
+     "10.000 mAh — samme kapacitet som førstevalget",
+     "To enheder samtidigt"
+    ],
+    "minus": [
+     "11W — langsommere både ind og ud",
+     "Kun USB-A, så USB-C-kabel skal medbringes"
+    ]
+   },
+   {
+    "produkt_id": "outdoortid-52784740630860",
+    "praedikat": "Bedste til lange ture",
+    "score": 8.4,
+    "bedst_til": "En uge uden strøm, eller en gruppe",
+    "note": "30.000 mAh er guidens største og giver fem til syv opladninger af en telefon efter forhandlerens angivelse. Det er kapacitet til en uge alene eller til at være gruppens strømforsyning. Prisen pr. mAh er guidens bedste — men vægten følger kapaciteten, og den oplyses ikke.",
+    "plus": [
+     "30.000 mAh — guidens største",
+     "5-7 opladninger af en iPhone (oplyst)",
+     "Bedste pris pr. mAh i guiden"
+    ],
+    "minus": [
+     "Kun 11W og USB-A",
+     "Vægten følger kapaciteten og er ikke oplyst"
+    ]
+   },
+   {
+    "produkt_id": "outdoortid-56369784684876",
+    "praedikat": "Bedste med indbygget kabel",
+    "score": 8.3,
+    "bedst_til": "Dem der altid glemmer kablet",
+    "note": "Fire indbyggede kabler — USB-C, Lightning, Micro-USB og USB-A — plus display og lommelygte. Det løser det problem der faktisk opstår på en tur: powerbanken er med, kablet ligger hjemme. Indbyggede kabler er samtidig det svageste led, for de kan ikke udskiftes, men der er fire af dem.",
+    "plus": [
+     "Fire indbyggede kabler, inkl. USB-C og Lightning",
+     "22W hurtigopladning",
+     "Display og indbygget lommelygte"
+    ],
+    "minus": [
+     "Indbyggede kabler kan ikke udskiftes hvis de knækker",
+     "Vægt er ikke oplyst i feedet"
+    ]
+   },
+   {
+    "produkt_id": "backpackerlife-610659",
+    "praedikat": "Bedste med solceller",
+    "score": 8.0,
+    "bedst_til": "Nødforsyning på længere ture",
+    "note": "20.000 mAh med indbyggede solceller, 500 gram oplyst. Vær realistisk om solcellerne: et panel på den størrelse giver i dansk sol et par watt, så det er nødforsyning til nogle få procent batteri, ikke en ladekilde. Det er kapaciteten og robustheden du køber, og solcellerne er en forsikring.",
+    "plus": [
+     "20.000 mAh",
+     "500 g oplyst — guidens eneste vægtangivelse",
+     "Solceller som nødforsyning"
+    ],
+    "minus": [
+     "Solcellerne lader meget langsomt i dansk sol",
+     "500 g er mærkbart på en vandretur"
+    ]
+   },
+   {
+    "produkt_id": "backpackerlife-433747",
+    "praedikat": "Bedste nødløsning",
+    "score": 7.9,
+    "bedst_til": "Hjemmeberedskabet mere end rygsækken",
+    "note": "FM- og AM-radio, lys, solcelle, håndsving og 2.000 mAh powerbank i ét. De 2.000 mAh er under en halv telefonopladning, så det er ikke en powerbank — det er en radio der også kan give lidt strøm. Håndsvinget er pointen: det virker uden sol og uden strøm, og det er derfor den hører i skabet derhjemme lige så meget som på turen.",
+    "plus": [
+     "Håndsving — virker uden sol og uden strøm",
+     "FM og AM, så man kan få information",
+     "Indbygget lys"
+    ],
+    "minus": [
+     "2.000 mAh er under en halv telefonopladning",
+     "Tungere og klodsere end en ren powerbank"
+    ]
+   }
+  ]
+ },
+ "haandklaede": {
+  "title": "Bedste håndklæde til tur 2026",
+  "seo_title": "Bedste rejsehåndklæde 2026 – 6 favoritter, fra 29 kr. | ShelterDK",
+  "seo_description": "Find det bedste hurtigtørrende håndklæde til sheltertur og rejse. Vi scorer 6 favoritter — 80x40 til 180x120 cm, 300 til 650 g, fra 29 til 89 kr.",
+  "category": "hygiejne",
+  "product_categories": [
+   "hygiejne"
+  ],
+  "author": "ShelterDK Redaktionen",
+  "intro": "Et bomuldshåndklæde i rygsækken er stadig fugtigt tre dage senere. Et hurtigtørrende på en fjerdedel af vægten tørrer på en time. Her er vores scorede favoritter fra håndklædestørrelse til badehåndklæde.",
+  "body_md": "## Hvorfor microfiber slår bomuld på tur\n\nBomuld suger meget vand og **giver det nødigt fra sig igen**. I en rygsæk betyder det et håndklæde der er fugtigt dagen efter, lugter på dag tre og vejer mere end da du pakkede.\n\nMicrofiber suger mindre pr. gram, men slipper vandet igen på under en time i luft. Det er ikke en bedre tørreoplevelse — bomuld føles rarere — det er et bedre valg til en rygsæk.\n\n## Størrelse: tre niveauer der betyder noget\n\n**80 x 40 cm** er et håndklæde: ansigt, hænder, fødder. Nok til en weekend hvor der ikke er bad.\n\n**120 x 60 cm** tørrer en hel krop, hvis man er systematisk. Det er den størrelse de fleste ender med, og den vejer omkring 300 gram.\n\n**160 x 80 cm og op** er badehåndklæde. Det tørrer uden teknik, men 450-650 gram er meget at bære, hvis det kun skal bruges to gange.\n\n## Vægt mod komfort\n\nForskellen fra mindste til største i denne guide er 29 til 89 kroner — men 300 til 650 gram. Den vægt svarer til en liter vand, og det er dér valget ligger: skal håndklædet med i en rygsæk du bærer hele dagen, eller ligger det i bilen?\n\n## Kølende håndklæder er en anden varetype\n\nEt **cooling towel** aktiveres ved at dyppes, vrides og svinges. Det bliver koldt ved fordampning og holder det i et stykke tid. Det tørrer dig ikke — det køler dig, og de to ting kan ikke byttes om. Som ekstra på en varm sommertur er det en god ting; som dit eneste håndklæde er det en fejl.\n\n## Til shelterturen\n\nPå en shelterplads er der sjældent bad, og tit kun en håndvask eller en sø. Så bruges håndklædet mest til ansigt, hænder og til at tørre fødderne inden de kommer i soveposen — det sidste er faktisk det vigtigste, for fugtige fødder i en sovepose er en kold nat. Til det rækker den mindste størrelse.",
+  "faq": [
+   {
+    "q": "Hvor stort skal et rejsehåndklæde være?",
+    "a": "80 x 40 cm rækker til ansigt, hænder og fødder på en sheltertur uden bad. Skal du kunne tørre hele kroppen, er 120 x 60 cm minimum. Over det er det badehåndklæde, og så begynder vægten at tælle: 160 x 80 cm vejer omkring 450 g."
+   },
+   {
+    "q": "Hvor hurtigt tørrer et microfiberhåndklæde?",
+    "a": "Typisk under en time hængt frit i luft, mod et døgn eller mere for bomuld. Det er den egenskab man køber — ikke at det føles rarere, for det gør bomuld, men at det kan pakkes ned samme morgen uden at gøre resten af rygsækken fugtig."
+   },
+   {
+    "q": "Lugter microfiberhåndklæder?",
+    "a": "Mindre end bomuld, netop fordi de tørrer hurtigt, men de kan udvikle lugt hvis de pakkes fugtige ned gentagne gange. Hæng det ud hver dag, og vask det uden skyllemiddel — skyllemiddel sætter sig i fibrene og nedsætter sugeevnen."
+   },
+   {
+    "q": "Hvad er forskellen på et kølende håndklæde og et almindeligt?",
+    "a": "Et cooling towel køler dig ved fordampning, når det dyppes og svinges. Det tørrer dig ikke. De to ting kan ikke byttes om — et kølende håndklæde er et supplement på en varm dag, ikke dit eneste håndklæde på turen."
+   },
+   {
+    "q": "Kan man bruge et rejsehåndklæde som underlag eller pude?",
+    "a": "Som pudebetræk over en oppustelig pude, ja — det gør den mindre klam at ligge på. Som siddeunderlag holder det ikke fugt ude fra jorden, og det bliver vådt, så det er ikke en erstatning for et siddeunderlag."
+   }
+  ],
+  "sources": [
+   {
+    "url": "https://naturstyrelsen.dk/naturoplevelser/overnatning-i-naturen",
+    "title": "Naturstyrelsen – overnatning i naturen"
+   }
+  ],
+  "entries": [
+   {
+    "produkt_id": "outdoortid-52227453354316",
+    "praedikat": "Vores valg",
+    "score": 8.5,
+    "bedst_til": "Ét håndklæde der kan det hele",
+    "note": "120 x 60 cm og 300 gram oplyst — den størrelse hvor man kan tørre hele kroppen, hvis man er systematisk, uden at bære et badehåndklæde. Det er kompromiset de fleste ender med, og det er guidens bedste forhold mellem areal og vægt. Mål, vægt og pakmål er alle oplyst, hvilket er mere end de fleste i feedet.",
+    "plus": [
+     "120 x 60 cm — nok til hele kroppen",
+     "300 g oplyst",
+     "Mål, vægt og pakmål alle oplyst"
+    ],
+    "minus": [
+     "Kræver lidt teknik at tørre sig helt",
+     "Microfiber føles mindre rart end bomuld"
+    ]
+   },
+   {
+    "produkt_id": "backpackerlife-166497",
+    "praedikat": "Bedst til prisen",
+    "score": 8.1,
+    "bedst_til": "Weekendturen uden bad",
+    "note": "80 x 40 cm til guidens laveste pris. Det er et håndklæde, ikke et badehåndklæde — nok til ansigt, hænder og til at tørre fødderne inden de kommer i soveposen. Netop det sidste er det, håndklædet reelt bruges til på en shelterplads, og til det er størrelsen rigelig.",
+    "plus": [
+     "Guidens laveste pris",
+     "80 x 40 cm — fylder næsten intet",
+     "Nok til ansigt, hænder og fødder"
+    ],
+    "minus": [
+     "For lille til at tørre hele kroppen",
+     "Vægt er ikke oplyst i feedet"
+    ]
+   },
+   {
+    "produkt_id": "outdoortid-49284218782028",
+    "praedikat": "Bedste store",
+    "score": 8.3,
+    "bedst_til": "Turen hvor der faktisk er et bad",
+    "note": "160 x 80 cm og 450 gram oplyst. Det tørrer uden teknik, og det er forskellen når man står i et koldt baderum på en campingplads. De 150 gram ekstra over førstevalget er prisen, og det er en reel pris i en rygsæk — men ikke i en bil.",
+    "plus": [
+     "160 x 80 cm — badehåndklædestørrelse",
+     "450 g oplyst",
+     "Tørrer uden teknik"
+    ],
+    "minus": [
+     "150 g tungere end førstevalget",
+     "Fylder mærkbart mere nedpakket"
+    ]
+   },
+   {
+    "produkt_id": "outdoortid-55860259684684",
+    "praedikat": "Bedste til bad og strand",
+    "score": 8.0,
+    "bedst_til": "Bilen, strandturen og campingpladsen",
+    "note": "180 x 120 cm og 650 gram oplyst — guidens største, og det er bredt nok til at ligge på. Til gengæld er 650 gram over dobbelt så meget som førstevalget, og det er en vægt man ikke bærer frivilligt. Det er håndklædet til bilen og til den tur hvor rygsækken ikke skal på ryggen hele dagen.",
+    "plus": [
+     "180 x 120 cm — guidens største",
+     "Bredt nok til at ligge på",
+     "650 g oplyst"
+    ],
+    "minus": [
+     "650 g — dobbelt op af førstevalget",
+     "For stort og tungt til en vandretur"
+    ]
+   },
+   {
+    "produkt_id": "backpackerlife-188256",
+    "praedikat": "Bedste kølende",
+    "score": 7.9,
+    "bedst_til": "Varme sommerdage, som supplement",
+    "note": "100 x 30 cm kølende håndklæde: dyppes, vrides og svinges, hvorefter det køler ved fordampning. Det er ikke et tørrehåndklæde og kan ikke erstatte et — men på en sommerdag med 28 grader i Jylland er det det eneste i guiden, der gør noget andet end at tørre. Tag det med som nummer to, ikke som nummer ét.",
+    "plus": [
+     "Køler ved fordampning (oplyst aktiveringsmetode)",
+     "100 x 30 cm — fylder meget lidt",
+     "Næstlaveste pris i guiden"
+    ],
+    "minus": [
+     "Tørrer dig ikke — kan ikke erstatte et håndklæde",
+     "Virker kun så længe det er fugtigt"
+    ]
+   },
+   {
+    "produkt_id": "backpackerlife-486706",
+    "praedikat": "Bedste af genbrugsmateriale",
+    "score": 8.2,
+    "bedst_til": "Dem der vil have badehåndklædet uden dårlig samvittighed",
+    "note": "160 x 80 cm i genbrugsmateriale — samme størrelse som guidens store, men med genanvendt stof. Microfiber er plast, og det er svært at komme omkring; et håndklæde lavet af materiale der allerede har været i omløb er den tilgængelige forbedring. Vægten er ikke oplyst, så sammenligningen med den store må stoppe ved målene.",
+    "plus": [
+     "160 x 80 cm i genbrugsmateriale",
+     "Samme størrelse som guidens store",
+     "Hurtigtørrende"
+    ],
+    "minus": [
+     "Vægt er ikke oplyst i feedet",
+     "Dyrere end den tilsvarende uden genbrugsstof"
+    ]
+   }
+  ]
+ },
+ "lanterne": {
+  "title": "Bedste lanterne til shelter og telt 2026",
+  "seo_title": "Bedste lanterne 2026 – 7 favoritter, fra 59 kr. | ShelterDK",
+  "seo_description": "Find den bedste lanterne til shelter, telt og lejr. Vi scorer 7 favoritter — 60 til 650 lumen, genopladelige og petroleum, fra 59 til 399 kr.",
+  "category": "lygte",
+  "product_categories": [
+   "lygte"
+  ],
+  "author": "ShelterDK Redaktionen",
+  "intro": "En pandelampe lyser hvor du ser. En lanterne lyser hvor I er — og det er forskellen mellem at spise aftensmad og at blænde hinanden. Her er vores scorede favoritter fra 60 til 650 lumen.",
+  "body_md": "## Lanterne og pandelampe løser to forskellige problemer\n\nEn pandelampe giver et retningsbestemt lys der følger dit blik. Det er rigtigt når du går eller leder efter noget, og forkert når I sidder fire mennesker om et bord — så blænder man hinanden hver gang man ser op.\n\nEn lanterne giver **spredt lys fra et fast punkt**. Den hænges op i shelterets tag eller stilles på bordet, og så kan alle se uden at nogen bliver blændet. De to ting erstatter ikke hinanden; de fleste har begge med.\n\n## Hvor mange lumen har du brug for?\n\nTil at spise og snakke i et shelter rækker **60-180 lumen**. Det lyder lavt sammenlignet med en pandelampe på 400, men lanternen lyser i alle retninger og tæt på — rækkevidde er irrelevant.\n\nOver **400 lumen** begynder det at blive arbejdslys: pakke om i mørke, finde en vej, lyse en hel lejrplads op. Det er rart at kunne, men på fuldt blus dræner det batteriet, og man sidder sjældent i det.\n\n## Genopladelig, batteri eller flamme\n\n**Genopladelig med USB-C** er det nemmeste, og de bedste kan desuden lade din telefon. Ulempen er, at når den er tom på dag fire, er den tom.\n\n**Udskifteligt batteri** betyder du kan tage et ekstra sæt med, og det er stadig det sikre valg på længere ture uden strøm.\n\n**Petroleum eller olie** giver et varmt lys der ikke kan slukkes af et fladt batteri, og lanternen virker om tyve år. Til gengæld skal der brændstof med, den må ikke ligge ned i rygsækken, og den giver åben flamme — det sidste er værd at tænke over i et shelter af træ.\n\n## Magneter og ophæng er ikke en detalje\n\nI et shelter er der ingen bordplade og intet loft med krog. De lanterner der kan hænges op i en snor eller sættes fast med magnet på en metalflade, er dem der faktisk bliver brugt. De der kun kan stå, ender på jorden, hvor lyset ikke er til nogen nytte.\n\n## Til shelterturen\n\nShelterets tag har tit en spærre eller et søm man kan hænge i. En lille lanterne på 100-200 lumen hængt dér lyser hele shelteret op, og den kan sidde der til man sover. Det er det bedste argument for at have en med ud over pandelampen — og for at vælge en der kan hænges op.",
+  "faq": [
+   {
+    "q": "Skal man have både lanterne og pandelampe?",
+    "a": "De fleste bør, ja. Pandelampen giver retningslys når du går eller leder; lanternen giver spredt lys fra et fast punkt, så flere kan se uden at blænde hinanden. I et shelter hvor I spiser sammen, er lanternen den der bliver brugt mest."
+   },
+   {
+    "q": "Hvor mange lumen skal en lanterne have?",
+    "a": "60-180 lumen rækker til at spise, snakke og finde ting i et shelter, fordi lanternen lyser i alle retninger og tæt på. Over 400 lumen er arbejdslys — rart at kunne, men det dræner batteriet og man sidder sjældent i det."
+   },
+   {
+    "q": "Er en petroleumslanterne egnet til shelter?",
+    "a": "Den giver et varmt lys der ikke kan slukkes af et fladt batteri, og den holder i årtier. Men den har åben flamme, skal stå oprejst og kræver brændstof med — i et shelter af træ bør den hænge frit og ikke stå på gulvet mellem soveposer."
+   },
+   {
+    "q": "Kan en lanterne bruges som powerbank?",
+    "a": "Nogle genopladelige modeller har USB-udgang og kan afgive strøm til en telefon. Kapaciteten er typisk 1.200-2.400 mAh, altså under en halv telefonopladning — det er en nødforsyning, ikke en erstatning for en powerbank."
+   },
+   {
+    "q": "Hvad betyder IPX4?",
+    "a": "At lanternen tåler vandsprøjt fra alle retninger, men ikke at blive lagt i vand. Til dansk regnvejr under et shelter er det rigeligt; til en lanterne der skal hænge frit i en byge er det netop den klasse man vil have."
+   }
+  ],
+  "sources": [
+   {
+    "url": "https://naturstyrelsen.dk/naturoplevelser/overnatning-i-naturen",
+    "title": "Naturstyrelsen – overnatning i naturen"
+   }
+  ],
+  "entries": [
+   {
+    "produkt_id": "outdoortid-49116961669452",
+    "praedikat": "Vores valg",
+    "score": 8.6,
+    "bedst_til": "Shelterets tag og aftensmaden",
+    "note": "180 lumen i en lampe på 6 x 8 cm og 117 gram, med magneter på bagsiden og en udtrækkelig LED-lyskæde. Den kan lade din telefon gennem USB-C, hvilket gør den til lanterne og nødforsyning i ét. Magneterne er det der afgør om den bliver brugt: i et shelter er der sjældent et bord, men ofte en metalflade eller en spærre.",
+    "plus": [
+     "180 lumen i 117 g — guidens bedste lys pr. gram",
+     "Magneter på bagsiden",
+     "Kan lade telefonen via USB-C (1.200 mAh)"
+    ],
+    "minus": [
+     "1.200 mAh er under en halv telefonopladning",
+     "Lyskæden er mere hygge end nytte"
+    ]
+   },
+   {
+    "produkt_id": "backpackerlife-67690",
+    "praedikat": "Bedst til prisen",
+    "score": 8.0,
+    "bedst_til": "Den ekstra lanterne i bunden af rygsækken",
+    "note": "60 lumen, vandafvisende og med magnet i bunden, til guidens laveste pris. 60 lumen er lavt, men i et lukket shelter tæt på er det nok til at spise ved. Til den pris er den værd at have som nummer to, så der er lys hvis den primære lanterne er tom.",
+    "plus": [
+     "Guidens laveste pris",
+     "Magnet i bunden",
+     "Vandafvisende (oplyst)"
+    ],
+    "minus": [
+     "60 lumen — guidens svageste lys",
+     "Batteritype og -levetid er ikke oplyst"
+    ]
+   },
+   {
+    "produkt_id": "backpackerlife-209399",
+    "praedikat": "Bedste genopladelige",
+    "score": 8.5,
+    "bedst_til": "Dem der vil have ét lys der altid virker",
+    "note": "Black Diamonds Moji R+ er kompakt og letvægtig, og den kan både stå og hænges op i lejren eller teltet. Det er den mest gennemprøvede model i guiden fra et mærke der laver lys til professionelt brug. Guidens dyreste, og lumen og batteritid er ikke oplyst i feedet — det er navnet og formfaktoren man køber.",
+    "plus": [
+     "Kan både stå og hænges op",
+     "Kompakt og letvægtig (oplyst)",
+     "Genopladelig"
+    ],
+    "minus": [
+     "Guidens dyreste",
+     "Lumen og batteritid er ikke oplyst i feedet"
+    ]
+   },
+   {
+    "produkt_id": "outdoortid-53193956884812",
+    "praedikat": "Bedste kraftige",
+    "score": 8.3,
+    "bedst_til": "Arbejdslys i mørke og hele lejrpladsen",
+    "note": "650 lumen — guidens kraftigste, mere end tre gange førstevalget — med fem lysindstillinger, 2.400 mAh genopladeligt batteri, USB-C ind og ud, og IPX4-vandtæthed. 260 gram og 23 cm gør den til lejrens lampe frem for rygsækkens. Den kan også bruges som lygte, hvilket de øvrige lanterner ikke kan.",
+    "plus": [
+     "650 lumen — guidens kraftigste",
+     "Fem lysindstillinger og IPX4",
+     "2.400 mAh, kan lade telefonen"
+    ],
+    "minus": [
+     "260 g og 23 cm — fylder i rygsækken",
+     "Fuldt blus dræner batteriet hurtigt"
+    ]
+   },
+   {
+    "produkt_id": "backpackerlife-759974",
+    "praedikat": "Bedste med ben",
+    "score": 8.2,
+    "bedst_til": "Lejren hvor der ikke er noget at hænge i",
+    "note": "Black Diamonds Orbiter 450 har ben, så den kan stilles på ujævnt underlag, og et genopladeligt lithium-ion-batteri der kan lade mindre enheder gennem USB-C eller USB-A. Benene er en reel funktion på en shelterplads: der er sjældent en plan flade, og en lanterne der vælter slukker typisk sig selv.",
+    "plus": [
+     "Ben, så den står på ujævnt underlag",
+     "Kan lade mindre enheder via USB-C eller USB-A",
+     "Genopladeligt lithium-ion"
+    ],
+    "minus": [
+     "Lumen og batteritid er ikke oplyst i feedet",
+     "Dyr i forhold til lysmængden man kender"
+    ]
+   },
+   {
+    "produkt_id": "backpackerlife-41714",
+    "praedikat": "Bedste petroleumslanterne",
+    "score": 8.1,
+    "bedst_til": "Det varme lys der ikke kan løbe tør for batteri",
+    "note": "Feuerhand har lavet den samme lanterne i over hundrede år, og Hurricane-udgaven er lavet til udendørs brug. Lyset er varmt og helt anderledes end LED, den kan ikke blive fladt om morgenen, og den holder i årtier. Til gengæld: brændstof skal med, den skal stå oprejst, og det er åben flamme i et shelter af træ.",
+    "plus": [
+     "Åben flamme — kan ikke løbe tør for batteri",
+     "Varmt lys, helt anderledes end LED",
+     "Holder i årtier"
+    ],
+    "minus": [
+     "Åben flamme kræver omtanke i et træshelter",
+     "Brændstof skal medbringes og må ikke ligge ned"
+    ]
+   },
+   {
+    "produkt_id": "backpackerlife-61667",
+    "praedikat": "Bedste stormlanterne",
+    "score": 7.9,
+    "bedst_til": "Lejrbålsstemning for få penge",
+    "note": "Mil-Tecs zinklanterne på 28 cm, inspireret af amerikansk militærudstyr. Den er billigere end Feuerhand og gør det samme — varmt lys fra en flamme, uafhængigt af batteri. Den er den billigste vej til et levende lys på pladsen, og man skal ikke forvente samme byggekvalitet som den dyrere.",
+    "plus": [
+     "Billigste flammelanterne i guiden",
+     "28 cm — det største glas blandt flammemodellerne",
+     "Zink, så den tåler at stå ude"
+    ],
+    "minus": [
+     "Byggekvaliteten er under Feuerhands",
+     "Åben flamme, brændstof skal medbringes"
+    ]
+   }
+  ]
+ },
+ "foerstehjaelp": {
+  "title": "Bedste førstehjælpssæt til tur 2026",
+  "seo_title": "Bedste førstehjælpssæt 2026 – 6 favoritter, fra 49 kr. | ShelterDK",
+  "seo_description": "Find det bedste førstehjælpssæt til sheltertur og vandring. Vi scorer 6 favoritter — sæt, vabelplastre og nødtæppe, fra 49 til 99 kr.",
+  "category": "foerstehjaelp",
+  "product_categories": [
+   "foerstehjaelp"
+  ],
+  "author": "ShelterDK Redaktionen",
+  "intro": "De skader man faktisk får på en sheltertur er vabler, rifter og en forstuvet ankel — ikke det dramatiske. Her er vores scorede favoritter blandt sæt og enkeltdele, og hvad du bør have ud over sættet.",
+  "body_md": "## Et sæt erstatter ikke at kunne førstehjælp\n\nDet vigtigste i en førstehjælpssituation er, at nogen ved hvad de skal gøre. Et sæt med 50 dele hjælper ikke, hvis ingen kan lægge et trykforbind eller vurdere, om man skal ringe 112.\n\nTag et **førstehjælpskursus** hvis du færdes meget i naturen — Røde Kors og Falck udbyder korte kurser, og et basiskursus tager en aften. Denne guide handler om indholdet i tasken, ikke om at erstatte det.\n\nOg ved alvorlig skade: **ring 112**. På en shelterplads i Danmark er du sjældent mere end tyve minutter fra hjælp, og pladsens koordinater står typisk på vores shelterside.\n\n## Hvad du faktisk kommer til at bruge\n\nI praksis er det tre ting, der bliver brugt på danske ture:\n\n**Vabelplastre.** Den suverænt mest sandsynlige skade på en vandretur. Hydrokolloid-plastre lindrer med det samme og bliver siddende, hvor et almindeligt plaster ruller af i en sok.\n\n**Plastre og rens** til rifter fra grene, kniv og bålarbejde.\n\n**Elastikbandage** til en forstuvet ankel, så man kan gå hjem.\n\nAlt det øvrige i et sæt — trekantbandage, sikkerhedsnåle, pincet — bruges sjældent, men vejer næsten intet og er værd at have med.\n\n## Antal dele er et dårligt mål\n\n\"31 dele\" og \"50 dele\" lyder forskelligt, men ti plastre tælles som ti dele. Se på **hvad** der er i stedet for hvor mange: er der vabelplastre? Er der en elastikbandage? Er der renseservietter nok til mere end et enkelt sår?\n\nEt af sættene i guiden har en fuld indholdsliste i feedet, og det er den vi kan dokumentere. For de øvrige kender vi kun antallet.\n\n## Nødtæppet er det billigste du kan have med\n\nEt alutæppe vejer under 100 gram, koster under en halvtredser og er det der holder en tilskadekommen varm, mens man venter. Nedkøling er den reelle risiko ved en skade i Danmark — ikke selve skaden, men de fyrre minutter liggende på kold jord bagefter.\n\n## Til shelterturen\n\nHold sættet **vandtæt** eller læg det i en drybag. Et førstehjælpssæt der har ligget fugtigt en sæson indeholder plastre der ikke klæber og gaze der ikke er steril. Tjek det hvert forår, og skift det der er brugt — det er den vedligeholdelse folk glemmer.",
+  "faq": [
+   {
+    "q": "Hvad skal et førstehjælpssæt til vandretur indeholde?",
+    "a": "Vabelplastre, almindelige plastre i flere størrelser, renseservietter, gaze, tape og en elastikbandage. Det er det, der bliver brugt på danske ture. Trekantbandage, pincet og sikkerhedsnåle vejer næsten intet og er værd at have, men bruges sjældent."
+   },
+   {
+    "q": "Er et sæt med 50 dele bedre end et med 31?",
+    "a": "Ikke nødvendigvis — ti plastre tælles som ti dele. Se på indholdet frem for antallet: om der er vabelplastre, om der er en elastikbandage, og om der er rens nok til mere end ét sår. Et sæt med en fuld indholdsliste er nemmere at vurdere end et med et tal."
+   },
+   {
+    "q": "Erstatter et førstehjælpssæt et kursus?",
+    "a": "Nej. Det vigtigste i en skadessituation er, at nogen ved hvad de skal gøre. Røde Kors og Falck udbyder basiskurser der tager en aften. Ved alvorlig skade skal du ringe 112 — på en dansk shelterplads er hjælpen sjældent mere end tyve minutter væk."
+   },
+   {
+    "q": "Hvorfor er et nødtæppe vigtigt?",
+    "a": "Fordi nedkøling er den reelle risiko ved en skade i Danmark. Selve skaden er sjældent livstruende, men de fyrre minutter liggende på kold jord, mens man venter på hjælp, kan være det. Et alutæppe vejer under 100 gram og koster under en halvtredser."
+   },
+   {
+    "q": "Hvor ofte skal man tjekke sit førstehjælpssæt?",
+    "a": "Hvert forår, og hver gang du har brugt noget af det. Plastre mister klæbeevne, gaze mister sterilitet, og et sæt der har ligget fugtigt en sæson er i praksis tomt. Hold det i en vandtæt pose eller en drybag."
+   }
+  ],
+  "sources": [
+   {
+    "url": "https://www.rodekors.dk/det-goer-vi/foerstehjaelp",
+    "title": "Røde Kors – førstehjælp"
+   },
+   {
+    "url": "https://naturstyrelsen.dk/naturoplevelser/overnatning-i-naturen",
+    "title": "Naturstyrelsen – overnatning i naturen"
+   }
+  ],
+  "entries": [
+   {
+    "produkt_id": "backpackerlife-82819",
+    "praedikat": "Vores valg",
+    "score": 8.4,
+    "bedst_til": "Det sæt der ligger i rygsækken hele sæsonen",
+    "note": "Kompakt sæt med 31 dele, beregnet til at behandle mindre skader undervejs — rifter og forstuvninger. Det er den rigtige størrelse til en sheltertur: nok til det der faktisk sker, lille nok til at det bliver med hver gang. Suppler med vabelplastre, for det er den skade man oftest får, og de er sjældent nok i et standardsæt.",
+    "plus": [
+     "Kompakt nok til at komme med hver gang",
+     "31 dele til rifter og forstuvninger",
+     "Lavere pris end det vandtætte"
+    ],
+    "minus": [
+     "Ikke vandtæt — læg det i en drybag",
+     "Fuld indholdsliste er ikke oplyst i feedet"
+    ]
+   },
+   {
+    "produkt_id": "outdoortid-52801006272844",
+    "praedikat": "Bedst til prisen",
+    "score": 8.3,
+    "bedst_til": "Dem der vil vide præcis hvad de får",
+    "note": "Guidens laveste pris, og det eneste sæt med en fuld indholdsliste i feedet: ti plastre, et stort 6 x 80 cm, renseservietter med og uden sæbe, gaze, non-woven tape, en PBT-bandage på 4,5 meter, saks, pincet, trekantbandage og sikkerhedsnåle. Når man kan se indholdet, kan man også se hvad der mangler — her er det vabelplastre.",
+    "plus": [
+     "Guidens laveste pris",
+     "Fuld indholdsliste oplyst — det eneste sæt med det",
+     "PBT-bandage på 4,5 m til forstuvninger"
+    ],
+    "minus": [
+     "Ingen vabelplastre i sættet",
+     "Ikke vandtæt emballage"
+    ]
+   },
+   {
+    "produkt_id": "backpackerlife-381331",
+    "praedikat": "Bedste vandtætte",
+    "score": 8.5,
+    "bedst_til": "Sættet der skal holde flere sæsoner",
+    "note": "50 dele i vandtæt emballage. Det vandtætte er det afgørende, ikke de 50 dele: et sæt der har ligget fugtigt en sæson har plastre der ikke klæber og gaze der ikke er steril, og det opdager man netop den dag man skal bruge det. Guidens dyreste, og forskellen til det kompakte er emballagen og mængden.",
+    "plus": [
+     "Vandtæt emballage — holder indholdet brugbart",
+     "50 dele",
+     "Det eneste i guiden man ikke behøver lægge i en drybag"
+    ],
+    "minus": [
+     "Guidens dyreste",
+     "Fuld indholdsliste er ikke oplyst i feedet"
+    ]
+   },
+   {
+    "produkt_id": "backpackerlife-1052482",
+    "praedikat": "Bedste vabelplaster",
+    "score": 8.6,
+    "bedst_til": "Den skade du faktisk får",
+    "note": "Compeed Blister Extreme bruger hydrokolloid-teknologi, som giver smertelindring med det samme, og vokstavle-strukturen giver 20% ekstra trykaflastning efter producentens angivelse. Vabler er den mest sandsynlige skade på en vandretur, og et almindeligt plaster ruller af inde i en sok. Det her er den enkeltdel der oftest redder en tur.",
+    "plus": [
+     "Hydrokolloid — smertelindring med det samme (oplyst)",
+     "20% ekstra trykaflastning (oplyst)",
+     "Bliver siddende i en sok, hvor almindelige plastre ruller af"
+    ],
+    "minus": [
+     "Dyrt pr. plaster",
+     "Løser kun vabler — ikke et sæt"
+    ]
+   },
+   {
+    "produkt_id": "backpackerlife-631764",
+    "praedikat": "Bedste nødtæppe",
+    "score": 8.2,
+    "bedst_til": "De fyrre minutter mens man venter på hjælp",
+    "note": "Varmereflekterende alutæppe i Double-størrelse fra Lifesystems, i genanvendeligt materiale. Nedkøling er den reelle risiko ved en skade i Danmark — ikke skaden selv, men tiden liggende på kold jord bagefter. Double betyder plads til to, eller til at pakke én person helt ind. Det vejer næsten intet og bør ligge i sættet permanent.",
+    "plus": [
+     "Varmereflekterende — bruger kropsvarmen",
+     "Double-størrelse: to personer eller én helt pakket ind",
+     "Genanvendeligt materiale (oplyst)"
+    ],
+    "minus": [
+     "Engangsbrug i praksis — svær at pakke sammen igen",
+     "Vægt og mål er ikke oplyst i feedet"
+    ]
+   },
+   {
+    "produkt_id": "backpackerlife-72839",
+    "praedikat": "Bedste til fingerrevner",
+    "score": 8.0,
+    "bedst_til": "Hænder der har arbejdet med bål og brænde",
+    "note": "Compeed til revner omkring fingerspidserne — de små sår der opstår af bålarbejde, kniv og kulde, og som er langt ømmere end størrelsen antyder. De kommer sjældent i standardsæt, fordi de ikke ser dramatiske ud, men de er grunden til at man ikke kan knytte hånden om en økse dag to.",
+    "plus": [
+     "Dækker en skade standardsæt ikke har med",
+     "Formet til fingerspidser",
+     "10 stk. i pakken"
+    ],
+    "minus": [
+     "Meget specifik anvendelse",
+     "Ikke et sæt — et supplement"
+    ]
+   }
+  ]
+ },
+ "bestik": {
+  "title": "Bedste bestik og service til tur 2026",
+  "seo_title": "Bedste camping-bestik 2026 – 6 favoritter, fra 12 kr. | ShelterDK",
+  "seo_description": "Find det bedste bestik og service til sheltertur. Vi scorer 6 favoritter — spork, bestiksæt fra 24 g, emaljetallerken og foldekop, fra 12 til 59 kr.",
+  "category": "kogeudstyr",
+  "product_categories": [
+   "kogeudstyr"
+  ],
+  "author": "ShelterDK Redaktionen",
+  "intro": "Frysetørret mad spises af posen, men alt andet kræver noget at spise med. Her er vores scorede favoritter — fra en spork på tolv kroner til et bestiksæt på 24 gram.",
+  "body_md": "## Spork eller sæt\n\nEn **spork** er ske og gaffel i ét, ofte med en takket kant der fungerer som kniv. Et redskab, et par gram, og nok til frysetørret mad, havregryn og suppe — altså til det man faktisk spiser på en sheltertur.\n\nEt **bestiksæt** med tre dele giver en rigtig gaffel og en kniv der skærer. Det er forskellen, hvis I laver mad fra råvarer frem for at hælde vand i en pose. Og hvis I er flere, er tre dele lettere at dele op end tre sporks.\n\nFor de fleste shelterture er sporken nok. Køb sættet hvis du laver rigtig mad, eller hvis du ikke kan holde ud at skære med en takket skekant.\n\n## Plastik, metal eller træ\n\n**Glasforstærket polypropylen** — den plastik de gode sporks er lavet af — er let, holdbart og tåler opvaskemaskine. Det smelter dog, hvis det ligger i en varm gryde, og det er den mest almindelige måde at ødelægge en spork.\n\n**Metal** holder evigt og tåler varme, men vejer mere og leder varme, så det brænder i munden ved varm mad.\n\n**Emalje** — stål med emaljeoverflade — er klassisk til tallerkener og krus: slidstærkt, tåler bål og kan vaskes op i koldt vand. Det skaller, hvis man tæver det, og så ruster stålet under.\n\n## Vægt mod holdbarhed\n\nForskellen fra guidens letteste til tungeste er et spørgsmål om gram, ikke kilo — et bestiksæt på 24 gram mod en emaljetallerken der vejer flere hundrede. På en vandretur er det reelt; på en shelterweekend er det støj.\n\nDet man derimod mærker er **pakmål og klirren**: metal løst i rygsækken larmer hele dagen. De sæt der kan klikkes sammen eller samles med en karabinhage er dem der ikke driver dig til vanvid.\n\n## Hvad du kan undvære\n\nEn **kop** kan du ikke undvære, hvis du drikker kaffe eller te — og på en kold morgen i shelter er det det første der sker. En **tallerken** kan du til gengæld tit undvære: gryden fra stormkøkkenet fungerer som tallerken for én person, og frysetørret mad spises af posen.\n\nSkal I spise sammen fra en fælles gryde, er tallerkener til gengæld det der gør måltidet til et måltid.\n\n## Til shelterturen\n\nDer er ingen opvask på en shelterplads. Det afgør materialevalget mere end vægten: noget der kan tørres af med et stykke køkkenrulle og sættes tilbage i rygsækken, og som kan tåle at blive vasket i koldt vand fra en håndpumpe. Emalje og glasforstærket plastik kan begge det; træ og ubehandlet metal kan ikke.",
+  "faq": [
+   {
+    "q": "Er en spork nok til en sheltertur?",
+    "a": "For de fleste, ja. Spiser du frysetørret mad, havregryn og suppe, er ske-gaffel-kombinationen nok. Køb et tredelt sæt, hvis du laver mad fra råvarer og har brug for en kniv der faktisk skærer."
+   },
+   {
+    "q": "Hvad er det bedste materiale til camping-bestik?",
+    "a": "Glasforstærket polypropylen er let, holdbart og tåler opvaskemaskine — men det smelter, hvis det ligger i en varm gryde. Metal holder evigt og tåler varme, men leder varme, så det brænder i munden. Emalje er bedst til tallerkener og krus."
+   },
+   {
+    "q": "Hvor meget vejer camping-bestik?",
+    "a": "Et letvægtssæt i plastik kan komme ned på 24 gram for tre dele. En enkelt spork vejer typisk under 10 gram. Emaljetallerkener og metalkrus vejer flere hundrede gram, og det er dér vægten reelt ligger — ikke i bestikket."
+   },
+   {
+    "q": "Har man brug for en tallerken på tur?",
+    "a": "Ikke nødvendigvis. Gryden fra stormkøkkenet fungerer som tallerken for én person, og frysetørret mad spises af posen. Skal I derimod spise sammen fra en fælles gryde, er tallerkener det, der gør det til et måltid."
+   },
+   {
+    "q": "Hvordan vasker man op på en shelterplads?",
+    "a": "Tør af med køkkenrulle først, så der ikke skal bruges vand på madrester. Vask resten i koldt vand væk fra søer og vandløb, og brug sæbe sparsomt eller slet ikke. Det er også derfor emalje og glasforstærket plastik er bedre valg end træ."
+   }
+  ],
+  "sources": [
+   {
+    "url": "https://naturstyrelsen.dk/naturoplevelser/overnatning-i-naturen",
+    "title": "Naturstyrelsen – overnatning i naturen"
+   }
+  ],
+  "entries": [
+   {
+    "produkt_id": "backpackerlife-102909",
+    "praedikat": "Vores valg",
+    "score": 8.5,
+    "bedst_til": "Det ene redskab der skal kunne alt",
+    "note": "Light My Fires originale BIO-spork er 3-i-1: ske i den ene ende, gaffel med en takket knivkant i den anden, i genanvendeligt materiale. Det er den mest udbredte spork i Norden, og grunden er at knivkanten faktisk skærer — de fleste sporks har en kant der kun ser ud som en kniv.",
+    "plus": [
+     "3-i-1 — ske, gaffel og takket knivkant",
+     "Genanvendeligt materiale (oplyst)",
+     "Knivkanten skærer faktisk"
+    ],
+    "minus": [
+     "Plastik smelter hvis den ligger i en varm gryde",
+     "Vægt er ikke oplyst i feedet"
+    ]
+   },
+   {
+    "produkt_id": "backpackerlife-103533",
+    "praedikat": "Bedst til prisen",
+    "score": 8.2,
+    "bedst_til": "En ekstra i hver rygsæk",
+    "note": "Guidens laveste pris for et 2-i-1 ske-gaffel-redskab i BPA-fri, glasforstærket polypropylen, og den tåler opvaskemaskine. Til den pris er svaret ikke om man skal have én, men hvor mange: en i hver rygsæk og en i bilen koster mindre end en enkelt kop kaffe.",
+    "plus": [
+     "Guidens laveste pris",
+     "BPA-fri glasforstærket polypropylen",
+     "Tåler opvaskemaskine (oplyst)"
+    ],
+    "minus": [
+     "Ingen knivkant — kun ske og gaffel",
+     "Plastik smelter ved kontakt med en varm gryde"
+    ]
+   },
+   {
+    "produkt_id": "backpackerlife-381790",
+    "praedikat": "Bedste letvægtssæt",
+    "score": 8.4,
+    "bedst_til": "Vandreturen hvor gram tælles",
+    "note": "Gaffel, kniv og ske i polypropylen til 24 gram tilsammen — guidens eneste oplyste vægt, og den er lav. Grebene har samme form, hvilket betyder de kan ligge samlet uden at klirre. Det er det nærmeste man kommer rigtigt bestik uden at bære rigtigt bestik.",
+    "plus": [
+     "24 g for tre dele — guidens eneste vægtangivelse",
+     "Rigtig kniv og gaffel, ikke en kompromis-kant",
+     "Ens greb, så delene ligger samlet"
+    ],
+    "minus": [
+     "Dyrere end en spork der gør næsten det samme",
+     "Tre dele at holde styr på i stedet for én"
+    ]
+   },
+   {
+    "produkt_id": "backpackerlife-907489",
+    "praedikat": "Bedste sæt til prisen",
+    "score": 8.3,
+    "bedst_til": "To personer der spiser rigtig mad",
+    "note": "Gaffel, kniv og ske i BPA-fri glasforstærket polypropylen med en karabinhage, så de tre dele kan klikkes sammen eller hænges på rygsækken. Karabinhagen er den praktiske forskel: løst bestik i en rygsæk forsvinder i bunden og klirrer hele dagen. Billigere end letvægtssættet, og vægten oplyses ikke.",
+    "plus": [
+     "Karabinhage holder de tre dele samlet",
+     "BPA-fri glasforstærket polypropylen",
+     "Billigere end letvægtssættet"
+    ],
+    "minus": [
+     "Vægt er ikke oplyst i feedet",
+     "Glasforstærket plastik tåler ikke varme gryder"
+    ]
+   },
+   {
+    "produkt_id": "backpackerlife-249439",
+    "praedikat": "Bedste tallerken",
+    "score": 8.1,
+    "bedst_til": "Fælles aftensmad fra én gryde",
+    "note": "Emaljetallerken på 24 cm — stål med emaljeoverflade, hvilket gør den slidstærk og nem at vaske op i lunkent vand med sæbe. Den tåler bål og kan ikke smelte, og det er forskellen på en tallerken man kan sætte ved gløderne og en der skal holdes væk. Den vejer til gengæld langt mere end plastik.",
+    "plus": [
+     "Emaljeret stål — tåler bål og kan ikke smelte",
+     "24 cm, nok til en hel portion",
+     "Vaskes i lunkent vand med sæbe (oplyst)"
+    ],
+    "minus": [
+     "Langt tungere end plastik",
+     "Emaljen skaller hvis den tæves, og stålet ruster under"
+    ]
+   },
+   {
+    "produkt_id": "backpackerlife-363835",
+    "praedikat": "Bedste foldekop",
+    "score": 8.2,
+    "bedst_til": "Morgenkaffen uden at bære en kop",
+    "note": "350 ml foldbar kop i fødevaregodkendt silikone med nylonkant, og den tåler fra -40 til over 200 grader efter forhandlerens angivelse. Foldet fylder den som en underkop. En kop er den ene ting man ikke kan undvære på en kold morgen i shelter, og det her er den der koster mindst plads.",
+    "plus": [
+     "350 ml foldbar — fylder som en underkop",
+     "Silikone, tåler fra -40 grader (oplyst)",
+     "Nylonkant gør den stiv nok at drikke af"
+    ],
+    "minus": [
+     "Silikone optager smag over tid",
+     "Foldekopper kan vælte lettere end en stiv kop"
+    ]
+   }
   ]
  }
 }
