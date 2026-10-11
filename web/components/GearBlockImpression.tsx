@@ -41,7 +41,13 @@ export function GearBlockImpression({
       trackGearBlockSeen({ shelterSlug, guideCount });
     };
 
-    const el = anker.current;
+    // Observér selve blokken, ikke ankeret. Ankeret er et span på h-0 w-0, og
+    // for et element uden areal sætter IntersectionObserver-specifikationen
+    // ratio til 1, så snart det overhovedet skærer viewporten — en tærskel på
+    // 0,5 kunne derfor intet afgøre, og eventet udløste så snart sektionens
+    // overkant kom ind. Kommentaren nedenfor hævdede noget andet end koden
+    // gjorde, og visningstallet var mere eftergivende end dokumenteret.
+    const el = anker.current?.parentElement ?? anker.current;
     if (!el || typeof IntersectionObserver === "undefined") {
       meld();
       return;
@@ -55,7 +61,8 @@ export function GearBlockImpression({
         }
       },
       // Halvdelen af blokken skal være inde, så en strejf i kanten under en
-      // hurtig scroll ikke tælles som en visning.
+      // hurtig scroll ikke tælles som en visning. Tærsklen virker kun fordi
+      // der nu observeres et element med areal.
       { threshold: 0.5 }
     );
     obs.observe(el);

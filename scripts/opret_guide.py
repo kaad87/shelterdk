@@ -120,6 +120,12 @@ def main():
             print("  [DRY-RUN] intet oprettet")
             continue
 
+        # Guiden oprettes som kladde og publiceres først, når alle entries er
+        # inde. Før blev den indsat som "published" med det samme, og en fejlet
+        # entry midt i løkken efterlod en LIVE side med to produkter og uden
+        # topprædikat — netop den tilstand scriptets egne spærrer er skrevet
+        # for at undgå. Og "guiden findes allerede"-spærren blokerede et nyt
+        # forsøg, så oprydningen skulle gøres i hånden.
         rad = sb.table("buying_guides").insert({
             "slug": slug,
             "title": g["title"],
@@ -133,22 +139,32 @@ def main():
             "author": g.get("author", "ShelterDK Redaktionen"),
             "parent_slug": g.get("parent_slug"),
             "product_categories": g.get("product_categories"),
-            "status": "published",
+            "status": "draft",
             "last_reviewed_at": __import__("datetime").date.today().isoformat(),
         }).execute().data[0]
 
-        for rank, e in enumerate(entries):
-            sb.table("buying_guide_entries").insert({
-                "guide_id": rad["id"],
-                "affiliate_product_id": e["produkt_id"],
-                "rank": rank,
-                "award_label": e.get("praedikat") or None,
-                "score": e.get("score"),
-                "best_for": e.get("bedst_til") or None,
-                "editorial_note": e.get("note") or None,
-                "pros": e.get("plus") or None,
-                "cons": e.get("minus") or None,
-            }).execute()
+        try:
+            for rank, e in enumerate(entries):
+                sb.table("buying_guide_entries").insert({
+                    "guide_id": rad["id"],
+                    "affiliate_product_id": e["produkt_id"],
+                    "rank": rank,
+                    "award_label": e.get("praedikat") or None,
+                    "score": e.get("score"),
+                    "best_for": e.get("bedst_til") or None,
+                    "editorial_note": e.get("note") or None,
+                    "pros": e.get("plus") or None,
+                    "cons": e.get("minus") or None,
+                }).execute()
+            sb.table("buying_guides").update({"status": "published"}).eq("id", rad["id"]).execute()
+        except Exception as fejl:
+            # Ryd op frem for at efterlade en halv guide. Den er stadig kladde,
+            # så den har aldrig været synlig — men den ville blokere et nyt
+            # forsøg på samme slug.
+            sb.table("buying_guide_entries").delete().eq("guide_id", rad["id"]).execute()
+            sb.table("buying_guides").delete().eq("id", rad["id"]).execute()
+            print(f"  [RULLET TILBAGE] {slug}: {fejl}")
+            continue
         print(f"  [OK] oprettet som /bedste/{slug} med {len(entries)} produkter")
 
     print("\nHusk at revalidere /bedste og de nye sider via /api/revalidate.")

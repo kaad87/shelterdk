@@ -102,23 +102,28 @@ export function guideHealth(input: HealthInput, now: Date = new Date()): GuideHe
   const dead = input.entries.filter((e) => !e.inStock || e.isBlocked);
   const levende = input.entries.filter((e) => e.inStock && !e.isBlocked);
   const buyable = levende.length;
-  const delisted = dead.filter((e) => (daysSince(e.lastSeenAt, now) ?? 0) > DELISTED_DAYS);
+  // En manglende dato er ikke "set i dag". Varen har aldrig været i et feed,
+  // eller tidsstemplet er tabt, og begge er værre end en gammel dato — så den
+  // tæller som afmeldt frem for som den friskeste i guiden.
+  const delisted = dead.filter((e) => (daysSince(e.lastSeenAt, now) ?? Infinity) > DELISTED_DAYS);
 
   const pr = new Map<string, number>();
   for (const e of levende) {
     if (!e.retailer) continue;
     pr.set(e.retailer, (pr.get(e.retailer) ?? 0) + 1);
   }
-  let topRetailer: string | null = null;
-  let topAntal = 0;
-  for (const [navn, n] of [...pr].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))) {
-    topRetailer = navn;
-    topAntal = n;
-    break;
-  }
+  const [topRetailer, topAntal] =
+    [...pr].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0] ?? [null, 0];
   const medForhandler = [...pr.values()].reduce((a, b) => a + b, 0);
   const topRetailerShare = medForhandler > 0 ? topAntal / medForhandler : 0;
-  const survivesTopRetailerLoss = buyable - topAntal;
+
+  // Kun varer vi kender forhandleren på kan tælles som overlevere. Tidligere
+  // var det `buyable - topAntal`, men buyable rummer også varer uden
+  // forhandler, som springes over i optællingen ovenfor. En guide med tre hos
+  // backpackerlife og to uden oplyst forhandler blev derfor meldt til at have
+  // to overlevere — skønt de to lige så godt kan ligge hos backpackerlife.
+  // Et ukendt svigtpunkt er ikke et sikret svigtpunkt.
+  const survivesTopRetailerLoss = medForhandler - topAntal;
 
   // resolveAwards giver topprædikatet til den højest scorende vare på lager
   // uden prædikat. Bærer en vare på lager det allerede, er alt godt; ellers

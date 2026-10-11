@@ -105,4 +105,30 @@ describe("friskBeskrivelse", () => {
   it("tåler null", () => {
     expect(friskBeskrivelse(null, tre)).toBeNull();
   });
+
+  it("klipper ikke inde i en decimalpris når intet kan købes", () => {
+    // [^.]*? stoppede ved punktummet inde i "2.999" og efterlod "999 kr."
+    // som en selvstændig sætning i meta-beskrivelsen.
+    const d = "Find det bedste familietelt til 4-6 personer. Vi scorer 7 favoritter "
+      + "— blackout, tunnel og kuppeltelte, fra 552 til 2.999 kr.";
+    const ud = friskBeskrivelse(d, [entry(552, false), entry(2999, false)]);
+    expect(ud).toBe("Find det bedste familietelt til 4-6 personer.");
+    expect(ud).not.toMatch(/999/);
+  });
+
+  it("fjerner også et løfte uden indledende tankestreg", () => {
+    // ANTAL åbnede porten, men PÅSTAND krævede en tankestreg, så løftet blev
+    // stående på en side hvor intet kunne købes.
+    const tom = [entry(552, false)];
+    expect(friskTitel("7 favoritter til shelterturen | ShelterDK", tom))
+      .toBe("til shelterturen | ShelterDK");
+    expect(friskTitel("Bedste telt: 7 favoritter testet | ShelterDK", tom))
+      .toBe("Bedste telt: testet | ShelterDK");
+  });
+
+  it("efterlader ikke en hængende tankestreg eller kolon", () => {
+    const tom = [entry(552, false)];
+    expect(friskTitel("Bedste sovepose 2026 – 8 favoritter scoret & rangeret | ShelterDK", tom))
+      .toBe("Bedste sovepose 2026 scoret & rangeret | ShelterDK");
+  });
 });

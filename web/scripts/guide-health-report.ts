@@ -33,11 +33,24 @@ if (!url || !key) {
 }
 const sb = createClient(url, key, { auth: { persistSession: false } });
 
-/** Supabase sender højst 1.000 rækker pr. kald. */
-async function alle<T>(hent: (fra: number, til: number) => PromiseLike<{ data: T[] | null }>) {
+/**
+ * Henter alle rækker, 1.000 ad gangen, og dør hvis en forespørgsel fejler.
+ *
+ * Fejlen blev tidligere kasseret: `const { data } = await …` smed error væk,
+ * og en fejlet side gav `data = null`, som løkken læste som "ikke flere
+ * rækker". Resultatet var en tavs, afkortet rapport — fejler siden med
+ * guide-entries, ser alle guider tomme ud, og vagtjobbet mailer at hele sitet
+ * er brudt. En rapport man ikke kan stole på er værre end ingen rapport, så
+ * den kaster i stedet og lader jobbet fejle synligt.
+ */
+async function alle<T>(
+  hvad: string,
+  hent: (fra: number, til: number) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>,
+) {
   const ud: T[] = [];
   for (let fra = 0; ; fra += 1000) {
-    const { data } = await hent(fra, fra + 999);
+    const { data, error } = await hent(fra, fra + 999);
+    if (error) throw new Error(`${hvad}: ${error.message}`);
     if (!data?.length) break;
     ud.push(...data);
     if (data.length < 1000) break;
@@ -49,10 +62,12 @@ async function main() {
   const somJson = process.argv.includes("--json");
 
   const guides = await alle<{ id: string; slug: string; last_reviewed_at: string | null }>(
+    "buying_guides",
     (f, t) => sb.from("buying_guides").select("id, slug, last_reviewed_at")
       .eq("status", "published").range(f, t)
   );
   const entries = await alle<{ guide_id: string; award_label: string | null; affiliate_product_id: string }>(
+    "buying_guide_entries",
     (f, t) => sb.from("buying_guide_entries")
       .select("guide_id, award_label, affiliate_product_id").range(f, t)
   );
@@ -62,10 +77,14 @@ async function main() {
     in_stock: boolean | null; is_blocked: boolean | null;
     last_seen_at: string | null; retailer: string | null;
   }>();
+  // Samme grund som ovenfor: et fejlet opslag efterlod produkterne ude af
+  // kortet, og de faldt derefter tilbage på inStock:false/isBlocked:true —
+  // altså blev sunde varer meldt døde.
   for (let i = 0; i < ids.length; i += 200) {
-    const { data } = await sb.from("affiliate_products")
+    const { data, error } = await sb.from("affiliate_products")
       .select("id, in_stock, is_blocked, last_seen_at, retailer")
       .in("id", ids.slice(i, i + 200));
+    if (error) throw new Error(`affiliate_products: ${error.message}`);
     for (const p of data ?? []) produkter.set(p.id, p);
   }
 

@@ -10,17 +10,21 @@ import { GearBlockImpression } from "@/components/GearBlockImpression";
 function fakeObserver() {
   const kaldt: Array<(p: Array<{ isIntersecting: boolean }>) => void> = [];
   const disconnect = vi.fn();
+  const observeret: Element[] = [];
   class IO {
     constructor(cb: (p: Array<{ isIntersecting: boolean }>) => void) {
       kaldt.push(cb);
     }
-    observe() {}
+    observe(el: Element) {
+      observeret.push(el);
+    }
     disconnect = disconnect;
   }
   vi.stubGlobal("IntersectionObserver", IO as unknown as typeof IntersectionObserver);
   return {
     kryds: () => kaldt.forEach((cb) => cb([{ isIntersecting: true }])),
     forbi: () => kaldt.forEach((cb) => cb([{ isIntersecting: false }])),
+    observeret,
     disconnect,
   };
 }
@@ -38,6 +42,16 @@ describe("GearBlockImpression", () => {
     expect(seen).not.toHaveBeenCalled();
     io.forbi();
     expect(seen).not.toHaveBeenCalled();
+  });
+
+  it("observerer et element med areal, ikke det punktformede anker", () => {
+    // Tærsklen på 0,5 kan intet afgøre på et element uden areal: specifikationen
+    // sætter ratio til 1, så snart det skærer viewporten. Observeres forælderen,
+    // betyder tærsklen det kommentaren siger.
+    const io = fakeObserver();
+    const { container } = render(<GearBlockImpression shelterSlug="dalby" guideCount={3} />);
+    expect(io.observeret[0]).not.toBe(container.querySelector("span"));
+    expect(io.observeret[0]).toBe(container.firstElementChild?.parentElement ?? container);
   });
 
   it("melder én gang når blokken krydser ind", () => {

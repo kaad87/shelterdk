@@ -27,12 +27,10 @@ export interface TitelFakta {
 
 export function titelFakta(entries: GuideEntryWithProduct[]): TitelFakta {
   const kan = entries.filter((e) => e.product.in_stock && !e.product.is_blocked);
-  const priser = kan
-    .map((e) => e.product.price)
-    .filter((n): n is number => typeof n === "number");
+  const priser = købbarePriser(entries);
   return {
     antal: kan.length,
-    fraPris: priser.length > 0 ? Math.min(...priser) : null,
+    fraPris: priser.length > 0 ? priser[0] : null,
   };
 }
 
@@ -41,9 +39,42 @@ function kr(n: number): string {
   return new Intl.NumberFormat("da-DK").format(Math.round(n));
 }
 
+/** Priser på de produkter der kan købes, lavest først. */
+function købbarePriser(entries: GuideEntryWithProduct[]): number[] {
+  return entries
+    .filter((e) => e.product.in_stock && !e.product.is_blocked)
+    .map((e) => e.product.price)
+    .filter((n): n is number => typeof n === "number")
+    .sort((a, b) => a - b);
+}
+
+/** "favorit" i ental, "favoritter" i flertal — uanset hvad der stod i kilden. */
+function bøj(antal: number, ord: string): string {
+  const stamme = ord.replace(/ter$/i, "");
+  return `${antal} ${antal === 1 ? stamme : `${stamme}ter`}`;
+}
+
+/**
+ * Rydder op efter en fjernet påstand: en efterladt tankestreg, et kolon eller
+ * et dobbelt mellemrum. Uden dette blev "Bedste telt: 7 favoritter testet" til
+ * "Bedste telt: testet".
+ */
+function pænTitel(x: string): string {
+  return x
+    .replace(/\s*[–—-]\s*(?=[|,.]|$)/g, "")
+    .replace(/([:,])\s*(?=[|]|$)/g, "")
+    .replace(/\s*([:,])\s*(?=[a-zæøå])/g, "$1 ")
+    .replace(/\s{2,}/g, " ")
+    .replace(/\s+([|])/g, " $1")
+    .trim();
+}
+
 // "6 favoritter, fra 119 kr." og varianter med punktum som tusindtalsskilletegn.
+// Den indledende tankestreg er VALGFRI. Med den som krav åbnede ANTAL porten
+// for titler som "7 favoritter til shelterturen", hvorefter PÅSTAND ikke
+// matchede, og det falske antal blev stående på en side uden købbare varer.
 const PÅSTAND =
-  /\s*[–—-]\s*\d+\s+favorit(?:ter)?(?:,\s*fra\s*[\d.,]+\s*kr\.?)?/i;
+  /\s*(?:[–—-]\s*)?\d+\s+favorit(?:ter)?(?:,?\s*fra\s*[\d.,]+\s*kr\.?)?/i;
 const ANTAL = /(\d+)\s+(favorit(?:ter)?)/i;
 const FRA_PRIS = /(fra\s*)([\d.,]+)(\s*kr)/i;
 
@@ -60,12 +91,10 @@ export function friskTitel(
   // der findes ikke et lavere tal der gør den sand. Påstanden ryger ud, og
   // resten af titlen står — vi beholder altså siden og dens placering.
   if (antal === 0) {
-    return seoTitle.replace(PÅSTAND, "").replace(/\s{2,}/g, " ").trim();
+    return pænTitel(seoTitle.replace(PÅSTAND, ""));
   }
 
-  let ud = seoTitle.replace(ANTAL, (_, __, ord: string) =>
-    `${antal} ${antal === 1 ? ord.replace(/ter$/i, "") : ord.endsWith("ter") ? ord : `${ord}ter`}`
-  );
+  let ud = seoTitle.replace(ANTAL, (_, __, ord: string) => bøj(antal, ord));
   if (fraPris != null) {
     ud = ud.replace(FRA_PRIS, (_, pre: string, __: string, post: string) =>
       `${pre}${kr(fraPris)}${post}`
@@ -75,12 +104,18 @@ export function friskTitel(
 }
 
 // "Vi scorer 6 favoritter … fra 119 til 179 kr." eller "… 119–179 kr."
-const BESK_ANTAL = /(\d+)\s+(favorit(?:ter)?)/i;
+/** Samme mønster som i titlen; ét sted, så de ikke kan glide fra hinanden. */
+const BESK_ANTAL = ANTAL;
 const BESK_SPÆND_FRA_TIL = /(fra\s*)([\d.,]+)(\s*til\s*)([\d.,]+)(\s*kr)/i;
 const BESK_SPÆND_STREG = /([\d.,]+)\s*[–—]\s*([\d.,]+)(\s*kr)/i;
 // Hele sætningen om favoritter, når der ikke er noget at love.
+//
+// `[^.]*?` stoppede ved punktummet inde i en tusindtalsangivelse, så
+// "… fra 552 til 2.999 kr." blev klippet midt i tallet og efterlod "999 kr."
+// som sin egen sætning. Et punktum tæller derfor kun som sætningsslut, når
+// der ikke står et ciffer lige efter.
 const BESK_PÅSTAND =
-  /\s*(?:[–—-]\s*)?(?:Vi\s+scorer\s+)?\d+\s+favorit(?:ter)?[^.]*?(?:\.\s*|$)/i;
+  /\s*(?:[–—-]\s*)?(?:Vi\s+scorer\s+)?\d+\s+favorit(?:ter)?(?:[^.]|\.(?=\d))*?(?:\.(?!\d)\s*|$)/i;
 
 /**
  * Samme problem som i titlen: beskrivelsen lover et antal og et prisspænd, og
@@ -94,21 +129,17 @@ export function friskBeskrivelse(
   if (!seoDescription) return seoDescription;
   if (!BESK_ANTAL.test(seoDescription)) return seoDescription;
 
-  const kan = entries.filter((e) => e.product.in_stock && !e.product.is_blocked);
-  const priser = kan
-    .map((e) => e.product.price)
-    .filter((n): n is number => typeof n === "number");
+  const { antal } = titelFakta(entries);
+  const priser = købbarePriser(entries);
 
-  if (kan.length === 0) {
+  if (antal === 0) {
     return seoDescription.replace(BESK_PÅSTAND, " ").replace(/\s{2,}/g, " ").trim();
   }
 
-  let ud = seoDescription.replace(BESK_ANTAL, (_, __, ord: string) =>
-    `${kan.length} ${kan.length === 1 ? ord.replace(/ter$/i, "") : ord.endsWith("ter") ? ord : `${ord}ter`}`
-  );
+  let ud = seoDescription.replace(BESK_ANTAL, (_, __, ord: string) => bøj(antal, ord));
   if (priser.length > 0) {
-    const lav = kr(Math.min(...priser));
-    const høj = kr(Math.max(...priser));
+    const lav = kr(priser[0]);
+    const høj = kr(priser[priser.length - 1]);
     ud = ud
       .replace(BESK_SPÆND_FRA_TIL, (_, a: string, __: string, b: string, ___: string, d: string) =>
         `${a}${lav}${b}${høj}${d}`)

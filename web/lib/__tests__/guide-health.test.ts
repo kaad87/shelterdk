@@ -152,4 +152,32 @@ describe("guideHealth", () => {
     expect(h.survivesTopRetailerLoss).toBe(2);
     expect(h.singleRetailerRisk).toBe(false);
   });
+
+  it("regner ikke varer uden forhandler som garanterede overlevere", () => {
+    // survivesTopRetailerLoss var buyable minus den største forhandlers antal,
+    // men buyable tæller også varer uden forhandler, som springes over i
+    // optællingen. En guide hvor to af fem varer mangler forhandler blev
+    // derfor meldt sikker, skønt de to kan ligge hos samme forhandler som
+    // resten — altså præcis campingstols tilstand.
+    const h = guideHealth({ ...base, entries: [
+      { ...base.entries[0], awardLabel: null, retailer: "backpackerlife" },
+      { ...base.entries[1], retailer: "backpackerlife" },
+      { ...base.entries[2], retailer: "backpackerlife" },
+      { ...base.entries[3], retailer: null },
+      { inStock: true, isBlocked: false, lastSeenAt: "2026-09-21", awardLabel: null, retailer: null },
+    ] }, NOW);
+    expect(h.survivesTopRetailerLoss).toBe(0);
+    expect(h.singleRetailerRisk).toBe(true);
+  });
+
+  it("melder en vare uden last_seen_at som afmeldt", () => {
+    // (daysSince(...) ?? 0) gjorde en manglende dato til "set i dag", så en
+    // vare der aldrig har været i et feed blev scoret som den friskeste.
+    const h = guideHealth({ ...base, entries: [
+      { ...base.entries[0], inStock: false, lastSeenAt: null },
+      ...base.entries.slice(1),
+    ] }, NOW);
+    expect(h.delisted).toBe(1);
+    expect(h.problems.some((p) => /afmeldt/.test(p))).toBe(true);
+  });
 });

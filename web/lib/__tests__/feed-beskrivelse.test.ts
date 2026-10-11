@@ -69,6 +69,13 @@ describe("helTekst — tekster feedet har afkortet", () => {
     expect(ud).toMatch(/ingen insekter$/);
   });
 
+  it("beholder et mærkenavn når afkortningen ramte midt i det næste ord", () => {
+    // Det realistiske tilfælde: feedet klipper ved et fast tegnantal, så det
+    // lander næsten altid midt i et ord. Så ryger kun fragmentet.
+    const ud = helTekst(somFeedet("leveres i en pose fra tyske Mil-Tec Storm"))!;
+    expect(ud).toMatch(/Mil-Tec$/);
+  });
+
   it("dropper et efterladt tal uden enhed", () => {
     const ud = helTekst(somFeedet("1 stk: saks 1 stk: pincet 1 stk: trekantbandage 90 x"))!;
     expect(ud).toMatch(/trekantbandage$/);
@@ -100,5 +107,12 @@ describe("helTekst — tekster feedet har afkortet", () => {
     const ud = helTekst(raa)!;
     expect(ud).not.toMatch(/som gi$/);
     expect(ud).toMatch(/\.$/);
+  });
+
+
+
+  it("dropper stadig en mærkat der står efter en værdi", () => {
+    const ud = helTekst(somFeedet("til backpacking og udendørsliv Vægt: 300g Nedpakket st"))!;
+    expect(ud).toMatch(/Vægt: 300g$/);
   });
 });

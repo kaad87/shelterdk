@@ -1,5 +1,56 @@
 {
+  "bestik": [
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    },
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    }
+  ],
+  "foerstehjaelp": [
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    }
+  ],
   "sovepose-til-boern": [
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    },
+    {
+      "produkt_id": "",
+      "praedikat": "",
+      "score": null,
+      "bedst_til": "",
+      "note": "",
+      "plus": [],
+      "minus": []
+    }
+  ],
+  "vandresko": [
     {
       "produkt_id": "",
       "praedikat": "",

@@ -46,17 +46,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Ugyldig event" }, { status: 400 });
   }
 
+  // Skrivninger der skal være færdige, før svaret sendes.
+  //
+  // De to Supabase-indsættelser var fire-and-forget .then()-kæder, og ruten
+  // returnerede 204 bagefter. På en serverless-platform kan containeren
+  // fryses i det øjeblik svaret er sendt, og så lander skrivningen aldrig —
+  // uden fejl og uden log. Det er den slags tab, der gør en måling ubrugelig
+  // uden at nogen opdager det: grej-blokken havde 10 landinger mod 8
+  // registrerede klik.
+  //
+  // Fejl må stadig ikke vælte svaret, så de samles med allSettled og logges.
+  const skrivninger: PromiseLike<unknown>[] = [];
+
   // Affiliate-klik logges også i egen DB (anonymt, ingen bruger-id) så
   // produktvalg/rækkefølge kan optimeres på rigtige tal — GA4 alene kan ikke
-  // querys frit. Fire-and-forget: fejl (fx manglende tabel før migration)
-  // må aldrig blokere tracking-svaret.
+  // querys frit.
   if (event === "affiliate_click") {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (url && key) {
       const p = sanitizeParams(body.params);
       const sb = createClient(url, key, { auth: { persistSession: false } });
-      sb.from("affiliate_clicks")
+      skrivninger.push(sb.from("affiliate_clicks")
         .insert({
           product_name: typeof p.product_name === "string" ? p.product_name.slice(0, 200) : null,
           retailer: typeof p.retailer === "string" ? p.retailer.slice(0, 50) : null,
@@ -69,7 +80,7 @@ export async function POST(req: NextRequest) {
         })
         .then(({ error }) => {
           if (error) console.warn("affiliate_clicks insert:", error.message);
-        });
+        }));
     }
   }
 
@@ -81,24 +92,27 @@ export async function POST(req: NextRequest) {
     const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (url && key) {
       const row = internalEventRow(event, body.params, body.path);
-      createClient(url, key, { auth: { persistSession: false } })
+      skrivninger.push(createClient(url, key, { auth: { persistSession: false } })
         .from("internal_events")
         .insert(row)
         .then(({ error }) => {
           if (error) console.warn("internal_events insert:", error.message);
-        });
+        }));
     }
   }
 
-  await sendGa4Event({
-    headers: req.headers,
-    eventName: event,
-    eventParams: sanitizeParams(body.params),
-    path: typeof body.path === "string" ? body.path : undefined,
-    title: typeof body.title === "string" ? body.title : undefined,
-    referrer: typeof body.referrer === "string" ? body.referrer : undefined,
-    skipIfConsentAccept: true,
-  });
+  await Promise.allSettled([
+    ...skrivninger,
+    sendGa4Event({
+      headers: req.headers,
+      eventName: event,
+      eventParams: sanitizeParams(body.params),
+      path: typeof body.path === "string" ? body.path : undefined,
+      title: typeof body.title === "string" ? body.title : undefined,
+      referrer: typeof body.referrer === "string" ? body.referrer : undefined,
+      skipIfConsentAccept: true,
+    }),
+  ]);
 
   return new NextResponse(null, { status: 204 });
 }

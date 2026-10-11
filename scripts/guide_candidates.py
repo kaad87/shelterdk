@@ -217,6 +217,16 @@ def main():
         keep = NAME_FILTER.get(g["slug"])
         drop = EXCLUDE.get(g["slug"])
         kats = set(g["product_categories"] or [])
+        advarsler = []
+        if not keep and not kats:
+            # Uden begge er der intet at søge med, og guiden fik før nul
+            # kandidater uden forklaring — hvad der så ud som om feedet intet
+            # havde. Det var præcis fejlen bag de ubrugelige oplæg for 17
+            # guider, før navnefiltrene blev skrevet.
+            advarsler.append(
+                "hverken navnefilter i NAME_FILTER eller product_categories — "
+                "søgningen kan ikke finde noget, og nul kandidater nedenfor "
+                "betyder ikke at feedet er tomt")
 
         # Kategorien må ikke være en port. 6.722 af feed'ets 16.766 produkter
         # har slet ingen category_mapped, og nogle er direkte forkerte — tre
@@ -249,6 +259,13 @@ def main():
             fra_andre = [c for c in cands if c["retailer"] != top_forh]
             if len(fra_andre) >= mangler:
                 cands = fra_andre
+            else:
+                # Faldt tilbage til den fulde liste før, uden at sige det. Så
+                # kunne kortlisten bestå udelukkende af den forhandler guiden
+                # har for meget af, mens overskriften stadig bad om spredning.
+                advarsler.append(
+                    f"kun {len(fra_andre)} kandidat(er) uden for {top_forh} — "
+                    f"der skal {mangler} til for at guiden ikke kan gå i nul")
 
         step = max(1, len(cands) // 12)
         shortlist = cands[::step][:12]
@@ -274,6 +291,8 @@ def main():
                 f"**{len(live)} købbare af {len(mine)}. Mangler {mangler}.**", ""]
         if konc:
             out += [konc, ""]
+        for a in advarsler:
+            out += [f"> **Bemærk:** {a}", ""]
         out += ["",
                 "Nu på siden:", ""]
         for e in sorted(mine, key=lambda x: x["rank"]):

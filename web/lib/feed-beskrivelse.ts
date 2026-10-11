@@ -11,11 +11,16 @@
  * JSON-LD, altså til Google. Et afbrudt ord midt i strukturerede data er
  * sjusk, der er synligt udefra.
  *
- * Signalet er tegnsætningen, ikke længden: prosa slutter med et punktum.
- * Mangler det, er teksten klippet, og så klippes den tilbage til sidste hele
- * sætning. Ville det kaste over halvdelen væk, beholdes teksten og kun det
- * afskårne ord ryger — ellers ville en specliste blive skåret ned til sit
- * første mål.
+ * Reglen bruger to signaler, ikke ét. Tegnsætning: prosa slutter med et
+ * punktum, så mangler det, KAN teksten være klippet. Rålængde: feedet afkorter
+ * ved omkring 255 tegn, så en kortere tekst uden punktum er ikke klippet — den
+ * er en punktopstilling der slutter på sin sidste værdi. Begge skal være
+ * opfyldt, før teksten repareres; med tegnsætning alene klippede reparationen
+ * et ord af hver komplet specliste.
+ *
+ * Repareres den, klippes den tilbage til sidste hele sætning. Findes ingen,
+ * ryger det afskårne ord, et eventuelt hængende bindeord og en mærkat uden
+ * værdi.
  */
 
 const SHORTCODE = /\[[a-z_]+[^\]]*\]/gi;
@@ -24,19 +29,18 @@ const SLUTTER_RENT = /[.!?)»"'”]$/;
 const GRÆNSE = /[.!?][\s)»"'”]/g;
 
 /**
- * To forskellige spørgsmål, som først blev blandet sammen i ét tal på 80 og
- * derved kastede fuldt brugbare sætninger væk:
+ * Hvor kort et resultat må være — både når vi klipper til en hel sætning, og
+ * når vi afgør om resten er værd at sende med.
  *
- * MINDSTE_GRÆNSE er hvor kort en hel sætning må være, før den ikke er værd at
- * klippe ned til. En hel sætning er næsten altid at foretrække, så den er lav.
+ * Det var først to konstanter med hver sin begrundelse, men samme værdi, så
+ * forskellen var ikke til at observere og ikke til at teste. Ét tal med ét
+ * navn siger det samme uden at påstå en skelnen der ikke findes.
  *
- * MINDSTE_NYTTIGE er hvor kort en beskrivelse må være, før vi helt undlader at
- * sende den med. Begge er absolutte tal og ikke andele, fordi det afgørende
- * er, om teksten stadig siger noget — ikke hvor meget af originalen der
- * overlevede.
+ * Det er et absolut tal og ikke en andel: det afgørende er, om teksten stadig
+ * siger noget — ikke hvor meget af originalen der overlevede. En tidligere
+ * version regnede i andel og kastede derfor fuldt brugbare sætninger væk.
  */
-const MINDSTE_GRÆNSE = 40;
-const MINDSTE_NYTTIGE = 40;
+const MINDSTE_BRUGBARE = 40;
 
 /**
  * Længde hvorover en tekst uden sluttegn må antages at være afkortet af feedet.
@@ -60,7 +64,7 @@ const MINDSTE_SÆTNING = 15;
  * eller "derfor" — et helt ord, men midt i en tanke.
  */
 const HÆNGENDE = new RegExp(
-  "\\s+(?:og|eller|men|samt|som|der|som\\s+er|hvortil|hvorfor|hvilket|der|til|med|" +
+  "\\s+(?:og|eller|men|samt|som|der|hvortil|hvorfor|hvilket|til|med|" +
   "for|af|på|i|at|fra|om|ved|så|hvis|når|mens|end|dog|derfor|desuden|er|var|har|kan|skal|vil|bliver|giver|vejer|gør)$",
   "i",
 );
@@ -81,8 +85,7 @@ export function helTekst(raw: string | null | undefined, maxLength = 500): strin
   // Grænserne må aldrig overstige halvdelen af budgettet. Ellers kan en lille
   // maxLength gøre sætnings-stien uopnåelig, så et kort kald altid faldt ned i
   // nødudgangen og returnerede null.
-  const grænse = Math.min(MINDSTE_GRÆNSE, Math.floor(maxLength / 2));
-  const nyttig = Math.min(MINDSTE_NYTTIGE, Math.floor(maxLength / 2));
+  const brugbar = Math.min(MINDSTE_BRUGBARE, Math.floor(maxLength / 2));
 
   // Tre tilfælde hvor teksten ikke skal repareres: vi klipper den selv (så den
   // ER afkortet og skal repareres), den slutter rent (hel), eller den er kort
@@ -99,7 +102,7 @@ export function helTekst(raw: string | null | undefined, maxLength = 500): strin
   // Sidste sætningsgrænse i teksten — den giver altid et rent slutpunkt.
   let sidste = -1;
   for (const m of t.matchAll(GRÆNSE)) sidste = m.index;
-  if (sidste >= 0 && sidste + 1 >= grænse) {
+  if (sidste >= 0 && sidste + 1 >= brugbar) {
     return t.slice(0, sidste + 1);
   }
 
@@ -120,14 +123,33 @@ export function helTekst(raw: string | null | undefined, maxLength = 500): strin
   // uden sin enhed. Begge læses som en afbrudt sætning, så de ryger med.
   // En liste der ender på sin værdi ("Vægt: 450g") er derimod komplet og
   // bliver stående, selv om den ikke slutter med punktum.
+  // Feedets punktopstillinger kommer som én linje uden et eneste punktum:
+  // "Mål: 120 x 60 cm … Vægt: 300g Nedpakket st". Når det afskårne ord er
+  // droppet, står der tit en mærkat tilbage uden sin værdi — eller et tal
+  // uden sin enhed. Begge læses som en afbrudt sætning, så de ryger med.
+  // En liste der ender på sin værdi ("Vægt: 450g") er derimod komplet og
+  // bliver stående, selv om den ikke slutter med punktum.
+  //
+  // Men et mærkenavn har også stort begyndelsesbogstav, og det skal blive
+  // stående: "… fra tyske Mil-Tec" må ikke ende som "… fra tyske", hvor både
+  // oplysningen er tabt og sætningen hænger. Konteksten adskiller dem. En
+  // punktopstilling har mange store begyndelsesbogstaver midt i teksten
+  // ("Mål:", "Fås", "Fremstillet", "Vægt:"); prosa har få. I en liste må
+  // ethvert dinglende ord derfor væk, mens der i prosa kun fjernes et ord der
+  // står efter en værdi.
+  const storeMidtI = (rest.match(/\s\p{Lu}/gu) ?? []).length;
+  const erListe = storeMidtI >= 3;
   for (let i = 0; i < 2; i++) {
     const kortere = rest
-      .replace(/\s+\p{Lu}[\p{L}-]*$/u, "")   // dinglende mærkat: ét ord med stort begyndelsesbogstav
+      .replace(
+        erListe ? /\s+\p{Lu}[\p{L}-]*$/u : /(\d\S*)\s+\p{Lu}[\p{L}-]*$/u,
+        erListe ? "" : "$1",
+      )
       .replace(/\s+\d+([,.]\d+)?$/u, "");    // efterladt tal uden enhed
     if (kortere === rest) break;
     rest = kortere;
   }
 
   rest = rest.replace(/[,;:\s]+$/, "");
-  return rest.length >= nyttig ? rest : null;
+  return rest.length >= brugbar ? rest : null;
 }
