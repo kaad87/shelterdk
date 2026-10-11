@@ -1,0 +1,29 @@
+[
+  {
+    "guide": "tarp",
+    "dage_ude": 31,
+    "produkt": "Tatonka Tarp 4 - Light olive - Tarp",
+    "pris": 1048.95,
+    "forhandler": "outmore",
+    "entry": {
+      "id": "5d35076f-adef-4b91-9ed8-51e830205536",
+      "guide_id": "5b565a77-a7d2-4210-abe1-b9d3ac3358ee",
+      "affiliate_product_id": "outmore-4013236335781",
+      "rank": 5,
+      "award_label": "Bedste kvalitet",
+      "editorial_note": "Tatonka Tarp 4 er bygget som resten af Tatonkas grej: overdimensionerede søm, kraftigt stof og ophængspunkter der tåler at blive misbrugt. Køb-én-gang-valget.",
+      "pros": [
+        "Meget holdbar",
+        "Kraftige ophængspunkter",
+        "Gennemprøvet kvalitet"
+      ],
+      "cons": [
+        "Tungere",
+        "Pris over middel"
+      ],
+      "created_at": "2026-06-12T06:14:34.427938+00:00",
+      "score": 8.5,
+      "best_for": "Mange års hård brug"
+    }
+  }
+]
