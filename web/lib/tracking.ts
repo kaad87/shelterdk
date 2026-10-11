@@ -19,8 +19,13 @@ function sendServerEvent(event: string, params?: EventParams) {
   try {
     if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
       const blob = new Blob([payload], { type: "application/json" });
-      navigator.sendBeacon("/api/track", blob);
-      return;
+      // sendBeacon returnerer false, når browseren nægter at køe payloaden —
+      // typisk fordi køen er fuld, eller fordi siden er ved at forsvinde.
+      // Returværdien blev ignoreret, så funktionen vendte tilbage uanset, og
+      // eventet var tabt uden spor. Det rammer netop de events der sendes i
+      // samme øjeblik som en navigation: grej-blokken havde 10 landinger med
+      // ?fra=shelter mod kun 8 registrerede klik.
+      if (navigator.sendBeacon("/api/track", blob)) return;
     }
   } catch {
     // Fall back to fetch below.
