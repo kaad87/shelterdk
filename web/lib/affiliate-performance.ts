@@ -176,11 +176,31 @@ export function guideSlug(sti: string | null): string | null {
   return m ? m[1] : null;
 }
 
+/**
+ * Hvor stor en del af den klikkede værdi de få største klik må udgøre, før
+ * summen skal læses med forbehold.
+ *
+ * Målt i oktober 2026: fire klik på shelter-byggesæt til 19-21.000 kr. stod
+ * for 39 % af en sum på 198.001 kr. Perioden før havde ingen af dem. Summen
+ * steg derfor 24 %, mens den uden dem FALDT 25 % — og dashboardets
+ * overskrift kaldte stigningen en tendens. Fire klik er ikke en tendens.
+ */
+const TOP_ANDEL_GRAENSE = 0.25;
+/** Hvor mange af de dyreste klik der ses bort fra i det robuste tal. */
+const TOP_ANTAL = 3;
+
 export interface Noegletal {
   klik: number;
   klikForrige: number;
   vaerdi: number;
   vaerdiForrige: number;
+  /** Summen uden de TOP_ANTAL dyreste klik — og det samme for forrige periode. */
+  vaerdiUdenTop: number;
+  vaerdiUdenTopForrige: number;
+  /** De dyreste kliks andel af summen. Over TOP_ANDEL_GRAENSE bærer de tallet. */
+  topAndel: number;
+  /** Sandt når summen domineres af enkeltklik og ikke bør læses som en tendens. */
+  faaBaererVaerdien: boolean;
   medianPris: number | null;
   guiderMedKlik: number;
   /** Andel af klik der kom fra en købsguide — resten er shelter-sider, /tilbud osv. */
@@ -198,6 +218,16 @@ export function noegletal(klik: KlikRaekke[], events: EventRaekke[], nu: Date, d
 
   const priser = iVindue.map((k) => k.price_dkk).filter((n): n is number => typeof n === "number")
     .sort((a, b) => a - b);
+
+  // Sum uden de dyreste klik. Beregnes for begge vinduer, så de kan
+  // sammenlignes — et robust tal målt kun på det ene siger ingenting.
+  const udenTop = (xs: KlikRaekke[]) => {
+    const p = xs.map((k) => k.price_dkk ?? 0).sort((a, b) => b - a);
+    return Math.round(p.slice(TOP_ANTAL).reduce((s, n) => s + n, 0));
+  };
+  const vaerdi = Math.round(iVindue.reduce((s, k) => s + (k.price_dkk ?? 0), 0));
+  const vaerdiUdenTop = udenTop(iVindue);
+  const topAndel = vaerdi > 0 ? (vaerdi - vaerdiUdenTop) / vaerdi : 0;
   const guider = new Set(iVindue.map((k) => guideSlug(k.path)).filter(Boolean));
   const evIVindue = events.filter((e) => e.created_at >= start);
   const grejV = evIVindue.filter((e) => e.event === "gear_block_seen").length;
@@ -208,8 +238,12 @@ export function noegletal(klik: KlikRaekke[], events: EventRaekke[], nu: Date, d
     klikForrige: forrige.length,
     // Afrundet: priser i feedet har ører (243,1 kr.), og summen giver ellers
     // en flydende-komma-rest som 196.203,50000000006 i API-svaret.
-    vaerdi: Math.round(iVindue.reduce((s, k) => s + (k.price_dkk ?? 0), 0)),
+    vaerdi,
     vaerdiForrige: Math.round(forrige.reduce((s, k) => s + (k.price_dkk ?? 0), 0)),
+    vaerdiUdenTop,
+    vaerdiUdenTopForrige: udenTop(forrige),
+    topAndel,
+    faaBaererVaerdien: topAndel > TOP_ANDEL_GRAENSE,
     medianPris: priser.length ? priser[Math.floor(priser.length / 2)] : null,
     guiderMedKlik: guider.size,
     andelFraGuider: iVindue.length

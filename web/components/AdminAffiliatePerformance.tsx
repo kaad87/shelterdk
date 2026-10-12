@@ -20,6 +20,8 @@ interface Data {
   vindue: { dage: number; periode: number; fra: string | null; til: string | null };
   noegletal: {
     klik: number; klikForrige: number; vaerdi: number; vaerdiForrige: number;
+    vaerdiUdenTop: number; vaerdiUdenTopForrige: number;
+    topAndel: number; faaBaererVaerdien: boolean;
     medianPris: number | null; guiderMedKlik: number; andelFraGuider: number;
     grejVisninger: number; grejKlik: number; grejRate: number | null;
   };
@@ -249,15 +251,30 @@ export function AdminAffiliatePerformance() {
     ? `${tal(n.klik)} affiliate-klik på ${p} dage.`
     : `${tal(n.klik)} affiliate-klik på ${p} dage — ${
         ændring >= 0 ? "op" : "ned"} ${Math.abs(ændring)} % mod de ${p} dage før.`;
-  const vaerdiÆndring = n.vaerdiForrige > 0
-    ? Math.round(((n.vaerdi - n.vaerdiForrige) / n.vaerdiForrige) * 100) : null;
-  // Klik og værdi kan pege hver sin vej. Det er den interessante nuance, så
-  // den skal stå i klartekst og ikke udledes af to grafer ved siden af.
-  const nuance = ændring !== null && vaerdiÆndring !== null
-    && Math.sign(ændring) !== Math.sign(vaerdiÆndring)
-    ? ` Den klikkede værdi gik modsat (${vaerdiÆndring >= 0 ? "+" : "−"}${
-        Math.abs(vaerdiÆndring)} %) — færre klik, men på dyrere varer.`
-    : "";
+  const pctÆndring = (nu: number, foer: number) =>
+    foer > 0 ? Math.round(((nu - foer) / foer) * 100) : null;
+  const vaerdiÆndring = pctÆndring(n.vaerdi, n.vaerdiForrige);
+  const robustÆndring = pctÆndring(n.vaerdiUdenTop, n.vaerdiUdenTopForrige);
+
+  // Klik og værdi kan pege hver sin vej, og det er den interessante nuance.
+  // Men den må kun kaldes en tendens, hvis den overlever at de dyreste klik
+  // tages ud. Første udgave skrev "færre klik, men på dyrere varer" om et
+  // tal, hvor fire klik på shelter-byggesæt stod for 39 % af beløbet: uden
+  // dem var værdien faldet 25 % og fulgte klikkene ned. En artefakt sat med
+  // den største skrift på siden er værre end ingen overskrift.
+  // "+0 %" er en afrundet nul-ændring og læses som en stigning. Den skal
+  // hedde det den er.
+  const fortegn = (v: number) => (v === 0 ? "uændret" : `${v > 0 ? "+" : "−"}${Math.abs(v)} %`);
+  let nuance = "";
+  if (n.faaBaererVaerdien && vaerdiÆndring !== null && robustÆndring !== null) {
+    nuance = `Den klikkede værdi steg ${vaerdiÆndring > 0 ? "+" : ""}${vaerdiÆndring} %, men de tre dyreste `
+      + `klik alene står for ${pct(n.topAndel)} af beløbet — uden dem er den `
+      + `${robustÆndring === 0 ? "uændret" : fortegn(robustÆndring)}.`;
+  } else if (ændring !== null && vaerdiÆndring !== null
+      && Math.sign(ændring) !== Math.sign(vaerdiÆndring)) {
+    nuance = `Den klikkede værdi gik modsat (${fortegn(vaerdiÆndring)}) — færre klik, `
+      + "men på dyrere varer.";
+  }
 
   return (
     <div className="space-y-5">
@@ -267,7 +284,7 @@ export function AdminAffiliatePerformance() {
       <div>
         <p className="font-serif text-lg leading-snug text-primary">{overskrift}</p>
         {nuance && (
-          <p className="mt-0.5 text-sm leading-snug text-primary/85">{nuance.trim()}</p>
+          <p className="mt-0.5 text-sm leading-snug text-primary/85">{nuance}</p>
         )}
       </div>
 
@@ -306,8 +323,20 @@ export function AdminAffiliatePerformance() {
           under={<Retning nu={n.klik} foer={n.klikForrige} />}
           forklaring="Klik videre til en forhandler. Det er det nærmeste vi kommer en salgshandling i vores egne data." />
         <Kort titel="Klikket værdi" periode={`${p} dage`} vaerdi={kr(n.vaerdi)}
-          under={<Retning nu={n.vaerdi} foer={n.vaerdiForrige} />}
-          forklaring="Listepriserne på de klikkede varer lagt sammen. Ikke omsætning: kun en del bliver køb, og provisionen er en procentdel." />
+          under={
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <Retning nu={n.vaerdi} foer={n.vaerdiForrige} />
+              {n.faaBaererVaerdien && (
+                <span className="text-[0.7rem] text-primary/80">
+                  heraf {pct(n.topAndel)} fra 3 klik
+                </span>
+              )}
+            </div>
+          }
+          forklaring={"Listepriserne på de klikkede varer lagt sammen — summen af hvad folk klikkede videre på, "
+            + "ikke omsætning: kun en del bliver køb, og provisionen er en procentdel af beløbet. "
+            + "Et enkelt klik på et shelter-byggesæt til 20.000 kr. vejer lige så meget som 33 soveposer, "
+            + "så læs medianen ved siden af, når få klik bærer summen."} />
         <Kort titel="Median varepris" vaerdi={n.medianPris != null ? kr(n.medianPris) : "–"}
           forklaring="Median og ikke gennemsnit, så en enkelt dyr vare ikke flytter tallet." />
         <Kort titel="Guider med klik" vaerdi={tal(n.guiderMedKlik)}

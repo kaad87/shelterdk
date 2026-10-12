@@ -258,3 +258,51 @@ describe("kronebeløb", () => {
     expect(dagligSerie(øre, [], NU, 2)[1].vaerdi).toBe(1421);
   });
 });
+
+describe("når få klik bærer den klikkede værdi", () => {
+  /** Klik i det aktuelle vindue (NU minus et par dage). */
+  const nu_ = (pris: number) => klik({ created_at: "2026-10-10T10:00:00Z", price_dkk: pris });
+  /** Klik i det foregående 28-dages vindue. */
+  const foer_ = (pris: number) => klik({ created_at: "2026-09-01T10:00:00Z", price_dkk: pris });
+
+  it("markerer summen når de tre dyreste klik bærer over en fjerdedel", () => {
+    // Oktober 2026: fire klik på shelter-byggesæt til 19-21.000 kr. stod for
+    // 39 % af 198.001 kr. Summen steg 24 % — uden dem faldt den 25 %.
+    const n = noegletal([
+      ...Array.from({ length: 20 }, () => nu_(500)),   // 10.000 kr.
+      nu_(20000), nu_(19000), nu_(19000),              // 58.000 kr.
+    ], [], NU, 28);
+    expect(n.vaerdi).toBe(68000);
+    expect(n.vaerdiUdenTop).toBe(10000);
+    expect(n.topAndel).toBeCloseTo(58000 / 68000);
+    expect(n.faaBaererVaerdien).toBe(true);
+  });
+
+  it("markerer ikke en jævnt fordelt sum", () => {
+    const n = noegletal(Array.from({ length: 40 }, () => nu_(500)), [], NU, 28);
+    expect(n.topAndel).toBeCloseTo(3 / 40);
+    expect(n.faaBaererVaerdien).toBe(false);
+  });
+
+  it("regner det robuste tal for BEGGE vinduer, så de kan sammenlignes", () => {
+    // Et robust tal målt kun på den ene periode siger ingenting om retningen.
+    const n = noegletal([
+      ...Array.from({ length: 10 }, () => nu_(100)), nu_(9000),
+      ...Array.from({ length: 10 }, () => foer_(200)), foer_(9000),
+    ], [], NU, 28);
+    expect(n.vaerdiUdenTop).toBe(800);        // 10×100 minus de 2 dyreste af dem
+    expect(n.vaerdiUdenTopForrige).toBe(1600); // 10×200 minus de 2 dyreste
+  });
+
+  it("tåler færre klik end der trimmes væk", () => {
+    const n = noegletal([nu_(500), nu_(400)], [], NU, 28);
+    expect(n.vaerdiUdenTop).toBe(0);
+    expect(n.topAndel).toBe(1);
+  });
+
+  it("giver topAndel 0 og ingen markering uden klik", () => {
+    const n = noegletal([], [], NU, 28);
+    expect(n.topAndel).toBe(0);
+    expect(n.faaBaererVaerdien).toBe(false);
+  });
+});
