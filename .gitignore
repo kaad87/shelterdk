@@ -64,3 +64,13 @@ gsc-service-account*.json
 # Oplæg til købsguide-huller: genereres af scripts/guide_candidates.py.
 # Dine udfyldte valg holdes ude af git (kan indeholde arbejdsnoter).
 koebsguide-valg.json
+
+# Betalt overnatning: raa Overpass-svar og genererede filer.
+# Alt kan genskabes med scripts/paid_stays_dataset.py + paid_stays_enrich.py,
+# og en 1,5 MB geojson i hver commit gavner ingen. CSV'en er den fil der
+# redigeres i haanden (booking_url osv.), saa den foelger med.
+data/raw/
+data/_paid_stays_clean.json
+data/betalt_overnatning_dk.xlsx
+data/betalt_overnatning_dk.geojson
+data/shelter_naerliggende_overnatning.json

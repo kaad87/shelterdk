@@ -133,3 +133,27 @@ For at tjekke at Supabase-importen virker, kan du bruge den medfølgende testfil
 cp geofa_shelters_sample.geojson geofa_shelters.geojson
 python3 import_shelters.py
 ```
+
+## Betalt overnatning (OpenStreetMap, ODbL)
+
+`scripts/paid_stays_dataset.py` og `scripts/paid_stays_enrich.py` bygger et
+kandidat-datasaet over betalte overnatningssteder i Danmark ud fra Overpass.
+
+```bash
+python3 scripts/paid_stays_dataset.py            # trin 1-2: hent og rens
+python3 scripts/paid_stays_dataset.py --refresh  # tving ny Overpass-kaldelse
+python3 scripts/paid_stays_dataset.py --mirror kumi   # hvis hovedinstansen er optaget
+python3 scripts/paid_stays_enrich.py             # trin 3-5: dublettjek og output
+```
+
+Output i `data/`: `betalt_overnatning_dk.csv`, `.xlsx`, `.geojson` og
+`shelter_naerliggende_overnatning.json`. Raa Overpass-svar gemmes i `data/raw/`
+og genbruges samme dag, saa gentagne koersler ikke belaster API'et.
+
+Scripterne laeser shelter-tabellen, men skriver aldrig til den. Mulige dubletter
+markeres kun; intet flettes eller slettes.
+
+**Licens og kreditering:** datasaettet stammer fra OpenStreetMap og er omfattet af
+[ODbL](https://opendatacommons.org/licenses/odbl/). Enhver flade der viser disse
+data, skal baere teksten **"© OpenStreetMap contributors"**. Det gaelder kortet,
+pop-ups paa pins, modulet paa shelter-siderne og eventuelle undersider.
