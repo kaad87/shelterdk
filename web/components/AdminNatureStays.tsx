@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { StayLocationPicker } from "@/components/naturophold/StayLocationPicker";
 import { StayImageUploader } from "@/components/naturophold/StayImageUploader";
+import { laesBookingUrl, normaliserHvisBooking } from "@/lib/booking-url";
 
 const STORAGE_KEY = "shelterdk-admin-secret";
 
@@ -67,6 +68,8 @@ export function AdminNatureStays() {
   const [input, setInput] = useState("");
   const [stays, setStays] = useState<Stay[]>([]);
   const [form, setForm] = useState<Stay>(EMPTY);
+  /** Kvittering for hvad oprydningen af Booking-URL'en fjernede. */
+  const [bookingNote, setBookingNote] = useState<string | null>(null);
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
   const [images, setImages] = useState<string[]>([]);
@@ -95,12 +98,13 @@ export function AdminNatureStays() {
 
   function edit(s: Stay) {
     setForm({ ...s });
+    setBookingNote(null);
     const { lat, lng } = parseLatLng(s.location);
     setLat(lat); setLng(lng);
     setImages(s.image_urls?.length ? s.image_urls : (s.image_url ? [s.image_url] : []));
     setMsg(null);
   }
-  function reset() { setForm(EMPTY); setLat(""); setLng(""); setImages([]); setMsg(null); }
+  function reset() { setForm(EMPTY); setLat(""); setLng(""); setImages([]); setMsg(null); setBookingNote(null); }
 
   async function save() {
     const slug = form.slug.trim() || slugify(form.name);
@@ -203,7 +207,36 @@ export function AdminNatureStays() {
         <StayImageUploader images={images} onChange={setImages} secret={secret} />
         <label className="block text-sm">Billedtilladelse (påkrævet for publicering)<input className="w-full rounded border px-2 py-1" placeholder="fx: Ejer ok pr. mail 2026-06-14" value={form.image_permission ?? ""} onChange={set("image_permission")} /></label>
         <div className="grid grid-cols-2 gap-3">
-          <label className="text-sm">Booking-URL<input className="w-full rounded border px-2 py-1" value={form.booking_url ?? ""} onChange={set("booking_url")} /></label>
+          {/* Booking-URL med oprydning ved indsaettelse.
+              En adresse kopieret fra browseren baerer et sessions-id og
+              partnerens eget aid med sig. I de eksempler vi har set stod der
+              aid=356980, som ikke er vores: gemmes det, krediteres hver
+              booking en anden. Oprydningen sker paa blur og ikke ved hvert
+              tastetryk, saa feltet ikke slaas ud under indtastning. */}
+          <label className="text-sm">
+            Booking-URL
+            <input
+              className="w-full rounded border px-2 py-1"
+              value={form.booking_url ?? ""}
+              onChange={set("booking_url")}
+              onBlur={(e) => {
+                const raa = e.target.value;
+                const ryddet = normaliserHvisBooking(raa);
+                if (ryddet !== raa) {
+                  setForm((f) => ({ ...f, booking_url: ryddet }));
+                  const l = laesBookingUrl(raa);
+                  setBookingNote(l && l.fjernet.length
+                    ? `Ryddet op: fjernede ${l.fjernet.join(", ")}.`
+                    : "Ryddet op.");
+                } else {
+                  setBookingNote(null);
+                }
+              }}
+            />
+            {bookingNote && (
+              <span className="mt-0.5 block text-xs text-pine">{bookingNote}</span>
+            )}
+          </label>
           <label className="text-sm">Link-kilde<select className="w-full rounded border px-2 py-1" value={form.link_source} onChange={set("link_source")}>{LINK_SOURCES.map((t) => <option key={t}>{t}</option>)}</select></label>
           <label className="text-sm">Sort-boost<input type="number" className="w-full rounded border px-2 py-1" value={form.sort_boost} onChange={set("sort_boost")} /></label>
           <label className="text-sm">Status<select className="w-full rounded border px-2 py-1" value={form.status} onChange={set("status")}><option value="draft">draft</option><option value="published">published</option></select></label>
