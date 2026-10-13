@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
 
 import type { AddressHit } from "@/lib/address-search";
+import { laesKoordinat, erIDanmark } from "@/lib/koordinat-tekst";
 
 /** Leaflet-kort med klik/træk-markør. Dynamisk (kun browser). */
 const MapPicker = dynamic(
@@ -82,6 +83,49 @@ export function StayLocationPicker({ lat, lng, onChange }: Props) {
     onChange(String(item.lat), String(item.lon), { place: item.place ?? undefined });
   }
 
+
+  const [koordNote, setKoordNote] = useState<string | null>(null);
+
+
+  /**
+
+   * Tager et indsat koordinatpar og fylder begge felter.
+
+   *
+
+   * Er tallene byttet om, rettes det og der siges til. En ombyttet
+
+   * koordinat lander stedet i Somalia, uden at nogen opdager det: kortet
+
+   * viser bare hav.
+
+   */
+
+  function taImodIndsat(e: React.ClipboardEvent<HTMLInputElement>) {
+
+    const tekst = e.clipboardData.getData("text");
+
+    const k = laesKoordinat(tekst);
+
+    if (!k) return;                 // lad browseren indsaette som normalt
+
+    e.preventDefault();
+
+    onChange(String(k.lat), String(k.lng));
+
+    setKoordNote(
+
+      k.byttet
+
+        ? "Tallene stod omvendt og er byttet om."
+
+        : erIDanmark(k.lat, k.lng) ? null : "Bemærk: punktet ligger uden for Danmark.",
+
+    );
+
+  }
+
+
   return (
     <div className="space-y-2">
       <div className="relative">
@@ -110,10 +154,32 @@ export function StayLocationPicker({ lat, lng, onChange }: Props) {
       <MapPicker coords={coords} onPick={(la, ln) => onChange(String(la), String(ln))} />
       <p className="text-xs text-primary/50">Klik eller træk markøren på kortet for at finjustere.</p>
 
+      {/* Indsaet fra Google Maps.
+          Et hoejreklik i Google giver "55.924147, 12.296374", og det plejede at
+          kraeve at man selv delte tallet i to felter. Nu tager begge felter
+          imod hele parret, en grader-minutter-sekunder-visning eller en hel
+          Maps-adresse, og fylder begge ud.
+
+          Haandteres paa paste og ikke paa change: skriver nogen manuelt et
+          tal med komma som decimaltegn, skal det ikke pludselig blive laest
+          som to koordinater. */}
       <div className="grid grid-cols-2 gap-3">
-        <label className="text-sm">Lat<input className="w-full rounded border px-2 py-1" value={lat} onChange={(e) => onChange(e.target.value, lng)} /></label>
-        <label className="text-sm">Lng<input className="w-full rounded border px-2 py-1" value={lng} onChange={(e) => onChange(lat, e.target.value)} /></label>
+        <label className="text-sm">
+          Lat
+          <input className="w-full rounded border px-2 py-1" value={lat}
+            onPaste={taImodIndsat} onChange={(e) => onChange(e.target.value, lng)} />
+        </label>
+        <label className="text-sm">
+          Lng
+          <input className="w-full rounded border px-2 py-1" value={lng}
+            onPaste={taImodIndsat} onChange={(e) => onChange(lat, e.target.value)} />
+        </label>
       </div>
+      <p className="text-xs text-primary/80">
+        Du kan indsætte direkte fra Google Maps: “55.924147, 12.296374”,
+        55°55&apos;26.9&quot;N 12°17&apos;46.9&quot;E eller et link til kortet.
+      </p>
+      {koordNote && <p className="text-xs text-pine">{koordNote}</p>}
     </div>
   );
 }
