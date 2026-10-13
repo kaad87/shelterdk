@@ -96,7 +96,12 @@ export default async function BuyingGuidesIndexPage() {
               <Link href="/tilbud" className="text-accent underline">
                 ugens bedste outdoor-tilbud
               </Link>{" "}
-              samlet ét sted.
+              samlet ét sted, og leder du efter et shelter til haven frem for grej til
+              turen, står priser og typer på{" "}
+              <Link href="/koeb-shelter" className="text-accent underline">
+                Køb shelter
+              </Link>
+              .
             </p>
           </section>
 

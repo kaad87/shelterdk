@@ -272,7 +272,7 @@ export default async function BuyingGuidePage({
           <GuideDeals entries={entries} />
 
           {/* Se også — relaterede guider */}
-          <RelatedGuides guides={related} />
+          <RelatedGuides guides={related} ialt={allGuides.length} />
 
           {/* Disclosure */}
           <p className="mt-10 rounded-lg bg-primary/[0.03] p-4 text-xs text-primary/50">
