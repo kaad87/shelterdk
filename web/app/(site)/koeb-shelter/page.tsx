@@ -10,9 +10,22 @@ import { faqToJsonLd } from "@/lib/faq";
 
 export const revalidate = 86400;
 
-const TITLE = "Køb shelter: priser fra 9.000 kr., byg selv & regler (2026)";
+/*
+ * Titel og beskrivelse er rent kommercielle, og det er et bevidst fravalg.
+ *
+ * De lød før "… byg selv & regler" og sluttede på "reglerne for shelter i
+ * haven". Målt over 90 dage kostede det: siden hentede 1.220 visninger på
+ * byggetilladelses-queries med en gennemsnitsplacering på 12,3 og NUL klik,
+ * mens /byggetilladelse-til-shelter — den side der faktisk handler om det —
+ * kun fik 199 visninger, men lå på 8,5 og helt nede på 4,8-6,4 på de enkelte
+ * queries. Vi undertrykte altså vores egen bedste side med en dårligere.
+ *
+ * Byg-selv bliver stående: på de rene byg-queries (3.081 visninger) er der
+ * ingen konkurrent, hverken vores egen eller en anden side af vores.
+ */
+const TITLE = "Køb shelter: priser, typer og byg selv (2026)";
 const DESCRIPTION =
-  "Hvad koster et shelter? Byggesæt fra ca. 9.000 kr., samlesæt 11-15.000 kr., byg helt selv fra ca. 5.000 kr. med gratis tegninger. Se typer og reglerne for shelter i haven.";
+  "Hvad koster et shelter? Byggesæt fra ca. 9.000 kr., samlesæt 11-15.000 kr., byg helt selv fra ca. 5.000 kr. med gratis tegninger. Se priser på færdige samlesæt i træ.";
 
 /**
  * Priser er indhentet fra danske byggemarkeder august 2026 og bruges som
@@ -27,11 +40,11 @@ const FAQ = [
     answer:
       "Et byg-selv-sæt i træ ligger typisk mellem 9.000 og 20.000 kr afhængigt af størrelse, mens færdige samlesæt ligger i den øvre halvdel af intervallet. Bygger du helt fra bunden af eget træ, kan materialeprisen komme under 5.000 kr, men så skal du selv stå for konstruktion og tag.",
   },
-  {
-    question: "Må man have et shelter i sin have?",
-    answer:
-      "Ja, i langt de fleste tilfælde. Et shelter regnes som sekundær bebyggelse, og på en almindelig parcelhusgrund må du opføre op til 50 m² sekundær bebyggelse i alt uden byggetilladelse. Et typisk shelter fylder 5-10 m², så det er sjældent arealet der er problemet — men det tæller sammen med carport, skur og drivhus.",
-  },
+  // Spørgsmålet om byggetilladelse lå her før. Det står nu kun på
+  // /byggetilladelse-til-shelter, som har fem FAQ-punkter om emnet og 14
+  // gennemgange af 50 m²- og skel-reglerne. To FAQPage-markeringer om det
+  // samme spørgsmål får Google til at vælge mellem vores egne sider — og
+  // den valgte den dårligste.
   {
     question: "Findes der gratis tegninger til at bygge et shelter selv?",
     answer:
@@ -80,8 +93,8 @@ export default async function KoebShelterPage() {
           <p className="text-primary/90 text-lg leading-relaxed mb-8">
             Vil du have dit eget shelter i haven, i skovkanten eller på sommerhusgrunden,
             er der tre spørgsmål der plejer at komme først: hvad koster det, hvilken type
-            skal jeg vælge, og må jeg overhovedet stille det op? Her får du svarene —
-            med de faktiske prisniveauer og de regler der gælder.
+            skal jeg vælge, og hvor køber man det? Her får du svarene — med faktiske
+            prisniveauer, gratis tegninger og de modeller vi selv linker til.
           </p>
 
           <section className="mb-10 rounded-xl border border-accent/15 bg-accent/[0.04] p-5">
@@ -90,8 +103,16 @@ export default async function KoebShelterPage() {
               <li>Byg helt selv efter <a href="#byg-selv" className="text-accent hover:underline">gratis tegninger</a>: fra ca. <strong>5.000 kr</strong> i materialer</li>
               <li>Byg-selv-sæt i træ: typisk <strong>9.000–20.000 kr</strong> — <a href="#koeb" className="text-accent hover:underline">se modeller</a></li>
               <li>Samlesæt med tilskårne dele: typisk <strong>11.000–15.000 kr</strong></li>
-              <li>Du må have op til <strong>50 m²</strong> sekundær bebyggelse uden byggetilladelse</li>
-              <li>Mindst <strong>2,5 meter</strong> til skel</li>
+              <li>Tipi eller lavvu uden byggeri: <strong>4.500–45.000 kr</strong> — kan flyttes</li>
+              {/* De to punkter her gengav 50 m²- og skelreglen. Reglerne hører til
+                  på /byggetilladelse-til-shelter, og gentagelsen kostede os den
+                  sides placering. Punktet henviser i stedet. */}
+              <li>
+                I de fleste haver kræver det ingen tilladelse —{" "}
+                <Link href="/byggetilladelse-til-shelter" className="text-accent hover:underline">
+                  se hvornår det gør
+                </Link>
+              </li>
             </ul>
           </section>
 
@@ -236,23 +257,29 @@ export default async function KoebShelterPage() {
               807 visninger på regel-queries med NUL klik ind på en købsside —
               samme selvkannibalisering som på region-hubbene. Konklusionen
               bliver stående, så køberen ikke efterlades uden svar. */}
+          {/*
+            Kort henvisning, ikke en gennemgang. Afsnittet gengav før hele
+            50 m²-reglen med skelafstand og terrænkrav, og det gjorde siden
+            relevant for byggetilladelses-queries, den rangerede 12. på og
+            aldrig fik klik fra — mens vores dedikerede side lå 5. Læseren
+            mister intet: alt står grundigere ét klik væk.
+          */}
           <section className="mb-10">
+            {/* Overskriften er bevidst ikke et spørgsmål. "Skal du søge først?"
+                lå for tæt på topquery'en "skal man søge byggetilladelse til
+                shelter", som er dén side nede ad gangen skal vinde. */}
             <h2 className="font-serif text-2xl font-bold text-primary mb-4">
-              Må man stille et shelter op i haven?
+              Inden du går i gang
             </h2>
-            <p className="text-primary/85 leading-relaxed mb-4">
-              Ja, i de fleste tilfælde uden byggetilladelse. Et shelter regnes som{" "}
-              <em>sekundær bebyggelse</em>, og på en grund med enfamiliehus må du opføre op til{" "}
-              <strong>50 m² sekundær bebyggelse i alt</strong> uden at søge. Et typisk shelter
-              fylder 5-10 m². Betingelserne er mindst <strong>2,5 meter til skel</strong>,
-              at bygningen står på terræn, og at den ikke bruges til beboelse.
-            </p>
             <p className="text-primary/85 leading-relaxed">
+              I de fleste haver kan et shelter sættes op uden at søge, fordi det er en lille,
+              sekundær bygning — men der er grænser for areal og afstand til skel, og
+              lokalplanen kan sige noget andet.{" "}
               <Link href="/byggetilladelse-til-shelter" className="text-accent hover:underline">
-                Se hele gennemgangen af reglerne
-              </Link>{" "}
-              — hvad der tæller med i de 50 m², hvornår lokalplanen vejer tungere, og hvad der
-              gælder i landzone.
+                Vi har samlet reglerne i en gennemgang for sig
+              </Link>
+              : hvad der tæller med, hvornår lokalplanen vejer tungere, og hvad der gælder i
+              landzone.
             </p>
           </section>
 

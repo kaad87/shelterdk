@@ -208,7 +208,11 @@ export const COLLECTIONS: Record<CollectionKey, CollectionConfig> = {
           { label: "Naturstyrelsen: Bålhytte – tegninger (PDF)", href: "https://naturstyrelsen.dk/media/f2rpwpcu/type4vers2008.pdf", external: true },
           { label: "Naturstyrelsen: Bålhytte med shelter (PDF)", href: "https://naturstyrelsen.dk/media/z1iah4ik/type5vers2008.pdf", external: true },
           { label: "Naturstyrelsen: Bålhytte – stor (PDF)", href: "https://naturstyrelsen.dk/media/shbacmv1/type62vers2008.pdf", external: true },
-          { label: "Regler for shelter og bålhytte i haven", href: "/koeb-shelter#byg-selv" },
+          // Etiketten lover regler, men pegede på købssidens byg-selv-afsnit.
+          // Netop den slags ankertekst lærte Google at /koeb-shelter handler om
+          // regler — og den side rangerede derefter 12. på byggetilladelses-
+          // queries, hvor vores dedikerede side lå 5. Linket følger nu teksten.
+          { label: "Regler for shelter og bålhytte i haven", href: "/byggetilladelse-til-shelter" },
         ],
       },
     ],
