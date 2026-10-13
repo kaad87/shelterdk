@@ -181,7 +181,6 @@ def laes_linje(linje: str) -> dict | None:
 
     return {
         "slug": slugify(navn_fra_slug(slug)),
-        "booking_slug": slug,
         "name": navn_fra_slug(slug),
         "type": type_,
         "location": f"POINT({lng} {lat})",
@@ -234,17 +233,15 @@ def main() -> int:
         print("\n  Bliver oprettet:")
         for r in nye:
             flag = ""
-            if r.pop("_byttet"):
+            if r.get("_byttet"):
                 flag += "  [koordinater byttet om]"
-            if r.pop("_udenfor"):
+            if r.get("_udenfor"):
                 flag += "  [uden for Danmark]"
-            fundet = r.pop("_fundet_som", None)
+            fundet = r.get("_fundet_som")
             print(f"    {r['name'][:38]:38s} {r['type']:16s} {r['location']}{flag}")
             if fundet:
                 print(f"      slog adressen op: {fundet}")
     for r in dubletter:
-        for k in ("_byttet", "_udenfor", "_fundet_som"):
-            r.pop(k, None)
         print(f"    findes: {r['name']}")
     if fejl:
         print("\n  Kunne ikke laeses:")
@@ -258,7 +255,11 @@ def main() -> int:
         print("\n  Intet nyt at skrive.")
         return 0
 
-    res = sb.table("nature_stays").insert(nye).execute()
+    # Felter der kun er til rapporten. De fjernes her og ikke i
+    # udskrivnings-loekken: gjorde vi det dér, ville en sprunget udskrivning
+    # sende dem med til databasen, som ikke har kolonner til dem.
+    til_db = [{k: v for k, v in r.items() if not k.startswith("_")} for r in nye]
+    res = sb.table("nature_stays").insert(til_db).execute()
     print(f"\n  {len(res.data or [])} oprettet som draft.")
     print("  De vises ingen steder, foer status saettes til published i admin,")
     print("  som ogsaa er hvor tekst og billeder tilfoejes.")
