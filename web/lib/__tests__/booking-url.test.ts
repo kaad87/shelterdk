@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   laesBookingUrl, normaliserHvisBooking, sammeProperty,
-  cjDeeplink, udpakCjDeeplink, udgaaendeLink, tilGemtVaerdi,
+  cjDeeplink, udpakCjDeeplink, udgaaendeLink, tilGemtVaerdi, navnFraSlug,
 } from "@/lib/booking-url";
 
 // De faktiske adresser fra Booking, ikke opdigtede. Fixtures man selv har
@@ -194,5 +194,26 @@ describe("tilGemtVaerdi", () => {
 
   it("tager imod et tomt felt", () => {
     expect(tilGemtVaerdi("")).toEqual({ vaerdi: "", note: null });
+  });
+});
+
+describe("navnFraSlug", () => {
+  it("laver et laeseligt navn ud af sluggen", () => {
+    expect(navnFraSlug("shelter-i-sansehave")).toBe("Shelter i sansehave");
+    expect(navnFraSlug("shelter-slotsgaarden")).toBe("Shelter slotsgaarden");
+  });
+
+  it("bruger ikke titelkapitalisering, fordi dansk ikke goer det", () => {
+    expect(navnFraSlug("luksus-shelter-med-vildmarksbad-og-udendors-bad"))
+      .toBe("Luksus shelter med vildmarksbad og udendors bad");
+  });
+
+  it("skriver forkortelser uden vokaler med versaler", () => {
+    // "Xxl luksus shelter" ser forkert ud; XXL er en forkortelse.
+    expect(navnFraSlug("xxl-luksus-shelter-ved-smuk-natur")).toBe("XXL luksus shelter ved smuk natur");
+  });
+
+  it("tager imod en tom slug", () => {
+    expect(navnFraSlug("")).toBe("");
   });
 });

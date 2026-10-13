@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { StayLocationPicker } from "@/components/naturophold/StayLocationPicker";
 import { StayImageUploader } from "@/components/naturophold/StayImageUploader";
-import { tilGemtVaerdi } from "@/lib/booking-url";
+import { tilGemtVaerdi, laesBookingUrl, udgaaendeLink, navnFraSlug } from "@/lib/booking-url";
 
 const STORAGE_KEY = "shelterdk-admin-secret";
 
@@ -70,6 +70,31 @@ export function AdminNatureStays() {
   const [form, setForm] = useState<Stay>(EMPTY);
   /** Kvittering for hvad oprydningen af Booking-URL'en fjernede. */
   const [bookingNote, setBookingNote] = useState<string | null>(null);
+  const [fraBooking, setFraBooking] = useState("");
+
+  /**
+   * Udfylder formularen ud fra et Booking-link.
+   *
+   * Navnet overskrives kun, naar feltet er tomt: har man rettet det i haanden,
+   * skal en genindsaettelse af linket ikke kaste rettelsen vaek.
+   */
+  function opretFraLink(raa: string) {
+    const { vaerdi, note } = tilGemtVaerdi(raa);
+    const b = laesBookingUrl(vaerdi);
+    if (!b) {
+      setBookingNote("Det ser ikke ud som en Booking-property-adresse.");
+      return;
+    }
+    const navn = navnFraSlug(b.slug);
+    setForm((f) => ({
+      ...f,
+      booking_url: b.kanonisk,
+      link_source: "booking_com",
+      name: f.name?.trim() ? f.name : navn,
+      slug: f.slug?.trim() ? f.slug : b.slug,
+    }));
+    setBookingNote(note ?? "Udfyldt fra linket.");
+  }
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
   const [images, setImages] = useState<string[]>([]);
@@ -104,7 +129,7 @@ export function AdminNatureStays() {
     setImages(s.image_urls?.length ? s.image_urls : (s.image_url ? [s.image_url] : []));
     setMsg(null);
   }
-  function reset() { setForm(EMPTY); setLat(""); setLng(""); setImages([]); setMsg(null); setBookingNote(null); }
+  function reset() { setForm(EMPTY); setLat(""); setLng(""); setImages([]); setMsg(null); setBookingNote(null); setFraBooking(""); }
 
   async function save() {
     const slug = form.slug.trim() || slugify(form.name);
@@ -178,6 +203,61 @@ export function AdminNatureStays() {
 
       <div className="space-y-3">
         {msg && <p className="rounded bg-primary/5 px-3 py-2 text-sm">{msg}</p>}
+
+        {/* Opret fra Booking-link.
+            Arbejdsgangen er at man HAR linket, ikke at man leder i en liste.
+            Alt der kan udledes af linket udfyldes her, saa der kun er to
+            ting tilbage: hvor stedet ligger, og hvilken type det er. Begge
+            kraever et menneske, og ingen af dem staar i adressen.
+
+            Vi henter intet fra Booking. Navnet kommer fra sluggen, som er
+            ejerens eget navn paa stedet. */}
+        <div className="rounded-lg border border-accent/30 bg-accent/[0.05] p-3">
+          <label className="block text-sm font-medium text-primary" htmlFor="fra-booking">
+            Opret fra Booking-link
+          </label>
+          <p className="mt-0.5 text-xs text-primary/80">
+            Indsæt adressen fra Booking eller et færdigt CJ-link. Navn, slug og
+            affiliate-link udfyldes. Derefter mangler kun placering og type.
+          </p>
+          <div className="mt-2 flex gap-2">
+            <input
+              id="fra-booking"
+              className="w-full rounded border px-2 py-1 text-sm"
+              placeholder="https://www.booking.com/hotel/dk/…"
+              value={fraBooking}
+              onChange={(e) => setFraBooking(e.target.value)}
+              onPaste={(e) => {
+                // Paa paste frem for paa blur: man indsaetter og vil videre.
+                const tekst = e.clipboardData.getData("text");
+                if (tekst) { e.preventDefault(); setFraBooking(tekst); opretFraLink(tekst); }
+              }}
+            />
+            <button type="button" onClick={() => opretFraLink(fraBooking)}
+              className="shrink-0 rounded bg-accent px-3 py-1 text-sm font-medium text-white hover:bg-accent-dark">
+              Udfyld
+            </button>
+          </div>
+          {bookingNote && <p className="mt-1.5 text-xs text-pine">{bookingNote}</p>}
+          {form.booking_url && laesBookingUrl(form.booking_url) && (
+            <dl className="mt-2 space-y-0.5 text-xs">
+              <div className="flex gap-2">
+                <dt className="shrink-0 text-primary/75">Gemmes:</dt>
+                <dd className="break-all text-primary">{form.booking_url}</dd>
+              </div>
+              <div className="flex gap-2">
+                <dt className="shrink-0 text-primary/75">Knappen peger på:</dt>
+                <dd className="break-all text-primary/85">
+                  {udgaaendeLink(form.booking_url, "kort")}
+                </dd>
+              </div>
+              <div className="text-primary/75">
+                sid sættes pr. placering: kort, shelter, guide
+              </div>
+            </dl>
+          )}
+        </div>
+
         <div className="grid grid-cols-2 gap-3">
           <label className="text-sm">Navn<input className="w-full rounded border px-2 py-1" value={form.name} onChange={set("name")} /></label>
           <label className="text-sm">Slug (auto)<input className="w-full rounded border px-2 py-1" value={form.slug} placeholder={slugify(form.name)} onChange={set("slug")} /></label>

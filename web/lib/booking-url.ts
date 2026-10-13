@@ -223,3 +223,25 @@ export function tilGemtVaerdi(raw: string): { vaerdi: string; note: string | nul
   }
   return { vaerdi: trimmet, note: null };
 }
+
+
+/**
+ * Et laeseligt navn ud af Booking-sluggen.
+ *
+ * Sluggen ER ejerens eget navn paa stedet, saet med bindestreger:
+ * "shelter-i-sansehave" og "xxl-luksus-shelter-ved-smuk-natur". Det er et
+ * godt udgangspunkt, og admin lader det redigere bagefter.
+ *
+ * Kun foerste bogstav saettes stort. Dansk bruger ikke titelkapitalisering,
+ * saa "Shelter I Sansehave" ville vaere forkert. Undtagelsen er ord uden
+ * vokaler, som "xxl" og "bbq": de er forkortelser og skrives med versaler.
+ */
+export function navnFraSlug(slug: string): string {
+  const ord = (slug || "").split("-").filter(Boolean);
+  if (!ord.length) return "";
+  const pæn = ord.map((o) =>
+    o.length <= 4 && !/[aeiouyæøå]/i.test(o) ? o.toUpperCase() : o.toLowerCase());
+  const første = pæn[0];
+  return [første === første.toUpperCase() ? første : første[0].toUpperCase() + første.slice(1),
+          ...pæn.slice(1)].join(" ");
+}
