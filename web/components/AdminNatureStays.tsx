@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { StayLocationPicker } from "@/components/naturophold/StayLocationPicker";
 import { StayImageUploader } from "@/components/naturophold/StayImageUploader";
-import { laesBookingUrl, normaliserHvisBooking } from "@/lib/booking-url";
+import { tilGemtVaerdi } from "@/lib/booking-url";
 
 const STORAGE_KEY = "shelterdk-admin-secret";
 
@@ -220,17 +220,9 @@ export function AdminNatureStays() {
               value={form.booking_url ?? ""}
               onChange={set("booking_url")}
               onBlur={(e) => {
-                const raa = e.target.value;
-                const ryddet = normaliserHvisBooking(raa);
-                if (ryddet !== raa) {
-                  setForm((f) => ({ ...f, booking_url: ryddet }));
-                  const l = laesBookingUrl(raa);
-                  setBookingNote(l && l.fjernet.length
-                    ? `Ryddet op: fjernede ${l.fjernet.join(", ")}.`
-                    : "Ryddet op.");
-                } else {
-                  setBookingNote(null);
-                }
+                const { vaerdi, note } = tilGemtVaerdi(e.target.value);
+                if (vaerdi !== e.target.value) setForm((f) => ({ ...f, booking_url: vaerdi }));
+                setBookingNote(note);
               }}
             />
             {bookingNote && (

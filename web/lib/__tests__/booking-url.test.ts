@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   laesBookingUrl, normaliserHvisBooking, sammeProperty,
-  cjDeeplink, udpakCjDeeplink, udgaaendeLink,
+  cjDeeplink, udpakCjDeeplink, udgaaendeLink, tilGemtVaerdi,
 } from "@/lib/booking-url";
 
 // De faktiske adresser fra Booking, ikke opdigtede. Fixtures man selv har
@@ -154,5 +154,45 @@ describe("udgaaendeLink", () => {
   it("giver null, naar der ikke er noget link", () => {
     expect(udgaaendeLink(null, "kort")).toBeNull();
     expect(udgaaendeLink("", "kort")).toBeNull();
+  });
+});
+
+describe("tilGemtVaerdi", () => {
+  it("pakker et indsat CJ-deeplink ud og gemmer destinationen", () => {
+    // Et gemt deeplink har ét fast SID og kan ikke skelne et klik paa kortet
+    // fra et klik i en guide. Derfor gemmer vi destinationen.
+    const cj = "https://www.tkqlhce.com/click-101800945-15734870?url="
+      + "https%3A%2F%2Fwww.booking.com%2Fhotel%2Fdk%2Fshelter-i-sansehave.en-gb.html";
+    const r = tilGemtVaerdi(cj);
+    expect(r.vaerdi).toBe("https://www.booking.com/hotel/dk/shelter-i-sansehave.da.html");
+    expect(r.note).toContain("SID");
+  });
+
+  it("rydder op i en raa Booking-adresse og siger hvad der blev fjernet", () => {
+    const r = tilGemtVaerdi(ÆGTE);
+    expect(r.vaerdi).toBe("https://www.booking.com/hotel/dk/shelter-slotsgaarden.da.html");
+    expect(r.note).toContain("sid");
+    expect(r.note).toContain("aid");
+  });
+
+  it("tier, naar der ikke var noget at rydde op i", () => {
+    const r = tilGemtVaerdi("https://www.booking.com/hotel/dk/x.da.html");
+    expect(r.vaerdi).toBe("https://www.booking.com/hotel/dk/x.da.html");
+    expect(r.note).toBeNull();
+  });
+
+  it("lader et link uden for Booking staa", () => {
+    const r = tilGemtVaerdi("  https://landjord.dk/sted/x  ");
+    expect(r.vaerdi).toBe("https://landjord.dk/sted/x");
+    expect(r.note).toBeNull();
+  });
+
+  it("gaetter ikke paa et CJ-link til noget ukendt", () => {
+    const cj = "https://www.tkqlhce.com/click-101800945-15734870?url=https%3A%2F%2Flandjord.dk%2Fx";
+    expect(tilGemtVaerdi(cj).vaerdi).toBe(cj);
+  });
+
+  it("tager imod et tomt felt", () => {
+    expect(tilGemtVaerdi("")).toEqual({ vaerdi: "", note: null });
   });
 });

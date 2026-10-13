@@ -177,3 +177,49 @@ export function udgaaendeLink(bookingUrl: string | null, placering: Placering): 
   if (!bookingUrl) return null;
   return cjDeeplink(bookingUrl, placering) ?? bookingUrl.trim() ?? null;
 }
+
+
+/**
+ * Hvad der skal gemmes, naar nogen indsaetter noget i Booking-URL-feltet.
+ *
+ * Tre ting kan komme ind, og de skal behandles forskelligt:
+ *
+ *   et faerdigt CJ-deeplink   pakkes ud, saa vi gemmer destinationen og selv
+ *                             bygger sporingen. Et gemt deeplink har ét fast
+ *                             SID og kan ikke skelne et klik paa kortet fra et
+ *                             klik i en guide.
+ *   en Booking-adresse        ryddes for sessions-id, fremmed aid og soegestoej
+ *   alt andet                 gaar uroert igennem. Vi har ingen sporing paa
+ *                             Landjord eller Campanyon, og et link vi ikke
+ *                             forstod maa ikke omskrives.
+ *
+ * Noten er til mennesket: en stilfaerdig aendring af et felt man lige har
+ * udfyldt er foruroligende, hvis der ikke staar hvad der skete.
+ */
+export function tilGemtVaerdi(raw: string): { vaerdi: string; note: string | null } {
+  const trimmet = (raw || "").trim();
+  if (!trimmet) return { vaerdi: "", note: null };
+
+  const udpakket = udpakCjDeeplink(trimmet);
+  if (udpakket) {
+    const b = laesBookingUrl(udpakket);
+    if (b) {
+      return {
+        vaerdi: b.kanonisk,
+        note: "Pakkede CJ-linket ud. Vi gemmer destinationen og bygger selv "
+          + "sporingen, saa hver placering faar sit eget SID.",
+      };
+    }
+    // Et CJ-link til noget vi ikke genkender: lad det staa frem for at gaette.
+    return { vaerdi: trimmet, note: null };
+  }
+
+  const b = laesBookingUrl(trimmet);
+  if (b) {
+    return {
+      vaerdi: b.kanonisk,
+      note: b.fjernet.length ? `Ryddet op: fjernede ${b.fjernet.join(", ")}.` : null,
+    };
+  }
+  return { vaerdi: trimmet, note: null };
+}
