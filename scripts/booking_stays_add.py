@@ -12,6 +12,10 @@ Input is a block of text, one place per line, liberal about order and format:
     55.9241,12.2964 https://www.booking.com/hotel/dk/x.da.html | glamping | 1200
     https://www.booking.com/hotel/dk/y.html https://www.google.com/maps/@55.9,12.2,15z
 
+Instead of a point you may give an address; it is looked up through Nominatim,
+and only a hit at house level is accepted. A pin in roughly the right village
+is worse than no pin, because nobody checks a map that looks plausible.
+
 Anything after the URL and the point, separated by | , is read as type and then
 price per night. Both optional; type defaults to DEFAULT_TYPE.
 
@@ -63,6 +67,60 @@ def laes_punkt(tekst: str) -> tuple[float, float, bool] | None:
     return a, b, False
 
 
+# Nominatim allows one request per second and requires a real User-Agent.
+# The pause is kept here rather than left to the caller, so a long paste
+# cannot turn into a burst.
+_SENEST = [0.0]
+
+
+def slaa_adresse_op(adresse: str) -> tuple[float, float, str] | None:
+    """Geocode a Danish address through Nominatim. Returns (lat, lng, what it found).
+
+    An address is what one naturally copies from a property page, and it is
+    easier to get hold of than a coordinate pair. Nominatim knows Danish
+    addresses down to the house number: "Baekmandsvej 3, Flemming" resolves to
+    a house, not a village centre.
+
+    Returns None rather than a guess. A pin in roughly the right village is
+    worse than no pin: nobody checks a map that looks plausible.
+    """
+    import json
+    import time
+    import urllib.parse
+    import urllib.request
+
+    adresse = adresse.strip(" ,;|-")
+    if len(adresse) < 5:
+        return None
+
+    vent = 1.05 - (time.time() - _SENEST[0])
+    if vent > 0:
+        time.sleep(vent)
+    _SENEST[0] = time.time()
+
+    q = urllib.parse.urlencode({
+        "q": f"{adresse}, Danmark", "format": "json", "limit": "1", "addressdetails": "1",
+    })
+    req = urllib.request.Request(
+        f"https://nominatim.openstreetmap.org/search?{q}",
+        headers={"User-Agent": "shelterdk-booking-stays/1.0 (+https://shelterdk.dk)"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            hits = json.load(r)
+    except Exception:
+        return None
+    if not hits:
+        return None
+    h = hits[0]
+    # Only accept a precise hit. A match on the town alone places the pin in
+    # the middle of a village, which looks right and is not.
+    if h.get("type") not in ("house", "building", "yes") and h.get("class") != "building":
+        if not h.get("address", {}).get("house_number"):
+            return None
+    return float(h["lat"]), float(h["lon"]), h.get("display_name", "")[:70]
+
+
 def navn_fra_slug(slug: str) -> str:
     """Mirrors navnFraSlug in web/lib/booking-url.ts."""
     ord_ = [o for o in slug.split("-") if o]
@@ -75,7 +133,9 @@ def navn_fra_slug(slug: str) -> str:
 
 
 def booking_slug(url: str) -> str | None:
-    m = re.search(r"/hotel/[a-z]{2}/([^/?]+?)\.(?:[a-z]{2}(?:-[a-z]{2})?\.)?html", url, re.I)
+    # "htm" som afkortet "html": et l falder let af ved kopiering.
+    m = re.search(r"/hotel/[a-z]{2}/([^/?]+?)\.(?:[a-z]{2}(?:-[a-z]{2})?\.)?html?(?:$|[?#])",
+                  url, re.I)
     return m.group(1) if m else None
 
 
@@ -100,8 +160,16 @@ def laes_linje(linje: str) -> dict | None:
     # can contain digits that look like a pair.
     rest = linje.replace(raa, " ")
     punkt = laes_punkt(rest)
+    fundet_som = None
     if not punkt:
-        return {"fejl": "ingen koordinater paa linjen", "linje": linje, "slug": slug}
+        # Ingen koordinater: saa er resten af linjen forhaabentlig en adresse.
+        adresse = rest.split("|")[0]
+        geo = slaa_adresse_op(adresse)
+        if not geo:
+            return {"fejl": "hverken koordinater eller en adresse der kunne findes",
+                    "linje": linje, "slug": slug}
+        punkt = (geo[0], geo[1], False)
+        fundet_som = geo[2]
     lat, lng, byttet = punkt
 
     felter = [d.strip() for d in rest.split("|")[1:]]
@@ -124,6 +192,7 @@ def laes_linje(linje: str) -> dict | None:
         "amenities": {"kilde": "booking.com (manuelt)", "booking_slug": slug},
         "_byttet": byttet,
         "_udenfor": not i_danmark(lat, lng),
+        "_fundet_som": fundet_som,
     }
 
 
@@ -169,10 +238,13 @@ def main() -> int:
                 flag += "  [koordinater byttet om]"
             if r.pop("_udenfor"):
                 flag += "  [uden for Danmark]"
+            fundet = r.pop("_fundet_som", None)
             print(f"    {r['name'][:38]:38s} {r['type']:16s} {r['location']}{flag}")
+            if fundet:
+                print(f"      slog adressen op: {fundet}")
     for r in dubletter:
-        r.pop("_byttet", None)
-        r.pop("_udenfor", None)
+        for k in ("_byttet", "_udenfor", "_fundet_som"):
+            r.pop(k, None)
         print(f"    findes: {r['name']}")
     if fejl:
         print("\n  Kunne ikke laeses:")

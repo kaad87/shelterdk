@@ -217,3 +217,25 @@ describe("navnFraSlug", () => {
     expect(navnFraSlug("")).toBe("");
   });
 });
+
+describe("afkortet adresse", () => {
+  it("accepterer .htm som afkortet .html", () => {
+    // Et l falder let af, naar en adresse kopieres fra en klippet adresselinje.
+    // At afvise den ville vaere en gaade for den der indsaetter.
+    const r = laesBookingUrl(
+      "https://www.booking.com/hotel/dk/luksus-shelter-med-vildmarksbad-og-udendors-bad.en-gb.htm")!;
+    expect(r.slug).toBe("luksus-shelter-med-vildmarksbad-og-udendors-bad");
+    expect(r.kanonisk).toBe(
+      "https://www.booking.com/hotel/dk/luksus-shelter-med-vildmarksbad-og-udendors-bad.da.html");
+  });
+
+  it("accepterer den ogsaa uden sprogled", () => {
+    expect(laesBookingUrl("https://www.booking.com/hotel/dk/shelter-i-sansehave.htm")!.slug)
+      .toBe("shelter-i-sansehave");
+  });
+
+  it("tager stadig ikke en adresse der slet ikke er en property-side", () => {
+    expect(laesBookingUrl("https://www.booking.com/hotel/dk/x.ht")).toBeNull();
+    expect(laesBookingUrl("https://www.booking.com/searchresults.htm")).toBeNull();
+  });
+});

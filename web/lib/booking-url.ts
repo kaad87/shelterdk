@@ -65,7 +65,10 @@ export function laesBookingUrl(raw: string): BookingUrl | null {
   if (!BOOKING_HOSTS.has(u.hostname.toLowerCase())) return null;
 
   // /hotel/<land>/<slug>[.<sprog>].html
-  const m = u.pathname.match(/^\/hotel\/([a-z]{2})\/([^/]+?)\.(?:[a-z]{2}(?:-[a-z]{2})?\.)?html$/i);
+  // "htm" accepteres som afkortet "html": et l falder let af, naar en adresse
+  // kopieres fra en adresselinje der er klippet, og at afvise den ville vaere
+  // en gaade for den der indsaetter.
+  const m = u.pathname.match(/^\/hotel\/([a-z]{2})\/([^/]+?)\.(?:[a-z]{2}(?:-[a-z]{2})?\.)?html?$/i);
   if (!m) return null;
 
   const [, land, slug] = m;

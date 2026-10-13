@@ -69,7 +69,7 @@ def ryd_booking_url(raw: str) -> str:
 
     if u.hostname not in ("booking.com", "www.booking.com", "secure.booking.com"):
         return raw
-    m = re.match(r"^/hotel/([a-z]{2})/([^/]+?)\.(?:[a-z]{2}(?:-[a-z]{2})?\.)?html$",
+    m = re.match(r"^/hotel/([a-z]{2})/([^/]+?)\.(?:[a-z]{2}(?:-[a-z]{2})?\.)?html?$",
                  u.path or "", re.I)
     if not m:
         return raw
