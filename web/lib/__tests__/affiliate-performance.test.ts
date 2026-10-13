@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  dagligSerie, glidende, grupper, guideSlug, noegletal, topProdukter,
+  dagligSerie, glidende, grupper, guideSlug, noegletal, topProdukter, forretning,
   varmekort, prisfordeling, dkDato, dkUgedag,
   type KlikRaekke, type EventRaekke,
 } from "@/lib/affiliate-performance";
@@ -304,5 +304,35 @@ describe("når få klik bærer den klikkede værdi", () => {
     const n = noegletal([], [], NU, 28);
     expect(n.topAndel).toBe(0);
     expect(n.faaBaererVaerdien).toBe(false);
+  });
+});
+
+describe("forretning", () => {
+  it("regner klik fra /koeb-shelter som shelters", () => {
+    expect(forretning(klik({ path: "/koeb-shelter" }))).toBe("shelters");
+    expect(forretning(klik({ path: "/koeb-shelter/" }))).toBe("shelters");
+    expect(forretning(klik({ path: "/koeb-shelter?utm_source=x" }))).toBe("shelters");
+  });
+
+  it("tager kategorien shelter med, uanset hvor den klikkes", () => {
+    // Fald-tilbage, hvis et byggesæt en dag bliver linket fra en anden side.
+    expect(forretning(klik({ path: "/tilbud", category: "shelter" }))).toBe("shelters");
+  });
+
+  it("lader et glamping-telt på /koeb-shelter følge siden, ikke kategorien", () => {
+    // Teltene dér er kategori "telt" hos outdoortid, som også sælger grej.
+    // En kategori- eller forhandlerregel ville have delt dem forkert.
+    expect(forretning(klik({
+      path: "/koeb-shelter", category: "telt", retailer: "outdoortid", price_dkk: 7999,
+    }))).toBe("shelters");
+  });
+
+  it("lader et almindeligt telt i en købsguide være grej", () => {
+    expect(forretning(klik({ path: "/bedste/telt", category: "telt" }))).toBe("grej");
+  });
+
+  it("deler ikke efter pris", () => {
+    // En dyr sovepose er stadig grej; en vilkårlig prisgrænse ville flytte den.
+    expect(forretning(klik({ path: "/bedste/sovepose", price_dkk: 2852 }))).toBe("grej");
   });
 });

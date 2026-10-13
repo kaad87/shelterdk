@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import {
   dagligSerie, glidende, grupper, guideSlug, noegletal, topProdukter,
-  varmekort, prisfordeling,
+  varmekort, prisfordeling, forretning,
   type KlikRaekke, type EventRaekke,
 } from "@/lib/affiliate-performance";
 import { guideHealth, type HealthEntry } from "@/lib/guide-health";
@@ -134,12 +134,19 @@ export async function GET(req: NextRequest) {
         .eq("in_stock", true).eq("is_blocked", false).then((r) => r.count),
     ]);
 
-    const serie = dagligSerie(klik, events, nu, dage);
+    // Shelter-byggesæt og glamping-telte er en anden forretning end grej:
+    // 0,8 % af klikkene, 15 % af værdien, median 19.000 kr. Blandet ind gør
+    // de hvert nøgletal ulæseligt, så de holdes ude af alt herunder og får
+    // deres egen opgørelse til sidst.
+    const grej = klik.filter((k) => forretning(k) === "grej");
+    const struktur = klik.filter((k) => forretning(k) === "shelters");
+
+    const serie = dagligSerie(grej, events, nu, dage);
     const datoer = serie.map((d) => d.dato);
 
     // Forhandler-mix over tid: kun de fem største får egen flade, resten
     // samles. Flere end det giver farver man ikke kan skelne.
-    const forhandlere = grupper(klik, (k) => k.retailer, nu, dage);
+    const forhandlere = grupper(grej, (k) => k.retailer, nu, dage);
     const top5 = forhandlere.slice(0, 5);
     const resten = forhandlere.slice(5);
     const mix = [
@@ -155,22 +162,29 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       genereret: nu.toISOString(),
       vindue: { dage, periode, fra: datoer[0] ?? null, til: datoer[datoer.length - 1] ?? null },
-      noegletal: noegletal(klik, events, nu, periode),
+      noegletal: noegletal(grej, events, nu, periode),
       serie,
       glidende: {
         klik: glidende(serie.map((d) => d.klik), 7),
         vaerdi: glidende(serie.map((d) => d.vaerdi), 7),
         grejVisninger: glidende(serie.map((d) => d.grejVisninger), 7),
       },
-      guider: grupper(klik, (k) => guideSlug(k.path), nu, dage),
+      guider: grupper(grej, (k) => guideSlug(k.path), nu, dage),
       forhandlere,
       forhandlerMix: { datoer, serier: mix },
-      placeringer: grupper(klik, (k) => k.placement, nu, dage),
-      kategorier: grupper(klik, (k) => k.category, nu, dage),
-      stier: grupper(klik, (k) => (k.path ?? "").split("?")[0] || null, nu, dage),
-      produkter: topProdukter(klik, 25),
-      varmekort: varmekort(klik),
-      prisfordeling: prisfordeling(klik),
+      placeringer: grupper(grej, (k) => k.placement, nu, dage),
+      kategorier: grupper(grej, (k) => k.category, nu, dage),
+      stier: grupper(grej, (k) => (k.path ?? "").split("?")[0] || null, nu, dage),
+      produkter: topProdukter(grej, 25),
+      varmekort: varmekort(grej),
+      prisfordeling: prisfordeling(grej),
+      // Egen opgørelse. Ingen events: grejblokken hører ikke til her.
+      shelters: {
+        noegletal: noegletal(struktur, [], nu, periode),
+        serie: dagligSerie(struktur, [], nu, dage),
+        produkter: topProdukter(struktur, 10),
+        forhandlere: grupper(struktur, (k) => k.retailer, nu, dage),
+      },
       sundhed: sund,
       katalog: { ialt: katalogIalt ?? null, koebbare: koebbare ?? null },
       // Datagrundlagets grænser hører med i svaret: internal_events blev først

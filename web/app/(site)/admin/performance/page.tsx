@@ -22,7 +22,8 @@ export default function AdminPerformancePage() {
       <h1 className="mb-1 font-serif text-2xl font-bold text-primary">Affiliate-performance</h1>
       <p className="mb-6 max-w-2xl text-sm text-primary/60">
         Udviklingen i affiliate-klik, hvor de kommer fra, og hvad guiderne er i stand til at
-        sælge. Opdaterer sig selv hvert 5. minut.
+        sælge. Grej og shelters opgøres hver for sig — en enkelt bygning til 20.000 kr. ville
+        ellers overdøve en måneds soveposer. Opdaterer sig selv hvert 5. minut.
       </p>
       <AdminAffiliatePerformance />
     </div>

@@ -39,6 +39,12 @@ interface Data {
     problemer: { slug: string; problems: string[] }[];
     koncentration: number; enForhandler: number;
   };
+  shelters: {
+    noegletal: Data["noegletal"];
+    serie: Dag[];
+    produkter: Data["produkter"];
+    forhandlere: Bucket[];
+  };
   katalog: { ialt: number | null; koebbare: number | null };
   daekning: { foersteKlik: string | null; foersteEvent: string | null;
     klikRaekker: number; eventRaekker: number };
@@ -241,6 +247,7 @@ export function AdminAffiliatePerformance() {
   const harEvents = data.daekning.eventRaekker > 0;
   const grejSerie = data.serie.map((d) => ({ dato: d.dato, vaerdi: d.grejVisninger }));
   const sum = (f: (d: Dag) => number) => data.serie.reduce((s, d) => s + f(d), 0);
+  const sh = data.shelters.noegletal;
 
   // Overskriften på hele siden: én sætning om hvad der er sket. Et dashboard
   // man skal læse tre grafer i for at vide om det går frem eller tilbage,
@@ -248,8 +255,8 @@ export function AdminAffiliatePerformance() {
   const ændring = n.klikForrige > 0
     ? Math.round(((n.klik - n.klikForrige) / n.klikForrige) * 100) : null;
   const overskrift = ændring === null
-    ? `${tal(n.klik)} affiliate-klik på ${p} dage.`
-    : `${tal(n.klik)} affiliate-klik på ${p} dage — ${
+    ? `${tal(n.klik)} klik på grej i ${p} dage.`
+    : `${tal(n.klik)} klik på grej i ${p} dage — ${
         ændring >= 0 ? "op" : "ned"} ${Math.abs(ændring)} % mod de ${p} dage før.`;
   const pctÆndring = (nu: number, foer: number) =>
     foer > 0 ? Math.round(((nu - foer) / foer) * 100) : null;
@@ -319,7 +326,7 @@ export function AdminAffiliatePerformance() {
 
       {/* ---- Nøgletal ---- */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
-        <Kort titel="Affiliate-klik" periode={`${p} dage`} vaerdi={tal(n.klik)}
+        <Kort titel="Klik på grej" periode={`${p} dage`} vaerdi={tal(n.klik)}
           under={<Retning nu={n.klik} foer={n.klikForrige} />}
           forklaring="Klik videre til en forhandler. Det er det nærmeste vi kommer en salgshandling i vores egne data." />
         <Kort titel="Klikket værdi" periode={`${p} dage`} vaerdi={kr(n.vaerdi)}
@@ -348,16 +355,26 @@ export function AdminAffiliatePerformance() {
           under={<span>af {tal(data.katalog.ialt ?? 0)} i feedet</span>} />
       </div>
 
+      {/* Shelters står for sig: 0,8 % af klikkene, men 15 % af værdien.
+          Linjen her, så det samlede billede ikke mangler dem. */}
+      {sh.klik > 0 && (
+        <p className="text-sm text-primary/85">
+          Dertil <strong className="font-medium text-primary">{tal(sh.klik)} klik på
+          shelters og byggesæt</strong> til {kr(sh.vaerdi)} — opgjort for sig længere nede,
+          fordi en enkelt bygning til 20.000 kr. vejer som 33 soveposer.
+        </p>
+      )}
+
       {/* ---- Udvikling ---- */}
-      <Panel titel="Affiliate-klik pr. dag"
-        note={`${data.vindue.fra} – ${data.vindue.til}. Søjler er den enkelte dag, linjen er 7-dages gennemsnit. Peg på en dag for tallet.`}>
+      <Panel titel="Klik på grej pr. dag"
+        note={`${data.vindue.fra} – ${data.vindue.til}. Shelters og byggesæt tælles ikke med — de har deres eget panel. Søjler er den enkelte dag, linjen er 7-dages gennemsnit; peg på en dag for tallet.`}>
         <Soejlegraf data={data.serie.map((d) => ({ dato: d.dato, vaerdi: d.klik }))}
           linje={data.glidende.klik} enhed=" klik" />
       </Panel>
 
       <div className="grid gap-5 lg:grid-cols-2">
         <Panel titel="Klikket værdi pr. dag"
-          note="Listepris på de klikkede varer — et mål for købsintention, ikke for omsætning.">
+          note="Listepris på det klikkede grej — et mål for købsintention, ikke for omsætning.">
           <Soejlegraf data={data.serie.map((d) => ({ dato: d.dato, vaerdi: d.vaerdi }))}
             linje={data.glidende.vaerdi} enhed=" kr." />
         </Panel>
@@ -444,14 +461,14 @@ export function AdminAffiliatePerformance() {
 
       <div className="grid gap-5 lg:grid-cols-2">
         <Panel titel="Prisfordeling på klikkede varer"
-          note="Faste trin, så svaret på “sælger vi billigt eller dyrt grej” ikke flytter sig med fordelingen.">
+          note="Faste trin, så svaret på “sælger vi billigt eller dyrt grej” ikke flytter sig med fordelingen. Uden shelters, som ellers ville fylde hele øverste trin.">
           <Bjaelker enhed="klik" poster={data.prisfordeling.map((t) => ({
             navn: Number.isFinite(t.til) ? `${tal(t.fra)}–${tal(t.til)} kr.` : `over ${tal(t.fra)} kr.`,
             vaerdi: t.antal,
           }))} />
         </Panel>
         <Panel titel="Hvornår klikkes der"
-          note="Ugedag × klokketime i dansk tid, hele graf-vinduet. Peg på en celle for tallet.">
+          note="Klik på grej, ugedag × klokketime i dansk tid, hele graf-vinduet. Peg på en celle for tallet.">
           <Varmekort grid={data.varmekort} />
         </Panel>
       </div>
@@ -481,7 +498,7 @@ export function AdminAffiliatePerformance() {
       </Panel>
 
       {/* ---- Produkter ---- */}
-      <Panel titel="Mest klikkede varer" note="Top 25 i graf-vinduet.">
+      <Panel titel="Mest klikkede grej" note="Top 25 i graf-vinduet. Shelters og byggesæt står i deres eget panel.">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <caption className="sr-only">De 25 mest klikkede varer i perioden.</caption>
@@ -509,6 +526,67 @@ export function AdminAffiliatePerformance() {
             </tbody>
           </table>
         </div>
+      </Panel>
+
+      {/* ---- Shelters & byggesæt ---- */}
+      <Panel titel="Shelters og byggesæt"
+        note={`En anden forretning end grej: få klik, men den billigste vare koster mere end
+          den dyreste sovepose. Holdes ude af alle tal ovenfor, så de kan læses.`}>
+        {sh.klik === 0 ? (
+          <p className="text-sm text-primary/80">Ingen klik i perioden.</p>
+        ) : (
+          <div className="grid gap-5 lg:grid-cols-[260px,1fr]">
+            <dl className="space-y-2.5 self-start text-sm">
+              {([
+                [`Klik · ${p} dage`, tal(sh.klik), <Retning key="r" nu={sh.klik} foer={sh.klikForrige} />],
+                [`Klikket værdi · ${p} dage`, kr(sh.vaerdi), null],
+                ["Median varepris", sh.medianPris != null ? kr(sh.medianPris) : "–", null],
+              ] as const).map(([k, v, extra]) => (
+                <div key={k} className="flex items-baseline justify-between gap-3 border-b border-primary/[0.07] pb-1.5">
+                  <dt className="text-primary/85">{k}</dt>
+                  <dd className="flex items-center gap-2 font-medium tabular-nums text-primary">
+                    {v}{extra}
+                  </dd>
+                </div>
+              ))}
+              <div className="pt-0.5 text-xs text-primary/80">
+                Forhandlere i graf-vinduet:{" "}
+                {data.shelters.forhandlere.map((f) => `${f.navn} (${f.klik})`).join(", ") || "–"}
+              </div>
+            </dl>
+            <div className="overflow-x-auto">
+              <p className="mb-1.5 text-xs text-primary/80">
+                Varer i hele graf-vinduet ({data.vindue.dage} dage) — nøgletallene til
+                venstre er {p} dage.
+              </p>
+              <table className="w-full text-sm">
+                <caption className="sr-only">
+                  Klikkede shelters og byggesæt i de seneste {data.vindue.dage} dage.
+                </caption>
+                <thead>
+                  <tr className="border-b border-primary/15">
+                    <th scope="col" className={TH}>Vare</th>
+                    <th scope="col" className={TH}>Forhandler</th>
+                    <th scope="col" className={`${TH} text-right`}>Pris</th>
+                    <th scope="col" className={`${TH} text-right`}>Klik</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.shelters.produkter.map((v) => (
+                    <tr key={v.navn} className="border-b border-primary/[0.07]">
+                      <th scope="row" className="max-w-[20rem] truncate py-1.5 pr-3 text-left font-normal text-primary"
+                        title={v.navn}>{v.navn}</th>
+                      <td className="py-1.5 pr-3 text-primary/80">{v.forhandler ?? "–"}</td>
+                      <td className="py-1.5 pr-3 text-right tabular-nums text-primary/80">
+                        {v.pris != null ? kr(v.pris) : "–"}</td>
+                      <td className="py-1.5 text-right font-medium tabular-nums">{v.klik}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </Panel>
 
       {/* ---- Sundhed ---- */}

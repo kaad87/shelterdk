@@ -169,6 +169,31 @@ export function grupper(
     .sort((a, b) => b.klik - a.klik || a.navn.localeCompare(b.navn, "da"));
 }
 
+/**
+ * Hvilken forretning et klik hører til.
+ *
+ * Shelter-byggesæt og glamping-telte er ikke grej. Målt over hele basen:
+ * otte klik i alt — 0,8 % af klikkene, men 15 % af den klikkede værdi, med
+ * en billigste vare på 4.499 kr. og en median på 18.999. Blandet sammen med
+ * soveposer gør de hvert nøgletal ulæseligt: fire klik på byggesæt fik en
+ * måned til at se ud som +24 % i værdi, mens grejet faldt.
+ *
+ * Skillelinjen er siden og ikke prisen eller forhandleren. En prisgrænse er
+ * vilkårlig (er et telt til 2.999 kr. grej?), og glamping-teltene ligger hos
+ * outdoortid, som også sælger almindeligt grej. /koeb-shelter er derimod
+ * siden om at købe en bygning, og hvert eneste klik derfra har været det.
+ * Kategorien "shelter" tages med som fald-tilbage, hvis et byggesæt en dag
+ * bliver linket fra en anden side.
+ */
+export type Forretning = "grej" | "shelters";
+
+export function forretning(k: KlikRaekke): Forretning {
+  const sti = (k.path ?? "").split("?")[0].replace(/\/$/, "");
+  if (sti === "/koeb-shelter") return "shelters";
+  if ((k.category ?? "").toLowerCase() === "shelter") return "shelters";
+  return "grej";
+}
+
 /** Guide-slug fra stien, så /bedste/sovepose?utm=… og /bedste/sovepose er samme guide. */
 export function guideSlug(sti: string | null): string | null {
   if (!sti) return null;
