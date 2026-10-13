@@ -55,6 +55,13 @@ area(3600050046)->.dk;
 out center tags;
 """
 
+# Types left out of the dataset. naturlejrplads is defined by fee=no, which is
+# the opposite of the premise: these are free sites, more than half of them are
+# the operator's own shelters seen from the OSM side, and none of them will ever
+# carry a Booking link. They are still classified, then filtered, so the rule
+# stays readable and the decision is one line to undo.
+EXCLUDED_TYPES = {"naturlejrplads"}
+
 # Two places are treated as the same when they sit this close AND share a name.
 DUPLICATE_RADIUS_M = 150
 # Name similarity above this counts as "almost the same name".
@@ -217,6 +224,7 @@ def clean(payload: dict) -> tuple[list[dict], dict]:
         "no_name": 0,
         "dupe_osm_id": 0,
         "dupe_near_name": 0,
+        "excluded_type": 0,
     }
 
     rows: list[dict] = []
@@ -243,12 +251,17 @@ def clean(payload: dict) -> tuple[list[dict], dict]:
             stats["no_name"] += 1
             continue
 
+        kind = classify(tags)
+        if kind in EXCLUDED_TYPES:
+            stats["excluded_type"] += 1
+            continue
+
         lat, lon = point
         rows.append(
             {
                 "osm_id": osm_id,
                 "navn": name,
-                "type": classify(tags),
+                "type": kind,
                 "lat": round(lat, 6),
                 "lon": round(lon, 6),
                 "website": website(tags),
@@ -303,6 +316,8 @@ def report(rows: list[dict], stats: dict) -> None:
     print(f"  Uden koordinater (fjernet)      {stats['no_coords']:6d}")
     print(f"  Uden navn (fjernet, talt)       {stats['no_name']:6d}")
     print(f"  Dubletter paa OSM-id            {stats['dupe_osm_id']:6d}")
+    print(f"  Fravalgt type ({', '.join(sorted(EXCLUDED_TYPES))})"
+          f"{stats['excluded_type']:>8d}")
     print(f"  Naesten samme navn < {DUPLICATE_RADIUS_M} m      {stats['dupe_near_name']:6d}")
     print(f"  Tilbage efter rens              {stats['clean']:6d}")
 

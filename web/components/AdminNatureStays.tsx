@@ -6,7 +6,16 @@ import { StayImageUploader } from "@/components/naturophold/StayImageUploader";
 
 const STORAGE_KEY = "shelterdk-admin-secret";
 
-const TYPES = ["glamping_telt", "naturhytte", "dome", "traehus", "tiny_house", "luksus_shelter", "andet"];
+// De foerste seks er de kuraterede glamping-typer tabellen blev bygget til.
+// De fire sidste kommer fra OSM-importen af betalte overnatningssteder. De
+// skal staa her, fordi feltet er en <select>: en raekke med en type der ikke
+// er paa listen ville faa dropdownen til at vise den foerste vaerdi, og en
+// gemning ville saa tavst aendre typen.
+const TYPES = [
+  "glamping_telt", "naturhytte", "dome", "traehus", "tiny_house", "luksus_shelter",
+  "campingplads", "autocamperplads", "hytte", "glamping",
+  "andet",
+];
 const LINK_SOURCES = ["direkte", "booking_com", "andet_netvaerk"];
 
 interface Stay {
@@ -169,7 +178,7 @@ export function AdminNatureStays() {
           <label className="text-sm">Navn<input className="w-full rounded border px-2 py-1" value={form.name} onChange={set("name")} /></label>
           <label className="text-sm">Slug (auto)<input className="w-full rounded border px-2 py-1" value={form.slug} placeholder={slugify(form.name)} onChange={set("slug")} /></label>
           <label className="text-sm">Operatør<input className="w-full rounded border px-2 py-1" value={form.operator_name ?? ""} onChange={set("operator_name")} /></label>
-          <label className="text-sm">Type<select className="w-full rounded border px-2 py-1" value={form.type} onChange={set("type")}>{TYPES.map((t) => <option key={t}>{t}</option>)}</select></label>
+          <label className="text-sm">Type<select className="w-full rounded border px-2 py-1" value={form.type} onChange={set("type")}>{(TYPES.includes(form.type) ? TYPES : [form.type, ...TYPES]).map((t) => <option key={t}>{t}</option>)}</select></label>
           <label className="text-sm">Region<input className="w-full rounded border px-2 py-1" value={form.region ?? ""} onChange={set("region")} /></label>
           <label className="text-sm">Kommune<input className="w-full rounded border px-2 py-1" value={form.kommune ?? ""} onChange={set("kommune")} /></label>
           <label className="text-sm">Sted/by<input className="w-full rounded border px-2 py-1" value={form.place ?? ""} onChange={set("place")} /></label>
