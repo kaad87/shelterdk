@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { laesBookingUrl, normaliserHvisBooking, sammeProperty } from "@/lib/booking-url";
+import {
+  laesBookingUrl, normaliserHvisBooking, sammeProperty,
+  cjDeeplink, udpakCjDeeplink, udgaaendeLink,
+} from "@/lib/booking-url";
 
 // De faktiske adresser fra Booking, ikke opdigtede. Fixtures man selv har
 // fundet paa er netop dem der ikke fanger problemet.
@@ -81,5 +84,75 @@ describe("normaliserHvisBooking", () => {
   });
   it("trimmer mellemrum fra en indsat streng", () => {
     expect(normaliserHvisBooking("  https://landjord.dk/x  ")).toBe("https://landjord.dk/x");
+  });
+});
+
+describe("cjDeeplink", () => {
+  it("bygger linket i det format CJ selv genererer", () => {
+    // Fra CJ's egen linkbygger, ShelterDK x Booking.com Nordics:
+    // https://www.tkqlhce.com/click-101800945-15734870?url=<encoded>
+    const d = cjDeeplink("https://www.booking.com/hotel/dk/shelter-i-sansehave.en-gb.html")!;
+    expect(d.startsWith("https://www.tkqlhce.com/click-101800945-15734870?")).toBe(true);
+    expect(d).toContain("url=https%3A%2F%2Fwww.booking.com%2Fhotel%2Fdk%2Fshelter-i-sansehave.da.html");
+  });
+
+  it("saetter placeringen som SID, saa indtjening kan goeres op pr. flade", () => {
+    const d = cjDeeplink("https://www.booking.com/hotel/dk/x.da.html", "kort")!;
+    expect(new URL(d).searchParams.get("sid")).toBe("kort");
+  });
+
+  it("udelader sid helt, naar der ikke er nogen", () => {
+    const d = cjDeeplink("https://www.booking.com/hotel/dk/x.da.html")!;
+    expect(d).not.toContain("sid=");
+  });
+
+  it("rydder op i destinationen foer den pakkes ind", () => {
+    // Ellers ville sessions-id og fremmed aid rejse med indeni deeplinket.
+    const d = cjDeeplink(ÆGTE, "side")!;
+    const maal = new URL(d).searchParams.get("url")!;
+    expect(maal).toBe("https://www.booking.com/hotel/dk/shelter-slotsgaarden.da.html");
+    expect(maal).not.toContain("aid=");
+    expect(maal).not.toContain("sid=b04acae");
+  });
+
+  it("bygger ikke et deeplink til noget der ikke er en Booking-property", () => {
+    expect(cjDeeplink("https://landjord.dk/sted/x", "kort")).toBeNull();
+  });
+});
+
+describe("udpakCjDeeplink", () => {
+  it("finder destinationen i et faerdigt deeplink", () => {
+    // Indsaetter nogen et faerdigt link, gemmer vi hellere destinationen og
+    // bygger sporingen selv: et gemt deeplink har ét fast SID og kan ikke
+    // skelne et klik paa kortet fra et klik paa en underside.
+    const cj = "https://www.tkqlhce.com/click-101800945-15734870?url="
+      + "https%3A%2F%2Fwww.booking.com%2Fhotel%2Fdk%2Fshelter-i-sansehave.en-gb.html";
+    expect(udpakCjDeeplink(cj))
+      .toBe("https://www.booking.com/hotel/dk/shelter-i-sansehave.en-gb.html");
+  });
+
+  it("giver null for alt der ikke er en CJ-klikadresse", () => {
+    expect(udpakCjDeeplink("https://www.booking.com/hotel/dk/x.da.html")).toBeNull();
+    expect(udpakCjDeeplink("https://landjord.dk/x")).toBeNull();
+    expect(udpakCjDeeplink("ikke en url")).toBeNull();
+  });
+});
+
+describe("udgaaendeLink", () => {
+  it("pakker en Booking-adresse i CJ med placeringens SID", () => {
+    const l = udgaaendeLink("https://www.booking.com/hotel/dk/x.da.html", "shelter")!;
+    expect(l).toContain("tkqlhce.com");
+    expect(new URL(l).searchParams.get("sid")).toBe("shelter");
+  });
+
+  it("lader et link uden for Booking gaa uroert igennem", () => {
+    // Vi har ingen sporing paa Landjord, og et link vi ikke forstod maa ikke
+    // omskrives.
+    expect(udgaaendeLink("https://landjord.dk/sted/x", "kort")).toBe("https://landjord.dk/sted/x");
+  });
+
+  it("giver null, naar der ikke er noget link", () => {
+    expect(udgaaendeLink(null, "kort")).toBeNull();
+    expect(udgaaendeLink("", "kort")).toBeNull();
   });
 });

@@ -2,7 +2,18 @@
 
 import { ExternalLink } from "lucide-react";
 import { trackAffiliateClick } from "@/lib/tracking";
+import { udgaaendeLink, type Placering } from "@/lib/booking-url";
 import type { StayLinkSource } from "@/lib/nature-stays";
+
+/**
+ * Placeringens SID i CJ. Korte navne med vilje: SID foelger med gennem hele
+ * CJ's rapportering, og et langt navn bliver afkortet et sted undervejs.
+ */
+const SID: Record<"naturophold_guide" | "naturophold_planb" | "naturophold_map", Placering> = {
+  naturophold_map: "kort",
+  naturophold_planb: "shelter",
+  naturophold_guide: "guide",
+};
 
 const LABEL: Record<StayLinkSource, string> = {
   booking_com: "Se på Booking.com",
@@ -34,15 +45,20 @@ export function StayAffiliateLink({
     );
   }
   const label = LABEL[linkSource];
+  // Booking-adresser pakkes i CJ ved rendering, med placeringen som SID.
+  // Gemte vi det faerdige deeplink, skulle der ligge ét pr. placering pr.
+  // sted, og et skift af link-id ville kraeve en opdatering af hver raekke.
+  // Alt uden for Booking gaar uroert igennem.
+  const href = udgaaendeLink(url, SID[position]) ?? url;
   return (
     <a
-      href={url}
+      href={href}
       target="_blank"
       rel="sponsored nofollow noopener"
       aria-label={`${label} — ${name}`}
       onClick={() =>
         trackAffiliateClick({
-          url,
+          url: href,
           productName: name,
           retailer: linkSource,
           position,

@@ -99,3 +99,81 @@ export function sammeProperty(a: string, b: string): boolean {
   const y = laesBookingUrl(b);
   return !!x && !!y && x.slug === y.slug && x.land === y.land;
 }
+
+
+// ---------------------------------------------------------------------------
+// CJ-deeplink
+// ---------------------------------------------------------------------------
+
+/**
+ * Vores egne CJ-id'er. De er ikke hemmelige: de staar i hver eneste udgaaende
+ * adresse og kan laeses af enhver der hoejreklikker. Derfor konstanter og ikke
+ * env, saa de kan testes og ses i en diff.
+ *
+ * PID er vores promotional property (ShelterDK). LINK_ID hoerer til parret
+ * ShelterDK x Booking.com Nordics; en anden annoncoer faar sit eget.
+ */
+export const CJ_HOST = "www.tkqlhce.com";
+export const CJ_PID = "101800945";
+export const CJ_LINK_ID = "15734870";
+
+/**
+ * Hvor paa sitet klikket skete. Vaerdien sendes som CJ's SID, saa indtjening
+ * kan gores op pr. placering uden at gemme tre forskellige links pr. sted.
+ *
+ * Navnene er korte med vilje: SID foelger med gennem hele CJ's rapportering,
+ * og et langt navn bliver afkortet et sted undervejs.
+ */
+export type Placering = "kort" | "shelter" | "guide" | "side";
+
+/**
+ * Bygger CJ-deeplinket til en Booking-adresse.
+ *
+ * Linket bygges ved rendering og gemmes ikke. Gemte vi det faerdige deeplink,
+ * skulle der ligge ét pr. placering pr. sted, og et skift af link-id ville
+ * kraeve en opdatering af hver raekke. Med den kanoniske adresse i basen er
+ * der ét felt at vedligeholde, og SID kan saettes frit pr. visning.
+ */
+export function cjDeeplink(bookingUrl: string, sid?: Placering | string): string | null {
+  const b = laesBookingUrl(bookingUrl);
+  if (!b) return null;
+  const base = `https://${CJ_HOST}/click-${CJ_PID}-${CJ_LINK_ID}`;
+  const params = new URLSearchParams({ url: b.kanonisk });
+  if (sid) params.set("sid", sid);
+  return `${base}?${params.toString()}`;
+}
+
+/** CJ-klikadresse: https://<cj-host>/click-<pid>-<id>?url=<destination> */
+const CJ_KLIK = /^\/click-\d+-\d+$/;
+
+/**
+ * Pakker et CJ-deeplink ud og giver destinationen tilbage.
+ *
+ * Bruges naar nogen indsaetter et faerdigt deeplink i admin: vi gemmer hellere
+ * den kanoniske Booking-adresse og bygger sporingen selv, saa SID kan saettes
+ * pr. placering. Et gemt deeplink har ét fast SID og kan ikke skelne mellem
+ * et klik paa kortet og et klik paa en underside.
+ */
+export function udpakCjDeeplink(raw: string): string | null {
+  let u: URL;
+  try {
+    u = new URL((raw || "").trim());
+  } catch {
+    return null;
+  }
+  if (!CJ_KLIK.test(u.pathname)) return null;
+  const maal = u.searchParams.get("url");
+  return maal ? maal : null;
+}
+
+/**
+ * Den adresse en knap skal pege paa.
+ *
+ * Booking-adresser pakkes i CJ med placeringens SID. Alt andet (Landjord,
+ * Campanyon, stedets egen side) gaar uroert igennem: vi har ingen sporing paa
+ * dem, og et link vi ikke forstod maa ikke blive omskrevet.
+ */
+export function udgaaendeLink(bookingUrl: string | null, placering: Placering): string | null {
+  if (!bookingUrl) return null;
+  return cjDeeplink(bookingUrl, placering) ?? bookingUrl.trim() ?? null;
+}
