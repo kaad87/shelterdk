@@ -9,6 +9,11 @@ reported.
 Everything lands with status='draft': nothing appears on the map, in the shelter
 module or on a subpage until someone publishes it in admin.
 
+Only rows with a link are imported. A place without a booking_url, cj_deeplink
+or alternativ_link stays in the spreadsheet: it cannot become a pin and cannot
+be sold, and in the table it is only a draft nobody asked for. The whole
+catalogue of 893 was imported once and taken out again for exactly that reason.
+
 Rows flagged mulig_dublet are NOT imported. They are already in the duplicates
 sheet of the spreadsheet, and a draft that may be a copy of an existing shelter
 is worth reviewing on paper before it is in the table at all.
@@ -34,6 +39,59 @@ CSV_PATH = os.path.join(ROOT, "data", "betalt_overnatning_dk.csv")
 # OSM gives us no prices, no images and no descriptions we may reuse, so those
 # columns stay empty and are filled in by hand before anything is published.
 LINK_SOURCE_DEFAULT = "direkte"
+
+
+def ryd_booking_url(raw: str) -> str:
+    """Strip a Booking address down to the canonical form.
+
+    Mirrors tilGemtVaerdi in web/lib/booking-url.ts, which is the authority:
+    that one runs when a link is pasted in admin, this one when a link arrives
+    through the spreadsheet. Two implementations is a cost, but the two live in
+    different languages and runtimes, and leaving the spreadsheet route
+    unchecked would be worse: a pasted address carries a session id and the
+    partner's own aid, and aid=356980 in the examples is not ours.
+    """
+    from urllib.parse import urlparse, parse_qs
+
+    raw = (raw or "").strip()
+    if not raw:
+        return ""
+    try:
+        u = urlparse(raw)
+    except ValueError:
+        return raw
+
+    # A finished CJ deeplink: keep the destination, we build the tracking
+    # ourselves so each placement gets its own SID.
+    if re.match(r"^/click-\d+-\d+$", u.path or ""):
+        indre = parse_qs(u.query).get("url", [""])[0]
+        return ryd_booking_url(indre) if indre else raw
+
+    if u.hostname not in ("booking.com", "www.booking.com", "secure.booking.com"):
+        return raw
+    m = re.match(r"^/hotel/([a-z]{2})/([^/]+?)\.(?:[a-z]{2}(?:-[a-z]{2})?\.)?html$",
+                 u.path or "", re.I)
+    if not m:
+        return raw
+    land, slug = m.group(1).lower(), m.group(2)
+    return f"https://www.booking.com/hotel/{land}/{slug}.da.html"
+
+
+def link_for(c: dict) -> tuple[str, str] | None:
+    """The link a row should carry, and which network it belongs to.
+
+    Returns None when the row has no usable link. Those rows stay in the
+    spreadsheet: a place without a link cannot become a pin, cannot be sold,
+    and in the table it is only a draft nobody asked for. The whole catalogue
+    was imported once and taken out again for exactly that reason.
+    """
+    booking = (c.get("booking_url") or "").strip() or (c.get("cj_deeplink") or "").strip()
+    if booking:
+        return ryd_booking_url(booking), "booking_com"
+    alt = (c.get("alternativ_link") or "").strip()
+    if alt:
+        return alt, "andet_netvaerk"
+    return None
 
 
 def slugify(text: str) -> str:
@@ -104,6 +162,12 @@ def build_rows(sb) -> tuple[list[dict], dict]:
             stats["skipped_duplicate"] += 1
             continue
 
+        link = link_for(c)
+        if link is None:
+            stats["skipped_no_link"] += 1
+            continue
+        url, link_source = link
+
         slug = slugify(c["navn"])
         if slug in taken:
             # Two campsites can share a name. The OSM id keeps the slug unique
@@ -127,8 +191,8 @@ def build_rows(sb) -> tuple[list[dict], dict]:
             "region": region,
             "location": f"POINT({c['lon']} {c['lat']})",
             "capacity": as_int(c["capacity"]),
-            "booking_url": None,
-            "link_source": LINK_SOURCE_DEFAULT,
+            "booking_url": url,
+            "link_source": link_source,
             "status": "draft",
             # Everything OSM told us, kept together so the origin of a row is
             # never a guess, and so the hand-work has the facts next to it.
@@ -172,6 +236,7 @@ def main() -> int:
     print("=" * 66)
     print(f"  Kandidater i CSV                {stats['csv']:6d}")
     print(f"  Springes over: mulig dublet     {stats['skipped_duplicate']:6d}")
+    print(f"  Springes over: intet link        {stats['skipped_no_link']:6d}")
     print(f"  Findes allerede i tabellen      {stats['already_exists']:6d}")
     print(f"  Klar til indsaettelse           {len(rows):6d}")
     print(f"\n  Pr. type:")
@@ -184,6 +249,9 @@ def main() -> int:
     med_region = sum(1 for r in rows if r["region"])
     print(f"\n  Med region udfyldt              {med_region:6d}")
     print(f"  Alle indsaettes med status      draft")
+    print("\n  Kun raekker med et udfyldt link kommer med. Et sted uden link kan")
+    print("  ikke blive til en pin og kan ikke saelges; i tabellen er det kun en")
+    print("  kladde ingen har bedt om.")
 
     if not args.apply:
         print("\n  Intet skrevet. Koer med --apply for at gennemfoere.")
