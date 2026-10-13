@@ -262,6 +262,25 @@ export async function getStayGuideTeasers(guideIds: number[]): Promise<Map<numbe
   return out;
 }
 
+/**
+ * Et betalt sted bliver kun til en pin, naar det kan bookes.
+ *
+ * Reglen staar her og ikke i kortet, fordi den ellers er en konvention man kan
+ * glemme. OSM ved ikke, hvilke steder der ligger paa Booking; det goer kun
+ * mennesket, der har tjekket og sat et link. Uden link er en pin et loefte,
+ * sitet ikke kan indfri: brugeren klikker og faar ingenting.
+ *
+ * Tre betingelser, alle tre noedvendige:
+ *   status = published   nogen har set paa stedet og sluppet det ud
+ *   booking_url          der ER et sted at klikke hen
+ *   link_source          hvilket netvaerk linket gaar til
+ *
+ * PIN_LINK_SOURCES er den knap, der aabner for mere end Booking. Skal
+ * Landjord, Campanyon eller stedets egen side ogsaa give pins, tilfoejes
+ * "andet_netvaerk" og "direkte" her, og ingen andre steder.
+ */
+export const PIN_LINK_SOURCES: StayLinkSource[] = ["booking_com"];
+
 /** Slim pins til kortet (Fase 2C) — kun publicerede steder med gyldig location. */
 export interface StayPin {
   id: number;
@@ -273,20 +292,25 @@ export interface StayPin {
   price_from: number | null;
   image_url: string | null;
   booking_url: string | null;
+  /** Hvilket netvaerk linket gaar til. Styrer etiketten paa knappen. */
+  link_source: StayLinkSource;
 }
 
 export async function getPublishedStayPins(): Promise<StayPin[]> {
   const sb = getServiceClient();
   const { data } = await sb
     .from("nature_stays")
-    .select("id, slug, name, type, location, price_from, image_url, booking_url")
+    .select("id, slug, name, type, location, price_from, image_url, booking_url, link_source")
     .eq("status", "published")
+    .in("link_source", PIN_LINK_SOURCES)
+    .not("booking_url", "is", null)
+    .neq("booking_url", "")
     .not("location", "is", null);
   const out: StayPin[] = [];
-  for (const s of (data ?? []) as Array<{ id: number; slug: string; name: string; type: string; location: string | null; price_from: number | null; image_url: string | null; booking_url: string | null }>) {
+  for (const s of (data ?? []) as Array<{ id: number; slug: string; name: string; type: string; location: string | null; price_from: number | null; image_url: string | null; booking_url: string | null; link_source: StayLinkSource }>) {
     const m = s.location?.match(/^POINT\(\s*(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)\s*\)/i);
     if (!m) continue;
-    out.push({ id: s.id, slug: s.slug, name: s.name, type: s.type, lng: Number(m[1]), lat: Number(m[2]), price_from: s.price_from, image_url: s.image_url, booking_url: s.booking_url });
+    out.push({ id: s.id, slug: s.slug, name: s.name, type: s.type, lng: Number(m[1]), lat: Number(m[2]), price_from: s.price_from, image_url: s.image_url, booking_url: s.booking_url, link_source: s.link_source });
   }
   return out;
 }

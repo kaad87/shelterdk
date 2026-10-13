@@ -1,16 +1,8 @@
 import { MapPin } from "lucide-react";
 import type { NatureStay } from "@/lib/nature-stays";
 import { StayAffiliateLink } from "@/components/naturophold/StayAffiliateLink";
+import { stayLabel } from "@/lib/stay-types";
 
-const TYPE_LABEL: Record<string, string> = {
-  glamping_telt: "Glampingtelt",
-  naturhytte: "Naturhytte",
-  dome: "Dome",
-  traehus: "Træhus",
-  tiny_house: "Tiny house",
-  luksus_shelter: "Luksus-shelter",
-  andet: "Naturophold",
-};
 
 interface StayCardProps {
   stay: Pick<NatureStay, "name" | "type" | "region" | "place" | "image_url" | "price_from" | "booking_url" | "link_source">;
@@ -41,7 +33,7 @@ export function StayCard({ stay, awardLabel, bestFor, editorialNote, distanceKm,
         )}
       </div>
       <div className="p-4">
-        <p className="text-xs font-medium uppercase tracking-wide text-accent">{TYPE_LABEL[stay.type] ?? "Naturophold"}</p>
+        <p className="text-xs font-medium uppercase tracking-wide text-accent">{stayLabel(stay.type)}</p>
         <h3 className="mt-0.5 font-serif text-lg font-bold text-primary">{stay.name}</h3>
         {(place || distanceKm != null) && (
           <p className="mt-1 flex items-center gap-1 text-sm text-primary/60">

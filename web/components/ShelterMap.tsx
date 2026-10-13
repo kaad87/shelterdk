@@ -2,9 +2,11 @@
 
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { MapShelter } from "@/lib/map-shelter";
 import type { StayPin } from "@/lib/nature-stays";
+import { stayLabel, stayMarkerHtml, stayGlyph, PIN_FILL, PIN_BORDER, PIN_GLYPH } from "@/lib/stay-types";
+import { StayAffiliateLink } from "@/components/naturophold/StayAffiliateLink";
 import { getLocationCoords } from "@/lib/shelter-detail";
 import { getProxiedImageSrc } from "@/lib/image-proxy";
 import { slugifySegment } from "@/lib/slug";
@@ -137,17 +139,26 @@ const MapInner = dynamic(
       iconAnchor: [12, 41],
     });
 
-    // Premium guld-markør for betalte naturophold (glamping). divIcon (ingen
-    // ekstra asset) — guld-cirkel m. hvid diamant, så den skiller sig tydeligt
-    // ud fra de grå shelter-pins.
-    const stayIcon = L.divIcon({
-      html:
-        '<div style="width:26px;height:26px;border-radius:9999px;background:#EF9F27;border:2.5px solid #854F0B;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;">' +
-        '<div style="width:9px;height:9px;background:#fff;transform:rotate(45deg);"></div></div>',
-      className: "stay-marker",
-      iconSize: L.point(26, 26),
-      iconAnchor: L.point(13, 13),
-    });
+    // Markør pr. type for betalte overnatningssteder. Alle deler form og guld,
+    // så de læses som ét lag over for de grå shelter-pins; glyffen indeni
+    // skiller typerne. Se lib/stay-types.ts for farver og begrundelse.
+    //
+    // Ikonerne bygges én gang og genbruges: et nyt L.divIcon pr. markør ville
+    // bygge den samme streng op til 900 gange ved hver render.
+    const stayIcons = new Map<string, ReturnType<typeof L.divIcon>>();
+    const stayIconFor = (typeKey: string) => {
+      let icon = stayIcons.get(typeKey);
+      if (!icon) {
+        icon = L.divIcon({
+          html: stayMarkerHtml(typeKey, 28),
+          className: "stay-marker",
+          iconSize: L.point(28, 28),
+          iconAnchor: L.point(14, 14),
+        });
+        stayIcons.set(typeKey, icon);
+      }
+      return icon;
+    };
 
     function FitBounds({
       items,
@@ -275,6 +286,7 @@ const MapInner = dynamic(
     return function Inner({
       sheltersWithCoords,
       stays,
+      visStays = true,
       onBoundsChange,
       initialCenter,
       initialZoom,
@@ -285,6 +297,7 @@ const MapInner = dynamic(
     }: {
       sheltersWithCoords: ShelterWithCoords[];
       stays?: StayPin[];
+      visStays?: boolean;
       onBoundsChange?: (bounds: MapBounds) => void;
       initialCenter?: [number, number];
       initialZoom?: number;
@@ -380,10 +393,10 @@ const MapInner = dynamic(
             </Marker>
           ))}
           </ClusterWrapper>
-          {(stays ?? []).map((s) => (
-            <Marker key={`stay-${s.id}`} position={[s.lat, s.lng]} icon={stayIcon}>
+          {(visStays ? stays ?? [] : []).map((s) => (
+            <Marker key={`stay-${s.id}`} position={[s.lat, s.lng]} icon={stayIconFor(s.type)}>
               <Popup closeButton closeOnEscapeKey autoClose>
-                <div className="p-1 min-w-[180px]">
+                <div className="p-1 min-w-[196px] max-w-[240px]">
                   {isValidImageUrl(s.image_url) && (
                     <div className="w-full aspect-video rounded overflow-hidden bg-primary/10 mb-2 relative">
                       {/* Rå ejer-URL via plain img — ejer-hosts er ikke i next/image-allowlisten */}
@@ -391,20 +404,32 @@ const MapInner = dynamic(
                       <img src={getProxiedImageSrc((s.image_url || "").trim(), { w: 360, q: 70 })} alt={`Billede af ${s.name}`} loading="lazy" className="w-full h-full object-cover" />
                     </div>
                   )}
-                  <p className="font-semibold text-primary">{s.name}</p>
-                  {typeof s.price_from === "number" && (
-                    <p className="text-sm text-primary/70 mt-0.5">Glamping · fra {s.price_from} kr/nat</p>
-                  )}
-                  {s.booking_url && (
-                    <a
-                      href={s.booking_url}
-                      target="_blank"
-                      rel="sponsored nofollow noopener"
-                      className="mt-2 inline-block px-3 py-1.5 text-sm font-medium text-white bg-accent rounded-lg hover:opacity-90"
-                    >
-                      Se & book
-                    </a>
-                  )}
+                  <p className="font-semibold text-primary leading-snug">{s.name}</p>
+                  {/* Typen kom fra en hardkodet streng og sagde "Glamping" om
+                      enhver type, ogsaa om en campingplads. Nu fra kilden. */}
+                  <p className="mt-0.5 text-sm text-primary/80">
+                    {stayLabel(s.type)}
+                    {typeof s.price_from === "number" && ` · fra ${s.price_from} kr/nat`}
+                  </p>
+                  {/* StayAffiliateLink og ikke et haandlavet <a>: den haandterer
+                      allerede sporing (position naturophold_map), rel-attributter
+                      og etiketten pr. linkkilde. En kopi her ville vaere et sted
+                      mere, hvor sporingen kan falde ud. */}
+                  <div className="mt-2">
+                    <StayAffiliateLink
+                      name={s.name}
+                      url={s.booking_url}
+                      linkSource={s.link_source}
+                      priceFrom={s.price_from}
+                      position="naturophold_map"
+                      className="w-full"
+                    />
+                  </div>
+                  {/* Maerkningen staar UNDER knappen: den skal kunne laeses,
+                      uden at konkurrere med navnet om det foerste blik. */}
+                  <p className="mt-1.5 text-[11px] leading-snug text-primary/75">
+                    Annonce · vi tjener en kommission, hvis du booker
+                  </p>
                 </div>
               </Popup>
             </Marker>
@@ -449,6 +474,10 @@ export function ShelterMap({
   overrideCenter,
   overrideZoom,
 }: ShelterMapProps) {
+  // Laget er taendt fra start: brugeren skal se tilbuddet, foer hun kan
+  // fravaelge det. Valget holdes i komponenten og ikke i localStorage, saa et
+  // fravalg paa én side ikke tavst skjuler laget alle andre steder.
+  const [visStays, setVisStays] = useState(true);
   const regionView = initialRegion ? REGION_CENTER_ZOOM[initialRegion] : undefined;
   const toDisplay = initialRegion?.trim()
     ? shelters.filter((s) => (s.region || "").trim() === initialRegion.trim())
@@ -485,10 +514,47 @@ export function ShelterMap({
       ? className
       : "rounded-xl overflow-hidden border border-primary/10 min-h-[280px] " + className;
   return (
-    <div className={wrapperClass}>
+    <div className={`relative ${wrapperClass}`}>
+      {/* Lag-knap og signatur i ét.
+          Den staar nederst til venstre, hvor Leaflet ikke selv har kontroller
+          (zoom oeverst til venstre, attribution nederst til hoejre), og den
+          vises kun naar der ER betalte steder at slaa fra. En kontakt til et
+          tomt lag er stoej.
+          Knappen forklarer ogsaa symbolet: en bruger der ser en guld-pin for
+          foerste gang skal kunne finde ud af hvad den betyder uden at klikke
+          paa den. z-[400] lagger den over Leaflets paner (max 200-700). */}
+      {!embedMode && (stays?.length ?? 0) > 0 && (
+        <div className="pointer-events-none absolute bottom-3 left-3 z-[400]">
+          <button
+            type="button"
+            aria-pressed={visStays}
+            onClick={() => setVisStays((v) => !v)}
+            className="pointer-events-auto flex items-center gap-2 rounded-lg border border-primary/15 bg-white/95 px-2.5 py-1.5 text-xs font-medium text-primary shadow-sm outline-none backdrop-blur hover:bg-white focus-visible:ring-2 focus-visible:ring-accent"
+          >
+            <span
+              aria-hidden
+              className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border"
+              style={{
+                background: visStays ? PIN_FILL : "transparent",
+                borderColor: visStays ? PIN_BORDER : "rgba(44,62,80,.3)",
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24">
+                <path d={stayGlyph("campingplads")}
+                  fill={visStays ? PIN_GLYPH : "rgba(44,62,80,.35)"} />
+              </svg>
+            </span>
+            <span className={visStays ? "" : "text-primary/70 line-through decoration-primary/40"}>
+              Betalt overnatning
+            </span>
+            <span className="tabular-nums text-primary/70">{stays?.length ?? 0}</span>
+          </button>
+        </div>
+      )}
       <MapInner
         sheltersWithCoords={withCoords}
         stays={stays}
+        visStays={visStays}
         onBoundsChange={onBoundsChange}
         initialCenter={initialCenter}
         initialZoom={initialZoom}
