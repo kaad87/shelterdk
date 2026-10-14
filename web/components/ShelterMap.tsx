@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { MapShelter } from "@/lib/map-shelter";
 import type { StayPin } from "@/lib/nature-stays";
 import { stayLabel, stayMarkerHtml, stayGlyph, PIN_FILL, PIN_BORDER, PIN_GLYPH } from "@/lib/stay-types";
@@ -425,10 +425,11 @@ const MapInner = dynamic(
                       className="w-full"
                     />
                   </div>
-                  {/* Maerkningen staar UNDER knappen: den skal kunne laeses,
-                      uden at konkurrere med navnet om det foerste blik. */}
+                  {/* "Annonce" bliver staaende: et affiliate-link skal markeres
+                      som reklame, og det er sitets egen konvention i AdInFeed og
+                      AdBanner. Saetningen om kommission er derimod taget ud. */}
                   <p className="mt-1.5 text-[11px] leading-snug text-primary/75">
-                    Annonce · vi tjener en kommission, hvis du booker
+                    Annonce
                   </p>
                 </div>
               </Popup>
@@ -443,7 +444,17 @@ const MapInner = dynamic(
 
 interface ShelterMapProps {
   shelters: MapShelter[];
-  /** Premium guld-markører for betalte naturophold (glamping). Default: ingen. */
+  /**
+   * Betalte overnatningssteder som egne markoerer.
+   *
+   * Udelades den, henter kortet dem selv fra /api/map/stays. Det er med
+   * vilje: tidligere skulle hver kortside sende dem med, og af tolv sider
+   * huskede én det. En oplysning der skal videregives manuelt tolv steder
+   * bliver glemt elleve.
+   *
+   * Send en tom liste for bevidst at slaa laget fra, fx paa embed-kortet,
+   * der ligger paa partneres egne sites.
+   */
   stays?: StayPin[];
   className?: string;
   /** Kaldes når brugeren pan/zoomer – bruges til at hente shelters i det synlige område. */
@@ -478,6 +489,20 @@ export function ShelterMap({
   // fravaelge det. Valget holdes i komponenten og ikke i localStorage, saa et
   // fravalg paa én side ikke tavst skjuler laget alle andre steder.
   const [visStays, setVisStays] = useState(true);
+
+  // Hentes kun naar siden ikke selv har dem. Forsiden henter dem serverside
+  // og faar derfor pins med i foerste maling; de oevrige sider henter her.
+  const [hentedeStays, setHentedeStays] = useState<StayPin[] | null>(null);
+  useEffect(() => {
+    if (stays !== undefined) return;
+    let afbrudt = false;
+    fetch("/api/map/stays")
+      .then((r) => (r.ok ? r.json() : { stays: [] }))
+      .then((d) => { if (!afbrudt) setHentedeStays((d?.stays ?? []) as StayPin[]); })
+      .catch(() => { if (!afbrudt) setHentedeStays([]); });
+    return () => { afbrudt = true; };
+  }, [stays]);
+  const visteStays = stays ?? hentedeStays ?? undefined;
   const regionView = initialRegion ? REGION_CENTER_ZOOM[initialRegion] : undefined;
   const toDisplay = initialRegion?.trim()
     ? shelters.filter((s) => (s.region || "").trim() === initialRegion.trim())
@@ -523,7 +548,7 @@ export function ShelterMap({
           Knappen forklarer ogsaa symbolet: en bruger der ser en guld-pin for
           foerste gang skal kunne finde ud af hvad den betyder uden at klikke
           paa den. z-[400] lagger den over Leaflets paner (max 200-700). */}
-      {!embedMode && (stays?.length ?? 0) > 0 && (
+      {!embedMode && (visteStays?.length ?? 0) > 0 && (
         <div className="pointer-events-none absolute bottom-3 left-3 z-[400]">
           <button
             type="button"
@@ -547,13 +572,13 @@ export function ShelterMap({
             <span className={visStays ? "" : "text-primary/70 line-through decoration-primary/40"}>
               Betalt overnatning
             </span>
-            <span className="tabular-nums text-primary/70">{stays?.length ?? 0}</span>
+            <span className="tabular-nums text-primary/70">{visteStays?.length ?? 0}</span>
           </button>
         </div>
       )}
       <MapInner
         sheltersWithCoords={withCoords}
-        stays={stays}
+        stays={visteStays}
         visStays={visStays}
         onBoundsChange={onBoundsChange}
         initialCenter={initialCenter}

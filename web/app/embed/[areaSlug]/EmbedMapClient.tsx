@@ -25,7 +25,11 @@ export function EmbedMapClient({ shelters, areaName }: EmbedMapClientProps) {
 
   return (
     <div className="w-full h-full min-h-screen" aria-label={`Shelter-kort: ${areaName}`}>
+      {/* stays={[]} er bevidst, ikke en udeladelse: embed-kortet ligger paa
+          partneres egne sites, og at laegge vores annoncer dér er en aftale de
+          skal sige ja til. Udelades proppen, henter kortet dem selv. */}
       <ShelterMap
+        stays={[]}
         shelters={shelters}
         className="w-full h-full min-h-screen"
         embedMode

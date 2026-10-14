@@ -90,6 +90,10 @@ def slaa_adresse_op(adresse: str) -> tuple[float, float, str] | None:
     import urllib.request
 
     adresse = adresse.strip(" ,;|-")
+    # Et landenavn der allerede staar i adressen maa ikke komme to gange:
+    # "Hurupvej 16, 7760 Hurup, Danmark, Danmark" giver nul traeffere, mens
+    # samme adresse med ét landenavn rammer husnummeret.
+    adresse = re.sub(r",?\s*(danmark|denmark|dk)\s*$", "", adresse, flags=re.I).strip(" ,;|-")
     if len(adresse) < 5:
         return None
 
