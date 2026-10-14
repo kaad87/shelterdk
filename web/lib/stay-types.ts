@@ -70,17 +70,43 @@ export const STAY_TYPES: StayType[] = [
 ];
 
 /**
- * De kuraterede typer tabellen oprindeligt blev bygget til. De deler glyf med
- * den naermeste af de fire ovenfor, saa et gammelt sted ikke bliver ikonloest.
+ * Et shelter set fra siden: lav aabning mod venstre, hoej bagvaeg mod hoejre.
+ *
+ * Har sin egen form, fordi den er sitets emne. Den laante foer hus-glyffen,
+ * og da de foerste rigtige steder blev publiceret, viste det sig at fire af
+ * fem typer dermed saa ens ud paa kortet: luksus-shelter, tiny house,
+ * naturhytte og "andet" var samme hus. Typeopdelingen tjente OSM-ordforrådet,
+ * ikke de steder der faktisk ligger i basen.
  */
-const LEGACY: Record<string, { label: string; glyphFrom: string }> = {
-  glamping_telt: { label: "Glampingtelt", glyphFrom: "glamping" },
-  naturhytte: { label: "Naturhytte", glyphFrom: "hytte" },
-  dome: { label: "Dome", glyphFrom: "glamping" },
-  traehus: { label: "Træhus", glyphFrom: "hytte" },
-  tiny_house: { label: "Tiny house", glyphFrom: "hytte" },
-  luksus_shelter: { label: "Luksus-shelter", glyphFrom: "hytte" },
-  andet: { label: "Naturophold", glyphFrom: "hytte" },
+const SHELTER_GLYF = "M2 20 L2 15 L21 4 L21 20 Z";
+
+/** Neutral form til det der ikke passer i en kasse. */
+const ANDET_GLYF = "M4 7 h16 a1 1 0 0 1 1 1 v8 a1 1 0 0 1 -1 1 H4 a1 1 0 0 1 -1 -1 V8 a1 1 0 0 1 1 -1 Z";
+
+/**
+ * De kuraterede typer tabellen oprindeligt blev bygget til.
+ *
+ * Nogle deler glyf med vilje: en naturhytte, et traehus og et tiny house er
+ * alle en lille bygning med tag, og fire hus-varianter ville vaere fire
+ * forskelle ingen kan se ved 28 px. Shelteret har derimod sin egen.
+ */
+const LEGACY: Record<string, { label: string; glyph: string }> = {
+  glamping_telt: { label: "Glampingtelt", glyph: "" },
+  naturhytte: { label: "Naturhytte", glyph: "" },
+  dome: { label: "Dome", glyph: "" },
+  traehus: { label: "Træhus", glyph: "" },
+  tiny_house: { label: "Tiny house", glyph: "" },
+  luksus_shelter: { label: "Luksus-shelter", glyph: SHELTER_GLYF },
+  andet: { label: "Naturophold", glyph: ANDET_GLYF },
+};
+
+/** Hvilken af de fire hovedglyffer en kurateret type laaner, naar den ikke har sin egen. */
+const LEGACY_LAANER: Record<string, string> = {
+  glamping_telt: "glamping",
+  dome: "glamping",
+  naturhytte: "hytte",
+  traehus: "hytte",
+  tiny_house: "hytte",
 };
 
 const BY_KEY = new Map(STAY_TYPES.map((t) => [t.key, t]));
@@ -95,7 +121,9 @@ export function stayGlyph(key: string): string {
   const direct = BY_KEY.get(key);
   if (direct) return direct.glyph;
   const legacy = LEGACY[key];
-  if (legacy) return BY_KEY.get(legacy.glyphFrom)!.glyph;
+  if (legacy?.glyph) return legacy.glyph;
+  const laant = LEGACY_LAANER[key];
+  if (laant) return BY_KEY.get(laant)!.glyph;
   return BY_KEY.get("campingplads")!.glyph;
 }
 

@@ -64,3 +64,34 @@ describe("stayMarkerHtml", () => {
     expect(stayMarkerHtml("glamping")).toContain('aria-hidden="true"');
   });
 });
+
+describe("glyffer for de typer der faktisk ligger i basen", () => {
+  it("giver shelteret sin egen form, ikke husets", () => {
+    // Da de foerste rigtige steder blev publiceret, saa fire af fem typer ens
+    // ud paa kortet: luksus-shelter, tiny house, naturhytte og "andet" delte
+    // alle hus-glyffen. Typeopdelingen tjente OSM-ordforraadet, ikke de steder
+    // der faktisk ligger i basen.
+    expect(stayGlyph("luksus_shelter")).not.toBe(stayGlyph("hytte"));
+    expect(stayGlyph("luksus_shelter")).not.toBe(stayGlyph("campingplads"));
+    expect(stayGlyph("andet")).not.toBe(stayGlyph("hytte"));
+  });
+
+  it("samler de smaa bygninger med vilje", () => {
+    // En naturhytte, et traehus og et tiny house er alle en lille bygning med
+    // tag. Fire hus-varianter ville vaere fire forskelle ingen kan se ved 28 px.
+    expect(stayGlyph("naturhytte")).toBe(stayGlyph("hytte"));
+    expect(stayGlyph("tiny_house")).toBe(stayGlyph("hytte"));
+    expect(stayGlyph("traehus")).toBe(stayGlyph("hytte"));
+  });
+
+  it("samler glamping-varianterne", () => {
+    expect(stayGlyph("glamping_telt")).toBe(stayGlyph("glamping"));
+    expect(stayGlyph("dome")).toBe(stayGlyph("glamping"));
+  });
+
+  it("giver de ti typer seks forskellige former", () => {
+    const typer = ["campingplads", "autocamperplads", "hytte", "glamping",
+      "luksus_shelter", "tiny_house", "naturhytte", "andet", "glamping_telt", "dome"];
+    expect(new Set(typer.map(stayGlyph)).size).toBe(6);
+  });
+});
