@@ -12,9 +12,14 @@ export const HUB_GROUPS: { group: string; categories: string[] }[] = [
   { group: "Telte & ly", categories: ["telt", "tarp"] },
   { group: "Belysning", categories: ["pandelampe", "lygte"] },
   { group: "Vand & mad", categories: ["vandfilter", "drikkedunk", "kogeudstyr", "stormkoekken", "frysetorret"] },
-  { group: "Værktøj & udstyr", categories: ["kniv", "multitool", "rygsaek", "kikkert", "kompas", "drybag", "optaending", "elektronik"] },
+  { group: "Værktøj & udstyr", categories: ["kniv", "multitool", "rygsaek", "kikkert", "kompas", "drybag", "optaending", "elektronik", "vandrestav"] },
   { group: "Lejr & komfort", categories: ["campingstol", "campingmobler", "myggenet", "siddeunderlag"] },
-  { group: "Tøj & lag-på-lag", categories: ["uldundertoj", "regntoj", "sokker", "fodtoj", "gamacher", "handsker", "hue"] },
+  // Rækkefølgen her er lag-på-lag udefra ind, så gruppen kan læses: baselag,
+  // mellemlag, yderlag, ben, fødder, hoved og hænder. Den styrer ikke hvordan
+  // guiderne vises (det gør forespørgslen), men den gør hullerne synlige:
+  // fleece, dunjakke, vandrebukser, vandresandal og solhat manglede alle fem, og
+  // en kategori uden gruppe havner i hub-sidens "Andet" uden søskende-links.
+  { group: "Tøj & lag-på-lag", categories: ["uldundertoj", "fleece", "dunjakke", "regntoj", "vandrebukser", "sokker", "fodtoj", "vandresandal", "gamacher", "handsker", "hue", "solhat"] },
   { group: "Sikkerhed & hygiejne", categories: ["foerstehjaelp", "hygiejne"] },
 ];
 /**

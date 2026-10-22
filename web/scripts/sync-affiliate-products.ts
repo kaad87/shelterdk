@@ -15,12 +15,56 @@ import {
   type NormalizedProduct,
   type Retailer,
 } from "../lib/parseAffiliateFeed";
+import { FEEDS, feedUrl, type FeedDef } from "../lib/affiliate-feeds";
+import { kategoriFor, prisOk } from "../lib/feed-kategori-filter";
+import { vaelgUdvalg, basisNavn } from "../lib/feed-udvalg";
 
-const FEEDS: { retailer: Retailer; envVar: string }[] = [
-  { retailer: "backpackerlife", envVar: "PARTNER_ADS_BACKPACKERLIFE_URL" },
-  { retailer: "outdoortid", envVar: "PARTNER_ADS_OUTDOORTID_URL" },
-  { retailer: "outmore", envVar: "PARTNER_ADS_OUTMORE_URL" },
-];
+/**
+ * Feedets adresse.
+ *
+ * Env-variablen har forrang, saa de tre oprindelige feeds koerer videre paa
+ * praecis den adresse Netlify allerede har, ogsaa hvis den afviger fra den
+ * sammensatte. Uden env falder den tilbage paa banner- og feed-id i
+ * lib/affiliate-feeds.ts, saa et nyt feed er en linje i en diff og ikke en
+ * indstilling, nogen skal huske at saette i to miljoeer.
+ */
+function urlFor(f: FeedDef): string | null {
+  const fraEnv = process.env[`PARTNER_ADS_${f.retailer.toUpperCase()}_URL`];
+  if (fraEnv) return fraEnv;
+  return f.bannerId && f.feedId ? feedUrl(f) : null;
+}
+
+/** ShelterDK-kategorien for en vare i et filtreret feed, eller null. */
+function kategorien(p: NormalizedProduct): string | null {
+  const k = kategoriFor(p.product_name, p.category_raw);
+  return k && prisOk(k, p.price) ? k : null;
+}
+
+/**
+ * Id'er vi allerede har gemt for en forhandler.
+ *
+ * Bruges til at holde udvalget stabilt: en vare, vi allerede har, beholder sin
+ * plads under loftet, saa en guide aldrig kommer til at pege paa en raekke der
+ * er forsvundet. Sides igennem, fordi Supabase svarer med hoejst 1.000 raekker.
+ */
+async function hentGemteIds(
+  supabase: SupabaseClient,
+  retailer: Retailer
+): Promise<Set<string>> {
+  const ud = new Set<string>();
+  const SIDE = 1000;
+  for (let fra = 0; ; fra += SIDE) {
+    const { data, error } = await supabase
+      .from("affiliate_products")
+      .select("id")
+      .eq("retailer", retailer)
+      .range(fra, fra + SIDE - 1);
+    if (error) throw new Error(`Kunne ikke laese gemte id'er: ${error.message}`);
+    const side = (data ?? []) as { id: string }[];
+    for (const r of side) ud.add(r.id);
+    if (side.length < SIDE) return ud;
+  }
+}
 
 interface SyncResult {
   retailer: Retailer;
@@ -98,38 +142,73 @@ async function upsertCategoryMappings(
 
 async function syncRetailer(
   supabase: SupabaseClient,
-  retailer: Retailer,
+  feed: FeedDef,
   url: string
 ): Promise<SyncResult> {
+  const retailer = feed.retailer as Retailer;
   console.log(`[${retailer}] fetching ${url}`);
   const buffer = await fetchFeed(url);
   console.log(`[${retailer}] parsing ${buffer.length} bytes`);
   const products = parseFeedXml(buffer, retailer);
   console.log(`[${retailer}] parsed ${products.length} products`);
 
-  const mappingLookup = await upsertCategoryMappings(supabase, products);
-
   // Deduplicate by id — some feeds contain the same product multiple times
   const seen = new Map<string, NormalizedProduct>();
   for (const p of products) seen.set(p.id, p);
-  const unique = [...seen.values()];
+  let unique = [...seen.values()];
   if (unique.length < products.length) {
     console.log(`[${retailer}] deduplicated ${products.length} → ${unique.length}`);
   }
+
+  // Et feed med loft importeres ikke helt: kun de kategorier vi har brug for,
+  // og kun et stabilt udvalg inden for hver. Udvalget laegges FOER
+  // kategorikortlaegningen, saa et feed med 49.556 varer ikke registrerer
+  // tusindvis af raa kategorinavne, vi aldrig kommer til at bruge.
+  if (feed.loftPrKategori != null) {
+    const gemte = await hentGemteIds(supabase, retailer);
+    const { valgte, prKategori } = vaelgUdvalg(
+      unique,
+      kategorien,
+      gemte,
+      feed.loftPrKategori
+    );
+    const fordeling = [...prKategori]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([k, n]) => `${k} ${n}`)
+      .join(", ");
+    console.log(
+      `[${retailer}] udvalg ${unique.length} → ${valgte.length} (${fordeling || "ingen"})`
+    );
+    unique = valgte;
+  }
+
+  const mappingLookup = await upsertCategoryMappings(supabase, unique);
 
   const now = new Date().toISOString();
   const rows = unique.map((p) => {
     const key = p.category_raw ? `${p.retailer}::${p.category_raw}` : null;
     const mapping = key ? mappingLookup.get(key) : null;
+    // I et filtreret feed kender vi kategorien fra filteret, og den er bedre
+    // end den manuelle kortlaegning: den er allerede ShelterDK-kategorien, saa
+    // varerne kan findes i admin og bruges i en guide fra foerste synk.
+    const kat = feed.loftPrKategori != null ? kategorien(p) : null;
+    // Navnet uden farve og stoerrelse i de filtrerede feeds.
+    //
+    // Outdoornu skriver "Fjällräven Expedition Pack Down Jacket Men-navy-2XL",
+    // men vareurl peger paa produktsiden, hvor man selv vaelger farve og
+    // stoerrelse. Navnet var derfor baade grimt paa et produktkort og
+    // misvisende om hvad linket faerer til. De tre oprindelige feeds roeres
+    // ikke: deres navne staar i live guider i forvejen.
+    const navn = feed.loftPrKategori != null ? basisNavn(p.product_name) : p.product_name;
     return {
       id: p.id,
       retailer: p.retailer,
       retailer_product_id: p.retailer_product_id,
       brand: p.brand,
-      product_name: p.product_name,
+      product_name: navn,
       description: p.description,
       category_raw: p.category_raw,
-      category_mapped: mapping?.mapped ?? null,
+      category_mapped: kat ?? mapping?.mapped ?? null,
       price: p.price,
       price_original: p.price_original,
       discount_pct: p.discount_pct,
@@ -151,7 +230,9 @@ async function syncRetailer(
   for (let i = 0; i < rows.length; i += BATCH) {
     const batch = rows.slice(i, i + BATCH);
     let lastError: string | null = null;
+    let brugteForsoeg = 0;
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      brugteForsoeg = attempt;
       const { error } = await supabase
         .from("affiliate_products")
         .upsert(batch, { onConflict: "id" });
@@ -160,19 +241,33 @@ async function syncRetailer(
         break;
       }
       lastError = error.message;
+      // Klasse 23 er brud paa en constraint: samme data giver samme fejl, saa
+      // der er intet at vinde ved at proeve igen. Der brydes ud, og ikke bare
+      // springes ventetiden over: en afvist raekke blev ellers sendt til
+      // databasen fire gange for at faa det samme svar fire gange.
+      if (typeof error.code === "string" && error.code.startsWith("23")) break;
       if (attempt < MAX_ATTEMPTS) {
         const backoffMs = 1000 * 2 ** (attempt - 1); // 1s, 2s, 4s
         console.warn(`[${retailer}] batch ${i} fejl (forsøg ${attempt}/${MAX_ATTEMPTS}): ${error.message} — prøver igen om ${backoffMs}ms`);
         await new Promise((r) => setTimeout(r, backoffMs));
       }
     }
-    if (lastError) throw new Error(`Upsert failed (batch ${i}) efter ${MAX_ATTEMPTS} forsøg: ${lastError}`);
+    // Det faktiske antal forsoeg, ikke MAX_ATTEMPTS. Beskeden sagde "efter 4
+    // forsoeg" ogsaa naar der kun havde vaeret ét, og sendte fejlsoegningen
+    // efter et netvaerksproblem i stedet for efter den constraint, der afviste.
+    if (lastError) {
+      throw new Error(`Upsert failed (batch ${i}) efter ${brugteForsoeg} forsøg: ${lastError}`);
+    }
     console.log(`[${retailer}] upserted ${i + batch.length}/${rows.length}`);
   }
 
   return {
     retailer,
-    total: products.length,
+    // Hvad der blev GEMT, ikke hvad feedet indeholdt. De to filtrerede feeds
+    // har 82.000 varer og gemmer 125; med products.length ville
+    // affiliate_sync_runs.products_total melde 95.000 produkter, som ikke
+    // findes i tabellen, og admin-dashboardet viser netop det tal.
+    total: rows.length,
     inserted: 0, // Supabase upsert doesn't distinguish; could track via returning later
     updated: 0,
   };
@@ -292,19 +387,44 @@ async function bumpChangedGuides(
   }
 }
 
-async function markStaleProducts(supabase: SupabaseClient) {
+/**
+ * Afmeld varer vi ikke har set i feedet i syv dage.
+ *
+ * @param retailers de forhandlere der faktisk blev synket. Tom = alle.
+ *
+ * Afgraensningen er ikke pynt. Reglen "ikke set i syv dage" er kun sand for et
+ * feed vi HAR hentet, og med forhandler-filteret kan en koersel nu daekke to af
+ * fem feeds. Uden afgraensningen ville `sync-products prooutdoor` syv dage i
+ * traek afmelde hele kataloget fra de tre feeds, den aldrig har rørt, og uden
+ * en fejl undervejs.
+ *
+ * En fuld koersel sender en tom liste og fejer bredt, saa et feed der er taget
+ * ud af FEEDS ogsaa bliver afmeldt frem for at staa som paa lager for altid.
+ */
+async function markStaleProducts(
+  supabase: SupabaseClient,
+  retailers: string[] = []
+) {
   const sevenDaysAgo = new Date(
     Date.now() - 7 * 24 * 60 * 60 * 1000
   ).toISOString();
-  const { error } = await supabase
+  let q = supabase
     .from("affiliate_products")
     .update({ in_stock: false })
     .lt("last_seen_at", sevenDaysAgo)
     .eq("in_stock", true);
+  if (retailers.length) q = q.in("retailer", retailers);
+  const { error } = await q;
   if (error) throw new Error(`Mark-stale failed: ${error.message}`);
 }
 
-export async function runSync(): Promise<void> {
+/**
+ * @param kun  koer kun disse forhandlere. Tom = alle.
+ *
+ * Findes for at kunne tage et enkelt feed ind uden at hente de fire andre.
+ * Det nattelige job kalder uden argumenter og er uaendret.
+ */
+export async function runSync(kun: string[] = []): Promise<void> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!supabaseUrl || !supabaseKey) {
@@ -328,17 +448,28 @@ export async function runSync(): Promise<void> {
     // Snapshot guide-produkternes pris/lager FØR feeds opdaterer dem.
     const guideStateBefore = await captureGuideProductState(supabase);
 
-    for (const { retailer, envVar } of FEEDS) {
-      const url = process.env[envVar];
+    const valgteFeeds = kun.length
+      ? FEEDS.filter((f) => kun.includes(f.retailer))
+      : FEEDS;
+    if (kun.length && valgteFeeds.length !== kun.length) {
+      const kendte = FEEDS.map((f) => f.retailer).join(", ");
+      throw new Error(`Ukendt forhandler i ${kun.join(", ")}. Kendte: ${kendte}`);
+    }
+
+    for (const feed of valgteFeeds) {
+      const url = urlFor(feed);
       if (!url) {
-        console.warn(`[${retailer}] skipping — ${envVar} not set`);
+        console.warn(`[${feed.retailer}] springes over — ingen adresse`);
         continue;
       }
-      const result = await syncRetailer(supabase, retailer, url);
+      const result = await syncRetailer(supabase, feed, url);
       total += result.total;
     }
 
-    await markStaleProducts(supabase);
+    // `kun` og ikke valgteFeeds: en fuld koersel skal feje bredt. Fjernes et
+    // feed fra FEEDS, er dets varer ikke laengere i valgteFeeds, og de ville
+    // saa blive staaende som "paa lager" for altid med doede links i guiderne.
+    await markStaleProducts(supabase, kun);
 
     // Bump kun guider hvis et produkts pris/lager reelt ændrede sig.
     await bumpChangedGuides(supabase, guideStateBefore);
@@ -380,7 +511,8 @@ if (require.main === module) {
   } catch {
     /* dotenv not available — production env vars assumed */
   }
-  runSync().catch((err) => {
+  const kun = process.argv.slice(2).filter((a) => !a.startsWith("-"));
+  runSync(kun).catch((err) => {
     console.error(err);
     process.exit(1);
   });

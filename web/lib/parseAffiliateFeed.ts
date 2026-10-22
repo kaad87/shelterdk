@@ -1,7 +1,15 @@
 import { XMLParser } from "fast-xml-parser";
 import iconv from "iconv-lite";
+import { FEEDS } from "@/lib/affiliate-feeds";
 
-export type Retailer = "outmore" | "backpackerlife" | "outdoortid";
+/**
+ * Forhandler-noeglen, udledt af FEEDS frem for skrevet som en union.
+ *
+ * Var tre literaler skrevet i haanden. Med flere feeds skulle den samme liste
+ * vedligeholdes to steder, og en forhandler kunne komme i feed-listen uden at
+ * typen kendte den. Nu kan de ikke glide fra hinanden.
+ */
+export type Retailer = (typeof FEEDS)[number]["retailer"];
 
 export interface NormalizedProduct {
   id: string;
@@ -130,11 +138,30 @@ export function normalizeProduct(
  * Handles iso-8859-1 decoding (all three feeds declare iso-8859-1 encoding).
  * Skips malformed products silently.
  */
+/**
+ * Retter dobbeltkodede tegn i et ellers korrekt latin1-feed.
+ *
+ * Pro Outdoors feed erklaerer iso-8859-1 og ER iso-8859-1: 86.935 raa 0xE6 for
+ * "ae" og nul UTF-8-sekvenser for de danske bogstaver. Men gradtegnet er
+ * kommet igennem leverandoerens system to gange og staar 1.442 steder som de
+ * to latin1-tegn "Â°". Det er ikke kosmetik: det er temperaturangivelserne i
+ * beskrivelserne ("-10Â°C") og brandnavnet 66°North.
+ *
+ * Reparationen laeser kun de sekvenser der kan VAERE UTF-8 for et tegn i
+ * 0x80-0xFF, altsaa "Â" eller "Ã" fulgt af et tegn i 0x80-0xBF. Den kombination
+ * findes ikke i dansk eller engelsk produkttekst, saa et rent feed roeres ikke.
+ */
+function retDobbeltkodning(s: string): string {
+  return s.replace(/[\u00c2-\u00c3][\u0080-\u00bf]/g, (m) =>
+    Buffer.from(m, "latin1").toString("utf8")
+  );
+}
+
 export function parseFeedXml(
   buffer: Buffer,
   retailer: Retailer
 ): NormalizedProduct[] {
-  const xmlString = iconv.decode(buffer, "iso-8859-1");
+  const xmlString = retDobbeltkodning(iconv.decode(buffer, "iso-8859-1"));
 
   const parser = new XMLParser({
     ignoreAttributes: true,
