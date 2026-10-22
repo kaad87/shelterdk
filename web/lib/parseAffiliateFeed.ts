@@ -116,7 +116,9 @@ export function normalizeProduct(
     brand: raw.brand != null ? String(raw.brand).trim() || null : null,
     product_name,
     description:
-      raw.beskrivelse != null ? String(raw.beskrivelse).trim() || null : null,
+      raw.beskrivelse != null
+        ? fjernShortcodes(String(raw.beskrivelse).trim()) || null
+        : null,
     category_raw:
       raw.kategorinavn != null
         ? String(raw.kategorinavn).trim() || null
@@ -139,22 +141,53 @@ export function normalizeProduct(
  * Skips malformed products silently.
  */
 /**
- * Retter dobbeltkodede tegn i et ellers korrekt latin1-feed.
+ * UTF-8 der er blevet laest som latin1, laest tilbage til det den var.
  *
- * Pro Outdoors feed erklaerer iso-8859-1 og ER iso-8859-1: 86.935 raa 0xE6 for
- * "ae" og nul UTF-8-sekvenser for de danske bogstaver. Men gradtegnet er
- * kommet igennem leverandoerens system to gange og staar 1.442 steder som de
- * to latin1-tegn "Â°". Det er ikke kosmetik: det er temperaturangivelserne i
- * beskrivelserne ("-10Â°C") og brandnavnet 66°North.
+ * Feedene erklaerer iso-8859-1 og ER iso-8859-1 for de danske bogstaver:
+ * 86.935 raa 0xE6 for "ae" og nul UTF-8-sekvenser for dem. Men enkelte tegn er
+ * kommet igennem leverandoerernes systemer to gange og staar nu som de latin1-
+ * tegn, UTF-8-bytene svarer til. Maalt paa kataloget: 236 produkter med
+ * tobyte-sekvenser ("Â°" for grad, "Â®" for registreret) og 78 med trebyte
+ * ("â\u0084¢" for TM, "â\u0080\u0099" for apostrof).
  *
- * Reparationen laeser kun de sekvenser der kan VAERE UTF-8 for et tegn i
- * 0x80-0xFF, altsaa "Â" eller "Ã" fulgt af et tegn i 0x80-0xBF. Den kombination
- * findes ikke i dansk eller engelsk produkttekst, saa et rent feed roeres ikke.
+ * Det er ikke kosmetik. Det er temperaturangivelser i soveposebeskrivelser
+ * ("-15Â°C"), brandnavnet 66°North og varemaerker i produktnavne.
+ *
+ * Moensteret foelger UTF-8's egne regler for hvor mange foelgebytes et
+ * ledebyte har, saa der ikke spises et tegn for meget. Og resultatet forkastes,
+ * hvis det indeholder U+FFFD: var sekvensen ikke rigtig UTF-8, var den aegte
+ * latin1-tekst, og saa skal den staa som den gjorde.
+ *
+ * Foerste udgave kendte kun tobyte-sekvenser, saa "â\u0084¢" slap igennem og
+ * stod stadig som tre tegn paa produktkortet.
  */
+const MOJIBAKE =
+  /[\u00c2-\u00df][\u0080-\u00bf]|[\u00e0-\u00ef][\u0080-\u00bf]{2}|[\u00f0-\u00f4][\u0080-\u00bf]{3}/g;
+
 function retDobbeltkodning(s: string): string {
-  return s.replace(/[\u00c2-\u00c3][\u0080-\u00bf]/g, (m) =>
-    Buffer.from(m, "latin1").toString("utf8")
-  );
+  return s.replace(MOJIBAKE, (m) => {
+    const ud = Buffer.from(m, "latin1").toString("utf8");
+    return ud.includes("\ufffd") ? m : ud;
+  });
+}
+
+/**
+ * Fjerner WordPress-shortcodes fra en beskrivelse.
+ *
+ * Backpackerlifes feed sender beskrivelsen som den staar i deres CMS, og 392
+ * produkter begynder med [kad_youtube url="..."]. Den blev vist raa paa
+ * koebsguiderne: /bedste/stormkoekken havde teksten "[kad_youtube url=..."
+ * staaende midt i et produktkort.
+ *
+ * Reglen kraever et lighedstegn eller en afsluttende skraastreg i parentesen,
+ * saa den rammer shortcodes og ikke almindelig tekst. Der er nul andre
+ * firkantparenteser i de 17.047 beskrivelser, men reglen skal ikke kunne spise
+ * en "[2 stk]" den dag en forhandler skriver saadan.
+ */
+const SHORTCODE = /\[\/?[a-z][\w-]*(?:[^\]]*=[^\]]*)?\]/gi;
+
+function fjernShortcodes(s: string): string {
+  return s.replace(SHORTCODE, (m) => (m.includes("=") || m.startsWith("[/") ? "" : m)).trim();
 }
 
 export function parseFeedXml(

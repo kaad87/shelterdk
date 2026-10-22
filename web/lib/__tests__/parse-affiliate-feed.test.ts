@@ -55,6 +55,45 @@ describe("parseFeedXml", () => {
     expect(p.description).toBe("Græs og ål");
   });
 
+  it("retter trebyte-sekvenser, ikke kun tobyte", () => {
+    // 34 produkter havde TM som tre tegn og 31 havde apostrof. Foerste udgave
+    // af reparationen kendte kun tobyte-sekvenser og lod dem staa.
+    const raa = Buffer.from(
+      `<?xml version="1.0" encoding="iso-8859-1"?><produkter><produkt>` +
+        `<produktid>1</produktid><produktnavn>Columbia Omni-Shade\u00e2\u0084\u00a2 Kasket</produktnavn>` +
+        `<beskrivelse>Snugpaks \u00e2\u0080\u009cSleeper Lite\u00e2\u0080\u009d er en mumiepose, og den er -5\u00c2\u00b0C.</beskrivelse>` +
+        `<billedurl>https://example.com/b.jpg</billedurl>` +
+        `<vareurl>https://example.com/v</vareurl>` +
+        `<nypris>499.00</nypris><lagerantal>5</lagerantal>` +
+        `</produkt></produkter>`,
+      "latin1"
+    );
+    const [p] = parseFeedXml(raa, "backpackerlife");
+    expect(p.product_name).toBe("Columbia Omni-Shade\u2122 Kasket");
+    expect(p.description).toBe("Snugpaks \u201cSleeper Lite\u201d er en mumiepose, og den er -5\u00b0C.");
+  });
+
+  it("fjerner WordPress-shortcodes fra beskrivelsen", () => {
+    // 392 produkter begynder med [kad_youtube url="..."], og den stod raa paa
+    // /bedste/stormkoekken midt i et produktkort.
+    const [p] = parseFeedXml(
+      feed({
+        ...BASIS,
+        beskrivelse: '[kad_youtube url="https://youtu.be/abc" width=560 height=315] Treklifes mumiepose er let.',
+      }),
+      "backpackerlife"
+    );
+    expect(p.description).toBe("Treklifes mumiepose er let.");
+  });
+
+  it("lader almindelig tekst i firkantparentes staa", () => {
+    const [p] = parseFeedXml(
+      feed({ ...BASIS, beskrivelse: "Sovepose [2 stk] i pakken. Str. [XL] findes." }),
+      "backpackerlife"
+    );
+    expect(p.description).toBe("Sovepose [2 stk] i pakken. Str. [XL] findes.");
+  });
+
   it("springer en vare uden pris eller billede over", () => {
     expect(parseFeedXml(feed({ ...BASIS, nypris: "" }), "prooutdoor")).toHaveLength(0);
     expect(parseFeedXml(feed({ ...BASIS, billedurl: "" }), "prooutdoor")).toHaveLength(0);
