@@ -7,6 +7,7 @@ import { isStructuredBookable } from "@shared/lib/shelter-detail";
 import { findPostnummerSuggestions } from "@/lib/postnummer";
 import { haversineKm } from "@/lib/haversine";
 import { SEARCH_SYNONYMS } from "@/lib/search-synonyms";
+import { POSTBY_SYNONYMER } from "@/lib/generated/postby-synonymer";
 import { expandDanishVariants } from "@/lib/search-normalize";
 
 /** Sorter shelters: featured boost først, derefter billede, derefter score, derefter titel. */
@@ -99,6 +100,21 @@ function matchesSearchAnchor(shelter: Shelter, term: string): boolean {
   const kommune = normalizeGeoSearchTerm(shelter.kommune);
   const title = normalizeGeoSearchTerm(shelter.title);
   return place === term || kommune === term || title.includes(term);
+}
+
+/**
+ * Byer med shelters i naerheden af en postby der ikke selv har nogen.
+ *
+ * Soeger man "Hurup" findes der nul shelters i byen, men 48 inden for 25 km,
+ * det naermeste 4,5 km vaek. Uden det her er svaret tomt.
+ *
+ * Kun postbyer der i forvejen ikke rammer noget er med i tabellen, saa en
+ * soegning der virker kan ikke aendre adfaerd. Og der tilfoejes place.eq og
+ * ikke kommune.eq: en kommune som Thisted ville traekke shelters 40 km vaek
+ * med ind, mens bynavnene er de faktiske naboer, naermeste foerst.
+ */
+function postbyNaboer(term: string): string[] {
+  return POSTBY_SYNONYMER[term] ?? [];
 }
 
 export function prunePlaceOutliersForExactQuery(
@@ -408,6 +424,7 @@ export async function getSheltersPage(
       for (const v of variants) {
         const synonymKommuner = SEARCH_SYNONYMS[v];
         if (synonymKommuner) for (const k of synonymKommuner) orPartsArr.push(`kommune.eq.${k}`);
+        for (const by of postbyNaboer(v)) orPartsArr.push(`place.eq.${by}`);
       }
       query = query.or(orPartsArr.join(","));
     }
@@ -530,6 +547,7 @@ export async function getSheltersPage(
         if (synonymKommuner) {
           for (const k of synonymKommuner) fbOrPartsArr.push(`kommune.eq.${k}`);
         }
+        for (const by of postbyNaboer(v)) fbOrPartsArr.push(`place.eq.${by}`);
       }
       fallbackQuery = fallbackQuery.or(fbOrPartsArr.join(","));
     }
@@ -844,6 +862,7 @@ export async function getShelterPins(
       for (const v of variants) {
         const synonymKommuner = SEARCH_SYNONYMS[v];
         if (synonymKommuner) for (const k of synonymKommuner) orPartsArr.push(`kommune.eq.${k}`);
+        for (const by of postbyNaboer(v)) orPartsArr.push(`place.eq.${by}`);
       }
       query = query.or(orPartsArr.join(","));
     }
