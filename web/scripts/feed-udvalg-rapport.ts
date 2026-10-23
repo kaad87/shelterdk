@@ -80,7 +80,8 @@ async function main() {
     [...seen.values()],
     katFor,
     new Set(),
-    feed.loftPrKategori
+    feed.loftPrKategori,
+    feed.maksPrBrand
   );
 
   console.log(`\n${feed.label}: ${varer.length} varer i feedet -> ${valgte.length} gemmes\n`);

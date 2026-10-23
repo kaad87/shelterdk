@@ -113,3 +113,46 @@ describe("prisOk", () => {
     expect(prisOk("findes-ikke", 500)).toBe(true);
   });
 });
+
+describe("kikkert og oekse", () => {
+  it("fanger kikkerter, ogsaa med engelske navne", () => {
+    expect(kategoriFor("Carson Scout 8x22mm kikkert - JD-822", "Optik")).toBe("kikkert");
+    expect(kategoriFor("Nikon Prostaff Binocular 8x42", "Optik")).toBe("kikkert");
+  });
+
+  it("tager ikke optik-tilbehoer eller jagtoptik med", () => {
+    expect(kategoriFor("Kikkert stativ aluminium", "Optik")).toBeNull();
+    expect(kategoriFor("Kikkerttaske neopren", "Optik")).toBeNull();
+    expect(kategoriFor("Natkigger termisk monokular", "Optik")).toBeNull();
+    expect(kategoriFor("Sigtekikkert 3-9x40", "Optik")).toBeNull();
+  });
+
+  it("fanger oekser og save til baalet", () => {
+    expect(kategoriFor("Økse - Survival - Inkl etui", "Værktøj")).toBe("oekse");
+    expect(kategoriFor("Opinel Foldesav 18cm Bøg", "Værktøj")).toBe("oekse");
+    expect(kategoriFor("Gerber Freescape Camp Saw", "Værktøj")).toBe("oekse");
+  });
+
+  it("tager ikke knive og macheter med, selv om de ligger i oekse-kategorien", () => {
+    // Hos Outdoor I Centrum ligger knive og oekser i samme kategorigren, og
+    // kategorien trak ni knive, macheter og et multitool-saet med ind.
+    expect(kategoriFor("Highlander Kingfisher Kniv 9,5 cm", "Knive & Økser")).toBeNull();
+    expect(kategoriFor("Gerber Bolo Machete", "Knive, Økser og Save")).toBeNull();
+    expect(kategoriFor("Kinetic Multi Tool Set", "Knive & Økser")).toBeNull();
+    expect(kategoriFor("Savotta Tool Pocket Black", "Knive & Økser")).toBeNull();
+    // men en rigtig oekse i samme gren skal stadig med
+    expect(kategoriFor("Helko Werk Black Forest Pack Økse", "Knive & Økser")).toBe("oekse");
+  });
+
+  it("tager ikke jagtoptik med, selv om det ligger i Optik", () => {
+    expect(kategoriFor("Afstandsmåler laser 1000m", "Optik")).toBeNull();
+    expect(kategoriFor("Carson Scout 8x22mm kikkert", "Optik")).toBe("kikkert");
+  });
+
+  it("tager ikke en hakke eller en motorsav med", () => {
+    // "Swagier Pick axe" slap igennem paa \baxe\b. En hakke er til at grave med.
+    expect(kategoriFor("Swagier Pick axe", "Værktøj")).toBeNull();
+    expect(kategoriFor("Motorsav benzin 45cm", "Værktøj")).toBeNull();
+    expect(kategoriFor("Savklinge til buesav", "Værktøj")).toBeNull();
+  });
+});

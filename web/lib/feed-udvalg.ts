@@ -135,13 +135,17 @@ export function vaelgUdvalg<T extends UdvalgVare>(
   varer: T[],
   kategorien: (v: T) => string | null,
   gemte: ReadonlySet<string>,
-  loft: number
+  loft: number,
+  maksPrBrandOverstyret?: number
 ): { valgte: T[]; prKategori: Map<string, number> } {
   // Hoejst saa mange modeller fra samme maerke i samme kategori. Uden den
   // graense var tolv af atten vandrebukser Fjällräven: feedet har ti forskellige
   // zip-off-modeller fra dem alene, saa fordelingen paa brands raekker ikke.
   // En guide, der kun kan sammenligne ét maerke, er ikke en sammenligning.
-  const maksPrBrand = Math.max(2, Math.ceil(loft / 5));
+  //
+  // Den kan overstyres, fordi et specialiseret feed kan vaere forhandler for ét
+  // maerke. Se maksPrBrand i lib/affiliate-feeds.ts.
+  const maksPrBrand = maksPrBrandOverstyret ?? Math.max(2, Math.ceil(loft / 5));
   // 1 + 2: fold til én vare pr. model, inden for hver kategori.
   const modeller = new Map<string, { kategori: string; vare: T }>();
   for (const v of varer) {

@@ -79,7 +79,7 @@ export function normalizeProduct(
   const retailer_product_id =
     raw.produktid != null ? String(raw.produktid).trim() : "";
   const product_name =
-    raw.produktnavn != null ? String(raw.produktnavn).trim() : "";
+    raw.produktnavn != null ? afkodEntiteter(String(raw.produktnavn).trim()) : "";
   const image_url = raw.billedurl != null ? String(raw.billedurl).trim() : "";
   const affiliate_url = raw.vareurl != null ? String(raw.vareurl).trim() : "";
   const priceStr = raw.nypris != null ? String(raw.nypris).trim() : "";
@@ -117,7 +117,7 @@ export function normalizeProduct(
     product_name,
     description:
       raw.beskrivelse != null
-        ? fjernShortcodes(String(raw.beskrivelse).trim()) || null
+        ? fjernShortcodes(afkodEntiteter(String(raw.beskrivelse).trim())) || null
         : null,
     category_raw:
       raw.kategorinavn != null
@@ -185,6 +185,34 @@ function retDobbeltkodning(s: string): string {
  * en "[2 stk]" den dag en forhandler skriver saadan.
  */
 const SHORTCODE = /\[\/?[a-z][\w-]*(?:[^\]]*=[^\]]*)?\]/gi;
+
+/**
+ * Afkoder HTML-entiteter, der er sluppet igennem som tekst.
+ *
+ * Outdoor I Centrums feed indeholder "&amp;bull;", og det afkoder XML-parseren
+ * korrekt til teksten "&bull;". Leverandoeren har altsaa kodet sin HTML to
+ * gange, og resultatet var "&bull; 18 cm savblad" paa et produktkort.
+ *
+ * Kun en kendt liste plus numeriske entiteter. En ukendt entitet lades staa,
+ * for en beskrivelse kan indeholde "&" i al uskyldighed, og en halv afkodning
+ * er vaerre end ingen.
+ */
+const ENTITETER: Record<string, string> = {
+  amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ",
+  bull: "\u2022", middot: "\u00b7", ndash: "\u2013", mdash: "\u2014",
+  hellip: "\u2026", deg: "\u00b0", reg: "\u00ae", trade: "\u2122",
+  copy: "\u00a9", frac12: "\u00bd", times: "\u00d7",
+};
+
+function afkodEntiteter(s: string): string {
+  return s.replace(/&(#\d{2,5}|#x[0-9a-f]{2,4}|[a-zA-Z]{2,10});/gi, (hel, kode: string) => {
+    if (kode.startsWith("#x") || kode.startsWith("#X")) {
+      return String.fromCodePoint(parseInt(kode.slice(2), 16));
+    }
+    if (kode.startsWith("#")) return String.fromCodePoint(parseInt(kode.slice(1), 10));
+    return ENTITETER[kode.toLowerCase()] ?? hel;
+  });
+}
 
 function fjernShortcodes(s: string): string {
   return s.replace(SHORTCODE, (m) => (m.includes("=") || m.startsWith("[/") ? "" : m)).trim();

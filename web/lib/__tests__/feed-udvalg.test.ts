@@ -195,6 +195,17 @@ describe("vaelgUdvalg", () => {
     expect(aclima.length).toBeLessThanOrEqual(2);
   });
 
+  it("kan overstyre maerkegraensen for et feed med ét maerke", () => {
+    // Zeejuu har 26 kikkerter paa lager, naesten alle Carson. Den udledte
+    // graense paa tre skar kategorien til fire varer, altsaa for lidt til en
+    // guide.
+    const varer = Array.from({ length: 20 }, (_, i) =>
+      vare({ id: `c${String(i).padStart(2, "0")}`, brand: "Carson", product_name: `Carson ${i}` })
+    );
+    expect(vaelgUdvalg(varer, altErFleece, new Set(), 12).valgte).toHaveLength(3);
+    expect(vaelgUdvalg(varer, altErFleece, new Set(), 12, 8).valgte).toHaveLength(8);
+  });
+
   it("holder kategorierne hver for sig", () => {
     const { prKategori } = vaelgUdvalg(
       [

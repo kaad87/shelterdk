@@ -38,10 +38,22 @@ export interface FeedDef {
    * kategorier. Se lib/feed-udvalg.ts for hvordan udvalget holdes stabilt.
    */
   loftPrKategori: number | null;
+  /**
+   * Hoejst saa mange modeller fra samme maerke i samme kategori.
+   *
+   * Udledes af loftet, naar den ikke er sat. Den skal kunne saettes, fordi et
+   * specialiseret feed kan vaere forhandler for ét maerke: Zeejuu har 26
+   * kikkerter paa lager, og naesten alle er Carson. Den udledte graense paa tre
+   * skar kategorien ned til fire varer, altsaa for lidt til en guide, mens
+   * graensen i de brede toejfeeds er det der holder Fjällräven fra at fylde
+   * tolv af atten vandrebukser.
+   */
+  maksPrBrand?: number;
 }
 
 /**
- * Et nyt feed er en linje her OG en linje i migrations/061: kolonnen
+ * Et nyt feed er en linje her OG en linje i den seneste retailer-migration
+ * (migrations/061, udvidet i 062): kolonnen
  * affiliate_products.retailer har en check-constraint, der opregner
  * forhandlerne, og en noegle, der ikke staar der, bliver afvist ved import.
  */
@@ -55,6 +67,12 @@ export const FEEDS = [
   // vandrebukser og solhat.
   { retailer: "prooutdoor", label: "Pro Outdoor", bannerId: "42818", feedId: "523", harBeskrivelser: true, loftPrKategori: 20 },
   { retailer: "outdoornu", label: "Outdoornu.dk", bannerId: "96182", feedId: "2641", harBeskrivelser: true, loftPrKategori: 20 },
+  // To smaa, specialiserede feeds. De er med for hver sin kategori, hvor det
+  // eksisterende katalog er for tyndt til en guide: kikkert har fire varer med
+  // brugbar tekst, og oekse/sav har syv. Loftet er lavere, fordi feedene er
+  // smaa og vi kun skal have nok til én guide pr. kategori.
+  { retailer: "zeejuu", label: "Zeejuu.dk", bannerId: "32915", feedId: "266", harBeskrivelser: true, loftPrKategori: 12, maksPrBrand: 8 },
+  { retailer: "outdooricentrum", label: "Outdoor I Centrum", bannerId: "117229", feedId: "4361", harBeskrivelser: true, loftPrKategori: 12 },
 ] as const satisfies readonly FeedDef[];
 
 export function feedUrl(f: FeedDef): string {

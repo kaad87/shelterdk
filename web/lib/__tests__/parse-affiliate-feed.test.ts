@@ -94,6 +94,24 @@ describe("parseFeedXml", () => {
     expect(p.description).toBe("Sovepose [2 stk] i pakken. Str. [XL] findes.");
   });
 
+  it("afkoder HTML-entiteter der er sluppet igennem som tekst", () => {
+    // Outdoor I Centrum sender "&amp;bull;", som XML-parseren korrekt gør til
+    // teksten "&bull;". Den stod raa paa produktkortet.
+    const [p] = parseFeedXml(
+      feed({ ...BASIS, beskrivelse: "&amp;bull; 18 cm savblad &amp;bull; Foldbart design 5&amp;deg;C" }),
+      "outdooricentrum"
+    );
+    expect(p.description).toBe("\u2022 18 cm savblad \u2022 Foldbart design 5\u00b0C");
+  });
+
+  it("lader en ukendt entitet og et almindeligt og-tegn staa", () => {
+    const [p] = parseFeedXml(
+      feed({ ...BASIS, beskrivelse: "Salt &amp; peber. &amp;ukendtentitet; og 50 &amp; 60 cm." }),
+      "outdooricentrum"
+    );
+    expect(p.description).toBe("Salt & peber. &ukendtentitet; og 50 & 60 cm.");
+  });
+
   it("springer en vare uden pris eller billede over", () => {
     expect(parseFeedXml(feed({ ...BASIS, nypris: "" }), "prooutdoor")).toHaveLength(0);
     expect(parseFeedXml(feed({ ...BASIS, billedurl: "" }), "prooutdoor")).toHaveLength(0);

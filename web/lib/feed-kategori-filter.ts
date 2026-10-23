@@ -23,6 +23,16 @@ export interface FeedKategori {
   udeluk: RegExp;
   /** Hoejeste pris vi tager med. Udeladt = ingen graense. */
   maksPris?: number;
+  /**
+   * Proev kun `inkluder` mod produktnavnet, ikke mod feedets kategorinavn.
+   *
+   * Toejkategorierne har brug for kategorinavnet, fordi de to store feeds har
+   * engelske produktnavne og danske kategoritraeer: "Teva Terra Fi Lite Herre"
+   * siger ikke sandal. Vaerktoej er det modsatte. Hos Outdoor I Centrum ligger
+   * knive og oekser i samme gren, saa kategorien trak tolv varer med ind i
+   * oekse-kategorien, hvoraf ni var knive, macheter og et multitool-saet.
+   */
+  kunNavn?: boolean;
 }
 
 /**
@@ -91,6 +101,27 @@ export const FEED_KATEGORIER: FeedKategori[] = [
     // Og \bupf\b fangede ikke "UPF40+", hvor tallet loeber videre i ordet.
     inkluder: /solhat|bøllehat|sun.?hat|bucket.?hat|brimmer|booney|wide.?brim|safari.?hat|legionær|\b(hat|cap|kasket)\b.*\bupf|\bupf.*\b(hat|cap|kasket)\b/i,
     udeluk: /\bhue\b|beanie|\bsok|shirt|jakke|jacket|buks|pant|hoodie|glove|handske|gaiter|halsedisse/i },
+  // Kikkert. Fire varer med brugbar tekst i det eksisterende katalog er for
+  // lidt til en guide, og Zeejuu er et optik-feed med beskrivelser paa alt.
+  { kategori: "kikkert",
+    kunNavn: true,
+    inkluder: /\bkikkert|binocular|monokular|spotting ?scope/i,
+    // Stativ, taske og pudseklud er tilbehoer, ikke en kikkert. Og natkigger
+    // og termisk optik hoerer til jagt i moerke, ikke til en sheltertur.
+    udeluk: /stativ|tripod|taske|etui|pudse|rem\b|adapter|okular|natkig|termisk|thermal|night ?vision|riffel|sigtekikkert/i },
+  // Oekse og sav. Syv varer med tekst i kataloget, alle fra samme forhandler.
+  { kategori: "oekse",
+    kunNavn: true,
+    // \bsaw\b er ikke pynt: de to smaa feeds bruger engelske produktnavne, og
+    // "Gerber Freescape Camp Saw" matcher ikke det danske \bsav\b.
+    // Uden \b foran "økse". JavaScripts \b er ASCII-baseret, saa der ER ingen
+    // ordgraense foer et "ø": /\bøkse/ matchede aldrig "Økse - Survival".
+    // Python er unicode-bevidst, og det var derfor en tidligere optaelling i
+    // Python fandt syv oekser, som filteret ikke kunne se.
+    inkluder: /økse|brændekløver|kløvejern|\bsav\b|\bsaw\b|buesav|foldesav|grensav|handsav|hatchet|\baxe\b/i,
+    // Motorsav og kædesav er ikke til baalet. Skaft og skede er tilbehoer.
+    // En "Pick axe" er en hakke til at grave med, ikke en braendeoekse.
+    udeluk: /motorsav|kædesav|rundsav|stiksav|bajonetsav|klinge\b|\bskaft\b|skede|slibe|fil\b|brænde?stativ|pick ?axe|hakke\b|spids?hakke/i },
 ];
 
 /**
@@ -113,7 +144,8 @@ export function kategoriFor(produktnavn: string, kategorinavn: string | null): s
   const blob = `${navn} ${kategorinavn ?? ""}`;
   if (ALDRIG.test(blob)) return null;
   for (const k of FEED_KATEGORIER) {
-    if (k.inkluder.test(blob) && !k.udeluk.test(navn)) return k.kategori;
+    const kilde = k.kunNavn ? navn : blob;
+    if (k.inkluder.test(kilde) && !k.udeluk.test(navn)) return k.kategori;
   }
   return null;
 }

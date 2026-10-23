@@ -170,7 +170,8 @@ async function syncRetailer(
       unique,
       kategorien,
       gemte,
-      feed.loftPrKategori
+      feed.loftPrKategori,
+      feed.maksPrBrand
     );
     const fordeling = [...prKategori]
       .sort(([a], [b]) => a.localeCompare(b))
