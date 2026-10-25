@@ -55,6 +55,47 @@ const DEFAULT_TOP_AWARD = "Vores valg";
 const TOP_AWARDS = [/^vores valg$/i, /^bedst i test$/i, /^testvinder$/i, /^redaktionens valg$/i];
 
 /**
+ * Den vare siden udpeger som foerstevalg, eller null hvis den ikke udpeger én.
+ *
+ * Findes fordi to steder regnede det ud hver for sig og blev uenige.
+ * resolveAwards nedenfor giver topprædikatet til den hoejest scorende vare paa
+ * lager, mens getGuideTeasers tog den foerste efter rank. For fire guider var
+ * det to forskellige varer, og hub-kortene og llms.txt navngav derfor et andet
+ * foerstevalg end selve siden. Det skete for campingstol i det oejeblik to
+ * entries blev fjernet, saa en anden vare blev foerst efter rank.
+ *
+ * llms.txt er det faktaark AI-assistenter laeser, saa en selvmodsigelse der er
+ * vaerre end en manglende oplysning: derfor null frem for et gaet, naar siden
+ * ikke selv kan vise et foerstevalg.
+ */
+export interface VinderKandidat {
+  rank: number;
+  score: number | null;
+  award_label: string | null;
+  /** Kan koebes lige nu: paa lager og ikke blokeret. */
+  tilgaengelig: boolean;
+}
+
+export function vaelgVinder<T extends VinderKandidat>(entries: T[]): T | null {
+  const efterRank = (a: T, b: T) => a.rank - b.rank;
+  const levende = entries.filter((e) => e.tilgaengelig);
+  if (!levende.length) return null;
+
+  const medTop = levende
+    .filter((e) => TOP_AWARDS.some((re) => re.test((e.award_label ?? "").trim())))
+    .sort(efterRank);
+  if (medTop.length) return medTop[0];
+
+  // Samme arvefoelge som resolveAwards: hoejeste score blandt dem uden
+  // praedikat. Er der ingen, viser siden intet foerstevalg, og saa skal der
+  // heller ikke staa et i llms.txt.
+  const arvinger = levende
+    .filter((e) => !e.award_label)
+    .sort((a, b) => (b.score ?? -Infinity) - (a.score ?? -Infinity) || efterRank(a, b));
+  return arvinger[0] ?? null;
+}
+
+/**
  * Prædikater må aldrig sidde på noget, man ikke kan købe.
  *
  * Guidernes picks er statiske, mens feed'et er levende: da 37 produkter forsvandt
@@ -171,7 +212,7 @@ export async function getGuideTeasers(guideIds: string[]): Promise<Map<string, G
   const sb = getServiceClient();
   const { data: entries } = await sb
     .from("buying_guide_entries")
-    .select("guide_id, rank, score, affiliate_product_id")
+    .select("guide_id, rank, score, award_label, affiliate_product_id")
     .in("guide_id", guideIds);
   if (!entries || entries.length === 0) return out;
   const ids = [...new Set(entries.map((e) => e.affiliate_product_id))];
@@ -188,7 +229,17 @@ export async function getGuideTeasers(guideIds: string[]): Promise<Map<string, G
       const pr = byId.get(e.affiliate_product_id);
       return pr && pr.in_stock && !pr.is_blocked;
     });
-    const winner = available[0] ?? ge[0];
+    // Samme udregning som siden selv. Var `available[0]`, altsaa den foerste
+    // efter rank, og det gav et andet foerstevalg end badgen paa siden.
+    const winner = vaelgVinder(
+      ge.map((e) => {
+        const pr = byId.get(e.affiliate_product_id);
+        return {
+          ...e,
+          tilgaengelig: !!pr && pr.in_stock && !pr.is_blocked,
+        };
+      })
+    );
     const winnerProduct = winner ? byId.get(winner.affiliate_product_id) : null;
     const prices = available
       .map((e) => byId.get(e.affiliate_product_id)?.price)

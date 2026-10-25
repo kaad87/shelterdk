@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { kildeFor, utmFraSti } from "@/lib/henvisningskilde";
 import {
   dagligSerie, glidende, grupper, guideSlug, noegletal, topProdukter,
   varmekort, prisfordeling, forretning,
@@ -122,7 +123,7 @@ export async function GET(req: NextRequest) {
     // svartiden, selv om det ikke afhænger af dem.
     const [klik, events, sund, katalogIalt, koebbare] = await Promise.all([
       alle<KlikRaekke>("affiliate_clicks", (f, t) => sb.from("affiliate_clicks")
-        .select("created_at, path, placement, retailer, category, price_dkk, product_name, brand")
+        .select("created_at, path, placement, retailer, category, price_dkk, product_name, brand, referrer_host")
         .gte("created_at", fra).order("created_at").range(f, t)),
       alle<EventRaekke>("internal_events", (f, t) => sb.from("internal_events")
         .select("created_at, event, path, params")
@@ -173,6 +174,15 @@ export async function GET(req: NextRequest) {
       forhandlere,
       forhandlerMix: { datoer, serier: mix },
       placeringer: grupper(grej, (k) => k.placement, nu, dage),
+      // Hvor klikkene kom fra. AI-assistenter er den hurtigst voksende kanal
+      // (0,9 % af klikkene i juni, 5,5 % i oktober), og indtil migration 063
+      // blev de kun set, naar assistenten selv satte en utm-parameter.
+      kilder: grupper(
+        grej,
+        (k) => kildeFor(k.referrer_host, utmFraSti(k.path)),
+        nu,
+        dage,
+      ),
       kategorier: grupper(grej, (k) => k.category, nu, dage),
       stier: grupper(grej, (k) => (k.path ?? "").split("?")[0] || null, nu, dage),
       produkter: topProdukter(grej, 25),

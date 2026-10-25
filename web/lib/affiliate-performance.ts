@@ -21,6 +21,11 @@ export interface KlikRaekke {
   price_dkk: number | null;
   product_name: string | null;
   brand: string | null;
+  /**
+   * Vaertsnavnet et klik kom fra. Valgfri, fordi kolonnen foerst findes fra
+   * migration 063, og aeldre raekker har den ikke.
+   */
+  referrer_host?: string | null;
 }
 
 export interface EventRaekke {

@@ -27,7 +27,7 @@ interface Data {
   };
   serie: Dag[];
   glidende: { klik: number[]; vaerdi: number[]; grejVisninger: number[] };
-  guider: Bucket[]; forhandlere: Bucket[]; placeringer: Bucket[];
+  guider: Bucket[]; forhandlere: Bucket[]; placeringer: Bucket[]; kilder: Bucket[];
   kategorier: Bucket[]; stier: Bucket[];
   forhandlerMix: { datoer: string[]; serier: { navn: string; vaerdier: number[] }[] };
   produkter: { navn: string; brand: string | null; forhandler: string | null;
@@ -455,6 +455,13 @@ export function AdminAffiliatePerformance() {
         </Panel>
         <Panel titel="Kategori" note="De tolv største.">
           <Bjaelker poster={data.kategorier.slice(0, 12).map((b) => ({
+            navn: b.navn, vaerdi: b.klik, note: pct(b.andel) }))} />
+        </Panel>
+        <Panel
+          titel="Kanal"
+          note="Hvor besøget kom fra. Kun målt siden referreren begyndte at blive gemt, så ældre klik står som ukendt."
+        >
+          <Bjaelker poster={(data.kilder ?? []).map((b) => ({
             navn: b.navn, vaerdi: b.klik, note: pct(b.andel) }))} />
         </Panel>
       </div>

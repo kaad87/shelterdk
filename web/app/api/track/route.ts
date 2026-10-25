@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { sendGa4Event } from "@/lib/server-analytics";
 import { createClient } from "@supabase/supabase-js";
 import { INTERNAL_EVENTS, TRACKABLE_EVENTS, internalEventRow } from "@/lib/internal-events";
+import { referrerVaert } from "@/lib/henvisningskilde";
 
 export const dynamic = "force-dynamic";
 
@@ -61,6 +62,16 @@ export async function POST(req: NextRequest) {
   // Affiliate-klik logges også i egen DB (anonymt, ingen bruger-id) så
   // produktvalg/rækkefølge kan optimeres på rigtige tal — GA4 alene kan ikke
   // querys frit.
+  // Kun vaertsnavnet, aldrig stien eller forespoergselsstrengen. Referreren
+  // har hele tiden vaeret opsamlet i browseren, men blev kun sendt videre til
+  // GA4, som ligger bag samtykkeporten og maalt faar omkring 3 % af den
+  // reelle optaelling. En AI-henvisning kunne derfor kun ses, naar
+  // assistenten selv satte en utm-parameter, og Claude og Gemini goer det
+  // ofte ikke.
+  const referrerHost = referrerVaert(
+    typeof body.referrer === "string" ? body.referrer : null
+  );
+
   if (event === "affiliate_click") {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -77,6 +88,7 @@ export async function POST(req: NextRequest) {
           price_dkk: typeof p.value === "number" ? p.value : null,
           outbound_url: typeof p.outbound_url === "string" ? p.outbound_url.slice(0, 500) : null,
           path: typeof body.path === "string" ? body.path.slice(0, 300) : null,
+          referrer_host: referrerHost,
         })
         .then(({ error }) => {
           if (error) console.warn("affiliate_clicks insert:", error.message);
@@ -91,7 +103,7 @@ export async function POST(req: NextRequest) {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (url && key) {
-      const row = internalEventRow(event, body.params, body.path);
+      const row = { ...internalEventRow(event, body.params, body.path), referrer_host: referrerHost };
       skrivninger.push(createClient(url, key, { auth: { persistSession: false } })
         .from("internal_events")
         .insert(row)

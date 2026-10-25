@@ -132,6 +132,16 @@ ${buyingBlock}
     headers: {
       "Content-Type": "text/plain; charset=utf-8",
       "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=86400",
+      // 16 KB af sitets eget indhold i ren tekst, uden canonical. Som
+      // indekserbar side er den en dublet af guider og temasider, og den
+      // konkurrerer med dem den gentager. noindex holder den ude af Googles
+      // indeks uden at forhindre en AI-crawler i at hente den direkte, som er
+      // det filen er skrevet til.
+      //
+      // Afvejningen er bevidst: en assistent der henter via et soegeindeks kan
+      // miste filen, men alle 27 maalte AI-henviste klik landede paa de
+      // rigtige guidesider og ikke paa denne fil.
+      "X-Robots-Tag": "noindex, follow",
     },
   });
 }

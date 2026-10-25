@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { rankGuideEntries, resolveAwards, type GuideEntryWithProduct } from "@/lib/buying-guides";
+import { rankGuideEntries, resolveAwards, type GuideEntryWithProduct, vaelgVinder } from "@/lib/buying-guides";
 
 function entry(id: string, rank: number, inStock: boolean, blocked = false): GuideEntryWithProduct {
   return {
@@ -76,5 +76,38 @@ describe("resolveAwards", () => {
   it("efterlader topprædikatet ubrugt hvis intet produkt kan købes", () => {
     const out = resolveAwards([e("a", 0, false, "Bedst i test", 9), e("b", 1, false, "Bedst til prisen", 8)]);
     expect(out.every((x) => x.award_label === null)).toBe(true);
+  });
+});
+
+describe("vaelgVinder", () => {
+  const e = (rank: number, award: string | null, score: number | null, tilgaengelig = true) =>
+    ({ rank, award_label: award, score, tilgaengelig });
+
+  it("vaelger varen med topprædikat, ikke den foerste efter rank", () => {
+    // Den rigtige sag: campingstol havde "Vores valg" paa rank 7, mens rank 4
+    // var foerst efter rank. llms.txt og hub-kortene navngav rank 4.
+    const v = vaelgVinder([e(4, "Bedste komfort u. polstring", 8.1), e(7, "Vores valg", 8.7), e(8, "Bedst til prisen", 8.0)]);
+    expect(v?.rank).toBe(7);
+  });
+
+  it("springer et topprædikat over, naar varen ikke kan koebes", () => {
+    const v = vaelgVinder([e(0, "Vores valg", 9.0, false), e(1, null, 8.2), e(2, null, 8.6)]);
+    expect(v?.rank).toBe(2);
+  });
+
+  it("arver til hoejeste score blandt dem uden praedikat", () => {
+    const v = vaelgVinder([e(0, "Vores valg", 9.0, false), e(1, "Bedst til prisen", 8.9), e(2, null, 8.1), e(3, null, 8.4)]);
+    expect(v?.rank).toBe(3);
+  });
+
+  it("giver null naar siden ikke selv kan vise et foerstevalg", () => {
+    // Alle paa lager har allerede et praedikat, saa resolveAwards udpeger
+    // ingen. Da skal llms.txt heller ikke paastaa et.
+    const v = vaelgVinder([e(0, "Vores valg", 9.0, false), e(1, "Bedst til prisen", 8.2), e(2, "Bedste robuste", 8.4)]);
+    expect(v).toBeNull();
+  });
+
+  it("giver null naar intet kan koebes", () => {
+    expect(vaelgVinder([e(0, "Vores valg", 9.0, false), e(1, null, 8.0, false)])).toBeNull();
   });
 });
