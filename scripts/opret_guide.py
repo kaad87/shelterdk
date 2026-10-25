@@ -92,6 +92,17 @@ def main():
                 fejl.append(f"category '{kat}' har ingen gruppe i HUB_GROUPS — "
                             f"guiden ville havne i hub-sidens 'Andet' uden søskende-links")
 
+        # FAQ'ens nøgler skal hedde q og a. Guide-siden læser netop dem, og
+        # jsonb-kolonnen håndhæver intet: otte guider blev oprettet med
+        # "question"/"answer", og de viste en tom FAQ-sektion og udsendte
+        # FAQPage-data uden spørgsmål. Det er ugyldige strukturerede data, og
+        # det var usynligt, fordi siden svarede 200 og schemaet var til stede.
+        for i, q in enumerate(g.get("faq") or []):
+            mangler = [k for k in ("q", "a") if not (q.get(k) or "").strip()]
+            if mangler:
+                fejl.append(f"faq[{i}] mangler {' og '.join(mangler)} "
+                            f"(fundne nøgler: {sorted(q)}) — siden læser q og a")
+
         entries = g.get("entries", [])
         if not entries:
             fejl.append("ingen produkter")

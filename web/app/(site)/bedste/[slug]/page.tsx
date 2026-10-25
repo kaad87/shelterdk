@@ -78,7 +78,19 @@ export default async function BuyingGuidePage({
     })),
     pageUrl
   );
-  const faqItems: FaqItem[] = (guide.faq ?? []).map((f) => ({ question: f.q, answer: f.a }));
+  // Tager baade q/a og question/answer, og springer tomme over. Otte guider
+  // blev oprettet med question/answer, og siden viste en tom FAQ-sektion og
+  // udsendte FAQPage-data uden spoergsmaal. Det var usynligt udefra, fordi
+  // siden svarede 200 og schemaet var til stede. Dataene er rettet, og her
+  // staar beskyttelsen, saa en forkert noegle igen bliver et manglende
+  // spoergsmaal frem for et tomt.
+  type RaaFaq = { q?: string | null; a?: string | null; question?: string | null; answer?: string | null };
+  const faqItems: FaqItem[] = (guide.faq ?? [])
+    .map((f) => {
+      const r = f as RaaFaq;
+      return { question: (r.q ?? r.question ?? "").trim(), answer: (r.a ?? r.answer ?? "").trim() };
+    })
+    .filter((f) => f.question && f.answer);
 
   // GEO-svarkapsel: kort, citerbar anbefaling. Den skal pege på noget, man
   // faktisk kan købe — rankGuideEntries demoterer udsolgte, så entries[0] er
