@@ -212,3 +212,69 @@ describe("guideHealth", () => {
     expect(h.problems.some((p) => /favoritter uden et tal/.test(p))).toBe(false);
   });
 });
+
+describe("teksten anbefaler noget, der er taget af siden", () => {
+  const MAERKER = ["Outwell", "Easy Camp", "Sea to Summit", "Treklife", "Robens", "Light My Fire"];
+
+  it("fanger den rigtige sag fra /bedste/campingstol", () => {
+    // Siden havde et afsnit "Vores anbefaling", der udpegede tre stole, hvoraf
+    // ingen var paa siden: to entries var fjernet og én erstattet, uden at
+    // prosaen fulgte med. Den havde flest visninger af alle guider.
+    const h = guideHealth({
+      ...base,
+      bodyMd: "## Vores anbefaling\n\nTil bilcamping: **Outwell Catamarca**. Skal stolen baeres, er **Sea to Summit Air Chair** pengene vaerd.",
+      entryNames: ["Stol - Treklife Low-back UL Chair Treklife", "Festivalstol - 2 kopholdere"],
+      knownBrands: MAERKER,
+    }, NOW);
+    expect(h.staleBrands).toEqual(["Outwell", "Sea to Summit"]);
+    expect(h.problems.some((p) => p.includes("Outwell"))).toBe(true);
+  });
+
+  it("flager ikke et maerke, der FAKTISK er paa siden", () => {
+    const h = guideHealth({
+      ...base,
+      bodyMd: "Til de fleste: **Treklife Low-back UL** til 449 kr.",
+      entryNames: ["Stol - Treklife Low-back UL Chair Treklife"],
+      knownBrands: MAERKER,
+    }, NOW);
+    expect(h.staleBrands).toEqual([]);
+  });
+
+  it("flager ikke et maerke i parentes, som er markedskontekst", () => {
+    // "standard-tarps i polyester (Robens, Easy Camp, Tatonka) vejer 700 gram"
+    // lover ikke at siden saelger en Robens.
+    const h = guideHealth({
+      ...base,
+      bodyMd: "Standard-tarps i polyester med PU-belaegning (Robens, Easy Camp) vejer 700-1.200 gram.",
+      entryNames: ["Tarp - High Peak Tarp 2"],
+      knownBrands: MAERKER,
+    }, NOW);
+    expect(h.staleBrands).toEqual([]);
+  });
+
+  it("flager ikke et begreb i fed skrift", () => {
+    // Husets stil bruger fed baade til produktnavne og til begreber, og det
+    // var derfor baade tegnsaetning og linjeplacering fejlede som skelnen.
+    const h = guideHealth({
+      ...base,
+      bodyMd: "**Vaegt og pakmaal.** Det afgoerende er **UPF-tallet** og **Blackout-stof**.",
+      entryNames: ["Tarp - High Peak Tarp 2"],
+      knownBrands: MAERKER,
+    }, NOW);
+    expect(h.staleBrands).toEqual([]);
+  });
+
+  it("rammer kun hele ord", () => {
+    const h = guideHealth({
+      ...base,
+      bodyMd: "Den er **lysegroen og easy camping** at have med.",
+      entryNames: ["Tarp - High Peak Tarp 2"],
+      knownBrands: ["Easy Camp"],
+    }, NOW);
+    expect(h.staleBrands).toEqual([]);
+  });
+
+  it("springer tjekket over, naar kalderen ikke sender det der skal til", () => {
+    expect(guideHealth({ ...base, bodyMd: "**Outwell Tidal** er god." }, NOW).staleBrands).toEqual([]);
+  });
+});

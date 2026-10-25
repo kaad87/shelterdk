@@ -58,6 +58,25 @@ async function alle<T>(
   return ud;
 }
 
+/**
+ * Maerkenavne med mindst tre varer i kataloget.
+ *
+ * Bruges til at skelne et produktnavn i fed skrift fra et begreb i fed skrift.
+ * Taersklen paa tre holder stavefejl og engangsvaerdier ude af vokabularet.
+ */
+async function hentMaerker(klient: typeof sb): Promise<string[]> {
+  const raekker = await alle<{ brand: string | null }>("maerker", (fra, til) =>
+    klient.from("affiliate_products").select("brand").order("id").range(fra, til),
+  );
+  const antal = new Map<string, number>();
+  for (const r of raekker) {
+    const b = (r.brand ?? "").trim();
+    if (b.length < 4 || /^\d/.test(b)) continue;
+    antal.set(b, (antal.get(b) ?? 0) + 1);
+  }
+  return [...antal].filter(([, n]) => n >= 3).map(([b]) => b);
+}
+
 async function main() {
   const somJson = process.argv.includes("--json");
 
@@ -67,7 +86,7 @@ async function main() {
   }>(
     "buying_guides",
     (f, t) => sb.from("buying_guides")
-      .select("id, slug, last_reviewed_at, seo_title, seo_description")
+      .select("id, slug, last_reviewed_at, seo_title, seo_description, body_md")
       .eq("status", "published").range(f, t)
   );
   const entries = await alle<{ guide_id: string; award_label: string | null; affiliate_product_id: string }>(
@@ -86,16 +105,25 @@ async function main() {
   // altså blev sunde varer meldt døde.
   for (let i = 0; i < ids.length; i += 200) {
     const { data, error } = await sb.from("affiliate_products")
-      .select("id, in_stock, is_blocked, last_seen_at, retailer")
+      .select("id, in_stock, is_blocked, last_seen_at, retailer, product_name, brand")
       .in("id", ids.slice(i, i + 200));
     if (error) throw new Error(`affiliate_products: ${error.message}`);
     for (const p of data ?? []) produkter.set(p.id, p);
   }
 
+  // Maerkevokabular fra hele kataloget. Én kolonne, men alle raekker, saa den
+  // hentes én gang pr. koersel. Mindst tre varer pr. maerke, saa en enkelt
+  // stavefejl i et feed ikke bliver et "maerke".
+  const maerker = await hentMaerker(sb);
+
   const nu = new Date();
   const pr = new Map<string, HealthEntry[]>();
+  const navne = new Map<string, string[]>();
   for (const e of entries) {
     const p = produkter.get(e.affiliate_product_id);
+    const nl = navne.get(e.guide_id) ?? [];
+    nl.push(`${p?.product_name ?? ""} ${p?.brand ?? ""}`);
+    navne.set(e.guide_id, nl);
     const liste = pr.get(e.guide_id) ?? [];
     liste.push({
       inStock: p?.in_stock ?? false,
@@ -110,7 +138,9 @@ async function main() {
   const health: GuideHealth[] = guides
     .map((g) => guideHealth(
       { slug: g.slug, lastReviewedAt: g.last_reviewed_at, entries: pr.get(g.id) ?? [],
-        seoTitle: g.seo_title, seoDescription: g.seo_description }, nu))
+        seoTitle: g.seo_title, seoDescription: g.seo_description,
+        bodyMd: g.body_md, entryNames: navne.get(g.id) ?? [],
+        knownBrands: maerker }, nu))
     .sort((a, b) => b.problems.length - a.problems.length || b.dead - a.dead);
 
   if (somJson) {

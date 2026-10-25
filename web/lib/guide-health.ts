@@ -28,6 +28,27 @@ export interface HealthInput {
    */
   seoTitle?: string | null;
   seoDescription?: string | null;
+  /**
+   * Broedteksten og navnene paa de varer, der faktisk ligger paa siden, saa
+   * tjekket nedenfor kan se om teksten anbefaler noget, der er taget ud.
+   * Valgfrie: aeldre kaldere sender dem ikke, og saa springes tjekket over.
+   */
+  bodyMd?: string | null;
+  /** Produktnavn + maerke pr. entry, i vilkaarlig raekkefoelge. */
+  entryNames?: string[];
+  /**
+   * Maerkenavne fra hele kataloget, ikke kun fra denne guide.
+   *
+   * Noedvendig, og det kostede tre forsoeg at indse. Husets stil bruger fed
+   * skrift baade til produktnavne ("**Outwell Tidal**") og til begreber midt i
+   * en saetning ("**Vaegt og pakmaal**", "**Blackout-stof**"), og hverken
+   * tegnsaetning eller linjeplacering kan skelne dem. Et kendt maerkenavn kan.
+   *
+   * Og den skal komme fra KATALOGET og ikke fra guidens egne varer: det
+   * tilfaelde tjekket findes for er netop et maerke, der er helt ude af
+   * guiderne, men stadig anbefales i prosaen.
+   */
+  knownBrands?: string[];
 }
 
 export interface GuideHealth {
@@ -53,6 +74,8 @@ export interface GuideHealth {
    * Rapporteres; alarmerer ikke, men er det efterslæb der skal lukkes først.
    */
   singleRetailerRisk: boolean;
+  /** Produktnavne broedteksten anbefaler, men som ikke er paa siden. */
+  staleBrands: string[];
   problems: string[];
 }
 
@@ -122,6 +145,37 @@ function daysSince(iso: string | null, now: Date): number | null {
   return Number.isNaN(t) ? null : (now.getTime() - t) / 86_400_000;
 }
 
+/**
+ * Produktnavne i broedteksten, der ikke findes blandt sidens varer.
+ *
+ * Et fed-markeret maerkenavn er en anbefaling, og den skal kunne koebes paa
+ * siden. Et maerke i parentes er markedskontekst: "standard-tarps i polyester
+ * (Robens, Easy Camp, Tatonka) vejer 700-1.200 gram" lover ikke at siden
+ * saelger en Robens, saa kun fed skrift taeller.
+ *
+ * Der sammenlignes paa hele ord, saa "Keen" ikke rammer "keenness".
+ */
+function findStaleBrands(input: HealthInput): string[] {
+  if (!input.bodyMd || !input.entryNames?.length || !input.knownBrands?.length) {
+    return [];
+  }
+  const paaSiden = input.entryNames.join(" ").toLowerCase();
+  const fede = [...input.bodyMd.matchAll(/\*\*([^*\n]{3,80})\*\*/g)]
+    .map((m) => m[1].toLowerCase());
+  if (!fede.length) return [];
+
+  const ud = new Set<string>();
+  for (const maerke of input.knownBrands) {
+    const m = maerke.trim();
+    if (m.length < 4) continue;
+    const lav = m.toLowerCase();
+    if (paaSiden.includes(lav)) continue;
+    const graense = new RegExp(`(^|[^\\p{L}\\p{N}])${m.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}($|[^\\p{L}\\p{N}])`, "iu");
+    if (fede.some((f) => graense.test(f))) ud.add(m);
+  }
+  return [...ud].sort();
+}
+
 export function guideHealth(input: HealthInput, now: Date = new Date()): GuideHealth {
   const dead = input.entries.filter((e) => !e.inStock || e.isBlocked);
   const levende = input.entries.filter((e) => e.inStock && !e.isBlocked);
@@ -157,7 +211,26 @@ export function guideHealth(input: HealthInput, now: Date = new Date()): GuideHe
     levende.some((e) => TOP_AWARD.test((e.awardLabel ?? "").trim())) ||
     levende.some((e) => !e.awardLabel);
 
+  // Maerker som broedteksten anbefaler, men som ikke laengere er paa siden.
+  //
+  // Findes fordi /bedste/campingstol i oktober 2026 havde et afsnit "Vores
+  // anbefaling", der udpegede Outwell Catamarca, Sea to Summit Air Chair og
+  // Outwell Tidal. Ingen af dem var paa siden: to entries var fjernet og én
+  // erstattet, uden at prosaen fulgte med. Siden havde flest visninger af alle
+  // guider og tredjelavest CTR. Det samme gjaldt tarp, taendstaal og
+  // frysetorret-mad.
+  //
+  // Kun FED skrift taeller. Et maerke i fed er en anbefaling; et i parentes er
+  // markedskontekst, og "standard-tarps i polyester (Robens, Easy Camp,
+  // Tatonka) vejer 700-1.200 gram" lover ikke at siden saelger en Robens.
+  const staleBrands = findStaleBrands(input);
+
   const problems: string[] = [];
+  if (staleBrands.length) {
+    problems.push(
+      `teksten anbefaler ${staleBrands.join(", ")}, som ikke er paa siden`
+    );
+  }
   if (buyable < MIN_BUYABLE) problems.push(`kun ${buyable} produkter kan købes`);
   if (buyable > 0 && !canShowTopAward) {
     problems.push("siden kan ikke vise et førstevalg — alle varer på lager har allerede et prædikat");
@@ -186,6 +259,7 @@ export function guideHealth(input: HealthInput, now: Date = new Date()): GuideHe
     canShowTopAward,
     concentrationRisk: topRetailer != null && topRetailerShare > MAX_RETAILER_SHARE,
     singleRetailerRisk: topRetailer != null && buyable > 0 && survivesTopRetailerLoss < MIN_SURVIVORS,
+    staleBrands,
     problems,
   };
 }
