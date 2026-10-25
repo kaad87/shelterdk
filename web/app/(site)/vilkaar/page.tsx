@@ -74,10 +74,18 @@ export default function VilkaarPage() {
                 gennemføre opholdet.
               </p>
               <ul className="list-disc pl-6 text-primary/80 space-y-3 mt-3">
+                {/* Gebyret er ikke ét tal. Maalt oktober 2026: af tolv bookbare
+                    enheder tager seks 50 kr. og seks 25 kr., saa en fast sats
+                    paa 50 kr. var forkert for halvdelen af bookingerne. Gaesten
+                    har hele tiden faaet det rigtige beloeb vist og opkraevet i
+                    bookingoversigten; det var denne side, der sagde noget andet.
+                    Derfor et interval og en henvisning til oversigten, som er
+                    rigtigt uanset om satserne senere ensrettes. */}
                 <li>
                   For de shelters, der er omfattet af denne model, betaler gæsten et{" "}
-                  <strong>administrationsgebyr på 50 kr. inkl. moms</strong> pr. gennemført
-                  booking.
+                  <strong>administrationsgebyr på 25 til 50 kr. inkl. moms</strong> pr. gennemført
+                  booking. Gebyrets størrelse afhænger af den enkelte shelterplads og fremgår
+                  altid af bookingoversigten, før du betaler.
                 </li>
                 <li>
                   Betalingen sker til <strong>CKA Media</strong> via ShelterDKs betalingsflow.

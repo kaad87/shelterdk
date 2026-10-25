@@ -77,7 +77,12 @@ export async function POST(req: NextRequest) {
       booking_mode: (["shelterdk", "iframe", "both"] as const).includes(booking_mode) ? booking_mode : "iframe",
       payment_mode: payment_mode === "upfront" ? "upfront" : "after_confirmation",
       shelter_price_dkk: shelter_price_dkk ? Number(shelter_price_dkk) : null,
-      platform_fee_pct: platform_fee_pct != null ? Number(platform_fee_pct) : 5,
+      // Fee defaults to a flat minimum with no percentage. /vilkaar promises the
+      // guest "25 til 50 kr." per booking, and a percentage can exceed that: the
+      // fee is max(round(price * pct / 100), minDkk), so 5 % of a 1.200 kr. stay
+      // is 60 kr. All twelve bookable units run pct = 0, so the old default of 5
+      // never matched a single row anyway.
+      platform_fee_pct: platform_fee_pct != null ? Number(platform_fee_pct) : 0,
       platform_fee_min_dkk: platform_fee_min_dkk != null ? Number(platform_fee_min_dkk) : 25,
     })
     .select()

@@ -105,7 +105,7 @@ function AdminSheltersContent() {
   // ─────────────────────────────────────────────────────────────────────────────
 
   const [form, setForm] = useState({
-    slug: "", title: "", owner_email: "", max_persons: "6", description: "", booking_mode: "shelterdk" as "shelterdk" | "iframe" | "both", payment_mode: "after_confirmation" as "after_confirmation" | "upfront", shelter_price_dkk: "", platform_fee_pct: "5", platform_fee_min_dkk: "25",
+    slug: "", title: "", owner_email: "", max_persons: "6", description: "", booking_mode: "shelterdk" as "shelterdk" | "iframe" | "both", payment_mode: "after_confirmation" as "after_confirmation" | "upfront", shelter_price_dkk: "", platform_fee_pct: "0", platform_fee_min_dkk: "25",
   });
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
@@ -140,7 +140,7 @@ function AdminSheltersContent() {
         nextShelters.map((s: BookableShelter) => [s.id, {
           payment_mode: s.payment_mode ?? "after_confirmation",
           shelter_price_dkk: s.shelter_price_dkk != null ? String(s.shelter_price_dkk) : "",
-          platform_fee_pct: String(s.platform_fee_pct ?? 5),
+          platform_fee_pct: String(s.platform_fee_pct ?? 0),
           platform_fee_min_dkk: String(s.platform_fee_min_dkk ?? 25),
         }])
       )
@@ -164,7 +164,7 @@ function AdminSheltersContent() {
     });
     const data = await res.json();
     if (!res.ok) { setCreateError(data.error); setCreating(false); return; }
-    setForm({ slug: "", title: "", owner_email: "", max_persons: "6", description: "", booking_mode: "shelterdk" as "shelterdk" | "iframe" | "both", payment_mode: "after_confirmation" as "after_confirmation" | "upfront", shelter_price_dkk: "", platform_fee_pct: "5", platform_fee_min_dkk: "25" });
+    setForm({ slug: "", title: "", owner_email: "", max_persons: "6", description: "", booking_mode: "shelterdk" as "shelterdk" | "iframe" | "both", payment_mode: "after_confirmation" as "after_confirmation" | "upfront", shelter_price_dkk: "", platform_fee_pct: "0", platform_fee_min_dkk: "25" });
     setCreating(false);
     load();
   };
@@ -660,7 +660,7 @@ function AdminSheltersContent() {
                                 ...(prev[s.id] ?? {
                                   payment_mode: "after_confirmation",
                                   shelter_price_dkk: "",
-                                  platform_fee_pct: "5",
+                                  platform_fee_pct: "0",
                                   platform_fee_min_dkk: "25",
                                 }),
                                 payment_mode: e.target.value as "after_confirmation" | "upfront",
@@ -691,7 +691,7 @@ function AdminSheltersContent() {
                                 ...(prev[s.id] ?? {
                                   payment_mode: "after_confirmation",
                                   shelter_price_dkk: "",
-                                  platform_fee_pct: "5",
+                                  platform_fee_pct: "0",
                                   platform_fee_min_dkk: "25",
                                 }),
                                 shelter_price_dkk: e.target.value,
@@ -706,14 +706,16 @@ function AdminSheltersContent() {
                           Transaktionsgebyr %
                         </label>
                         <p className="text-[11px] text-primary/40 mb-1.5">
-                          Brutto-gebyr inkl. moms.
+                          Brutto-gebyr inkl. moms. Lad den stå på 0 — vilkårene
+                          lover gæsten 25 til 50 kr., og en procentsats kan
+                          overstige det på dyre ophold.
                         </p>
                         <input
                           type="number"
                           min={0}
                           max={100}
                           step={0.5}
-                          value={paymentDrafts[s.id]?.platform_fee_pct ?? "5"}
+                          value={paymentDrafts[s.id]?.platform_fee_pct ?? "0"}
                           onChange={(e) =>
                             setPaymentDrafts((prev) => ({
                               ...prev,
@@ -721,7 +723,7 @@ function AdminSheltersContent() {
                                 ...(prev[s.id] ?? {
                                   payment_mode: "after_confirmation",
                                   shelter_price_dkk: "",
-                                  platform_fee_pct: "5",
+                                  platform_fee_pct: "0",
                                   platform_fee_min_dkk: "25",
                                 }),
                                 platform_fee_pct: e.target.value,
@@ -737,6 +739,7 @@ function AdminSheltersContent() {
                         </label>
                         <p className="text-[11px] text-primary/40 mb-1.5">
                           Brutto inkl. moms. 50 kr svarer til 40 kr netto.
+                          Vilkårene lover 25 til 50 kr. — hold dig inden for det.
                         </p>
                         <input
                           type="number"
@@ -749,7 +752,7 @@ function AdminSheltersContent() {
                                 ...(prev[s.id] ?? {
                                   payment_mode: "after_confirmation",
                                   shelter_price_dkk: "",
-                                  platform_fee_pct: "5",
+                                  platform_fee_pct: "0",
                                   platform_fee_min_dkk: "25",
                                 }),
                                 platform_fee_min_dkk: e.target.value,
@@ -765,7 +768,7 @@ function AdminSheltersContent() {
                         onClick={() => handleRowAction(s.id, "update_payment_settings", paymentDrafts[s.id] ?? {
                           payment_mode: "after_confirmation",
                           shelter_price_dkk: "",
-                          platform_fee_pct: "5",
+                          platform_fee_pct: "0",
                           platform_fee_min_dkk: "25",
                         })}
                         disabled={rowActionState[s.id]?.loading}
