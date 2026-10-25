@@ -86,6 +86,7 @@ export async function GET() {
         minPrice: t?.minPrice ?? null,
         maxPrice: t?.maxPrice ?? null,
         winner: t?.winnerName ?? null,
+        winnerReason: t?.winnerReason ?? null,
       };
     })
   ).join("\n");

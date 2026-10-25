@@ -200,6 +200,8 @@ export interface GuideTeaser {
   maxPrice: number | null;
   /** Antal produkter der kan købes lige nu. */
   buyable: number;
+  /** Foerstevalgets best_for, saa llms.txt kan baere begrundelsen med. */
+  winnerReason: string | null;
 }
 
 /**
@@ -212,7 +214,7 @@ export async function getGuideTeasers(guideIds: string[]): Promise<Map<string, G
   const sb = getServiceClient();
   const { data: entries } = await sb
     .from("buying_guide_entries")
-    .select("guide_id, rank, score, award_label, affiliate_product_id")
+    .select("guide_id, rank, score, award_label, best_for, affiliate_product_id")
     .in("guide_id", guideIds);
   if (!entries || entries.length === 0) return out;
   const ids = [...new Set(entries.map((e) => e.affiliate_product_id))];
@@ -247,6 +249,7 @@ export async function getGuideTeasers(guideIds: string[]): Promise<Map<string, G
     out.set(gid, {
       winnerName: winnerProduct?.product_name ?? null,
       winnerScore: winner?.score ?? null,
+      winnerReason: (winner as { best_for?: string | null } | null)?.best_for ?? null,
       minPrice: prices.length ? Math.min(...prices) : null,
       maxPrice: prices.length ? Math.max(...prices) : null,
       buyable: available.length,

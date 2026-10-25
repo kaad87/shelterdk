@@ -10,6 +10,8 @@ import { RelatedGuides } from "@/components/buying-guide/RelatedGuides";
 import { buildItemListSchema } from "@/lib/buying-guides-schema";
 import { BuyingGuideEntry } from "@/components/buying-guide/BuyingGuideEntry";
 import { BuyingGuideOverview } from "@/components/buying-guide/BuyingGuideOverview";
+import { GuideDomSaetning } from "@/components/buying-guide/GuideDomSaetning";
+import { guideDom } from "@/lib/guide-dom";
 import { BuyingGuideComparisonTable } from "@/components/buying-guide/BuyingGuideComparisonTable";
 import { BuyingGuideSources } from "@/components/buying-guide/BuyingGuideSources";
 import { GuideDeals } from "@/components/buying-guide/GuideDeals";
@@ -164,6 +166,7 @@ export default async function BuyingGuidePage({
             {guide.title}
           </h1>
           {guide.intro && <p className="text-lg text-primary/80">{guide.intro}</p>}
+          <GuideDomSaetning dom={guideDom(guide, entries)} />
           <p className="mt-2 text-xs text-primary/50">
             {guide.author && <>Af {guide.author} · </>}
             {/* To forskellige datoer med hver sin betydning: den redaktionelle

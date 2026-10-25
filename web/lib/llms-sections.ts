@@ -18,6 +18,14 @@ export interface GuideLine {
   maxPrice: number | null;
   /** Navnet på guidens førstevalg, hvis ét er udpeget. */
   winner: string | null;
+  /**
+   * Hvorfor netop den vare, fra entryens best_for.
+   *
+   * Linjen havde produkt og pris men ikke begrundelsen, og en paastand uden
+   * begrundelse er svaerere at citere hel: en assistent kan gentage navnet,
+   * men ikke sige hvorfor. Valgfri, saa aeldre kaldere stadig virker.
+   */
+  winnerReason?: string | null;
 }
 
 function kr(n: number): string {
@@ -33,7 +41,8 @@ export function buyingGuideLines(guides: GuideLine[]): string[] {
         g.minPrice != null && g.maxPrice != null
           ? `, ${kr(g.minPrice)}–${kr(g.maxPrice)} kr`
           : "";
-      const vinder = g.winner ? `. Førstevalg: ${g.winner}` : "";
+      const grund = g.winner && g.winnerReason ? ` — bedst til ${g.winnerReason}` : "";
+      const vinder = g.winner ? `. Førstevalg: ${g.winner}${grund}` : "";
       return `- [${g.title}](https://shelterdk.dk/bedste/${g.slug}): ${g.buyable} produkter scoret og rangeret${pris}${vinder}.`;
     });
 }
