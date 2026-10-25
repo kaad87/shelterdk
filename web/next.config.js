@@ -125,6 +125,13 @@ const nextConfig = {
       // fordi Google viste en fejlside; den rigtige side lå på plads 12,1.
       { source: "/bedste/vandrestoevler", destination: "/bedste/vandrestovler", permanent: true },
       { source: "/bedste/frysetoerret-mad", destination: "/bedste/frysetorret-mad", permanent: true },
+      // sommersovepose lagt sammen med oversigten. Maalt over 28 dage: siden
+      // havde 211 visninger, men kun 11 paa sit eget ord, og laa paa plads
+      // 40-82 for "bedste sovepose", "bedste sovepose til prisen" og
+      // "bedste dunsovepose" — soegninger forælderen i forvejen holder paa
+      // plads 5,8 til 10,1. Nul sidevisninger i egen maaling i 30 dage.
+      // Letvaegtsposen og sommervinklen er flyttet til oversigten foerst.
+      { source: "/bedste/sommersovepose", destination: "/bedste/sovepose", permanent: true },
       { source: "/danmark/jylland/ny-hammersholt", destination: "/danmark/jylland", permanent: true },
       { source: "/danmark/jylland/fons", destination: "/danmark/jylland", permanent: true },
       { source: "/danmark/fyn/dybbol", destination: "/danmark/fyn", permanent: true },
