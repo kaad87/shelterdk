@@ -52,7 +52,12 @@ export const ALDRIG =
   // "Teen Reversible North Down Jacket" slap igennem en liste med kun danske
   // ord. Proeves mod navn OG kategorinavn, saa en vare i kategorigrenen
   // "Brands > The North Face > Boern" ogsaa falder, selv om navnet er neutralt.
-  /\bhund(?!rede)[a-zæøå]*|\bbørn|\bjunior\b|\bbaby\b|\bbarn\b|\bkids\b|\bteen|\byouth\b|\bboys?\b|\bgirls?\b|\btoddler\b/i;
+  //
+  // "barn" skal IKKE ramme "Barn Red", som er en farve. Maalt paa kataloget
+  // matcher \bbarn\b praecis to af 17.220 raekker, og begge er "Primus
+  // Ignition Steel ... Barn Red - Taendstaal". Ordet fangede altsaa nul
+  // boerneprodukter og to farver.
+  /\bhund(?!rede)[a-zæøå]*|\bbørn|\bjunior\b|\bbaby\b|\bbarn\b(?!\s+red\b)|\bkids\b|\bteen|\byouth\b|\bboys?\b|\bgirls?\b|\btoddler\b/i;
 
 export const FEED_KATEGORIER: FeedKategori[] = [
   // Hed "lejrsko", indtil udvalget blev laest igennem: varerne er

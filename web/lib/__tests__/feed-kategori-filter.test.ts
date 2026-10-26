@@ -156,3 +156,17 @@ describe("kikkert og oekse", () => {
     expect(kategoriFor("Savklinge til buesav", "Værktøj")).toBeNull();
   });
 });
+
+describe("ALDRIG: Barn Red er en farve", () => {
+  it("afviser ikke en vare hvis farve er Barn Red", () => {
+    // Maalt: \bbarn\b matchede praecis to af 17.220 produkter, og begge var
+    // farven "Barn Red" paa et Primus-taendstaal. Proeves her gennem fleece,
+    // fordi det er en kategori filteret kender.
+    expect(kategoriFor("Pinewood Tiveden Fleece Barn Red", "fleecetrøjer")).toBe("fleece");
+  });
+
+  it("afviser stadig rigtige boerneprodukter", () => {
+    expect(kategoriFor("Fleecetrøje til børn - Treklife", "fleece")).toBeNull();
+    expect(kategoriFor("Tatonka Gaiter 420hd Junior", "gamacher")).toBeNull();
+  });
+});
