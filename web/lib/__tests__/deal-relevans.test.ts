@@ -1,0 +1,345 @@
+import { describe, expect, it } from "vitest";
+import {
+  delerEmneord,
+  emneOrd,
+  erTilbehoer,
+  fold,
+  kategoriErEget,
+  relevanteTilbud,
+  varianthoved,
+  dubletNoegle,
+  type GuideKontekst,
+} from "../deal-relevans";
+
+/**
+ * Proeverne er de varer, blokken faktisk viste 26. oktober 2026, og de varer
+ * de 182 historiske klik ramte. Testen falder derfor baade hvis et maalt
+ * irrelevant tilfaelde kommer tilbage, og hvis et maalt klik ville blive
+ * filtreret vaek.
+ */
+const v = (
+  product_name: string,
+  category_mapped: string | null = null,
+  brand: string | null = null,
+  id = product_name
+) => ({ id, brand, product_name, category_mapped });
+
+const g = (
+  slug: string,
+  kategori: string,
+  entryNavne: string[],
+  entryMaerker: string[] = []
+): GuideKontekst => ({ slug, kategori, entryNavne, entryMaerker });
+
+describe("fold", () => {
+  it("folder de danske bogstaver og deres digrafer ens", () => {
+    expect(fold("oekse")).toBe(fold("Økse"));
+    expect(fold("rygsaek")).toBe(fold("Rygsæk"));
+    expect(fold("haandklaede")).toBe("handklade");
+    expect(fold("taendstaal")).toBe(fold("Tændstål"));
+  });
+
+  it("fjerner skilletegn, saa ordgraenser ikke kan snyde", () => {
+    expect(fold("dry-bag")).toBe("drybag");
+  });
+});
+
+describe("erTilbehoer", () => {
+  it("fanger det tilbehoer blokken viste", () => {
+    expect(erTilbehoer("Celestron Lens Cleaning Kit - Tilbehør til kikkerter")).toBe(true);
+    expect(erTilbehoer("Jaeger Staalmontager 30 mm Medium")).toBe(true);
+    expect(erTilbehoer("Celestron HAND CONTROL AZ")).toBe(true);
+    expect(erTilbehoer("LifeStraw Flex Replacement Carbon Filter - Vandfilter")).toBe(true);
+    expect(erTilbehoer("Ricoh/Pentax Pentax Tripod Adapter U")).toBe(true);
+  });
+
+  it("lader varen selv passere", () => {
+    expect(erTilbehoer("LifeStraw Flex Vandfilter")).toBe(false);
+    expect(erTilbehoer("Kikkert - Nikon Prostaff P3 8x42")).toBe(false);
+    expect(erTilbehoer("Økse - Fiskars X7")).toBe(false);
+    expect(erTilbehoer("Sea To Summit Air Chair Large Black/grey - Stol")).toBe(false);
+  });
+});
+
+describe("varianthoved", () => {
+  it("folder stoerrelser skrevet med mellemrum", () => {
+    // basisNavn er forankret paa komma og bindestreg og giver disse uaendret
+    // tilbage; det var derfor to af tre tilbud paa fleece var samme troeje.
+    expect(varianthoved("Pinewood Tiveden Sweater Fleece W Black S")).toBe(
+      varianthoved("Pinewood Tiveden Sweater Fleece W Black M")
+    );
+    expect(varianthoved("Trespass Bernia Adventure Vandrebukser Women Black M")).toBe(
+      varianthoved("Trespass Bernia Adventure Vandrebukser Women Black XXL")
+    );
+  });
+
+  it("folder en afsluttende farve", () => {
+    expect(varianthoved("Knog Bilby Run 400 Coral")).toBe(varianthoved("Knog Bilby Run 400 Lime"));
+  });
+
+  it("lader modellen staa naar sidste ord ikke er stoerrelse eller farve", () => {
+    expect(varianthoved("Teva Verra Dame")).toBe("Teva Verra Dame");
+    expect(varianthoved("Trangia 25-1 Stormkøkken UL")).toBe("Trangia 25-1 Stormkøkken UL");
+  });
+});
+
+describe("emneOrd", () => {
+  it("udelader maerket, saa vokabularet er et emnefilter og ikke et maerkefilter", () => {
+    const ord = emneOrd("Sea to Summit Camp Cutlery Set", ["Sea to Summit"]);
+    expect([...ord]).not.toContain("summit");
+    expect([...ord]).toContain("cutlery");
+  });
+
+  it("udelader for korte ord og rene tal", () => {
+    const ord = emneOrd("Dry Bag 10 L - Sea to Summit", ["Sea to Summit"]);
+    expect([...ord]).not.toContain("bag");
+    expect([...ord]).not.toContain("10");
+  });
+});
+
+describe("delerEmneord", () => {
+  it("matcher en dansk flertalsform via praefiks", () => {
+    expect(delerEmneord(new Set(["kikkerter"]), new Set(["kikkert"]))).toBe(true);
+  });
+
+  it("matcher ikke paa et kort praefiks", () => {
+    // "camp" maa ikke matche "camping", ellers slap Camping Pot ind paa bestik.
+    expect(delerEmneord(new Set(["camping"]), new Set(["camp"]))).toBe(false);
+  });
+});
+
+describe("kategoriErEget", () => {
+  it("regner en snaevrere variant af guiden som samme emne", () => {
+    expect(kategoriErEget("telt", "telt")).toBe(true);
+    expect(kategoriErEget("letvaegtstelt", "telt")).toBe(true);
+    expect(kategoriErEget("liggeunderlag-til-vinter", "liggeunderlag")).toBe(true);
+    expect(kategoriErEget("dunsovepose", "sovepose")).toBe(true);
+    expect(kategoriErEget("vandrerygsaek", "rygsaek")).toBe(true);
+  });
+
+  it("skelner naboer fra samme emne", () => {
+    expect(kategoriErEget("lanterne", "pandelampe")).toBe(false);
+    expect(kategoriErEget("oekse", "kniv")).toBe(false);
+    expect(kategoriErEget("kompas", "prepping")).toBe(false);
+    expect(kategoriErEget("handsker", "beklædning")).toBe(false);
+    expect(kategoriErEget("campingstol", "campingmobler")).toBe(false);
+  });
+});
+
+describe("relevanteTilbud: de maalte irrelevante tilbud", () => {
+  it("fjerner cykelsaettet fra de fire beklaednings-guider", () => {
+    const varer = [v("Gentlemen's Hardware - Bicycle Repair Kit", "beklædning")];
+    const guider: GuideKontekst[] = [
+      g("handsker", "beklædning", [
+        "Handsker - Hestra Fält Guide",
+        "Handsker - Treklife Fleece",
+        "Handsker - Devold Nansen",
+      ]),
+      g("hue", "beklædning", ["Hue - Devold Nansen", "Hue - Treklife Fleece", "Hue - Buff Merino"]),
+      g("gamacher", "beklædning", [
+        "Gaiters - Highlander Walking",
+        "Gaiters - Montane Alta Gaiter",
+        "Gaiters - Montane Cetus Gaiter",
+      ]),
+      g("uldundertoj", "beklædning", [
+        "Uldundertøj - Devold Duo Active",
+        "Uldundertøj - Aclima WarmWool",
+        "Uldundertøj - Icebreaker 200",
+      ]),
+    ];
+    for (const guide of guider) expect(relevanteTilbud(varer, guide)).toEqual([]);
+  });
+
+  it("fjerner proptraekkeren fra oekse-guiden", () => {
+    const guide = g("oekse", "kniv", ["Økse - Fiskars X7", "Økse - Hultafors Classic"]);
+    const varer = [
+      v("COAST LED150 Pro Dual LED multitool", "kniv"),
+      v("Point Virgule Tjenerkniv/proptrækker I Rustfri Stål - Multitool", "kniv"),
+    ];
+    expect(relevanteTilbud(varer, guide)).toEqual([]);
+  });
+
+  it("beholder en rigtig oekse naar guiden faktisk handler om oekser", () => {
+    // Den rigtige /bedste/oekse havde 6 save af 8 entries, saa "okse" stod kun
+    // i to og naaede ikke taersklen. Her er guiden som den skal se ud.
+    const guide = g("oekse", "kniv", [
+      "Økse - Black Paracord Axe - Stål",
+      "Helko Werk Black Forest Pack Økse",
+      "Økse - Fiskars X7",
+      "Økse - Hultafors Classic",
+    ]);
+    expect(relevanteTilbud([v("Økse - Gränsfors Bruk Small Forest", "kniv")], guide)).toHaveLength(1);
+  });
+
+  it("fjerner noedpakker fra kompas og madkasser fra taendstaal", () => {
+    expect(
+      relevanteTilbud([v("Nødpakke - Large", "prepping")], g("kompas", "prepping", ["Kompas - Silva Ranger"]))
+    ).toEqual([]);
+    expect(
+      relevanteTilbud(
+        [v("Sistema Meal Prep 5-pack 870 Ml", "kogeudstyr")],
+        g("taendstaal", "kogeudstyr", ["Tændstål - Light My Fire Army"])
+      )
+    ).toEqual([]);
+  });
+
+  it("fjerner Camping Pot fra bestik, selv om en entry hedder Camp Cutlery", () => {
+    const guide = g(
+      "bestik",
+      "kogeudstyr",
+      ["Spork - Sea to Summit Camp Cutlery Spork", "Bestiksæt - Sea to Summit Passage Cutlery Set"],
+      ["Sea to Summit"]
+    );
+    const varer = [
+      v("Gentlemen's Hardware Camping Pot - Gryde", "kogeudstyr"),
+      v("Trangia 25-1 Stormkøkken UL", "kogeudstyr"),
+    ];
+    expect(relevanteTilbud(varer, guide)).toEqual([]);
+  });
+
+  it("beholder stormkoekkenet paa stormkoekken-guiden", () => {
+    // Samme brede kategori som taendstaal, men "stormkokken" kendetegner guiden.
+    const guide = g(
+      "stormkoekken",
+      "kogeudstyr",
+      [
+        "Stormkøkken - Trangia 27-1 UL",
+        "Stormkøkken - Trangia 25-1 HA",
+        "Stormkøkken - Primus Lite Plus",
+        "Gasbrænder - Primus Classic Trail",
+      ],
+      ["Trangia", "Primus"]
+    );
+    expect(relevanteTilbud([v("Trangia 25-1 Stormkøkken UL", "kogeudstyr")], guide)).toHaveLength(1);
+  });
+
+  it("fjerner boernemadkassen fra dry-bag", () => {
+    const guide = g("dry-bag", "taske", ["Dry bag - Sea to Summit Lightweight 8L"], ["Sea to Summit"]);
+    const varer = [
+      v("Fluf Zipper Lunch Bag - Shark", "taske"),
+      v("Gentlemen's Hardware Travel Tech Case - Cover", "taske"),
+    ];
+    expect(relevanteTilbud(varer, guide)).toEqual([]);
+  });
+
+  it("fjerner tilbehoer selv i den rigtige kategori", () => {
+    const guide = g("kikkert", "kikkert", ["Kikkert - Nikon Prostaff P3 8x42"], ["Nikon"]);
+    const varer = [
+      v("Jaeger Staalmontager 30 mm Medium - Tilbehør til kikkerter", "kikkert"),
+      v("Celestron HAND CONTROL AZ - Tilbehør til kikkerter", "kikkert"),
+      v("Kikkert - Bresser Hunter 8x40", "kikkert"),
+    ];
+    expect(relevanteTilbud(varer, guide).map((x) => x.product_name)).toEqual([
+      "Kikkert - Bresser Hunter 8x40",
+    ]);
+  });
+
+  it("fjerner pandelamper fra lanterne-guiden", () => {
+    const guide = g("lanterne", "pandelampe", ["Lanterne - Goal Zero Lighthouse"], ["Goal Zero"]);
+    expect(relevanteTilbud([v("Knog Bilby Run 400 Coral - Pandelampe", "pandelampe")], guide)).toEqual([]);
+  });
+});
+
+describe("relevanteTilbud: de maalte klik maa ikke forsvinde", () => {
+  it("beholder Air Chair paa campingstol, hvor slug og kategori ikke matcher", () => {
+    // 5 klik. campingstol -> campingmobler, og navnet siger "Chair", ikke
+    // "campingstol". Entry-ordet "stol" er det der baerer relevansen.
+    const guide = g(
+      "campingstol",
+      "campingmobler",
+      [
+        "Stol - Treklife High-back UL Chair",
+        "Stol - Treklife Low-back UL Chair",
+        "Stol - Treklife Luxe Chair",
+        "Stol - Nemo Moonlite Reclining Camp Chair",
+        "Campingstol - Positionsstol med 5 indstillinger",
+        "Festivalstol - 2 kopholdere - Ekstra robust model - Brun",
+        "Foldestol - dobbelt - Sort",
+      ],
+      ["Treklife", "Nemo"]
+    );
+    const varer = [v("Sea To Summit Air Chair Large Black/grey - Stol", "campingmobler")];
+    expect(relevanteTilbud(varer, guide)).toHaveLength(1);
+  });
+
+  it("beholder Tatonka-rygsaekken paa vandrerygsaek", () => {
+    // 5 klik.
+    const guide = g("vandrerygsaek", "rygsaek", ["Rygsæk - Osprey Talon 33"], ["Osprey"]);
+    const varer = [v("Rygsæk til kvinde - Tatonka Yukon 60 + 10 liter", "rygsaek")];
+    expect(relevanteTilbud(varer, guide)).toHaveLength(1);
+  });
+
+  it("beholder engelsksprogede gaiters paa gamacher", () => {
+    // 4 klik. Navnet er engelsk, slug'en dansk.
+    const guide = g(
+      "gamacher",
+      "beklædning",
+      [
+        "Gaiters - Highlander Walking",
+        "Gaiters - Montane Alta Gaiter",
+        "Gaiters - Montane Cetus Gaiter",
+        "Vaude Albona Gaiter Ii - Anthracite - Gaiter",
+      ],
+      ["Montane", "Vaude", "Highlander"]
+    );
+    const varer = [v("Gaiters - Black Diamond Frontpoint GTX V2 - Sort", "beklædning")];
+    expect(relevanteTilbud(varer, guide)).toHaveLength(1);
+  });
+
+  it("beholder boernesoveposer paa boerneguiden, men ikke paa vinterguiden", () => {
+    // 3 klik laa paa /bedste/sovepose-til-boern. ALDRIG maa ikke fjerne det,
+    // guiden handler om.
+    const boern = g("sovepose-til-boern", "sovepose", ["Børnesovepose - Treklife Trip 3 Junior"]);
+    const vinter = g("sovepose-til-vinter", "sovepose", ["Sovepose - Snugpak Softie 12"]);
+    const vare = [v("Børnesovepose - Snugpak Sleeper Kids", "sovepose")];
+    expect(relevanteTilbud(vare, boern)).toHaveLength(1);
+    expect(relevanteTilbud(vare, vinter)).toEqual([]);
+  });
+
+  it("beholder en fleece der ikke hedder fleece, fordi kategorien er guidens egen", () => {
+    const guide = g("fleece", "fleece", ["Fleecetrøje - Aclima ReBorn"], ["Aclima"]);
+    const varer = [v("Helly Hansen Womens Imperial Long Pile Jacket 2.0", "fleece", "Helly Hansen")];
+    expect(relevanteTilbud(varer, guide)).toHaveLength(1);
+  });
+});
+
+describe("relevanteTilbud: dubletter og raekkefoelge", () => {
+  it("viser kun én variant af samme model", () => {
+    const guide = g("fleece", "fleece", ["Fleecetrøje - Aclima ReBorn"], ["Aclima"]);
+    const varer = [
+      v("Pinewood Tiveden Sweater Fleece W Black S", "fleece", "Pinewood", "a"),
+      v("Pinewood Tiveden Sweater Fleece W Black M", "fleece", "Pinewood", "b"),
+      v("Berghaus Womens Kinetic Powerstretch Hoody", "fleece", "Berghaus", "c"),
+    ];
+    expect(relevanteTilbud(varer, guide).map((x) => x.id)).toEqual(["a", "c"]);
+  });
+
+  it("bevarer raekkefoelgen, saa stoerste rabat stadig staar foerst", () => {
+    const guide = g("vandresandal", "vandresandal", ["Vandresandal - Teva Terra"], ["Teva"]);
+    const varer = [
+      v("Vandresandal - Keen Newport", "vandresandal", "Keen", "1"),
+      v("Vandresandal - Merrell Terran", "vandresandal", "Merrell", "2"),
+    ];
+    expect(relevanteTilbud(varer, guide).map((x) => x.id)).toEqual(["1", "2"]);
+  });
+
+  it("returnerer tom liste frem for noget forkert", () => {
+    expect(relevanteTilbud([], g("oekse", "oekse", ["Økse - Fiskars"]))).toEqual([]);
+  });
+});
+
+describe("dubletNoegle", () => {
+  it("folder en variant der staar midt i navnet", () => {
+    // Outmore saetter kategorien sidst, saa farven staar i midten og
+    // varianthoved alene kan ikke se den.
+    expect(dubletNoegle("Knog Bilby Run 400 Coral - Pandelampe")).toBe(
+      dubletNoegle("Knog Bilby Run 400 Lime - Pandelampe")
+    );
+  });
+
+  it("holder to forskellige modeller adskilt", () => {
+    expect(dubletNoegle("Knog Bilby Run 400 - Pandelampe")).not.toBe(
+      dubletNoegle("Knog Bilby Silikone Genopladelig - Pandelampe")
+    );
+  });
+});

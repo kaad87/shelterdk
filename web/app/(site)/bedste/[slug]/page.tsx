@@ -284,7 +284,7 @@ export default async function BuyingGuidePage({
           )}
 
           {/* Aktuelle tilbud i samme kategori (ekskl. guidens egne produkter) */}
-          <GuideDeals entries={entries} />
+          <GuideDeals slug={guide.slug} entries={entries} />
 
           {/* Se også — relaterede guider */}
           <RelatedGuides guides={related} ialt={allGuides.length} />

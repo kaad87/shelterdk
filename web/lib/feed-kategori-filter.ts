@@ -44,7 +44,7 @@ export interface FeedKategori {
  * kategori: foerste udgave havde "baby" i fleece-reglen men ikke "boerne", og
  * "Boerne fleecetroeje" slap igennem.
  */
-const ALDRIG =
+export const ALDRIG =
   // "hund" uden ordgraense fangede ikke "Hundesandal", hvor ordet loeber
   // videre. Uden (?!rede) ville det til gengaeld ramme "hundrede".
   //

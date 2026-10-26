@@ -40,7 +40,7 @@ export interface UdvalgVare {
  * skrevet med UK-omregning ("40 2/3 / UK 5"). Proeves kun paa det sidste led
  * efter et komma eller en bindestreg, saa "No. 16" midt i et navn er uroert.
  */
-const STOERRELSE =
+export const STOERRELSE =
   /^(?:x{0,3}[sl]|[sm]|[2-6]x?l|[sml]\s*\/\s*(?:m|x?l)|\d{2,3}(?:[.,]\d)?(?:\s+\d\/\d)?|regular|long|short|petite)$/i;
 
 /**
@@ -59,8 +59,8 @@ const UK_HALE = /\s*\/\s*uk\s*[\d.,/ ]+$/i;
  * "sabbia"), og det er med vilje den sikre vej: en farve vi ikke genkender
  * giver én model for meget, ikke to modeller slaaet forkert sammen.
  */
-const FARVE =
-  /\b(black|sort|white|hvid|grey|gray|graa|grå|silver|charcoal|anthracite|antracite|navy|blue|blaa|blå|teal|petrol|green|groen|grøn|olive|forest|moss|khaki|sage|lime|red|roed|rød|chili|brick|burgundy|wine|brown|brun|tan|beige|sand|cream|camel|coffee|chocolate|suede|timber|earth|stone|slate|ink|pink|rose|purple|lilac|violet|yellow|gul|orange|apricot|mustard|gold|bronze|copper|melange|camou|camo|multi|print|clay|rust|plum|birch|bungee|titanium|pebble|fossil|fosil|savanna|laurel|patina|terracotta|basalt|buckwheat|chalk|indigo|bordeaux|oatmeal|balsam|corsair|taupe|plaza|salvia|sabbia|nero|bianco|poplar|verbena|brindle|limestone|marine|bracken|magnet|citadel|cordovan|tusk|ember|graphite|granite|storm|dusty|mist|sage|willow|utility|glacial|seabird|bamboo|pitch|oar|basin|torrey|tarmac|antiguous|samba|oak|navy|agave|arona|oatmeal|mustang|sabbia|nero|bianco|pistacchio|avocado|corda|nude|tapioca|claqua|gull|walnut|atera|cactus|pelican|tobacco|bedrock|ebony|forge|taupe|cordovan|bombay|magnet|bracken|citadel|tundra|vintage)\b/i;
+export const FARVE =
+  /\b(black|sort|white|hvid|grey|gray|graa|grå|silver|charcoal|anthracite|antracite|navy|blue|blaa|blå|teal|petrol|green|groen|grøn|olive|forest|moss|khaki|sage|lime|red|roed|rød|chili|brick|burgundy|wine|brown|brun|tan|beige|sand|cream|camel|coffee|chocolate|suede|timber|earth|stone|slate|ink|pink|rose|coral|salmon|purple|lilac|violet|yellow|gul|orange|apricot|mustard|gold|bronze|copper|melange|camou|camo|multi|print|clay|rust|plum|birch|bungee|titanium|pebble|fossil|fosil|savanna|laurel|patina|terracotta|basalt|buckwheat|chalk|indigo|bordeaux|oatmeal|balsam|corsair|taupe|plaza|salvia|sabbia|nero|bianco|poplar|verbena|brindle|limestone|marine|bracken|magnet|citadel|cordovan|tusk|ember|graphite|granite|storm|dusty|mist|sage|willow|utility|glacial|seabird|bamboo|pitch|oar|basin|torrey|tarmac|antiguous|samba|oak|navy|agave|arona|oatmeal|mustang|sabbia|nero|bianco|pistacchio|avocado|corda|nude|tapioca|claqua|gull|walnut|atera|cactus|pelican|tobacco|bedrock|ebony|forge|taupe|cordovan|bombay|magnet|bracken|citadel|tundra|vintage)\b/i;
 
 /**
  * Modelnavnet uden farve og stoerrelse, saa varianter af samme vare foldes.
