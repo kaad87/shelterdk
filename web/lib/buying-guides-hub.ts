@@ -54,6 +54,33 @@ export function groupGuides<T extends HubGuide>(guides: T[]): { group: string; g
 }
 
 /**
+ * Kandidaterne i en fast, indholdsuafhængig rækkefølge, roteret så den
+ * begynder lige efter den aktuelle guide.
+ *
+ * Rotationen er hele pointen. Vælger alle guider de samme seks søskende,
+ * samler alle interne links sig på seks sider, og resten får nul. Målt på det
+ * levende site 26. oktober 2026 havde "Tøj & lag-på-lag" tretten medlemmer,
+ * hvoraf dunjakke fik tolv indgående links fra sin egen gruppe, mens solhat,
+ * vandrebukser, fleece, gamacher og handsker fik nul.
+ *
+ * Med en ring peger hver guide på de seks NÆSTE i rækken, og så bliver hver
+ * guide selv peget på af præcis seks andre. Fordelingen er jævn uden at nogen
+ * skal vedligeholde en liste.
+ *
+ * Sorteringen er på slug og ikke på updated_at. Listen kom tidligere fra
+ * getPublishedGuides, der sorterer efter updated_at faldende, så linkgrafen
+ * skiftede, hver gang en guide blev rettet, og samlede sig om det senest
+ * redigerede. En graf, der flytter sig af en stavefejl, er ikke en graf man kan
+ * bygge på.
+ */
+function ring<T extends HubGuide>(kandidater: T[], currentSlug: string): T[] {
+  const sorteret = [...kandidater].sort((a, b) => a.slug.localeCompare(b.slug, "da"));
+  const i = sorteret.findIndex((g) => g.slug === currentSlug);
+  if (i < 0) return sorteret;
+  return [...sorteret.slice(i + 1), ...sorteret.slice(0, i)];
+}
+
+/**
  * Relaterede guider til "Se også": parent + egne varianter + søskende i samme
  * hub-gruppe. Ekskluderer sig selv. Cappet.
  */
@@ -73,8 +100,8 @@ export function relatedGuides<T extends HubGuide>(currentSlug: string, all: T[],
   if (current.parent_slug) add(all.find((g) => g.slug === current.parent_slug));
   // 2) egne varianter
   for (const g of all) if (g.parent_slug === currentSlug) add(g);
-  // 3) søskende i samme gruppe
-  for (const g of all) if (groupOf(g.category) === grp) add(g);
+  // 3) søskende i samme gruppe, i ring fra den aktuelle guide
+  for (const g of ring(all.filter((x) => groupOf(x.category) === grp), currentSlug)) add(g);
 
   // 4) fyld op fra hovedguider, hvis gruppen er for lille til at nå loftet.
   //
@@ -86,10 +113,13 @@ export function relatedGuides<T extends HubGuide>(currentSlug: string, all: T[],
   // Der fyldes kun med hovedguider (uden parent_slug). En variant af et andet
   // emne er et svagere link end hovedguiden om samme emne, og den har i
   // forvejen sin forælder som indgang.
+  //
+  // Også her i ring: uden den blev de samme få hovedguider filler på hver
+  // side, og kikkert fik 24 indgående links mens solhat fik nul.
   if (out.length < cap) {
-    for (const g of all) {
+    for (const g of ring(all.filter((x) => !x.parent_slug), currentSlug)) {
       if (out.length >= cap) break;
-      if (!g.parent_slug) add(g);
+      add(g);
     }
   }
   return out.slice(0, cap);

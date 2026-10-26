@@ -105,3 +105,56 @@ describe("relatedGuides", () => {
     expect(r).not.toContain("sommersovepose");
   });
 });
+
+describe("relatedGuides: jævn fordeling og stabil graf", () => {
+  const guide = (slug: string, category: string, parent_slug: string | null = null) => ({
+    slug, category, parent_slug, title: slug, intro: null,
+  });
+
+  // "Tøj & lag-på-lag" som den ser ud paa sitet: tretten medlemmer, altsaa
+  // langt over loftet paa seks.
+  const TOEJ = [
+    "dunjakke","fleece","gamacher","handsker","hue","regntoj","solhat",
+    "uldundertoj","vandrebukser","vandresandal","vandresko","vandresokker","vandrestovler",
+  ].map((s) => guide(s, s === "vandresko" || s === "vandrestovler" ? "fodtoj" : s === "vandresokker" ? "sokker" : s));
+
+  it("giver hver guide i en stor gruppe lige mange indgaaende links", () => {
+    // Maalt foer: dunjakke fik tolv, mens solhat, vandrebukser, fleece,
+    // gamacher og handsker fik nul.
+    const ind = new Map(TOEJ.map((g) => [g.slug, 0]));
+    for (const g of TOEJ) {
+      for (const r of relatedGuides(g.slug, TOEJ, 6)) ind.set(r.slug, (ind.get(r.slug) ?? 0) + 1);
+    }
+    const tal = [...ind.values()];
+    expect(Math.min(...tal)).toBe(6);
+    expect(Math.max(...tal)).toBe(6);
+  });
+
+  it("aendrer sig ikke naar listens raekkefoelge aendrer sig", () => {
+    // getPublishedGuides sorterer efter updated_at faldende, saa listen
+    // skifter hver gang en guide rettes. Grafen maa ikke skifte med den.
+    const a = relatedGuides("solhat", TOEJ, 6).map((g) => g.slug);
+    const b = relatedGuides("solhat", [...TOEJ].reverse(), 6).map((g) => g.slug);
+    expect(b).toEqual(a);
+  });
+
+  it("peger stadig paa parent og egne varianter foerst", () => {
+    const med = [
+      guide("sovepose", "sovepose"),
+      guide("sovepose-til-vinter", "sovepose", "sovepose"),
+      guide("dunsovepose", "sovepose", "sovepose"),
+      ...TOEJ,
+    ];
+    const r = relatedGuides("sovepose-til-vinter", med, 6).map((g) => g.slug);
+    expect(r[0]).toBe("sovepose");
+  });
+
+  it("fylder op fra hovedguider naar gruppen er for lille", () => {
+    const smaa = [
+      guide("lanterne", "lygte"),
+      guide("pandelampe", "pandelampe"),
+      ...TOEJ,
+    ];
+    expect(relatedGuides("lanterne", smaa, 6)).toHaveLength(6);
+  });
+});
