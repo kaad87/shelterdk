@@ -31,7 +31,7 @@ const DEMO_SHELTER: BookableShelter = {
   ical_import_url: null,
   ical_last_synced_at: null,
   shelter_price_dkk: 0,
-  platform_fee_pct: 5,
+  platform_fee_pct: 0,
   platform_fee_min_dkk: 25,
   payment_mode: "after_confirmation",
   cancellation_cutoff_hours: 48,
