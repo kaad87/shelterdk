@@ -1,5 +1,27 @@
 import { createClient } from "@supabase/supabase-js";
+import { FEED_KATEGORIER } from "./feed-kategori-filter";
 import type { AffiliateProduct } from "./affiliate-products";
+
+/**
+ * Kategorier som feed-filteret selv skriver paa produkterne.
+ *
+ * Whitelisten blev udelukkende laest af affiliate_category_mapping, som er
+ * noeglet paa (retailer, category_raw) og kun udfyldes af den manuelle
+ * kortlaegning i admin. De filtrerede feeds gaar ikke den vej: filteret saetter
+ * category_mapped direkte paa varen, fordi kategorien ER ShelterDK-kategorien.
+ *
+ * Resultatet var, at 175 varer i seks nye kategorier (vandresandal 35, fleece
+ * 43, solhat 31, vandrebukser 29, dunjakke 22, oekse 15) aldrig naaede /tilbud
+ * eller forsidens tilbudswidget. Kun kikkert virkede, og kun fordi den var
+ * kortlagt manuelt i forvejen.
+ *
+ * Kilden er koden frem for en raekke i basen, saa en ny kategori i filteret
+ * ikke kraever en migration, der kan glemmes. En kategori i FEED_KATEGORIER er
+ * kurateret pr. definition, saa den hoerer paa whitelisten.
+ */
+function filterKategorier(): string[] {
+  return [...new Set(FEED_KATEGORIER.map((k) => k.kategori))];
+}
 
 export interface DealsFilter {
   minDiscount?: number; // default 25
@@ -71,12 +93,13 @@ export async function getTopDeals(
     .eq("whitelisted", true)
     .not("category_mapped", "is", null);
   const allowedCats = [
-    ...new Set(
-      (whitelisted ?? [])
+    ...new Set([
+      ...((whitelisted ?? [])
         .map((r: { category_mapped: string | null }) => r.category_mapped)
-        .filter(Boolean)
-    ),
-  ] as string[];
+        .filter(Boolean) as string[]),
+      ...filterKategorier(),
+    ]),
+  ];
   if (allowedCats.length === 0) return [];
 
   let q = supabase
@@ -125,10 +148,11 @@ export async function getWhitelistedCategories(): Promise<string[]> {
     .eq("whitelisted", true)
     .not("category_mapped", "is", null);
   return [
-    ...new Set(
-      (data ?? [])
+    ...new Set([
+      ...((data ?? [])
         .map((r: { category_mapped: string | null }) => r.category_mapped)
-        .filter(Boolean) as string[]
-    ),
+        .filter(Boolean) as string[]),
+      ...filterKategorier(),
+    ]),
   ].sort();
 }
