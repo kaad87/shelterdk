@@ -17,6 +17,7 @@ import {
 } from "../lib/parseAffiliateFeed";
 import { FEEDS, feedUrl, type FeedDef } from "../lib/affiliate-feeds";
 import { kategoriFor, prisOk } from "../lib/feed-kategori-filter";
+import { kategoriFraNavn } from "../lib/kategori-fra-navn";
 import { vaelgUdvalg, basisNavn } from "../lib/feed-udvalg";
 
 /**
@@ -209,7 +210,17 @@ async function syncRetailer(
       product_name: navn,
       description: p.description,
       category_raw: p.category_raw,
-      category_mapped: kat ?? mapping?.mapped ?? null,
+      // Navnet er sidste udvej, og det er med vilje SIDST: et produkt der
+      // allerede har en kategori fra feed-filteret eller fra den manuelle
+      // kortlaegning beholder den, saa et gaet aldrig kan flytte en vare,
+      // nogen har kortlagt med vilje.
+      //
+      // Maalt 26. oktober 2026 laa 8.010 varer uden kategori, heraf 72 af de
+      // 337 entries i udgivne guider. Kortlaegningen kan ikke naa dem, fordi
+      // den forudsaetter at feedets egen kategori siger noget:
+      // outdoortid::"Populaere produkter" daekker telte, stole, puder,
+      // powerbanks og haandklaeder paa én gang.
+      category_mapped: kat ?? mapping?.mapped ?? kategoriFraNavn(navn) ?? null,
       price: p.price,
       price_original: p.price_original,
       discount_pct: p.discount_pct,

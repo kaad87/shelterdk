@@ -343,3 +343,17 @@ describe("dubletNoegle", () => {
     );
   });
 });
+
+describe("relevanteTilbud: engros", () => {
+  it("fjerner en aeske med 100 gummihandsker fra handske-guiden", () => {
+    // outmore::Handsker er kortlagt til handsker, saa varen naar aldrig
+    // navnereglerne. Vaernet skal derfor ogsaa staa her.
+    const guide = g("handsker", "handsker", [
+      "Handsker - Hestra Fält Guide",
+      "Handsker - Sealskinz Solo Merino",
+      "Handsker - Black Diamond Mont Blanc",
+    ]);
+    const varer = [v("Park Tool Parktool Gummihandske Mg-3 L Box Med 100 - Handsker", "handsker")];
+    expect(relevanteTilbud(varer, guide)).toEqual([]);
+  });
+});

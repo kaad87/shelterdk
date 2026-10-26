@@ -294,7 +294,30 @@ describe("boerneprodukter i voksenguider", () => {
     seoDescription: "Vi har scoret 5 favoritter.",
   };
 
-  it("melder en boernevare i en voksenguide", () => {
+  it("melder IKKE en boernevare der baerer et boerne-praedikat", () => {
+    // Alle seks maalte tilfaelde var saadan: "Bedste til boern" med en note
+    // der forklarer valget. En familie-vinkel er ikke en fejl.
+    const entries = basis.entries.map((e, i) =>
+      i === 1 ? { ...e, awardLabel: "Bedste til børn" } : e
+    );
+    const h = guideHealth(
+      {
+        ...basis,
+        entries,
+        entryNames: [
+          "Drikkedunk - Nalgene Wide Mouth 1L",
+          "Drikkedunk til børn - Nalgene Kids OTF - 350 ml",
+          "Drikkedunk - Treklife 750 ml",
+          "Drikkedunk - Sigg Traveller",
+          "Drikkedunk - Camelbak Chute",
+        ],
+      },
+      new Date()
+    );
+    expect(h.childItems).toEqual([]);
+  });
+
+  it("melder en boernevare uden praedikat i en voksenguide", () => {
     const h = guideHealth(
       {
         ...basis,

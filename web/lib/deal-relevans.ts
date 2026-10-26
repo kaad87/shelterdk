@@ -37,6 +37,7 @@
  * stoerrelses- og farvevokabularet fra udvalget.
  */
 import { ALDRIG } from "./feed-kategori-filter";
+import { ENGROS } from "./kategori-fra-navn";
 import { FARVE, STOERRELSE } from "./feed-udvalg";
 
 /**
@@ -291,6 +292,12 @@ export function relevanteTilbud<T extends TilbudsVare>(
     const navn = v.product_name ?? "";
     if (!guidenErTilBoern && (ALDRIG.test(navn) || ALDRIG.test(v.category_mapped ?? ""))) continue;
     if (erTilbehoer(navn)) continue;
+    // Engros og gavesaet, uanset hvordan varen fik sin kategori. Vaernet staar
+    // HER og ikke kun i kategoriseringen, fordi en vare kan faa sin kategori
+    // fra den manuelle kortlaegning uden at gaa gennem navnereglerne:
+    // outmore::Handsker er kortlagt til handsker og rummer fire Park
+    // Tool-aesker med 100 gummihandsker.
+    if (ENGROS.test(navn)) continue;
     // Kategorien er guidens eget emne, eller varen skal hedde noget af det
     // samme som guidens egne produkter.
     if (!eget && !delerEmneord(emneOrd(navn, guide.entryMaerker), emne)) continue;

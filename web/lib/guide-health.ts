@@ -54,18 +54,33 @@ export interface HealthInput {
 }
 
 /**
- * Boerne- og hundeprodukter i en guide, der ikke handler om dem.
+ * Et praedikat der udpeger varen som guidens boernevalg.
+ *
+ * "Bedste til boern" og "Bedste til stoerre boern" er de faktiske vaerdier.
+ */
+const BOERNE_PRAEDIKAT = /børn|boern|junior|barn/i;
+
+/**
+ * UTILSIGTEDE boerne- og hundeprodukter i en guide, der ikke handler om dem.
  *
  * Feed-filteret har et ALDRIG-vaern mod netop det, men det koerer kun paa de
- * filtrerede feeds. Backpackerlife, Outmore og Outdoortid importeres helt, og
- * derfra kan en boernevare haandplukkes ind i en voksenguide uden at noget
- * siger fra. Maalt 26. oktober 2026 stod der seks: en Nalgene Kids-drikkedunk
- * i drikkedunk, boernegamacher og en Tatonka Junior i gamacher, en Black
- * Diamond Wiz i pandelampe, en Coghlans Poncho For Kids i regntoj og en
- * Merrell Kids Moab i vandresko.
+ * filtrerede feeds. Backpackerlife, Outmore og Outdoortid importeres helt, saa
+ * en boernevare kan naa ind i en voksenguide uden at noget siger fra.
  *
- * Guiden selv afgoer, om det er en fejl: /bedste/sovepose-til-boern SKAL have
- * boernesoveposer, og den kendes paa sin slug og sine egne navne.
+ * FOERSTE UDGAVE meldte alle seks boernevarer i voksenguider som fejl, og alle
+ * seks var bevidste: en Nalgene Kids-drikkedunk, boernegamacher, en Tatonka
+ * Junior, en Black Diamond Wiz, en Coghlans Poncho For Kids og en Merrell Kids
+ * Moab. De baerer hver et praedikat ("Bedste til boern"), en redaktionel note
+ * der forklarer valget, og ulemper der siger "For svag til voksenbrug". Det er
+ * en familie-vinkel i en voksenguide og ikke en fejl, saa checket gav seks
+ * falske positive og ville have sendt vagtjobbet i gang hver nat.
+ *
+ * Praedikatet er derfor det, der skiller: en boernevare NOGEN har udpeget som
+ * boernevalget er bevidst, en uden er en forglemmelse.
+ *
+ * Guiden selv kan ogsaa handle om boern: /bedste/sovepose-til-boern SKAL have
+ * boernesoveposer, og den kendes paa sin slug og paa at flertallet af dens egne
+ * navne er boernevarer.
  */
 function findChildItems(input: HealthInput): string[] {
   const navne = input.entryNames ?? [];
@@ -73,7 +88,11 @@ function findChildItems(input: HealthInput): string[] {
   const guidenErTilBoern =
     ALDRIG.test(input.slug) || navne.filter((n) => ALDRIG.test(n)).length > navne.length / 2;
   if (guidenErTilBoern) return [];
-  return navne.filter((n) => ALDRIG.test(n)).map((n) => n.trim().slice(0, 60));
+  // entryNames og entries bygges i samme raekkefoelge, saa de parres paa indeks.
+  return navne
+    .map((n, i) => ({ navn: n, praedikat: input.entries[i]?.awardLabel ?? null }))
+    .filter((x) => ALDRIG.test(x.navn) && !BOERNE_PRAEDIKAT.test(x.praedikat ?? ""))
+    .map((x) => x.navn.trim().slice(0, 60));
 }
 
 export interface GuideHealth {
