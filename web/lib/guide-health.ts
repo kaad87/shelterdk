@@ -17,6 +17,8 @@ export interface HealthEntry {
   retailer: string | null;
 }
 
+import { ALDRIG } from "./feed-kategori-filter";
+
 export interface HealthInput {
   slug: string;
   lastReviewedAt: string | null;
@@ -51,6 +53,29 @@ export interface HealthInput {
   knownBrands?: string[];
 }
 
+/**
+ * Boerne- og hundeprodukter i en guide, der ikke handler om dem.
+ *
+ * Feed-filteret har et ALDRIG-vaern mod netop det, men det koerer kun paa de
+ * filtrerede feeds. Backpackerlife, Outmore og Outdoortid importeres helt, og
+ * derfra kan en boernevare haandplukkes ind i en voksenguide uden at noget
+ * siger fra. Maalt 26. oktober 2026 stod der seks: en Nalgene Kids-drikkedunk
+ * i drikkedunk, boernegamacher og en Tatonka Junior i gamacher, en Black
+ * Diamond Wiz i pandelampe, en Coghlans Poncho For Kids i regntoj og en
+ * Merrell Kids Moab i vandresko.
+ *
+ * Guiden selv afgoer, om det er en fejl: /bedste/sovepose-til-boern SKAL have
+ * boernesoveposer, og den kendes paa sin slug og sine egne navne.
+ */
+function findChildItems(input: HealthInput): string[] {
+  const navne = input.entryNames ?? [];
+  if (!navne.length) return [];
+  const guidenErTilBoern =
+    ALDRIG.test(input.slug) || navne.filter((n) => ALDRIG.test(n)).length > navne.length / 2;
+  if (guidenErTilBoern) return [];
+  return navne.filter((n) => ALDRIG.test(n)).map((n) => n.trim().slice(0, 60));
+}
+
 export interface GuideHealth {
   slug: string;
   total: number;
@@ -76,6 +101,8 @@ export interface GuideHealth {
   singleRetailerRisk: boolean;
   /** Produktnavne broedteksten anbefaler, men som ikke er paa siden. */
   staleBrands: string[];
+  /** Boerne- eller hundeprodukter i en guide der ikke handler om dem. */
+  childItems: string[];
   problems: string[];
 }
 
@@ -224,8 +251,14 @@ export function guideHealth(input: HealthInput, now: Date = new Date()): GuideHe
   // markedskontekst, og "standard-tarps i polyester (Robens, Easy Camp,
   // Tatonka) vejer 700-1.200 gram" lover ikke at siden saelger en Robens.
   const staleBrands = findStaleBrands(input);
+  const childItems = findChildItems(input);
 
   const problems: string[] = [];
+  if (childItems.length) {
+    problems.push(
+      `${childItems.length} boerne- eller hundeprodukt(er) i en voksenguide: ${childItems.join(", ")}`
+    );
+  }
   if (staleBrands.length) {
     problems.push(
       `teksten anbefaler ${staleBrands.join(", ")}, som ikke er paa siden`
@@ -260,6 +293,7 @@ export function guideHealth(input: HealthInput, now: Date = new Date()): GuideHe
     concentrationRisk: topRetailer != null && topRetailerShare > MAX_RETAILER_SHARE,
     singleRetailerRisk: topRetailer != null && buyable > 0 && survivesTopRetailerLoss < MIN_SURVIVORS,
     staleBrands,
+    childItems,
     problems,
   };
 }

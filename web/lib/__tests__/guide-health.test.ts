@@ -278,3 +278,60 @@ describe("teksten anbefaler noget, der er taget af siden", () => {
     expect(guideHealth({ ...base, bodyMd: "**Outwell Tidal** er god." }, NOW).staleBrands).toEqual([]);
   });
 });
+
+describe("boerneprodukter i voksenguider", () => {
+  const basis = {
+    slug: "drikkedunk",
+    lastReviewedAt: new Date().toISOString(),
+    entries: [
+      { inStock: true, isBlocked: false, lastSeenAt: new Date().toISOString(), awardLabel: "Vores valg", retailer: "backpackerlife" },
+      { inStock: true, isBlocked: false, lastSeenAt: new Date().toISOString(), awardLabel: null, retailer: "outmore" },
+      { inStock: true, isBlocked: false, lastSeenAt: new Date().toISOString(), awardLabel: null, retailer: "outmore" },
+      { inStock: true, isBlocked: false, lastSeenAt: new Date().toISOString(), awardLabel: null, retailer: "outmore" },
+      { inStock: true, isBlocked: false, lastSeenAt: new Date().toISOString(), awardLabel: null, retailer: "outmore" },
+    ],
+    seoTitle: "Bedste drikkedunk 2026 – 5 favoritter",
+    seoDescription: "Vi har scoret 5 favoritter.",
+  };
+
+  it("melder en boernevare i en voksenguide", () => {
+    const h = guideHealth(
+      {
+        ...basis,
+        entryNames: [
+          "Drikkedunk - Nalgene Wide Mouth 1L",
+          "Drikkedunk til børn - Nalgene Kids OTF - 350 ml",
+          "Drikkedunk - Treklife 750 ml",
+          "Drikkedunk - Sigg Traveller",
+          "Drikkedunk - Camelbak Chute",
+        ],
+      },
+      new Date()
+    );
+    expect(h.childItems).toHaveLength(1);
+    expect(h.problems.join(" ")).toContain("voksenguide");
+  });
+
+  it("melder intet paa en guide der selv handler om boern", () => {
+    const h = guideHealth(
+      {
+        ...basis,
+        slug: "sovepose-til-boern",
+        entryNames: [
+          "Børnesovepose - Treklife Trip 3 Junior",
+          "Sovepose til børn - Snugpak Sleeper Kids",
+          "Børnesovepose - Vango Nitestar",
+          "Sovepose til børn - Treklife Mini",
+          "Børnesovepose - Easy Camp Cosmos",
+        ],
+      },
+      new Date()
+    );
+    expect(h.childItems).toEqual([]);
+  });
+
+  it("melder intet naar entry-navnene ikke er oplyst", () => {
+    const h = guideHealth(basis, new Date());
+    expect(h.childItems).toEqual([]);
+  });
+});
