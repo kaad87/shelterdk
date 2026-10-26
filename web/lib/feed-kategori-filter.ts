@@ -59,6 +59,25 @@ export const ALDRIG =
   // boerneprodukter og to farver.
   /\bhund(?!rede)[a-zæøå]*|\bbørn|\bjunior\b|\bbaby\b|\bbarn\b(?!\s+red\b)|\bkids\b|\bteen|\byouth\b|\bboys?\b|\bgirls?\b|\btoddler\b/i;
 
+/**
+ * Handler guiden selv om boern?
+ *
+ * Bruges to steder med samme svar: sundhedstjekket skal ikke melde
+ * boernesoveposer paa /bedste/sovepose-til-boern, og tilbudsblokken skal ikke
+ * filtrere dem vaek der.
+ *
+ * FLERTALLET af navnene skal vaere boernevarer. Foerste udgave i
+ * deal-relevans spurgte om NOGEN af dem var, og det var for lidt: /bedste/regntoj
+ * har én bevidst boerne-poncho ud af syv entries, saa vaernet var slukket for
+ * hele guiden, og "Reisenthel Mini Maxi Poncho M Kids Abc Friends Blue" kom
+ * med i tilbudsblokken.
+ */
+export function guidenHandlerOmBoern(slug: string, entryNavne: string[]): boolean {
+  if (ALDRIG.test(slug)) return true;
+  if (!entryNavne.length) return false;
+  return entryNavne.filter((n) => ALDRIG.test(n)).length > entryNavne.length / 2;
+}
+
 export const FEED_KATEGORIER: FeedKategori[] = [
   // Hed "lejrsko", indtil udvalget blev laest igennem: varerne er
   // vandresandaler og hybridsko (Keen Arroyo, Salomon Techamphibian, CMP Abid

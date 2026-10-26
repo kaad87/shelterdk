@@ -357,3 +357,31 @@ describe("relevanteTilbud: engros", () => {
     expect(relevanteTilbud(varer, guide)).toEqual([]);
   });
 });
+
+describe("relevanteTilbud: én boernevare slukker ikke vaernet", () => {
+  it("fjerner en boerneponcho fra regntoej-guiden, der har én bevidst boernevare", () => {
+    // Maalt live: /bedste/regntoj viste "Reisenthel Mini Maxi Poncho M Kids
+    // Abc Friends Blue", fordi guiden har én bevidst boerne-poncho ud af syv
+    // entries og vaernet spurgte om NOGEN af dem var en boernevare.
+    const guide = g("regntoj", "regntoj", [
+      "Regnjakke - Treklife Rain",
+      "Regnsæt herre - Treklife Rain Packaway",
+      "Regnbukser - Highlander Stow & Go",
+      "Coghlans Poncho For Kids - Poncho",
+      "Regnjakke dame - Trespass Nasu",
+      "Regnslag - Treklife",
+      "Poncho - Easy Camp",
+    ]);
+    const varer = [v("Reisenthel Mini Maxi Poncho M Kids Abc Friends Blue", "regntoj")];
+    expect(relevanteTilbud(varer, guide)).toEqual([]);
+  });
+
+  it("beholder stadig boernevarer paa en guide der handler om boern", () => {
+    const guide = g("sovepose-til-boern", "sovepose", [
+      "Børnesovepose - Treklife Trip 3 Junior",
+      "Sovepose til børn - Snugpak Sleeper Kids",
+      "Børnesovepose - Highlander Creature",
+    ]);
+    expect(relevanteTilbud([v("Børnesovepose - Vango Nitestar", "sovepose")], guide)).toHaveLength(1);
+  });
+});

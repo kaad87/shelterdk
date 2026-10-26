@@ -36,7 +36,7 @@
  * genbruges her frem for at skrives igen: `ALDRIG` fra feed-filteret og
  * stoerrelses- og farvevokabularet fra udvalget.
  */
-import { ALDRIG } from "./feed-kategori-filter";
+import { ALDRIG, guidenHandlerOmBoern } from "./feed-kategori-filter";
 import { ENGROS } from "./kategori-fra-navn";
 import { FARVE, STOERRELSE } from "./feed-udvalg";
 
@@ -277,12 +277,12 @@ export function relevanteTilbud<T extends TilbudsVare>(
 ): T[] {
   const eget = kategoriErEget(guide.slug, guide.kategori);
 
-  // Boerneudstyr udelukkes, MEDMINDRE guiden selv handler om det. Guidens egne
-  // entries afgoer det: /bedste/sovepose-til-boern har "Boernesovepose" i
-  // navnene, og uden denne undtagelse fjernede filteret de varer, guiden
-  // handler om (3 af de 182 maalte klik).
-  const guidenErTilBoern =
-    ALDRIG.test(guide.slug) || guide.entryNavne.some((n) => ALDRIG.test(n));
+  // Boerneudstyr udelukkes, MEDMINDRE guiden selv handler om det:
+  // /bedste/sovepose-til-boern har "Boernesovepose" i navnene, og uden den
+  // undtagelse fjernede filteret de varer, guiden handler om (3 af de 182
+  // maalte klik). Reglen staar i feed-kategori-filter, fordi sundhedstjekket
+  // skal svare det samme.
+  const guidenErTilBoern = guidenHandlerOmBoern(guide.slug, guide.entryNavne);
 
   const emne = kendeOrd(guide.entryNavne, guide.entryMaerker);
 

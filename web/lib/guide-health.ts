@@ -17,7 +17,7 @@ export interface HealthEntry {
   retailer: string | null;
 }
 
-import { ALDRIG } from "./feed-kategori-filter";
+import { ALDRIG, guidenHandlerOmBoern } from "./feed-kategori-filter";
 
 export interface HealthInput {
   slug: string;
@@ -85,9 +85,7 @@ const BOERNE_PRAEDIKAT = /børn|boern|junior|barn/i;
 function findChildItems(input: HealthInput): string[] {
   const navne = input.entryNames ?? [];
   if (!navne.length) return [];
-  const guidenErTilBoern =
-    ALDRIG.test(input.slug) || navne.filter((n) => ALDRIG.test(n)).length > navne.length / 2;
-  if (guidenErTilBoern) return [];
+  if (guidenHandlerOmBoern(input.slug, navne)) return [];
   // entryNames og entries bygges i samme raekkefoelge, saa de parres paa indeks.
   return navne
     .map((n, i) => ({ navn: n, praedikat: input.entries[i]?.awardLabel ?? null }))
