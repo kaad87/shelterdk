@@ -7,6 +7,7 @@ import {
 } from "@/lib/affiliate-deals";
 import { GearCard } from "@/components/GearCard";
 import { buildItemListSchema } from "@/lib/buying-guides-schema";
+import { KATEGORI_GUIDE, kategoriLabel } from "@/lib/kategori-labels";
 
 export const dynamic = "force-dynamic";
 
@@ -15,54 +16,6 @@ export const metadata: Metadata = {
   description:
     "De største prisfald på telte, soveposer, pandelamper og outdoor-grej — kurateret dagligt fra vores partnere.",
   alternates: { canonical: "/tilbud" },
-};
-
-const CATEGORY_LABELS: Record<string, string> = {
-  telt: "Telte",
-  sovepose: "Soveposer",
-  liggeunderlag: "Liggeunderlag",
-  soveudstyr: "Soveudstyr",
-  haengekoje: "Hængekøjer",
-  rygsaek: "Rygsække",
-  taske: "Tasker",
-  pandelampe: "Pandelamper",
-  lygte: "Lygter",
-  kogeudstyr: "Kogeudstyr",
-  drikkedunk: "Drikkedunke",
-  vandfilter: "Vandfiltre",
-  regntoj: "Regntøj",
-  jakke: "Jakker",
-  bukser: "Bukser",
-  fodtoj: "Fodtøj",
-  kniv: "Knive & værktøj",
-  foerstehjaelp: "Førstehjælp",
-  campingmobler: "Campingmøbler",
-  kikkert: "Kikkerter",
-  tarp: "Tarps",
-  sokker: "Sokker",
-  elektronik: "Elektronik",
-  navigation: "Navigation",
-  hygiejne: "Hygiejne",
-  vand: "Vandaktiviteter",
-  cykel: "Cykel",
-  fiskeri: "Fiskeri",
-  hund: "Hund",
-  boern: "Børn",
-};
-
-/** Kategorier hvor vi har en købsguide — krydslink fra tilbuds-filteret. */
-const CATEGORY_GUIDES: Record<string, { slug: string; label: string }> = {
-  sovepose: { slug: "sovepose", label: "soveposer" },
-  telt: { slug: "telt", label: "telte" },
-  liggeunderlag: { slug: "liggeunderlag", label: "liggeunderlag" },
-  pandelampe: { slug: "pandelampe", label: "pandelamper" },
-  haengekoje: { slug: "haengekoje", label: "hængekøjer" },
-  kniv: { slug: "kniv", label: "knive" },
-  vandfilter: { slug: "vandfilter", label: "vandfiltre" },
-  rygsaek: { slug: "vandrerygsaek", label: "vandrerygsække" },
-  kogeudstyr: { slug: "stormkoekken", label: "stormkøkkener" },
-  campingmobler: { slug: "campingstol", label: "campingstole" },
-  tarp: { slug: "tarp", label: "tarps" },
 };
 
 const SORT_OPTIONS = [
@@ -113,7 +66,7 @@ export default async function TilbudPage({ searchParams }: PageProps) {
   });
 
   const hasFilters = !!(params.retailer || params.category || params.sort);
-  const activeGuide = params.category ? CATEGORY_GUIDES[params.category] : undefined;
+  const activeGuide = params.category ? KATEGORI_GUIDE[params.category] : undefined;
 
   // ItemList JSON-LD (Product + Offer) — kun på den kanoniske, ufiltrerede
   // visning, så schemaet matcher det Google indekserer på /tilbud.
@@ -147,6 +100,17 @@ export default async function TilbudPage({ searchParams }: PageProps) {
           kategori, så se vores{" "}
           <Link href="/bedste" className="text-accent underline">
             købsguider til outdoor-grej
+          </Link>
+          .
+        </p>
+        <p className="mt-2 text-sm text-primary/70">
+          Sæson:{" "}
+          <Link href="/black-friday" className="text-accent underline">
+            Black Friday
+          </Link>{" "}
+          og{" "}
+          <Link href="/julegaver" className="text-accent underline">
+            julegaver til friluftsfolk
           </Link>
           .
         </p>
@@ -184,7 +148,7 @@ export default async function TilbudPage({ searchParams }: PageProps) {
                 : "border-primary/15 bg-white text-primary/70 hover:border-accent/30 hover:text-accent"
             }`}
           >
-            {CATEGORY_LABELS[cat] ?? cat}
+            {kategoriLabel(cat)}
           </Link>
         ))}
       </div>
@@ -261,6 +225,24 @@ export default async function TilbudPage({ searchParams }: PageProps) {
           <p className="mt-2 text-primary/60">
             Prøv at fjerne et filter eller kig tilbage snart.
           </p>
+          {/* Den tomme tilstand var en blindgyde. En kategori uden tilbud er
+              almindelig (baaludstyr og taendstaal er sjaeldent sat 25 % ned),
+              og vi har en koebsguide til 40 af de 41 kategorier. Saa er det
+              bedre at sende gaesten derhen end at bede om at faa filteret
+              fjernet. */}
+          {activeGuide && (
+            <p className="mx-auto mt-4 max-w-md text-sm text-primary/70">
+              Der er ikke store prisfald på {kategoriLabel(params.category!).toLowerCase()} lige
+              nu. Vil du vide, hvad der er godt, så se{" "}
+              <Link
+                href={`/bedste/${activeGuide.slug}`}
+                className="font-medium text-accent underline"
+              >
+                vores guide til de bedste {activeGuide.label}
+              </Link>
+              .
+            </p>
+          )}
           {hasFilters && (
             <Link
               href="/tilbud"
@@ -275,7 +257,7 @@ export default async function TilbudPage({ searchParams }: PageProps) {
           <p className="mb-4 text-sm text-primary/50">
             {deals.length} tilbud
             {params.category &&
-              ` i ${CATEGORY_LABELS[params.category] ?? params.category}`}
+              ` i ${kategoriLabel(params.category)}`}
           </p>
       {activeGuide && (
         <p className="mb-4 -mt-2 text-sm text-primary/70">

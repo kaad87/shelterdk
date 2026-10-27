@@ -56,6 +56,8 @@ const legalLinks = [
   { label: "Privatlivspolitik", href: "/privacy" },
   { label: "Vilkår og betingelser", href: "/vilkaar" },
   { label: "Tilbud på outdoor-grej", href: "/tilbud" },
+  { label: "Black Friday", href: "/black-friday" },
+  { label: "Julegaver til friluftsfolk", href: "/julegaver" },
 ];
 
 const externalLinks = [

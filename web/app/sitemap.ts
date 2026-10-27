@@ -109,6 +109,10 @@ const STATIC_PAGES: Array<{
   { path: "/vilkaar", source: "app/(site)/vilkaar/page.tsx", changeFrequency: "monthly", priority: 0.5 },
   { path: "/turvenner", source: "app/(site)/turvenner/page.tsx", changeFrequency: "weekly", priority: 0.6 },
   { path: "/tilbud", source: "app/(site)/tilbud/page.tsx", changeFrequency: "daily", priority: 0.7 },
+  // Saesonsider. Black Friday skal vaere indekseret i god tid foer slutningen
+  // af november, saa den staar aaret rundt og taeller ned til naeste gang.
+  { path: "/black-friday", source: "app/(site)/black-friday/page.tsx", changeFrequency: "daily", priority: 0.7 },
+  { path: "/julegaver", source: "app/(site)/julegaver/page.tsx", changeFrequency: "weekly", priority: 0.7 },
   { path: "/bedste", source: "app/(site)/bedste/page.tsx", changeFrequency: "weekly", priority: 0.75 },
   // Tema-samlesider — bygget på Search Console-huller hvor efterspørgslen fandtes
   // men indholdet kun lå spredt på enkelte shelter-sider.
