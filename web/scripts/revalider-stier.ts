@@ -10,6 +10,8 @@ const FASTE = [
   "/",
   "/bedste",
   "/tilbud",
+  "/black-friday",
+  "/julegaver",
   "/annoncer-og-partnere",
   "/koeb-shelter",
   "/blog",
