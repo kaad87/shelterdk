@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SHELTER_ANTAL_TEKST } from "@/lib/shelter-antal";
 import { ArrowRight, MapPin } from "lucide-react";
 
 interface ShelterCTAProps {
@@ -14,7 +15,7 @@ export function ShelterCTA({ variant = "inline" }: ShelterCTAProps) {
             Find det perfekte shelter
           </h2>
           <p className="text-white/80 mb-6 max-w-lg mx-auto">
-            Søg blandt 800+ shelters i hele Danmark. Filtrer på faciliteter,
+            Søg blandt {SHELTER_ANTAL_TEKST} shelters i hele Danmark. Filtrer på faciliteter,
             booking og område.
           </p>
           <Link
@@ -40,7 +41,7 @@ export function ShelterCTA({ variant = "inline" }: ShelterCTAProps) {
             Find det perfekte shelter til din tur
           </p>
           <p className="text-primary/70 text-sm mt-1 mb-4">
-            Søg blandt 800+ shelters i hele Danmark — filtrer på faciliteter,
+            Søg blandt {SHELTER_ANTAL_TEKST} shelters i hele Danmark — filtrer på faciliteter,
             booking og område.
           </p>
           <Link

@@ -672,7 +672,7 @@ Læs vores [guide til mad over bål](/guides/mad-over-bal-nem-shelter-mad) for f
 
 ## Det rigtige grej til børn
 
-Børn fryser hurtigere end voksne, og en voksen-sovepose er for stor til at holde på varmen omkring en lille krop. Invester i en sovepose i børnestørrelse — se vores test af [de bedste soveposer til børn](/bedste/sovepose-til-boern), hvor flere af favoritterne koster under 400 kr. Et godt [liggeunderlag](/bedste/liggeunderlag) til hvert barn er mindst lige så vigtigt: kulden kommer nedefra, og et tyndt skumunderlag er ikke nok i skuldersæsonerne. Giv desuden hvert barn sin egen lille [pandelampe](/bedste/pandelampe) — det er både praktisk og en stor oplevelse for dem at have "sit eget lys" i mørket.
+Børn fryser hurtigere end voksne, og en voksen-sovepose er for stor til at holde på varmen omkring en lille krop. Invester i en sovepose i børnestørrelse — se vores guide til [de bedste soveposer til børn](/bedste/sovepose-til-boern), hvor flere af favoritterne koster under 400 kr. Et godt [liggeunderlag](/bedste/liggeunderlag) til hvert barn er mindst lige så vigtigt: kulden kommer nedefra, og et tyndt skumunderlag er ikke nok i skuldersæsonerne. Giv desuden hvert barn sin egen lille [pandelampe](/bedste/pandelampe) — det er både praktisk og en stor oplevelse for dem at have "sit eget lys" i mørket.
 
 ## Søvn og komfort
 
@@ -831,7 +831,7 @@ I højsæsonen er planlægning afgørende. Her er vores bedste råd:
 
 ## Sovepose – dit vigtigste udstyr
 
-> **Se vores test:** Vi har scoret og rangeret markedets soveposer i [bedste sovepose til shelterbrug](/bedste/sovepose) — inkl. budgetvalg under 500 kr.
+> **Se vores guide:** Vi har scoret og rangeret markedets soveposer i [bedste sovepose til shelterbrug](/bedste/sovepose) — inkl. budgetvalg under 500 kr.
 
 Soveposen er den enkeltstående genstand, der har størst indflydelse på din oplevelse. En nat med kulde er en elendig nat, og det gør alt andet sekundært. Vælg sovepose efter årstiden:
 
@@ -845,7 +845,7 @@ Dun er lettere og pakker mindre, men syntetisk er billigere og isolerer bedre, n
 
 ## Liggeunderlag – kulden kommer nedefra
 
-> **Se vores test:** [Bedste liggeunderlag](/bedste/liggeunderlag) — vi forklarer R-værdi og kårer favoritter fra budget til premium.
+> **Se vores guide:** [Bedste liggeunderlag](/bedste/liggeunderlag) — vi forklarer R-værdi og kårer favoritter fra budget til premium.
 
 Selv i et shelter med trægulv mister du kropsvarme nedad. Et godt liggeunderlag isolerer og giver komfort. Der er tre typer:
 
@@ -857,7 +857,7 @@ Til begynderen anbefaler vi et selvoppustende underlag som det bedste kompromis.
 
 ## Hovedlygte – uundværlig når mørket falder på
 
-> **Se vores test:** [Bedste pandelampe](/bedste/pandelampe) — lumen, batteritid og rødt lys forklaret.
+> **Se vores guide:** [Bedste pandelampe](/bedste/pandelampe) — lumen, batteritid og rødt lys forklaret.
 
 En god hovedlygte er et must. Du har begge hænder fri til at lave mad, samle brænde og navigere i mørke. Kig efter:
 
@@ -870,7 +870,7 @@ Medbring altid ekstra batterier. Der er intet værre end at stå i bælgmørke m
 
 ## Rygsæk – den rigtige størrelse
 
-> **Se vores test:** [Bedste vandrerygsæk](/bedste/vandrerygsaek) — fra letvægts-daypacks til trekking-sække, med bæresystem og liter forklaret.
+> **Se vores guide:** [Bedste vandrerygsæk](/bedste/vandrerygsaek) — fra letvægts-daypacks til trekking-sække, med bæresystem og liter forklaret.
 
 Til en enkelt overnatning er en rygsæk på 30–45 liter typisk tilstrækkelig. Til flerdages ture har du brug for 50–65 liter. Vigtige features:
 
@@ -893,7 +893,7 @@ Se vores [guide til mad over bål](/guides/mad-over-bal-nem-shelter-mad) for nem
 
 ## Kniv og ildstål
 
-> **Se vores test:** [Bedste kniv til shelterture](/bedste/kniv).
+> **Se vores guide:** [Bedste kniv til shelterture](/bedste/kniv).
 
 En god foldekniv er et af de mest alsidige redskaber i naturen. Brug den til at skære brænde, tilberede mad og lave båloptænding. Et ildstål er et pålideligt alternativ til tændstikker – det virker i al slags vejr og holder i tusindvis af tændinger.
 
@@ -969,7 +969,7 @@ Tjek vores komplette [pakkeliste](/guides/pakkeliste-til-sheltertur) og vores [b
 
 ## Tøjvalg der gør forskellen
 
-> **Se vores test:** [Bedste regntøj](/bedste/regntoj) — pakbare jakker, bukser og sæt fra 149 kr., og [bedste uldundertøj](/bedste/uldundertoj) til laget indenunder.
+> **Se vores guide:** [Bedste regntøj](/bedste/regntoj) — pakbare jakker, bukser og sæt fra 149 kr., og [bedste uldundertøj](/bedste/uldundertoj) til laget indenunder.
 
 Det vigtigste våben mod regn er det rigtige tøj. Princippet er simpelt: hold dig tør udefra og undgå at svede indefra.
 
@@ -993,7 +993,7 @@ Et regncover til rygsækken er godt, men stol ikke på det alene. Kraftig regn k
 
 ## Tarp – din bedste investering
 
-> **Se vores test:** [Bedste tarp](/bedste/tarp) — 7 favoritter fra 425 kr., med størrelse og opsætning forklaret.
+> **Se vores guide:** [Bedste tarp](/bedste/tarp) — 7 favoritter fra 425 kr., med størrelse og opsætning forklaret.
 
 Hvis der er ét stykke udstyr, der transformerer en regnvejrstur, er det en tarp. En let tarp (3x3 meter er ideelt) spændt ud foran shelteret skaber et tørt opholdsområde, hvor du kan:
 

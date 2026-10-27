@@ -111,3 +111,53 @@ describe("vaelgVinder", () => {
     expect(vaelgVinder([e(0, "Vores valg", 9.0, false), e(1, null, 8.0, false)])).toBeNull();
   });
 });
+
+describe("ét foerstevalg pr. guide", () => {
+  /**
+   * Siden, hub-kortet og llms.txt skal navngive samme vare. Fejlen er kommet
+   * tilbage to gange med hver sin aarsag: foerst tog hub-kortet den foerste
+   * efter rank, og derefter sorterede selve svarkapslen paa hoejeste score,
+   * mens badgen beholdt praedikatet, hvor det stod. En ekstern SEO-audit
+   * fandt det paa sovepose 27. oktober 2026, og maalingen viste ni af 46
+   * guider. Testen fastholder, at der kun er én udregning.
+   */
+  function medPraedikat(
+    id: string,
+    rank: number,
+    award: string | null,
+    score: number
+  ): GuideEntryWithProduct {
+    return { ...entry(id, rank, true), award_label: award, score };
+  }
+
+  const vinderEfter = (entries: GuideEntryWithProduct[]) =>
+    vaelgVinder(
+      resolveAwards(entries).map((x) => ({
+        ...x,
+        tilgaengelig: x.product.in_stock && !x.product.is_blocked,
+      }))
+    );
+
+  it("foelger topprædikatet, ikke den hoejeste score", () => {
+    // Sovepose-sagen: Snugpak Travelpak 3 har "Vores valg" paa 8,7, mens Sea
+    // to Summit Trek scorer 8,8 uden praedikat. Badgen sagde Snugpak,
+    // svarkapslen sagde Sea to Summit.
+    const v = vinderEfter([
+      medPraedikat("snugpak", 0, "Vores valg", 8.7),
+      medPraedikat("seatosummit", 3, null, 8.8),
+    ]);
+    expect(v?.id).toBe("snugpak");
+  });
+
+  it("peger paa den badgen faar, naar topprædikatet er arvet", () => {
+    // Topprædikatet sidder paa noget udsolgt, saa resolveAwards giver det til
+    // den hoejest scorende uden praedikat. Begge udregninger skal ende der.
+    const udsolgt = { ...medPraedikat("udsolgt", 0, "Vores valg", 9.2), product: { ...entry("udsolgt", 0, false).product } };
+    const entries = [udsolgt, medPraedikat("b", 1, null, 8.4), medPraedikat("c", 2, null, 8.9)];
+    const badge = resolveAwards(entries).find(
+      (x) => /^vores valg$/i.test(x.award_label ?? "") && x.product.in_stock
+    );
+    expect(badge?.id).toBe("c");
+    expect(vinderEfter(entries)?.id).toBe("c");
+  });
+});

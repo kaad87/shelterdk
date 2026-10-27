@@ -21,6 +21,7 @@ import { createPublicClient } from "@/utils/supabase/server-public";
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 import { getDistinctPlacesWithCounts } from "@/lib/danmark-silo";
 import { slugifySegment } from "@/lib/slug";
+import { rundShelterAntal } from "@/lib/shelter-antal";
 import type { Shelter } from "@/types/shelter";
 import { isShelterPlace } from "@/lib/shelter-detail";
 import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
@@ -286,8 +287,10 @@ export default async function HomePage() {
   // der er data → ingen visuel ændring på kortet før da.
   const stayPins = await getPublishedStayPins().catch(() => []);
 
-  // Round count to nearest 100 for trust counter; fallback to 800 if zero.
-  const shelterCount = shelterCountRaw > 0 ? Math.round(shelterCountRaw / 100) * 100 : 800;
+  // Afrundet tillidstaeller. Reglen og reservetallet bor i lib/shelter-antal,
+  // saa ShelterCTA og /koeb-shelter siger det samme: de sagde "800+" og "over
+  // 1.600", mens forsiden sagde 1700.
+  const shelterCount = rundShelterAntal(shelterCountRaw);
 
   const cityLinks: { name: string; count: number; slug: string }[] = featuredCities
     .map((name) => places.find((place) => place.place === name))

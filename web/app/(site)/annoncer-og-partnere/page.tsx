@@ -1,5 +1,29 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { FEEDS } from "@/lib/affiliate-feeds";
+
+/**
+ * Én linje pr. grej-forhandler. Typen er noeglet paa FEEDS, saa et nyt feed
+ * uden en beskrivelse her er en typefejl frem for en forhandler, der stille
+ * mangler paa siden. Det var praecis det, der var sket: siden naevnte tre af
+ * de syv aktive, og en ekstern audit fangede det 27. oktober 2026. Siden
+ * hedder "Vores partnere" og skal efter markedsfoeringsloven vaere komplet.
+ */
+const FORHANDLER_OM: Record<(typeof FEEDS)[number]["retailer"], string> = {
+  backpackerlife: "Dansk online outdoor- og prepping-butik",
+  outdoortid: "Dansk specialist i outdoor- og camping-grej",
+  outmore: "Dansk online outdoor-forhandler med bredt sortiment",
+  prooutdoor: "Dansk forhandler af outdoor-tøj og fodtøj",
+  outdoornu: "Dansk outdoor-butik med tøj og lag-på-lag",
+  zeejuu: "Dansk butik med kikkerter og optik",
+  outdooricentrum: "Dansk forhandler af økser, save og håndværktøj",
+};
+
+/** Partnere uden for grej-feedene: shelter-byggesaet og overnatning. */
+const ANDRE_PARTNERE = [
+  { navn: "Sølund Huse", om: "Danske shelter-samlesæt, bålhytter og covers", netvaerk: "Partner-ads" },
+  { navn: "Booking.com", om: "Glamping og naturophold i Danmark", netvaerk: "CJ Affiliate" },
+] as const;
 
 export const metadata: Metadata = {
   title: "Annoncer og partnere — sådan finansieres ShelterDK",
@@ -31,19 +55,22 @@ export default function AnnoncerOgPartnerePage() {
         </p>
 
         <h2>Vores partnere</h2>
+        <p>
+          Listen er fuldstændig: den dækker alle forhandlere, vi tjener på. Grej-partnerne
+          herunder kommer fra sitets egen feed-konfiguration, så en ny forhandler
+          ikke kan komme til uden også at stå her.
+        </p>
         <ul>
-          <li>
-            <strong>Backpackerlife.dk</strong> — Dansk online outdoor- og
-            prepping-butik
-          </li>
-          <li>
-            <strong>Outdoortid.dk</strong> — Dansk specialist i outdoor- og
-            camping-grej
-          </li>
-          <li>
-            <strong>Outmore.dk</strong> — Dansk online outdoor-forhandler med
-            bredt sortiment
-          </li>
+          {FEEDS.map((f) => (
+            <li key={f.retailer}>
+              <strong>{f.label}</strong> — {FORHANDLER_OM[f.retailer]} (Partner-ads)
+            </li>
+          ))}
+          {ANDRE_PARTNERE.map((p) => (
+            <li key={p.navn}>
+              <strong>{p.navn}</strong> — {p.om} ({p.netvaerk})
+            </li>
+          ))}
         </ul>
 
         <h2>Vores løfte</h2>

@@ -130,7 +130,11 @@ export default async function BuyingGuidesIndexPage() {
                           if (!t?.winnerName) return null;
                           return (
                             <p className="mt-2 text-xs text-primary/60">
-                              <span className="font-semibold text-primary">Testvinder:</span>{" "}
+                              {/* Ikke "Testvinder": /saadan-vurderer-vi siger, at vi
+                                  ikke har et testlab og ikke laver fysiske tests, og
+                                  guidesiden selv skriver "Vores førstevalg". Hub-kortet
+                                  var det eneste sted, ordet stod. */}
+                              <span className="font-semibold text-primary">Vores førstevalg:</span>{" "}
                               {t.winnerName}
                               {t.winnerScore != null && (
                                 <span className="ml-1 font-semibold text-accent">{String(t.winnerScore).replace(".", ",")}/10</span>

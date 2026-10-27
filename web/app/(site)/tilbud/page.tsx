@@ -281,7 +281,7 @@ export default async function TilbudPage({ searchParams }: PageProps) {
         <p className="mb-4 -mt-2 text-sm text-primary/70">
           Vil du vide hvad der er bedst — ikke kun billigst? Se{" "}
           <Link href={`/bedste/${activeGuide.slug}`} className="font-medium text-accent underline">
-            vores test af de bedste {activeGuide.label}
+            vores guide til de bedste {activeGuide.label}
           </Link>
           .
         </p>

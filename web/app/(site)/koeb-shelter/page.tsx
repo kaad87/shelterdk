@@ -6,6 +6,7 @@ import { AdBanner } from "@/components/AdBanner";
 import { GearCardView } from "@/components/GearCardClient";
 import { PartnerShelterCards } from "@/components/PartnerShelterCards";
 import { getShelterAlternatives } from "@/lib/buy-shelter";
+import { SHELTER_ANTAL } from "@/lib/shelter-antal";
 import { faqToJsonLd } from "@/lib/faq";
 
 export const revalidate = 86400;
@@ -365,7 +366,7 @@ export default async function KoebShelterPage() {
               Prøv det af først
             </h2>
             <p className="text-primary/80 text-sm mb-3">
-              Inden du investerer i dit eget, er der over 1.600 shelters i Danmark du kan
+              Inden du investerer i dit eget, er der over {SHELTER_ANTAL.toLocaleString("da-DK")} shelters i Danmark du kan
               overnatte i — mange af dem gratis.
             </p>
             <ul className="space-y-2 text-sm text-primary/80">

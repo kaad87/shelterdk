@@ -4,7 +4,7 @@ import { guideFacts } from "@/lib/guide-facts";
 import { friskBeskrivelse, friskTitel } from "@/lib/guide-title";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getGuideBySlug, getPublishedGuideSlugs, getPublishedGuides } from "@/lib/buying-guides";
+import { getGuideBySlug, getPublishedGuideSlugs, getPublishedGuides, vaelgVinder } from "@/lib/buying-guides";
 import { relatedGuides } from "@/lib/buying-guides-hub";
 import { RelatedGuides } from "@/components/buying-guide/RelatedGuides";
 import { buildItemListSchema } from "@/lib/buying-guides-schema";
@@ -96,11 +96,17 @@ export default async function BuyingGuidePage({
   // faktisk kan købe — rankGuideEntries demoterer udsolgte, så entries[0] er
   // kun et sikkert førstevalg hvis det er på lager.
   const available = entries.filter((e) => e.product.in_stock && !e.product.is_blocked);
-  // Højeste score blandt de købbare — ikke bare den første i rangeringen.
-  // Rank 0 kan være udsolgt og demoteret, og så pegede svarkapslen på
-  // budgetvalget, mens en højere scorende model stod længere nede på siden.
-  const topPick =
-    [...available].sort((a, b) => (b.score ?? -Infinity) - (a.score ?? -Infinity))[0] ?? null;
+  // Samme udregning som badgen på siden, hub-kortet og llms.txt: vaelgVinder.
+  // Den sorterede tidligere bare på score, og det er ikke det samme, fordi
+  // resolveAwards lader et topprædikat sidde, hvor det står, så længe varen er
+  // på lager. For ni af de 46 guider navngav svarkapslen derfor et andet
+  // produkt end badgen tre centimeter længere nede (sovepose: Sea to Summit
+  // Trek mod Snugpak Travelpak 3, som fik "Vores valg"). entries er allerede
+  // kørt gennem resolveAwards i getGuideBySlug, så prædikaterne her er de
+  // samme, siden renderer.
+  const topPick = vaelgVinder(
+    entries.map((e) => ({ ...e, tilgaengelig: e.product.in_stock && !e.product.is_blocked }))
+  );
   const budgetPick = available.find((e) => /budget|pris/i.test(e.award_label ?? "")) ?? null;
   // "Vores valg", ikke "testvinder": scoren er en redaktionel vurdering ud fra
   // en fast rubrik, ikke en labtest — sådan står der også på /saadan-vurderer-vi.

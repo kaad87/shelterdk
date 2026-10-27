@@ -324,7 +324,7 @@ Hvis du kun skal huske én ting, er det **sovegrej**. Uden god søvn bliver alt 
 
 Pak mindst:
 
-- **Sovepose** der passer til årstiden (tjek comfort-temperaturen) – se [vores test af de bedste soveposer](/bedste/sovepose)
+- **Sovepose** der passer til årstiden (tjek comfort-temperaturen) – se [vores guide til de bedste soveposer](/bedste/sovepose)
 - **Uldundertøj** at sove i — se [bedste uldundertøj](/bedste/uldundertoj)
 - **Liggeunderlag** – gerne oppusteligt + evt. skumunderlag under til kulde ([bedste liggeunderlag](/bedste/liggeunderlag))
 - Evt. **pude** eller et sammenrullet trøje
