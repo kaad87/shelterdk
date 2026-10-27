@@ -3,6 +3,8 @@ import {
   delerEmneord,
   emneOrd,
   erTilbehoer,
+  fjernStoej,
+  erStoej,
   fold,
   kategoriErEget,
   relevanteTilbud,
@@ -58,6 +60,19 @@ describe("erTilbehoer", () => {
     expect(erTilbehoer("Kikkert - Nikon Prostaff P3 8x42")).toBe(false);
     expect(erTilbehoer("Økse - Fiskars X7")).toBe(false);
     expect(erTilbehoer("Sea To Summit Air Chair Large Black/grey - Stol")).toBe(false);
+  });
+
+  it("laeser ikke 'SovePOSE TIL boern' som en pose til noget", () => {
+    // `pose\s+til` stod uden ordgraense, saa hver vare der hed "Sovepose til
+    // X" blev regnet som tilbehoer. Maalt mod 984 historiske klik paa
+    // /bedste-sider faldt 9 paa netop det, heraf otte produkter som
+    // /bedste/sovepose-til-boern selv handler om.
+    expect(erTilbehoer("Sovepose til børn - Treklife Junior - 4 sæsons")).toBe(false);
+    expect(erTilbehoer("Sovepose til vinter - Treklife Peak 4S - 4 sæsons")).toBe(false);
+    expect(erTilbehoer("Lagenpose til sovepose - Sea to Summit")).toBe(false);
+    // Og den fanger stadig en rigtig pose til noget.
+    expect(erTilbehoer("Pose til telt - opbevaringspose")).toBe(true);
+    expect(erTilbehoer("Taske til kikkert - Nikon")).toBe(true);
   });
 });
 
@@ -383,5 +398,61 @@ describe("relevanteTilbud: én boernevare slukker ikke vaernet", () => {
       "Børnesovepose - Highlander Creature",
     ]);
     expect(relevanteTilbud([v("Børnesovepose - Vango Nitestar", "sovepose")], guide)).toHaveLength(1);
+  });
+});
+
+describe("fjernStoej", () => {
+  const v = (id: string, brand: string | null, navn: string) =>
+    ({ id, brand, product_name: navn, category_mapped: null });
+
+  it("folder farve- og stoerrelsesvarianter af samme vare sammen", () => {
+    // Tre varianter af den samme troeje stod som tre tilbud paa fleece.
+    const ud = fjernStoej([
+      v("1", "Pinewood", "Pinewood Tiveden Sweater Fleece W Black S"),
+      v("2", "Pinewood", "Pinewood Tiveden Sweater Fleece W Black M"),
+      v("3", "Pinewood", "Pinewood Tiveden Sweater Fleece W Black L"),
+    ]);
+    expect(ud.map((x) => x.id)).toEqual(["1"]);
+  });
+
+  it("folder ikke to varer fra samme serie i forskelligt materiale sammen", () => {
+    const ud = fjernStoej([
+      v("1", "Treklife", "Sovepose - Treklife Peak 4S - 4 sæsons"),
+      v("2", "Treklife", "Dunsovepose - Treklife Down 900 - 4 sæsons"),
+    ]);
+    expect(ud).toHaveLength(2);
+  });
+
+  it("fjerner tilbehoer og engros", () => {
+    const ud = fjernStoej([
+      v("1", "Celestron", "Celestron Lens Cleaning Kit - Tilbehør til kikkerter"),
+      v("2", "Park Tool", "Park Tool Gummihandske Mg-3 L Box Med 100"),
+      v("3", "Fiskars", "Økse - Fiskars X7"),
+    ]);
+    expect(ud.map((x) => x.id)).toEqual(["3"]);
+  });
+
+  it("beholder to forskellige varer fra samme maerke", () => {
+    const ud = fjernStoej([
+      v("1", "Sea to Summit", "Dry bag - Sea to Summit Ultra-Sil - 8 liter"),
+      v("2", "Sea to Summit", "Sovepude - Sea to Summit Aeros Premium - Large"),
+    ]);
+    expect(ud).toHaveLength(2);
+  });
+});
+
+describe("erStoej: varer der ikke er friluftsgrej", () => {
+  it("fanger proptraekkere, ogsaa naar kategorien er rigtig", () => {
+    // outmore::Multitool er kortlagt til `kniv`, og grenen rummer baade
+    // Gerber og Victorinox OG tre Point Virgule-proptraekkere. Raekken kan
+    // ikke afgoere det, saa visningen maa.
+    expect(erStoej("Point Virgule Tjenerkniv/proptrækker I Rustfri Stål - Multitool")).toBe(true);
+    expect(erStoej("Gentlemen's Hardware Tools Corkscrew - Multitool")).toBe(true);
+  });
+  it("lader rigtige multitools og knive passere", () => {
+    expect(erStoej("Gerber Dime Multi-tool, Red, Gb - Multitool")).toBe(false);
+    expect(erStoej("Victorinox Pocket Tool Sentinel, black, one hand knife")).toBe(false);
+    expect(erStoej("Morakniv Companion - Kniv")).toBe(false);
+    expect(erStoej("COAST LED150 Pro Dual LED multitool")).toBe(false);
   });
 });

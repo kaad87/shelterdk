@@ -188,4 +188,73 @@ describe("kategoriFraNavn: modelnavne der ligner produkttyper", () => {
   it("regner stadig en rigtig hatchet som oekse", () => {
     expect(kategoriFraNavn("Coghlans Hatchet - Økse")).toBe("oekse");
   });
+  it("regner et klatrereb ved navn Flashlight som andet end lygte", () => {
+    // Stod som `lygte` i kataloget. Samme fejl som fotohandsken.
+    expect(kategoriFraNavn("Edelweiss Flashlight Ii 10mm60m - Reb")).toBeNull();
+  });
+  it("regner Primus' Campfire-serie som kogegrej og ikke baalgrej", () => {
+    // "Campfire" er et produktlinjenavn hos Primus, ikke en beskrivelse.
+    expect(kategoriFraNavn("Primus Campfire Cookset Small - Kogesæt")).toBe("kogeudstyr");
+    expect(kategoriFraNavn("Bestiksæt - Primus Campfire Cutlery Set - 3 stk")).toBe("kogeudstyr");
+    expect(kategoriFraNavn("Gentlemen's Hardware Campfire Chess - Spil")).toBeNull();
+  });
+});
+
+describe("kategoriFraNavn: baaludstyr", () => {
+  it("tager baalfade, grill, stoebejern, dutch oven og stativ", () => {
+    for (const navn of [
+      "Petromax Cast-iron Campfire Skillet - Båludstyr",
+      "Winnerwell L-sized Flat Firepit - Bålsted",
+      "Petromax Dutch Oven Ft4.5 - Båludstyr",
+      "Hällmark Tripod With Bag - Black - Str. OneSize - Bålstativ",
+      "Coghlans Pack Grill - Båludstyr",
+      "UCO Sammenfoldelig Grill Flatpack Grill & Firepit",
+      "Muurikka jægerpande t/bål i opbevaringsp - Båludstyr",
+      "Petromax Campfire Bread Skewer With Cast-iron Tip - Båludstyr",
+    ]) {
+      expect(kategoriFraNavn(navn), navn).toBe("baaludstyr");
+    }
+  });
+
+  it("lader reservedele og tilbehoer staa uden kategori", () => {
+    // Petromax saelger systemet som enkeltdele, og delen navngiver sin vaert
+    // paa engelsk. "X For Y" er graensen mellem en vare og en del til en vare.
+    for (const navn of [
+      "Petromax Lid For Pyron Fire Barrel - Båludstyr",
+      "Petromax Transport Bag For Fire Bridge Frk1 - Båludstyr",
+      "Petromax Cooking Support for Atago Gridd - Båludstyr",
+      "Winnerwell Charcoal Grate For Xl-sized Flat Firepit - Båludstyr",
+      "Biolite Firepit Carry Bag - Taske",
+      "Biolite Firepit Poker - Båludstyr",
+      "Petromax Tripod Lashing (large) - Båludstyr",
+      "Petromax Atago Pizza Stone Pizzasten - Båludstyr",
+    ]) {
+      expect(kategoriFraNavn(navn), navn).toBeNull();
+    }
+  });
+
+  it("staar foer kogeudstyr, saa en baalpande ikke bliver koekkengrej", () => {
+    expect(kategoriFraNavn("Hällmark Griddle Pan 98 Cm - Black - Båludstyr")).toBe("baaludstyr");
+    // Men en Trangia-pande er stadig kogegrej.
+    expect(kategoriFraNavn("Pande - Trangia 25 - Nonstick")).toBe("kogeudstyr");
+  });
+
+  it("lader optaending blive taendstaal og ikke baaludstyr", () => {
+    expect(kategoriFraNavn("Muurikka optændingsspåner - Båludstyr")).toBe("taendstaal");
+    // "Campfire" staar i navnet, men varen er et taendstaal.
+    expect(kategoriFraNavn("Easy Camp Campfire Fire Steel - Tændstål")).toBe("taendstaal");
+  });
+});
+
+describe("kategoriFraNavn: kniv er ikke en vinaabner", () => {
+  it("udelukker tjenerkniv og proptraekker", () => {
+    // Tre varianter af denne stod som `kniv` og var 3 af de 40 varer paa
+    // /tilbud, da en ekstern SEO-audit faldt over dem.
+    expect(kategoriFraNavn("Point Virgule Tjenerkniv/proptrækker I Rustfri Stål/træ - Multitool")).toBeNull();
+    expect(kategoriFraNavn("Point Virgule Tjenerkniv/proptrækker I Stål/plast - Multitool")).toBeNull();
+  });
+  it("tager stadig en rigtig kniv og et rigtigt multitool", () => {
+    expect(kategoriFraNavn("Morakniv Companion - Kniv")).toBe("kniv");
+    expect(kategoriFraNavn("Leatherman Wave Plus - Multitool")).toBe("kniv");
+  });
 });

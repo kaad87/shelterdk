@@ -51,9 +51,17 @@ import { FARVE, STOERRELSE } from "./feed-udvalg";
  *
  * "filter" staar med vilje IKKE her: et vandfilter er en vare. Patronen fanges
  * paa "replacement".
+ *
+ * ORDGRAENSEN FORAN "pose" ER IKKE PYNT. Uden den laeste `pose\s+til` ordet
+ * "Sove|pose til| boern" som "pose til X", saa tilbudsblokken regnede HVER
+ * vare, der hed "Sovepose til boern" eller "Sovepose til vinter", som
+ * tilbehoer. Maalt mod 984 historiske klik paa /bedste-sider: 9 af de 13 der
+ * faldt, faldt paa netop det, og de otte af dem var produkter, guiden
+ * /bedste/sovepose-til-boern selv handler om. Det ramte ogsaa "Lagenpose til
+ * sovepose", som er en vare og ikke en pose til noget.
  */
 const TILBEHOER =
-  /tilbeh[øo]r|montage|montager|montering|adapter|stativ|tripod|okular|objektiv|udskiftning|reservedel|replacement|spare\s+part|refill|genopfyld|hand\s+control|fjernbetjening|rense?(?:middel|sæt|saet|kit)|cleaning\s+kit|opladerkabel|holder\s+til|cover\s+til|etui\s+til|pose\s+til|taske\s+til/i;
+  /tilbeh[øo]r|montage|montager|montering|adapter|stativ|tripod|okular|objektiv|udskiftning|reservedel|replacement|spare\s+part|refill|genopfyld|hand\s+control|fjernbetjening|rense?(?:middel|sæt|saet|kit)|cleaning\s+kit|opladerkabel|\bholder\s+til|\bcover\s+til|\betui\s+til|\bpose\s+til|\btaske\s+til/i;
 
 /** Mindste laengde for at et ord kan baere relevans. */
 const MIN_ORD = 4;
@@ -264,7 +272,75 @@ export interface GuideKontekst {
 }
 
 /**
+ * Varer der ikke er friluftsgrej, selv naar kategorien er rigtig nok.
+ *
+ * outmore::Multitool er kortlagt til `kniv`, og det er forsvarligt: grenen
+ * rummer Gerber, Victorinox og Leatherman. Men den rummer OGSAA tre
+ * "Point Virgule Tjenerkniv/proptraekker", og en kortlaegningsraekke giver ét
+ * svar for en hel raa kategori, saa de kan ikke tages ud dér uden at tage de
+ * rigtige multitools med. Navnereglerne kan heller ikke: kortlaegningen staar
+ * foer dem i kaeden.
+ *
+ * En cykellygte var det samme problem, men dér var den raa kategori homogen,
+ * saa den blev loest i kortlaegningen (se ret-kategori-kortlaegning.ts). Her
+ * er den ikke, og saa er visningen det sidste sted, det kan fanges.
+ */
+const IKKE_FRILUFT =
+  /proptrækker|proptraekker|oplukker|vinåbner|korkskrue|tjenerkniv|corkscrew|bottle\s*opener|wine\s*opener|\bwaiter'?s?\s+(?:knife|friend)/i;
+
+/**
+ * Varen hoerer ikke i NOGEN tilbudsvisning, uanset hvilken side den er paa:
+ * tilbehoer og reservedele, engros og gavesaet, eller ting der slet ikke er
+ * friluftsgrej.
+ *
+ * Engros-vaernet staar HER og ikke kun i kategoriseringen, fordi en vare kan
+ * faa sin kategori fra den manuelle kortlaegning uden at gaa gennem
+ * navnereglerne: outmore::Handsker er kortlagt til handsker og rummer fire
+ * Park Tool-aesker med 100 gummihandsker.
+ */
+export function erStoej(navn: string): boolean {
+  return erTilbehoer(navn) || ENGROS.test(navn) || IKKE_FRILUFT.test(navn);
+}
+
+/**
+ * Den samme vare én gang, ikke én gang pr. farve og stoerrelse.
+ *
+ * Staar SIDST i begge kald. Raekkefoelgen er ikke kosmetik: hvis dubletterne
+ * blev luget foer emnefilteret, kunne den foerste variant blive valgt som
+ * repraesentant og derefter falde paa emnet, saa en senere variant, der ville
+ * have bestaaet, var luget vaek i forvejen. Begge ville forsvinde.
+ */
+export function enPrVare<T extends TilbudsVare>(varer: T[]): T[] {
+  const ud: T[] = [];
+  const set = new Set<string>();
+  for (const v of varer) {
+    const noegle = `${(v.brand ?? "").trim().toLowerCase()}|${dubletNoegle(v.product_name ?? "")}`;
+    if (set.has(noegle)) continue;
+    set.add(noegle);
+    ud.push(v);
+  }
+  return ud;
+}
+
+/**
+ * Stoej og dubletter vaek. Det alle tilbudsvisninger skal igennem.
+ *
+ * Laa foer kun inde i relevanteTilbud, som alene kaldes fra guidernes
+ * tilbudsblok. /tilbud kalder getTopDeals direkte og havde derfor ingen
+ * beskyttelse: maalt 27. oktober 2026 var 4 af de 40 varer paa /tilbud en
+ * cykellygte og TRE varianter af den samme Point Virgule-proptraekker, og en
+ * ekstern SEO-audit noterede det som "mange irrelevante produkter".
+ */
+export function fjernStoej<T extends TilbudsVare>(varer: T[]): T[] {
+  return enPrVare(varer.filter((v) => !erStoej(v.product_name ?? "")));
+}
+
+/**
  * Tilbuddene der hoerer paa guiden, i samme raekkefoelge som de kom ind.
+ *
+ * Laegger guidens emne oven paa fjernStoej: varen skal hedde noget af det
+ * samme som guidens egne produkter, og boerneudstyr ryger ud, medmindre guiden
+ * selv handler om boern.
  *
  * Returnerer gerne en tom liste. Blokken skriver "Aktuelle nedsaettelser i
  * samme kategori", og paa `oekse` og `solhat` er der nul varer i kataloget, der
@@ -287,25 +363,15 @@ export function relevanteTilbud<T extends TilbudsVare>(
   const emne = kendeOrd(guide.entryNavne, guide.entryMaerker);
 
   const ud: T[] = [];
-  const set = new Set<string>();
   for (const v of varer) {
     const navn = v.product_name ?? "";
     if (!guidenErTilBoern && (ALDRIG.test(navn) || ALDRIG.test(v.category_mapped ?? ""))) continue;
-    if (erTilbehoer(navn)) continue;
-    // Engros og gavesaet, uanset hvordan varen fik sin kategori. Vaernet staar
-    // HER og ikke kun i kategoriseringen, fordi en vare kan faa sin kategori
-    // fra den manuelle kortlaegning uden at gaa gennem navnereglerne:
-    // outmore::Handsker er kortlagt til handsker og rummer fire Park
-    // Tool-aesker med 100 gummihandsker.
-    if (ENGROS.test(navn)) continue;
+    if (erStoej(navn)) continue;
     // Kategorien er guidens eget emne, eller varen skal hedde noget af det
     // samme som guidens egne produkter.
     if (!eget && !delerEmneord(emneOrd(navn, guide.entryMaerker), emne)) continue;
-
-    const noegle = `${(v.brand ?? "").trim().toLowerCase()}|${dubletNoegle(navn)}`;
-    if (set.has(noegle)) continue;
-    set.add(noegle);
     ud.push(v);
   }
-  return ud;
+  // Dubletterne luges til sidst, ikke foer emnefilteret. Se enPrVare.
+  return enPrVare(ud);
 }

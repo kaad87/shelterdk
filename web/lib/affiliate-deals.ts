@@ -1,26 +1,34 @@
 import { createClient } from "@supabase/supabase-js";
 import { FEED_KATEGORIER } from "./feed-kategori-filter";
+import { fjernStoej } from "./deal-relevans";
+import { navneKategorier } from "./kategori-fra-navn";
 import type { AffiliateProduct } from "./affiliate-products";
 
 /**
- * Kategorier som feed-filteret selv skriver paa produkterne.
+ * Kategorier som koden selv skriver paa produkterne.
  *
  * Whitelisten blev udelukkende laest af affiliate_category_mapping, som er
  * noeglet paa (retailer, category_raw) og kun udfyldes af den manuelle
- * kortlaegning i admin. De filtrerede feeds gaar ikke den vej: filteret saetter
- * category_mapped direkte paa varen, fordi kategorien ER ShelterDK-kategorien.
+ * kortlaegning i admin. To af de tre kilder til category_mapped gaar ikke den
+ * vej:
  *
- * Resultatet var, at 175 varer i seks nye kategorier (vandresandal 35, fleece
- * 43, solhat 31, vandrebukser 29, dunjakke 22, oekse 15) aldrig naaede /tilbud
- * eller forsidens tilbudswidget. Kun kikkert virkede, og kun fordi den var
- * kortlagt manuelt i forvejen.
+ *   FEED_KATEGORIER  de filtrerede feeds saetter category_mapped direkte paa
+ *                    varen, fordi kategorien ER ShelterDK-kategorien.
+ *                    Resultatet var, at 175 varer i seks kategorier
+ *                    (vandresandal 35, fleece 43, solhat 31, vandrebukser 29,
+ *                    dunjakke 22, oekse 15) aldrig naaede /tilbud.
  *
- * Kilden er koden frem for en raekke i basen, saa en ny kategori i filteret
- * ikke kraever en migration, der kan glemmes. En kategori i FEED_KATEGORIER er
- * kurateret pr. definition, saa den hoerer paa whitelisten.
+ *   navneKategorier  navnereglerne udfylder hullerne, naar hverken feedets
+ *                    filter eller kortlaegningen kan svare. Uden dem her
+ *                    ville de 39 nye baaludstyr-varer vaere kategoriseret og
+ *                    alligevel usynlige paa /tilbud.
+ *
+ * Kilden er koden frem for en raekke i basen, saa en ny kategori ikke kraever
+ * en migration, der kan glemmes. En kategori, koden selv kan tildele, er
+ * kurateret pr. definition og hoerer derfor paa whitelisten.
  */
 function filterKategorier(): string[] {
-  return [...new Set(FEED_KATEGORIER.map((k) => k.kategori))];
+  return [...new Set([...FEED_KATEGORIER.map((k) => k.kategori), ...navneKategorier()])];
 }
 
 export interface DealsFilter {
@@ -126,7 +134,11 @@ export async function getTopDeals(
   if (filter.retailer) q = q.eq("retailer", filter.retailer);
 
   const { data } = await q;
-  const products = (data as AffiliateProduct[]) ?? [];
+  // Stoejen fjernes FOER prioritering og diversify, saa de 40 pladser bliver
+  // fyldt med varer der duer. Laa foer kun i guidernes tilbudsblok, saa
+  // /tilbud var ubeskyttet: 4 af de 40 viste varer var en cykellygte og tre
+  // varianter af den samme proptraekker.
+  const products = fjernStoej((data as AffiliateProduct[]) ?? []);
   // Only re-sort by retailer priority when sorting by discount (default)
   const sorted =
     filter.sort === "price-asc" || filter.sort === "price-desc"

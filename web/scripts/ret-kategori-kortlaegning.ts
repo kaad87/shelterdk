@@ -45,8 +45,18 @@ const sb = createClient(url, key, { auth: { persistSession: false } });
 interface Regel {
   /** Segmentet i category_raw, sammenlignet uden hensyn til store bogstaver. */
   segment: string;
-  /** Kategorien raekken skal have. */
-  til: string;
+  /**
+   * Kategorien raekken skal have, eller null naar den raa kategori ikke hoerer
+   * til nogen ShelterDK-kategori. Null er et SVAR og ikke en manglende
+   * mening: uden det kan en raekke, nogen har kortlagt forkert, kun flyttes
+   * til en anden kategori og ikke tages ud.
+   */
+  til: string | null;
+  /**
+   * Saet den ogsaa paa eller af whitelisten (altsaa om kategorien kan vaelges
+   * paa /tilbud). Udeladt = lad den staa.
+   */
+  whitelisted?: boolean;
   /** Kun naar den nuvaerende kategori er én af disse. Tom = ogsaa naar den er null. */
   fra: (string | null)[];
   /** Spring raekken over, hvis den OGSAA navngiver ét af disse segmenter. */
@@ -117,6 +127,18 @@ const REGLER: Regel[] = [
     belaeg: "16 varer: stormlanterner, lanterner og vaeger. Ikke pandelamper",
   },
   {
+    // 19 % af hele lygte-kategorien kom herfra: 92 af de 496 varer paa lager.
+    // En ekstern SEO-audit saa én af dem paa /tilbud ("Topeak Cubicubi 500 -
+    // Cykellygte") og kaldte feedet ukurateret. Den havde ret, og talet var
+    // stoerre end den kunne se: raekken er homogen, saa den kan afgoeres her.
+    segment: "Cykellygte",
+    til: null,
+    whitelisted: false,
+    fra: ["lygte", "pandelampe"],
+    belaeg:
+      "outmore::Cykellygte, 146 varer (92 paa lager), alle cykellygter: Knog, Sigma, Kryptonite, Blackburn, Oxford. Ingen af dem hoerer i en lanterne-guide",
+  },
+  {
     segment: "Siddeunderlag",
     til: "siddeunderlag",
     fra: ["soveudstyr", "liggeunderlag", null],
@@ -169,7 +191,8 @@ async function main() {
     retailer: string;
     category_raw: string;
     fra: string | null;
-    til: string;
+    til: string | null;
+    whitelisted?: boolean;
     regel: string;
   }[] = [];
 
@@ -185,6 +208,7 @@ async function main() {
         category_raw: r.category_raw,
         fra: r.category_mapped,
         til: regel.til,
+        whitelisted: regel.whitelisted,
         regel: regel.segment,
       });
       break; // foerste regel der passer vinder
@@ -199,7 +223,7 @@ async function main() {
   for (const [regel, n] of [...prRegel].sort((a, b) => b[1] - a[1])) {
     console.log(`  ${String(n).padStart(3)}  segment "${regel}"`);
     for (const a of aendringer.filter((x) => x.regel === regel).slice(0, 3)) {
-      console.log(`         ${a.fra} -> ${a.til}  |  ${a.retailer}::${a.category_raw.slice(0, 78)}`);
+      console.log(`         ${a.fra} -> ${a.til ?? "ingen kategori"}${a.whitelisted === false ? " (af whitelisten)" : ""}  |  ${a.retailer}::${a.category_raw.slice(0, 78)}`);
     }
   }
 
@@ -212,7 +236,11 @@ async function main() {
   for (const a of aendringer) {
     const { error } = await sb
       .from("affiliate_category_mapping")
-      .update({ category_mapped: a.til })
+      .update(
+        a.whitelisted === undefined
+          ? { category_mapped: a.til }
+          : { category_mapped: a.til, whitelisted: a.whitelisted }
+      )
       .eq("retailer", a.retailer)
       .eq("category_raw", a.category_raw);
     if (error) {

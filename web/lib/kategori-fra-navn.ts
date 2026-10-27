@@ -123,7 +123,44 @@ const REGLER: NavneRegel[] = [
     kategori: "lygte",
     inkluder:
       /lanterne|\blantern\b|\blygte\b|lommelygte|flashlight|\btorch\b|arbejdslampe|\blampe\b|lyskæde|campinglampe|\blyskilde\b/i,
-    udeluk: /cykellygte|bike\s*light|baglygte|forlygte|lampeolie|væge|lampefod/i,
+    // "Edelweiss Flashlight Ii 10mm60m - Reb" er et KLATREREB, hvis model
+    // heder Flashlight, og den stod som `lygte`. Samme slags fejl som
+    // fotohandsken "Hatchet" i oekse-reglen: modelnavnet er et andet produkt.
+    udeluk: /cykellygte|bike\s*light|baglygte|forlygte|lampeolie|væge|lampefod|\breb\b|\brope\b|\bsling\b|prusik/i,
+  },
+
+  // ── Baal ──────────────────────────────────────────────────────────────────
+  // Staar FOER kogeudstyr: en stoebejernspande til baal er baalgrej foerst og
+  // koekkengrej bagefter, og uden den raekkefoelge havner halvdelen af
+  // klyngen i kogeudstyr.
+  //
+  // Klyngen laa i outmores raa kategorier Båludstyr (78 varer paa lager),
+  // Bålsted, Bålfad og Bålstativ, og INGEN af dem har en kortlaegningsraekke.
+  // Alle 78 var derfor usynlige paa sitet. En ekstern SEO-audit kaldte
+  // "bedste bålpande" en prioritet-1-mulighed, fordi SERP'en er svag, og
+  // konkluderede samtidig, at vi ikke havde varerne. Vi havde dem; de havde
+  // bare ingen kategori. Maalt 27. oktober 2026.
+  {
+    kategori: "baaludstyr",
+    inkluder:
+      /bålfad|bålsted|bålstativ|bålpande|bålgryde|bålrist|bålgaffel|bålskål|jægerpande|fire\s*pit|firepit|fire\s*bowl|fire\s*bridge|fire\s*anchor|campfire|dutch\s*oven|camp.?oven|støbejernspande|cast.?iron\s*(?:skillet|griddle|stack\s*grate|potato)|griddle\s*(?:plate|pan)|\bskillet\b|camp\s*grill|pack\s*grill|flatpack|grilliput|tri.?pod\s*grill|grillrist|snobrød|bread\s*skewer|bbq\s*skewer|camp\s*fork|telescoping\s*fork|kulskovl|coal\s*shovel|charcoal\s*(?:chimney|maker)|blow\s*pipe|fire\s*plunger/i,
+    // Petromax saelger hele sit system som enkeltdele, saa klyngen er fuld af
+    // reservedele. De navngiver nesten alle deres vaert paa engelsk ("Lid For
+    // Pyron Fire Barrel", "Cooking Support for Atago", "Grate For Xl-sized
+    // Flat Firepit"), og det moenster er den paalidelige graense mellem en
+    // vare og en del til en vare. Kun engelsk "for": den danske pendant "til"
+    // optraeder i varer vi VIL have, fx "grillrist til bål".
+    //
+    // deal-relevans har et beslaegtet erTilbehoer, men det er noeglet paa
+    // danske "X til Y"-former og er valideret mod 182 historiske klik. Det
+    // roeres ikke her for at undgaa at aendre tilbudsblokken i samme greb.
+    // "Campfire" er desuden et PRODUKTLINJENAVN hos Primus, praecis som
+    // "Hatchet" er en model af fotohandske: Primus Campfire Cookset, Cutlery
+    // Set og Prep Set er kogegrej og bestik, ikke baalgrej.
+    udeluk:
+      // "Easy Camp Campfire Fire Steel - Taendstaal" er et taendstaal, og
+      // taendstaal-reglen staar efter denne. Optaending er sin egen kategori.
+      /\bfor\s+\w|primus\s*campfire|cookset|cutlery|prep\s*set|\bchess\b|\bgame\b|\bspil\b|fire\s*steel|firesteel|tændstål|\bflint\b|optænding|transport\s*bag|carry\s*bag|\bmat\b|\bpoker\b|potholders?|lashing|smoking\s*chips|char\s*cloth|heat\s*(?:reflector|diffuser|protector)|windbreak|flashing\s*kit|pizzasten|pizza\s*stone|lid\s*(?:holder|spacer)|pan\s*rack|extension\s*legs|universal\s*cross|pouring\s*aid|\btrivet\b|aramid/i,
   },
 
   // ── Koekken og mad ────────────────────────────────────────────────────────
@@ -190,7 +227,12 @@ const REGLER: NavneRegel[] = [
   {
     kategori: "kniv",
     inkluder: /\bkniv\b|\bknive\b|\bknife\b|multitool|multiværktøj|foldekniv|dolk/i,
-    udeluk: /\bkøkkenkniv\b|skærebræt/i,
+    // "Point Virgule Tjenerkniv/proptraekker I Rustfri Staal - Multitool" er
+    // en vinaabner. Den stod som `kniv` og havnede derfor i tilbudsblokken paa
+    // /bedste/kniv og paa /tilbud, hvor en ekstern SEO-audit faldt over den
+    // 27. oktober 2026. Tre varianter af den, plus en cykellygte, var 4 af de
+    // 40 varer paa /tilbud.
+    udeluk: /\bkøkkenkniv\b|skærebræt|proptrækker|oplukker|vinåbner|korkskrue|tjenerkniv|\bwaiter/i,
   },
   {
     kategori: "navigation",
