@@ -461,7 +461,15 @@ describe("erStoej: batterier er ikke pandelamper", () => {
   // Alle navne herunder er hentet raat fra feedet. Sytten varer paa lager var
   // kortlagt til `pandelampe` og havde "batteri" eller "battery" i navnet,
   // men kun fire af dem var lamper. De tretten andre var loese batterier og
-  // batteriaesker, og de laa i tilbudsblokken paa /bedste/pandelampe.
+  // batteriaesker.
+  //
+  // De var IKKE synlige: ingen af de tretten naaede 25 %, og baade /tilbud og
+  // tilbudsblokkene i guiderne kraever det. Det goer dem ikke harmloese.
+  // /black-friday har en flydende graense: den fylder pladserne oppefra og
+  // oplyser bagefter, hvad den laveste rabat blev. Er puljen tynd, eller
+  // saetter Silva sine reservebatterier 30 % ned i november, staar de paa
+  // siden. Reglen er altsaa forebyggende, og det er den rigtige maade at
+  // sige det paa.
   it("fjerner loese batterier og batteriaesker", () => {
     expect(erStoej("Genopladeligt batteri til pandelampe - Petzl Core")).toBe(true);
     expect(erStoej("Batteri til pandelampe - Black Diamond LT")).toBe(true);
