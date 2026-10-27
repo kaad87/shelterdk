@@ -456,3 +456,51 @@ describe("erStoej: varer der ikke er friluftsgrej", () => {
     expect(erStoej("COAST LED150 Pro Dual LED multitool")).toBe(false);
   });
 });
+
+describe("erStoej: batterier er ikke pandelamper", () => {
+  // Alle navne herunder er hentet raat fra feedet. Sytten varer paa lager var
+  // kortlagt til `pandelampe` og havde "batteri" eller "battery" i navnet,
+  // men kun fire af dem var lamper. De tretten andre var loese batterier og
+  // batteriaesker, og de laa i tilbudsblokken paa /bedste/pandelampe.
+  it("fjerner loese batterier og batteriaesker", () => {
+    expect(erStoej("Genopladeligt batteri til pandelampe - Petzl Core")).toBe(true);
+    expect(erStoej("Batteri til pandelampe - Black Diamond LT")).toBe(true);
+    expect(erStoej("Batteri - Black Diamond Distance")).toBe(true);
+    expect(erStoej("Silva Free Headlamp Battery 14.4wh (2.0ah) - Batteri")).toBe(true);
+    expect(erStoej("Silva Free Battery Case 3xaaa - Batteriæske")).toBe(true);
+    expect(erStoej("Suprabeam Batterikasse (DC/DC) til V3pro rechargeable 1000 lm - Batteriæske")).toBe(true);
+    expect(erStoej("Black Diamond Megawatt Headlamp Battery - Black One Size - Batteri")).toBe(true);
+  });
+
+  it("beholder lamper der blot naevner batteri", () => {
+    // Den praecision er hele pointen. Et bredt /batteri|battery/ ville have
+    // taget de her fire med, og to af dem er rigtige pandelamper.
+    expect(erStoej("Pandelampe inkl. batterier - Sight LED")).toBe(false);
+    expect(erStoej("Pandelampe inkl. batterier - Beam LED")).toBe(false);
+    expect(
+      erStoej(
+        "COAST XPH25R Rechargeable Headlamp (410 lumens) with Battery indicator - in blister pack - Vending pack - Pandelampe"
+      )
+    ).toBe(false);
+    expect(
+      erStoej(
+        "Armytek Crystal Wrb Blue / White Light & Red-blue Beacon / 150 Lm, 30 Lm & 17 Lm / Headband / Silicone Installation Rings / Built-in Li-pol Battery - Pandelampe"
+      )
+    ).toBe(false);
+    expect(erStoej("PETZL ACTIK CORE Genopladelig Pandelampe - Blue")).toBe(false);
+  });
+});
+
+describe("erStoej: madkasser og skivoks er ikke friluftsgrej", () => {
+  it("fjerner madkasser og skiudstyr der er havnet i drikkedunk", () => {
+    // Begge kom fra navnereglen: "Bottle" i navnet gjorde en voksskraber og
+    // en madkasse til drikkedunke, og madkassen naaede /tilbud.
+    expect(erStoej("Swix T30 Uni Scraper W/ Bottle Opener - Skiudstyr")).toBe(true);
+    expect(erStoej("Sistema 1.1l Ribbon With 480ml Bottle Ocean Bound - Teal Stone - Madkasse")).toBe(true);
+  });
+
+  it("beholder rigtige drikkedunke, ogsaa fra et ski-brand", () => {
+    expect(erStoej("Swix Insulated Drink Bottle - Swix red - Str. OS - Skiudstyr")).toBe(false);
+    expect(erStoej("Drikkedunk - Nalgene Wide Mouth - 1 liter")).toBe(false);
+  });
+});

@@ -61,7 +61,7 @@ import { FARVE, STOERRELSE } from "./feed-udvalg";
  * sovepose", som er en vare og ikke en pose til noget.
  */
 const TILBEHOER =
-  /tilbeh[øo]r|montage|montager|montering|adapter|stativ|tripod|okular|objektiv|udskiftning|reservedel|replacement|spare\s+part|refill|genopfyld|hand\s+control|fjernbetjening|rense?(?:middel|sæt|saet|kit)|cleaning\s+kit|opladerkabel|\bholder\s+til|\bcover\s+til|\betui\s+til|\bpose\s+til|\btaske\s+til/i;
+  /tilbeh[øo]r|montage|montager|montering|adapter|stativ|tripod|okular|objektiv|udskiftning|reservedel|replacement|spare\s+part|refill|genopfyld|hand\s+control|fjernbetjening|rense?(?:middel|sæt|saet|kit)|cleaning\s+kit|opladerkabel|\bholder\s+til|\bcover\s+til|\betui\s+til|\bpose\s+til|\btaske\s+til|\bbatteri\s*til\b|headlamp\s+battery|\bbattery\s+case\b|batterikasse|batteriæske|(?:^|[-–]\s*)batteri\s*(?:-|$)/i;
 
 /** Mindste laengde for at et ord kan baere relevans. */
 const MIN_ORD = 4;
@@ -286,7 +286,7 @@ export interface GuideKontekst {
  * er den ikke, og saa er visningen det sidste sted, det kan fanges.
  */
 const IKKE_FRILUFT =
-  /proptrækker|proptraekker|oplukker|vinåbner|korkskrue|tjenerkniv|corkscrew|bottle\s*opener|wine\s*opener|\bwaiter'?s?\s+(?:knife|friend)/i;
+  /proptrækker|proptraekker|oplukker|vinåbner|korkskrue|tjenerkniv|corkscrew|bottle\s*opener|wine\s*opener|\bwaiter'?s?\s+(?:knife|friend)|\bmadkasse\b|lunch\s*box|\bskivoks\b|ski\s*wax|\bskraber\b/i;
 
 /**
  * Varen hoerer ikke i NOGEN tilbudsvisning, uanset hvilken side den er paa:
