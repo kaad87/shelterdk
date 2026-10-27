@@ -5,11 +5,17 @@
  *   npx tsx scripts/ret-tekstkvalitet.ts --tjek    # viser hver aendring
  *   npx tsx scripts/ret-tekstkvalitet.ts           # skriver
  *
- * Tre ting rettes:
+ * Fem ting rettes:
  *
  * 1. "test" i seo_title. /saadan-vurderer-vi siger, at vi ikke har et testlab
  *    og ikke laver fysiske tests. Seks guider lovede alligevel "test" i selve
  *    SERP-snippet'et, altsaa det mest synlige sted af alle.
+ *
+ * 1b. "i testen" / "i test" i broedteksten. Samme loefte, bare laengere nede
+ *    paa siden: "Dyrest i testen", "Varmest i testen", "Hurtigst i test".
+ *    Syv steder i alt, seks i tekstfelter og ét i et praedikat-badge. Vi har
+ *    sammenlignet de varer, vi har valgt ud, saa det hedder "i udvalget".
+ *    Sammenligningen bevares, paastanden om et testforloeb ryger.
  *
  * 2. "ikke oplyst i feedet" i 62 entries. Det er IKKE en intern note, der er
  *    sluppet ud: at en vaegt mangler er et reelt forbehold, og laeseren skal
@@ -26,18 +32,26 @@
  *    "letvaegtstelt" og "vandrerygsaek" er ogsaa korrekte, saa URL'er maskeres
  *    foer erstatningen og laegges tilbage efter.
  *
+ * 4. Én kogetid, der stod i vores egen stemme. Se ENTRY_NOTER.
+ *
  * Idempotent: anden koersel finder ingenting.
  */
 import "dotenv/config";
 import { createClient } from "@supabase/supabase-js";
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-if (!url || !key) {
-  console.error("Mangler NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY");
-  process.exit(2);
+/**
+ * Klienten bygges foerst, naar main() koerer. Ellers kalder filen process.exit
+ * allerede ved import, og saa kan rettereglerne ikke testes.
+ */
+function klient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    console.error("Mangler NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY");
+    process.exit(2);
+  }
+  return createClient(url, key, { auth: { persistSession: false } });
 }
-const sb = createClient(url, key, { auth: { persistSession: false } });
 
 /** Nye seo_title uden ordet "test". Vinklen er beholdt, aarstal og brand uaendret. */
 const SEO_TITLER: Record<string, string> = {
@@ -103,6 +117,21 @@ const ORD: Record<string, string> = {
 
 const ORD_RE = new RegExp(`\\b(${Object.keys(ORD).join("|")})\\b`, "gi");
 
+/**
+ * Enkeltnoter, hvor et tal fra producenten stod i vores egen stemme. Naar
+ * praedikatet ikke laengere siger "test", er kogetiden det sidste sted paa
+ * sitet, der laeses som en maaling, vi selv har lavet. Den staar ikke i
+ * specs-feltet, saa den kan kun attribueres, ikke dokumenteres.
+ * Noeglen er entry-id, fordi det er én raekke og ikke et moenster.
+ */
+const ENTRY_NOTER: Record<string, { foer: string; efter: string }> = {
+  // stormkoekken, Jetboil Flash 1.0l
+  "75597f24-8ad0-45c2-878d-900f02e24be9": {
+    foer: "Jetboil Flash koger en liter vand på 3-4 minutter",
+    efter: "Jetboil oplyser, at Flash koger en liter vand på 3-4 minutter",
+  },
+};
+
 /** Markdown-linkmaal og bare stier. Maskeres, saa slugs ikke "rettes". */
 const URL_RE = /\]\([^)]*\)|\bhttps?:\/\/\S+|(?<=[\s("'])\/[a-z0-9/-]+/gi;
 
@@ -121,19 +150,35 @@ export function retOrd(tekst: string): string {
   return rettet.replace(/\u0000(\d+)\u0000/g, (_, i) => gemt[Number(i)]);
 }
 
-/** Alle tre rettelser paa én tekst. */
+/**
+ * "i testen" / "i test" -> "i udvalget". Ordgraensen efter "test" er vigtig:
+ * uden den rammer den ogsaa "i testede", og begyndelsesbogstavet i "i" tages
+ * fra kilden, saa "I testen" i starten af en saetning ikke bliver smaat.
+ */
+const I_TESTEN = /\b(i)\s+test(?:en)?\b/gi;
+
+export function retTestpaastand(tekst: string): string {
+  return tekst.replace(I_TESTEN, (_, i: string) => `${i} udvalget`);
+}
+
+/** Alle rettelser paa én tekst. */
 export function retTekst(tekst: string): string {
-  return retOrd(tekst.split(INTERN_NOTE).join("").replace(/oplyst i feedet/gi, "oplyst af forhandleren"));
+  return retTestpaastand(
+    retOrd(tekst.split(INTERN_NOTE).join("").replace(/oplyst i feedet/gi, "oplyst af forhandleren"))
+  );
 }
 
 type Raekke = Record<string, unknown> & { id: string };
 
 /** Felter der er ren tekst, og felter der er tekst-arrays. */
 const GUIDE_TEKST = ["intro", "body_md", "seo_description"] as const;
-const ENTRY_TEKST = ["editorial_note", "best_for"] as const;
+// award_label er med, fordi badget "Hurtigst i test" staar der og ikke i en
+// tekst. Det er samme paastand, bare paa det mest iøjnefaldende sted i kortet.
+const ENTRY_TEKST = ["editorial_note", "best_for", "award_label"] as const;
 const ENTRY_LISTE = ["pros", "cons"] as const;
 
 async function main() {
+  const sb = klient();
   const kunTjek = process.argv.includes("--tjek");
   let aendringer = 0;
 
@@ -207,19 +252,22 @@ async function main() {
   }
 
   // 2+3. entries
-  console.log("\nentries (editorial_note, best_for, pros, cons):");
+  console.log("\nentries (editorial_note, best_for, award_label, pros, cons):");
   const { data: slugs } = await sb.from("buying_guides").select("id, slug");
   const slugAf = new Map((slugs ?? []).map((x) => [x.id as string, x.slug as string]));
   const { data: entries, error: eErr } = await sb
     .from("buying_guide_entries")
-    .select("id, guide_id, editorial_note, best_for, pros, cons");
+    .select("id, guide_id, editorial_note, best_for, award_label, pros, cons");
   if (eErr) { console.error(eErr.message); process.exit(1); }
   for (const e of (entries ?? []) as Raekke[]) {
     const opdat: Record<string, unknown> = {};
+    const note = ENTRY_NOTER[e.id];
     for (const f of ENTRY_TEKST) {
       const v = e[f] as string | null;
       if (!v) continue;
-      const ny = retTekst(v);
+      let ny = retTekst(v);
+      // Attribueringen koeres efter retTekst, saa den matcher den rettede tekst.
+      if (note && f === "editorial_note") ny = ny.split(note.foer).join(note.efter);
       if (ny !== v) { opdat[f] = ny; vis(`${slugAf.get(e.guide_id as string)}.${f}`, v, ny); }
     }
     for (const f of ENTRY_LISTE) {
@@ -241,6 +289,8 @@ async function main() {
   console.log(`\n${aendringer} aendringer${kunTjek ? " (--tjek: intet skrevet)" : " skrevet"}`);
 }
 
-if (require.main === module) {
+// typeof-vagten er der, fordi vitest indlaeser filen som ESM, hvor hverken
+// require eller module findes. Uden den kaster selve importen.
+if (typeof require !== "undefined" && typeof module !== "undefined" && require.main === module) {
   main().catch((e) => { console.error(e); process.exit(2); });
 }
