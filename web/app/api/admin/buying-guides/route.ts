@@ -11,8 +11,14 @@ function admin(req: NextRequest) {
   });
 }
 
+/**
+ * product_categories stod IKKE paa listen, og det er derfor kolonnen sejlede.
+ * Migration 059 fyldte den én gang og intet kunne opdatere den bagefter, saa
+ * fire toejguider staar stadig med 'beklaedning' fra foer fase 2 delte den op
+ * i hue, handsker, gamacher og undertoj. Nu kan admin vedligeholde den.
+ */
 const FIELDS = [
-  "slug", "title", "category", "intro", "body_md", "sources", "faq",
+  "slug", "title", "category", "product_categories", "intro", "body_md", "sources", "faq",
   "seo_title", "seo_description", "hero_image_url", "status", "last_reviewed_at",
 ] as const;
 

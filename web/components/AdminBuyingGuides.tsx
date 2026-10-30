@@ -9,6 +9,12 @@ interface Guide {
   slug: string;
   title: string;
   category: string;
+  /**
+   * affiliate_products.category_mapped-vaerdier, hvor guidens kandidater
+   * findes. `category` er guidens egen etiket og rammer for flere guider nul
+   * varer i kataloget, saa produktsoegningen bruger dette felt.
+   */
+  product_categories: string[] | null;
   intro: string | null;
   body_md: string | null;
   sources: unknown;
@@ -140,9 +146,21 @@ export function AdminBuyingGuides() {
     loadGuides();
   }
 
+  /**
+   * Kategorierne, soegningen skal filtrere paa.
+   *
+   * product_categories foerst, og `category` kun som nedfald for en guide, der
+   * ikke har faaet feltet udfyldt endnu. Omvendt raekkefoelge ville genskabe
+   * fejlen: `category` er en etiket ("campingstol", "drybag", "optaending"),
+   * og den rammer nul varer for 7 af de 46 udgivne guider.
+   */
+  const soegeKategorier = (form.product_categories ?? []).length
+    ? (form.product_categories ?? []).join(",")
+    : (form.category ?? "");
+
   async function runSearch() {
     const r = await authFetch(
-      `/api/admin/affiliate-products/search?q=${encodeURIComponent(search)}&category=${encodeURIComponent(form.category ?? "")}`
+      `/api/admin/affiliate-products/search?q=${encodeURIComponent(search)}&categories=${encodeURIComponent(soegeKategorier)}`
     );
     if (r.ok) setResults((await r.json()).products ?? []);
   }
@@ -251,7 +269,17 @@ export function AdminBuyingGuides() {
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Field label="Slug" value={form.slug ?? ""} onChange={(v) => setForm({ ...form, slug: v })} />
-          <Field label="Kategori" value={form.category ?? ""} onChange={(v) => setForm({ ...form, category: v })} />
+          <Field label="Kategori (etiket)" value={form.category ?? ""} onChange={(v) => setForm({ ...form, category: v })} />
+          <Field
+            label="Produktkategorier (komma)"
+            value={(form.product_categories ?? []).join(", ")}
+            onChange={(v) =>
+              setForm({
+                ...form,
+                product_categories: v.split(",").map((k) => k.trim()).filter(Boolean),
+              })
+            }
+          />
           <Field label="Titel" value={form.title ?? ""} onChange={(v) => setForm({ ...form, title: v })} full />
           <Field label="SEO-titel" value={form.seo_title ?? ""} onChange={(v) => setForm({ ...form, seo_title: v })} />
           <Field label="Hero-billede URL" value={form.hero_image_url ?? ""} onChange={(v) => setForm({ ...form, hero_image_url: v })} />
@@ -304,7 +332,11 @@ export function AdminBuyingGuides() {
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder={`Søg produkter (kategori: ${form.category})`}
+                  placeholder={
+                    soegeKategorier
+                      ? `Søg produkter (kategori: ${soegeKategorier})`
+                      : "Søg produkter (alle kategorier)"
+                  }
                   className="flex-1 rounded-lg border border-primary/15 px-3 py-2 text-sm"
                 />
                 <button onClick={runSearch} className="rounded-lg bg-primary px-4 py-2 text-sm text-white">

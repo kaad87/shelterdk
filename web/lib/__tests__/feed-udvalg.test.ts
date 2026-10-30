@@ -221,3 +221,56 @@ describe("vaelgUdvalg", () => {
     expect(prKategori.get("lejrsko")).toBe(2);
   });
 });
+
+describe("basisNavn og bindestreger inde i modelnavne", () => {
+  // Her laa fejlen. Reglen spurgte, om der var et farveord et sted i det
+  // sidste bindestregs-led, og klippede saa HELE leddet af. Navnet bliver
+  // ogsaa GEMT, saa det stod paa produktkortene: synken skriver basisNavn() i
+  // product_name for feeds med loft. Maalt paa Outnorth-feedet ramte det 50 af
+  // de 684 gemte varer.
+  //
+  // Rettelsen kraever, at hvert ord i leddet er farve. Naar bindestregen
+  // sidder inde i et ord, bliver farven derfor STAAENDE, og navnet er helt.
+  // Det er den bevidste pris: varen folder ikke sine farvevarianter, men den
+  // bliver aldrig forkortet forkert.
+  it("klipper ikke midt i et bindestregs-ord", () => {
+    expect(basisNavn("Klymit V-seat Grey")).toBe("Klymit V-seat Grey");
+    expect(basisNavn("iFish Heat-seat Black")).toBe("iFish Heat-seat Black");
+    expect(basisNavn("PIEPS First-Aid Pro Black")).toBe("PIEPS First-Aid Pro Black");
+    expect(basisNavn("Swazi Ali-Gaiters Black")).toBe("Swazi Ali-Gaiters Black");
+  });
+
+  it("beholder Gore-Tex", () => {
+    // Det hyppigste moenster, fordi "TEX Black" indeholder et farveord.
+    expect(basisNavn("Altra Women's Olympus 6 Hike Low GORE-TEX Black"))
+      .toBe("Altra Women's Olympus 6 Hike Low GORE-TEX Black");
+    expect(basisNavn("Arc'teryx Venta GORE-TEX Gloves Black"))
+      .toBe("Arc'teryx Venta GORE-TEX Gloves Black");
+    expect(basisNavn("Aku Women's Flyrock Gore-Tex Anthracite/Peach"))
+      .toBe("Aku Women's Flyrock Gore-Tex Anthracite/Peach");
+  });
+
+  it("beholder modelnumre efter en bindestreg", () => {
+    // Med tal paa modifikator-listen blev "HL-23 Black" laest som et farveled,
+    // og navnet endte som "Lafayette Pannlampa HL".
+    expect(basisNavn("Lafayette Pannlampa HL-23 Black")).toBe("Lafayette Pannlampa HL-23 Black");
+    expect(basisNavn("Nordic Hawk Rifle Scope 3-12x40 Black"))
+      .toBe("Nordic Hawk Rifle Scope 3-12x40 Black");
+  });
+
+  it("klipper stadig et led der kun er farve", () => {
+    // Regressionsvagten. Foldningen af farvevarianter skal stadig virke,
+    // ellers fylder den samme jakke hele loftet i fire farver.
+    expect(basisNavn("Fjällräven Keb Trousers-dark navy")).toBe("Fjällräven Keb Trousers");
+    expect(basisNavn("Kaipak Fleece Men-dark navy-laurel green")).toBe("Kaipak Fleece Men");
+    expect(basisNavn("Mammut Lithium 20 Mammut Red-black")).toBe("Mammut Lithium 20 Mammut Red");
+    expect(basisNavn("Fjällräven Vardag Bucket Hat Nimbus Blue-fossil"))
+      .toBe("Fjällräven Vardag Bucket Hat Nimbus Blue");
+    expect(basisNavn("Cruz Aarhus W sandal, black-36")).toBe("Cruz Aarhus W sandal");
+  });
+
+  it("folder stadig farve og stoerrelse sammen i de to gamle feeds", () => {
+    expect(basisNavn("Fjällräven Singi Down Jacket Women-black-L"))
+      .toBe(basisNavn("Fjällräven Singi Down Jacket Women-dark navy-XL"));
+  });
+});

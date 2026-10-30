@@ -93,12 +93,69 @@ export function basisNavn(navn: string): string {
   // "Kaipak Fleece Men-dark navy-laurel green". Med én runde blev de fire
   // farvekombinationer fire modeller, og de fyldte fleece-loftet.
   for (let i = 0; i < 2; i++) {
-    const f = s.match(/[,-]\s*([^,-]+)$/);
-    if (!f || f.index == null || f.index === 0 || !FARVE.test(f[1])) break;
+    const f = s.match(/([,-])\s*([^,-]+)$/);
+    if (!f || f.index == null || f.index === 0) break;
+    // Et komma er altid et skilletegn. En bindestreg kan sidde inde i et ord,
+    // og der skal hele leddet vaere farve. Se kunFarve().
+    const erFarve = f[1] === "," ? FARVE.test(f[2]) : kunFarve(f[2]);
+    if (!erFarve) break;
     s = s.slice(0, f.index).trim();
   }
   return s;
 }
+
+/**
+ * Er leddet UDELUKKENDE farve?
+ *
+ * Bruges kun naar skilletegnet er en BINDESTREG. Et komma er altid et
+ * skilletegn, og der er den loese proeve rigtig: "Women, peat/rainy/h.pink"
+ * er et farveled, selv om ingen af de tre ord staar i FARVE. Et strengere
+ * krav paa komma-leddet braekkede to af de eksisterende tests, fordi feedene
+ * er fulde af farvenavne, vi ikke kan kende.
+ *
+ * Her laa fejlen. Reglen spurgte FARVE.test(led), altsaa om der var et
+ * farveord et sted i leddet, og klippede saa hele leddet af. For et led, der
+ * kun ER farve, er det rigtigt. Men bindestreger staar ogsaa midt i
+ * modelnavne, og saa tog klippet en del af navnet med:
+ *
+ *   "Klymit V-seat Grey"                        -> "Klymit V"
+ *   "PIEPS First-Aid Pro Black"                 -> "PIEPS First"
+ *   "Altra Women's Olympus 6 Hike Low GORE-TEX" -> "... Hike Low GORE"
+ *   "Swazi Ali-Gaiters Black"                   -> "Swazi Ali"
+ *
+ * Maalt paa Outnorth-feedet ramte det 50 af de 684 gemte varer, altsaa 7 %, og
+ * navnet bliver ogsaa GEMT: synken skriver basisNavn() i product_name for
+ * feeds med loft, saa det stod paa produktkortene. Gore-Tex var det hyppigste
+ * moenster, fordi "TEX Black" indeholder et farveord.
+ *
+ * Nu skal HVERT ord i leddet vaere farve. "dark navy" klippes, "seat Grey" gaar
+ * fri. Prisen er, at en vare med en farve, vi ikke genkender som et helt led,
+ * giver én model for meget i foldningen. Det er den rigtige vej rundt: filens
+ * egen regel er, at over-foldning er vaerre end under-foldning, fordi den
+ * slaar to forskellige varer sammen til én.
+ */
+function kunFarve(led: string): boolean {
+  // Skilletegn inde i leddet er ikke ord: "black/white" og "Black  Beauty" er
+  // begge rene farveled.
+  const ord = led.split(/[\s/]+/).filter(Boolean);
+  if (!ord.length) return false;
+  return ord.every((o) => FARVE.test(o) || MODIFIKATOR.test(o));
+}
+
+/**
+ * Ord der staar sammen med en farve uden selv at vaere en.
+ *
+ * "dark navy", "true black", "mammut red-black" og "black beauty" er
+ * farveled, og uden disse ord ville kravet om at hvert ord er en farve aldrig
+ * kunne opfyldes for dem.
+ *
+ * Tal staar bevidst IKKE paa listen. Med \d+ blev "Lafayette Pannlampa
+ * HL-23 Black" til "Lafayette Pannlampa HL", fordi "23 Black" saa ud som et
+ * farveled. Modelnumre efter en bindestreg er almindelige, og en farve, der
+ * kun bestaar af et tal, findes ikke.
+ */
+const MODIFIKATOR =
+  /^(dark|light|lys|moerk|mørk|deep|pale|bright|true|pure|classic|vintage|washed|heather|melange|beauty|shade|tint|tone|and|og|&)$/i;
 
 /**
  * Maerket, som udvalget skal regne med.
