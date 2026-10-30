@@ -253,3 +253,63 @@ describe("opslag paa feedets egen kategoriliste", () => {
     }
   });
 });
+
+describe("finere opdeling end feedets egen gren", () => {
+  it("flytter siddeunderlag ud af campingmoebler", () => {
+    // Outnorth har ingen siddeunderlags-gren. Syv af de tyve varer, loftet
+    // lukkede ind under campingmoebler, var siddeunderlag, mens
+    // /bedste/siddeunderlag kun havde 16 varer i hele kataloget.
+    for (const n of [
+      "Woolpower Sit Pad Recycled Grey",
+      "Fjällräven G1000 Seat Pad Dark Grey",
+      "Sea To Summit Air Seat Olive",
+      "Klymit V-seat Grey",
+      "iFish Heat-seat Black",
+      "Urberg Alu Foldable Seat Pad Silver",
+    ]) {
+      expect(kategoriFor(n, "Campingmøbler", "outnorth"), n).toBe("siddeunderlag");
+    }
+  });
+
+  it("lader stole og borde blive i campingmoebler", () => {
+    // Snaevert med vilje: et bredt \bseat\b ville tage en stol med over.
+    for (const n of [
+      "Helinox Swivel Chair Black/O Blue",
+      "Easy Camp Alder Table Brown",
+      "Nemo Moonlite Elite Reclining Camp Chair Lake",
+      "Coleman Furn Quad Chair Steel Grey",
+    ]) {
+      expect(kategoriFor(n, "Campingmøbler", "outnorth"), n).toBe("campingmobler");
+    }
+  });
+});
+
+describe("myggenet", () => {
+  it("tager nettene fra Insektbeskyttelse", () => {
+    for (const n of [
+      "Cocoon Head Net Ultralight Black",
+      "Sea To Summit Nano Mosquito Net Double Grey",
+      "Eagle Nest Outfitters Guardian Bug Net Black",
+      "Helsport Mosquito Mesh Cover Green",
+    ]) {
+      expect(kategoriFor(n, "Insektbeskyttelse", "outnorth"), n).toBe("myggenet");
+    }
+  });
+
+  it("lader kemien og dimserne ligge", () => {
+    // En guide til myggenet, der anbefaler DEET, er ikke en guide til myggenet.
+    for (const n of [
+      "Mygga Mosquito Spray",
+      "Mygga Roll On Nocolour",
+      "Mygga After Bite Insect Gel Nocolour",
+      "Care Plus Anti-Insect DEET 40% 60 ml NoColour",
+      "Tickless Human Green",
+      "Moskitofree Travel White",
+      "Sjö & Hav Mygg+Fästing Spray Nocolour",
+      // "ljus" er et suffiks her, saa \bljus\b ramte det ikke.
+      "Sjö & Hav Myggljus/Sommarljus Nocolour",
+    ]) {
+      expect(kategoriFor(n, "Insektbeskyttelse", "outnorth"), n).toBeNull();
+    }
+  });
+});

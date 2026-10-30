@@ -193,16 +193,9 @@ export function vaelgUdvalg<T extends UdvalgVare>(
   kategorien: (v: T) => string | null,
   gemte: ReadonlySet<string>,
   loft: number,
-  maksPrBrandOverstyret?: number
+  maksPrBrandOverstyret?: number,
+  loftOverstyring?: Readonly<Record<string, number>>
 ): { valgte: T[]; prKategori: Map<string, number> } {
-  // Hoejst saa mange modeller fra samme maerke i samme kategori. Uden den
-  // graense var tolv af atten vandrebukser Fjällräven: feedet har ti forskellige
-  // zip-off-modeller fra dem alene, saa fordelingen paa brands raekker ikke.
-  // En guide, der kun kan sammenligne ét maerke, er ikke en sammenligning.
-  //
-  // Den kan overstyres, fordi et specialiseret feed kan vaere forhandler for ét
-  // maerke. Se maksPrBrand i lib/affiliate-feeds.ts.
-  const maksPrBrand = maksPrBrandOverstyret ?? Math.max(2, Math.ceil(loft / 5));
   // 1 + 2: fold til én vare pr. model, inden for hver kategori.
   const modeller = new Map<string, { kategori: string; vare: T }>();
   for (const v of varer) {
@@ -244,9 +237,23 @@ export function vaelgUdvalg<T extends UdvalgVare>(
   const valgte: T[] = [];
   const prKategori = new Map<string, number>();
   for (const [kategori, liste] of [...pulje].sort(([a], [b]) => a.localeCompare(b))) {
+    // Loftet er pr. kategori, saa de kategorier flere guider deler kan have et
+    // hoejere ét. Se loftPrKategoriOverstyring i lib/affiliate-feeds.ts.
+    //
+    // maksPrBrand er hoejst saa mange modeller fra samme maerke i samme
+    // kategori. Uden den graense var tolv af atten vandrebukser Fjällräven:
+    // feedet har ti forskellige zip-off-modeller fra dem alene, saa
+    // fordelingen paa brands raekker ikke. En guide, der kun kan sammenligne
+    // ét maerke, er ikke en sammenligning.
+    //
+    // Den foelger kategoriens loft og ikke feedets, ellers ville et loft paa
+    // 45 kunne blive ni af samme maerke gange fem. Den kan ogsaa overstyres
+    // helt, fordi et specialiseret feed kan vaere forhandler for ét maerke.
+    const katLoft = loftOverstyring?.[kategori] ?? loft;
+    const maksPrBrand = maksPrBrandOverstyret ?? Math.max(2, Math.ceil(katLoft / 5));
     const beholdes = liste.filter((v) => gemte.has(v.id));
     const nye = liste.filter((v) => !gemte.has(v.id));
-    const plads = Math.max(0, loft - beholdes.length);
+    const plads = Math.max(0, katLoft - beholdes.length);
 
     // Brand-graensen taeller de gemte med, saa ét maerke ikke hober sig op
     // dag for dag. De gemte bliver aldrig skubbet ud af den.

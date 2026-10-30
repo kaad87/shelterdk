@@ -81,7 +81,8 @@ async function main() {
     katFor,
     new Set(),
     feed.loftPrKategori,
-    feed.maksPrBrand
+    feed.maksPrBrand,
+    feed.loftPrKategoriOverstyring
   );
 
   console.log(`\n${feed.label}: ${varer.length} varer i feedet -> ${valgte.length} gemmes\n`);

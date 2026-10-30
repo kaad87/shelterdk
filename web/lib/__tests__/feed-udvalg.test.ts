@@ -274,3 +274,57 @@ describe("basisNavn og bindestreger inde i modelnavne", () => {
       .toBe(basisNavn("Fjällräven Singi Down Jacket Women-dark navy-XL"));
   });
 });
+
+describe("loft pr. kategori", () => {
+  function v(id: string, kat: string, brand: string): UdvalgVare & { kat: string } {
+    return {
+      id,
+      kat,
+      brand,
+      product_name: `${brand} ${id}`,
+      description: "x".repeat(MIN_TEKST),
+      price: 100 + Number(id.slice(1)),
+      in_stock: true,
+    };
+  }
+  // 60 varer i hver af to kategorier, fordelt paa 20 maerker, saa hverken
+  // maerkegraensen eller puljen er det bindende.
+  const varer = [
+    ...Array.from({ length: 60 }, (_, i) => v(`a${i}`, "sovepose", `m${i % 20}`)),
+    ...Array.from({ length: 60 }, (_, i) => v(`b${i}`, "kniv", `m${i % 20}`)),
+  ];
+  const katFor = (x: (typeof varer)[number]) => x.kat;
+
+  it("bruger feedets loft naar kategorien ikke er overstyret", () => {
+    const { prKategori } = vaelgUdvalg(varer, katFor, new Set(), 20);
+    expect(prKategori.get("sovepose")).toBe(20);
+    expect(prKategori.get("kniv")).toBe(20);
+  });
+
+  it("hæver kun den kategori der er overstyret", () => {
+    // Fire sovepose-guider deler kategorien, og en guide bruger 6-8. Med ét
+    // loft paa 20 havde de under syv kandidater hver.
+    const { prKategori } = vaelgUdvalg(varer, katFor, new Set(), 20, undefined, { sovepose: 45 });
+    expect(prKategori.get("sovepose")).toBe(45);
+    expect(prKategori.get("kniv")).toBe(20);
+  });
+
+  it("lader maksPrBrand foelge kategoriens loft", () => {
+    // Uden det ville et loft paa 45 kunne blive fire af samme maerke gange
+    // elleve, fordi graensen var regnet af feedets loft paa 20.
+    const etMaerke = Array.from({ length: 60 }, (_, i) => v(`c${i}`, "sovepose", "samme"));
+    const kun = (x: (typeof etMaerke)[number]) => x.kat;
+    expect(vaelgUdvalg(etMaerke, kun, new Set(), 20).prKategori.get("sovepose")).toBe(4);
+    expect(
+      vaelgUdvalg(etMaerke, kun, new Set(), 20, undefined, { sovepose: 45 }).prKategori.get("sovepose")
+    ).toBe(9);
+  });
+
+  it("respekterer en eksplicit maksPrBrand over kategoriens loft", () => {
+    const etMaerke = Array.from({ length: 60 }, (_, i) => v(`d${i}`, "sovepose", "samme"));
+    const kun = (x: (typeof etMaerke)[number]) => x.kat;
+    expect(
+      vaelgUdvalg(etMaerke, kun, new Set(), 20, 8, { sovepose: 45 }).prKategori.get("sovepose")
+    ).toBe(8);
+  });
+});

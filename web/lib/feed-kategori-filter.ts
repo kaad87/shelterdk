@@ -239,10 +239,42 @@ const OPSLAG_UDELUK: Record<string, RegExp> = {
   vandrestav: /\bgloves?\b|handske|snowshoe|truger/i,
   // "Wallcharger" i ét ord slipper forbi \bcharger\b ovenfor.
   elektronik: /wallcharger/i,
+  // "Insektbeskyttelse" er to ting i samme gren. Godt halvdelen er rigtige
+  // net, resten er spray, roll-on, gel, myggelys og ultralydsdimser. Vi vil
+  // kun have nettene: en guide til myggenet, der anbefaler DEET, er ikke en
+  // guide til myggenet.
+  //
+  // "ljus" uden ordgraense foran: myggelyset heder "Myggljus/Sommarljus", saa
+  // \bljus\b ramte det ikke.
+  myggenet: /spray|roll.?on|\bstick\b|\bgel\b|after bite|\bdeet\b|tickless|moskitofree|ljus\b|fästing|anti.?insect/i,
   // Varmepuder og vaerktoejsruller er ikke kogegrej.
   kogeudstyr: /heat pack|flameless|tool roll/i,
   // Kasser og tasker staar under moeblerne.
   campingmobler: /gear\s*(?:basket|tote|box)/i,
+};
+
+/**
+ * Naar feedets gren er grovere end vores kategori.
+ *
+ * Outnorth har ingen siddeunderlags-gren: Woolpower Sit Pad, Exped Sit Pad,
+ * Fjällräven G1000 Seat Pad, Sea To Summit Air Seat, Klymit V-seat og
+ * iFish Heat-seat ligger alle under "Campingmoebler" sammen med stole og
+ * borde. Syv af de tyve varer, loftet lukkede ind, var siddeunderlag, og
+ * /bedste/siddeunderlag havde samtidig kun 16 varer at vaelge imellem i hele
+ * kataloget.
+ *
+ * Proeves FOER udelukkelserne, saa varen bliver maalt paa den kategori, den
+ * faktisk ender i. Foerste traef vinder.
+ */
+const OPSLAG_FINERE: Record<string, { navn: RegExp; kategori: string }[]> = {
+  campingmobler: [
+    {
+      // Bevidst snaevert. Et bredt \bseat\b ville tage en stol, der tilfaeldigvis
+      // har "seat" i navnet, med over i siddeunderlag.
+      navn: /\b(?:seat|sit)\s*pad\b|\bsiddeunderlag\b|\bsiddepude\b|\bseat cushion\b|\b(?:air|v|heat)[\s-]?seat\b/i,
+      kategori: "siddeunderlag",
+    },
+  ],
 };
 
 export const FEED_KATEGORI_MAP: Record<string, Record<string, string>> = {
@@ -286,6 +318,7 @@ export const FEED_KATEGORI_MAP: Record<string, Record<string, string>> = {
     Førstehjælp: "foerstehjaelp",
     "Powerbanker & opladere": "elektronik",
     Campingmøbler: "campingmobler",
+    Insektbeskyttelse: "myggenet",
     Toiletartikler: "hygiejne",
     // Toej og fodtoej
     Friluftsbukser: "vandrebukser",
@@ -326,10 +359,11 @@ export function kategoriFor(
   const kort = retailer ? FEED_KATEGORI_MAP[retailer] : undefined;
   const fraKort = kort && kategorinavn ? kort[kategorinavn.trim()] : undefined;
   if (fraKort) {
+    const kat = OPSLAG_FINERE[fraKort]?.find((r) => r.navn.test(navn))?.kategori ?? fraKort;
     if (TILBEHOER_OPSLAG.test(navn)) return null;
-    if (OPSLAG_UDELUK[fraKort]?.test(navn)) return null;
-    const regel = FEED_KATEGORIER.find((x) => x.kategori === fraKort);
-    return regel && regel.udeluk.test(navn) ? null : fraKort;
+    if (OPSLAG_UDELUK[kat]?.test(navn)) return null;
+    const regel = FEED_KATEGORIER.find((x) => x.kategori === kat);
+    return regel && regel.udeluk.test(navn) ? null : kat;
   }
 
   for (const k of FEED_KATEGORIER) {

@@ -48,6 +48,24 @@ export interface FeedDef {
    */
   loftPrKategori: number | null;
   /**
+   * Hoejere loft for de kategorier, flere guider deler.
+   *
+   * Loftet er pr. kategori, men flere guider henter fra den SAMME kategori:
+   * fire sovepose-guider, tre teltguider, to liggeunderlags-, to fodtoejs- og
+   * to kogegrejsguider. Med ét loft paa 20 havde tre teltguider 20 kandidater
+   * tilsammen, altsaa under syv hver, og en guide bruger 6-8. Saa kan de ikke
+   * vaelge forskelligt, og de kan slet ikke vaelge.
+   *
+   * Tallene er sat til cirka 15 pr. guide, der kan betjenes. Puljen raekker
+   * rigeligt: maalt paa Outnorth-feedet er der 281 soveposemodeller fra 26
+   * maerker, 360 telte fra 26 og 531 par fodtoej fra 41, saa loftet var det
+   * bindende og ikke feedet.
+   *
+   * maksPrBrand foelger loftet pr. kategori, saa et hoejere loft ikke bliver
+   * tyve af samme maerke.
+   */
+  loftPrKategoriOverstyring?: Readonly<Record<string, number>>;
+  /**
    * Hoejst saa mange modeller fra samme maerke i samme kategori.
    *
    * Udledes af loftet, naar den ikke er sat. Den skal kunne saettes, fordi et
@@ -91,7 +109,20 @@ export const FEEDS = [
   // ottedobles for at daekke de samme kategorier, og 60 % af feedet er
   // loebesko, skiudstyr, hverdagssko og boernetoej, som ingen af vores sider
   // kan bruge.
-  { retailer: "outnorth", label: "Outnorth.dk", netvaerk: "awin", bannerId: "", feedId: "93109", harBeskrivelser: true, loftPrKategori: 20 },
+  {
+    retailer: "outnorth", label: "Outnorth.dk", netvaerk: "awin",
+    bannerId: "", feedId: "93109", harBeskrivelser: true, loftPrKategori: 20,
+    // sovepose: sovepose, -til-vinter, -til-boern og dunsovepose. Boerneguiden
+    // kan feedet aldrig betjene, fordi ALDRIG holder boernevarer ude, saa der
+    // regnes med tre.
+    loftPrKategoriOverstyring: {
+      sovepose: 45,
+      telt: 45, // telt, familietelt, letvaegtstelt
+      liggeunderlag: 30, // liggeunderlag, liggeunderlag-til-vinter
+      kogeudstyr: 30, // bestik, stormkoekken
+      fodtoj: 30, // vandrestovler, vandresko
+    },
+  },
 ] as const satisfies readonly FeedDef[];
 
 /**
