@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { FEEDS } from "@/lib/affiliate-feeds";
+import { FEEDS, type FeedDef } from "@/lib/affiliate-feeds";
 
 /**
  * Én linje pr. grej-forhandler. Typen er noeglet paa FEEDS, saa et nyt feed
@@ -17,7 +17,20 @@ const FORHANDLER_OM: Record<(typeof FEEDS)[number]["retailer"], string> = {
   outdoornu: "Dansk outdoor-butik med tøj og lag-på-lag",
   zeejuu: "Dansk butik med kikkerter og optik",
   outdooricentrum: "Dansk forhandler af økser, save og håndværktøj",
+  outnorth: "Nordisk outdoor-butik med telte, soveposer og vandregrej",
 };
+
+/**
+ * Netvaerket forhandleren hentes igennem.
+ *
+ * Stod foer som teksten "(Partner-ads)" ved hver linje. Det var rigtigt,
+ * saalaenge alle feeds kom samme sted fra, men Outnorth kommer fra Awin, og en
+ * partnerliste efter markedsfoeringsloven maa ikke oplyse det forkerte
+ * netvaerk. Feltet er valgfrit i FEEDS, fordi de seks foerste er Partner-ads.
+ */
+function netvaerkNavn(f: FeedDef): string {
+  return f.netvaerk === "awin" ? "Awin" : "Partner-ads";
+}
 
 /** Partnere uden for grej-feedene: shelter-byggesaet og overnatning. */
 const ANDRE_PARTNERE = [
@@ -63,7 +76,7 @@ export default function AnnoncerOgPartnerePage() {
         <ul>
           {FEEDS.map((f) => (
             <li key={f.retailer}>
-              <strong>{f.label}</strong> — {FORHANDLER_OM[f.retailer]} (Partner-ads)
+              <strong>{f.label}</strong> — {FORHANDLER_OM[f.retailer]} ({netvaerkNavn(f)})
             </li>
           ))}
           {ANDRE_PARTNERE.map((p) => (

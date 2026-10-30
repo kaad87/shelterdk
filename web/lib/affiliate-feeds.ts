@@ -17,6 +17,15 @@ export interface FeedDef {
   retailer: string;
   /** Visningsnavn. */
   label: string;
+  /**
+   * Hvilket netvaerk feedet kommer fra.
+   *
+   * Udeladt = partner-ads, saa de syv oprindelige linjer staar uroert. Awin
+   * er et andet hus: anden adresse, andet skema (CSV, ikke XML) og en
+   * API-noegle, der ER hemmelig, i modsaetning til banner- og feed-id.
+   * Noeglen staar derfor i env og aldrig her.
+   */
+  netvaerk?: "partner-ads" | "awin";
   bannerId: string;
   feedId: string;
   /**
@@ -73,7 +82,58 @@ export const FEEDS = [
   // smaa og vi kun skal have nok til én guide pr. kategori.
   { retailer: "zeejuu", label: "Zeejuu.dk", bannerId: "32915", feedId: "266", harBeskrivelser: true, loftPrKategori: 12, maksPrBrand: 8 },
   { retailer: "outdooricentrum", label: "Outdoor I Centrum", bannerId: "117229", feedId: "4361", harBeskrivelser: true, loftPrKategori: 12 },
+  // Det foerste Awin-feed, og langt det stoerste: 97.197 varer, altsaa otte
+  // gange hele det hidtidige katalog. 99 % har beskrivelse, og det er her de
+  // maerker ligger, som guiderne har manglet: Fjällräven, Haglöfs, Arcteryx,
+  // Bergans, Lundhags, The North Face, Aclima.
+  //
+  // Loftet er 20 som i de andre brede feeds. Uden det ville tabellen
+  // ottedobles for at daekke de samme kategorier, og 60 % af feedet er
+  // loebesko, skiudstyr, hverdagssko og boernetoej, som ingen af vores sider
+  // kan bruge.
+  { retailer: "outnorth", label: "Outnorth.dk", netvaerk: "awin", bannerId: "", feedId: "93109", harBeskrivelser: true, loftPrKategori: 20 },
 ] as const satisfies readonly FeedDef[];
+
+/**
+ * Kolonnerne vi beder Awin om.
+ *
+ * Maalt paa Outnorths feed er rrp_price, store_price, base_price, saving,
+ * savings_percent, delivery_cost, stock_quantity, stock_status og
+ * last_updated TOMME paa alle 97.197 varer, saa de staar ikke her. De ville
+ * kun goere hentningen tungere.
+ *
+ * custom_1 er med, fordi den hos Outnorth rummer den pris kunden betaler.
+ * Se AWIN_PRIS i lib/parseAffiliateFeed.ts.
+ */
+export const AWIN_KOLONNER = [
+  "aw_product_id",
+  "aw_deep_link",
+  "merchant_image_url",
+  "aw_image_url",
+  "brand_name",
+  "merchant_product_id",
+  "merchant_category",
+  "ean",
+  "product_name",
+  "description",
+  "search_price",
+  "custom_1",
+  "in_stock",
+  "is_for_sale",
+  "currency",
+] as const;
+
+/**
+ * Awins noegle er en hemmelighed og staar i env. Uden den springes feedet
+ * over frem for at vaelte hele synken: de seks andre feeds skal koere igennem,
+ * ogsaa den dag en noegle udloeber.
+ */
+export function awinFeedUrl(f: FeedDef, apiKey: string): string {
+  const kolonner = AWIN_KOLONNER.join("%2C");
+  return `https://productdata.awin.com/datafeed/download/apikey/${apiKey}`
+    + `/fid/${f.feedId}/format/csv/language/da/delimiter/%2C`
+    + `/compression/gzip/columns/${kolonner}/`;
+}
 
 export function feedUrl(f: FeedDef): string {
   return `https://www.partner-ads.com/dk/feed_udlaes.php`

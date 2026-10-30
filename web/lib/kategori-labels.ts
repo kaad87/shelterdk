@@ -1,4 +1,4 @@
-import { FEED_KATEGORIER } from "./feed-kategori-filter";
+import { FEED_KATEGORIER, FEED_KATEGORI_MAP } from "./feed-kategori-filter";
 import { navneKategorier } from "./kategori-fra-navn";
 
 /**
@@ -118,5 +118,8 @@ export function kategoriLabel(kategori: string): string {
 
 /** Alle kategorier koden selv kan skrive paa en vare. Bruges af test'en. */
 export function kodeKategorier(): string[] {
-  return [...new Set([...FEED_KATEGORIER.map((k) => k.kategori), ...navneKategorier()])].sort();
+  const fraOpslag = Object.values(FEED_KATEGORI_MAP).flatMap((kort) => Object.values(kort));
+  return [
+    ...new Set([...FEED_KATEGORIER.map((k) => k.kategori), ...fraOpslag, ...navneKategorier()]),
+  ].sort();
 }

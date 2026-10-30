@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { kategoriFor, prisOk, FEED_KATEGORIER } from "@/lib/feed-kategori-filter";
+import {
+  kategoriFor,
+  prisOk,
+  FEED_KATEGORIER,
+  FEED_KATEGORI_MAP,
+} from "@/lib/feed-kategori-filter";
+import { navneKategorier } from "@/lib/kategori-fra-navn";
 
 describe("kategoriFor", () => {
   it("tager ikke sutsko og hjemmesko med som vandresandal", () => {
@@ -168,5 +174,82 @@ describe("ALDRIG: Barn Red er en farve", () => {
   it("afviser stadig rigtige boerneprodukter", () => {
     expect(kategoriFor("Fleecetrøje til børn - Treklife", "fleece")).toBeNull();
     expect(kategoriFor("Tatonka Gaiter 420hd Junior", "gamacher")).toBeNull();
+  });
+});
+
+describe("opslag paa feedets egen kategoriliste", () => {
+  // Outnorths kategorinavne er flade og danske, saa de kan slaas op direkte.
+  // Alle tre navne herunder er taget raat fra feedet.
+  it("tager Outnorths kategori naar navnet ikke siger noget", () => {
+    // "Bergans Trollhetta Tunnel 3 Tent Light Fogblue" har intet dansk
+    // teltord, og reglerne ovenfor kan derfor ikke se den.
+    expect(kategoriFor("Bergans Trollhetta Tunnel 3 Tent", "Tunneltelte", "outnorth")).toBe("telt");
+    expect(kategoriFor("Nemo Fillo Black Pearl", "Puder", "outnorth")).toBe("soveudstyr");
+    expect(kategoriFor("Mora Eldris Blue", "Knive", "outnorth")).toBe("kniv");
+  });
+
+  it("slaar kun op for det feed kortet hoerer til", () => {
+    // De to store partner-ads-feeds skal ikke aendre udvalg, fordi Outnorth
+    // kom til. Deres kategorinavne er grene i et traee og rammer ikke, men
+    // vagten skal staa alligevel.
+    expect(kategoriFor("Nemo Fillo Black Pearl", "Puder", "prooutdoor")).toBeNull();
+    expect(kategoriFor("Nemo Fillo Black Pearl", "Puder")).toBeNull();
+  });
+
+  it("springer ikke udelukkelsen i reglen over", () => {
+    // Grenen hedder "Dunjakker", men reglen ovenfor har brugt tre linjer paa
+    // at holde bomuldsparkaer ude, og et opslag maa ikke vaere en bagdoer.
+    expect(kategoriFor("Patagonia Mens Cotton Down Jacket", "Dunjakker", "outnorth")).toBeNull();
+    expect(kategoriFor("Berghaus Mens Explorer Down Jacket", "Dunjakker", "outnorth")).toBe("dunjakke");
+  });
+
+  it("holder boernevarer ude ogsaa naar kategorien rammer", () => {
+    expect(kategoriFor("Petzl Tikkid Junior", "Pandelamper", "outnorth")).toBeNull();
+  });
+
+  it("tager tilbehoer og reservedele ud", () => {
+    // Maalt paa feedet: 6 af 20 vandrestave var spidser og kurve, og 7 af 20
+    // vandfiltre var reservedele.
+    expect(kategoriFor("Silva Carbide Tips Nocolour", "Vandrestave", "outnorth")).toBeNull();
+    expect(kategoriFor("Swix Trail Basket Black", "Vandrestave", "outnorth")).toBeNull();
+    expect(kategoriFor("Katadyn Combi Carbon Replacement Pack", "Vandrensning", "outnorth")).toBeNull();
+    expect(kategoriFor("Casström No 11 Field Saw - Spare Blade", "Knive", "outnorth")).toBeNull();
+    expect(kategoriFor("BioLite 12V Car Charging Cable 3 m", "Powerbanker & opladere", "outnorth")).toBeNull();
+    // Og den rigtige vare i samme gren skal stadig med.
+    expect(kategoriFor("Leki Cross Trail Fx Superlite", "Vandrestave", "outnorth")).toBe("vandrestav");
+    expect(kategoriFor("Thule Power Bank 10k Black", "Powerbanker & opladere", "outnorth")).toBe("elektronik");
+  });
+
+  it('lader "kit" staa, fordi First Aid Kit er selve varen', () => {
+    expect(kategoriFor("VAUDE First Aid Kit M Lava", "Førstehjælp", "outnorth")).toBe("foerstehjaelp");
+    expect(kategoriFor("Opinel Maintenance Kit", "Knive", "outnorth")).toBeNull();
+  });
+
+  it("renser de grene feedet selv blander", () => {
+    // "Tarp & Shelters" rummer bivyposer og telte, "Flasker" rummer
+    // vandfiltre, og "Puder" rummer nakkepuder til fly.
+    expect(kategoriFor("Exped Bivybag Lite Ventair/PU", "Tarp & Shelters", "outnorth")).toBeNull();
+    expect(kategoriFor("iFish Glamp X 365-9 Pop-up Tent 9-p", "Tarp & Shelters", "outnorth")).toBeNull();
+    expect(kategoriFor("Robens Tarp 4 X 4 M Green", "Tarp & Shelters", "outnorth")).toBe("tarp");
+    expect(kategoriFor("Katadyn Befree Gravity Filter 6 L", "Flasker", "outnorth")).toBeNull();
+    expect(kategoriFor("Nalgene 500ml Wide Mouth Sustain", "Flasker", "outnorth")).toBe("drikkedunk");
+    expect(kategoriFor("Eagle Creek Memory Foam Neck Pillow", "Puder", "outnorth")).toBeNull();
+    expect(kategoriFor("Therm-a-Rest Air Head Pillow L", "Puder", "outnorth")).toBe("soveudstyr");
+  });
+
+  it("falder tilbage paa reglerne naar kategorien ikke staar i kortet", () => {
+    // "Mellemlag" blander fleece og syntetisk fyld, saa den er bevidst ikke i
+    // kortet: navnet kan se forskel, kategorien kan ikke.
+    expect(kategoriFor("Patagonia Better Sweater Fleece", "Mellemlag", "outnorth")).toBe("fleece");
+    expect(kategoriFor("Haglöfs Barrier Hood", "Mellemlag", "outnorth")).toBeNull();
+  });
+
+  it("peger kun paa kategorier der findes i forvejen", () => {
+    const kendte = new Set([...FEED_KATEGORIER.map((k) => k.kategori), ...navneKategorier()]);
+    for (const kort of Object.values(FEED_KATEGORI_MAP)) {
+      for (const [gren, kat] of Object.entries(kort)) {
+        expect(kendte.has(kat), `${gren} -> ${kat}`).toBe(true);
+      }
+    }
   });
 });

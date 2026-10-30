@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseFeedXml } from "@/lib/parseAffiliateFeed";
+import { parseFeedXml, parseFeedCsv, csvFelter, awinPris } from "@/lib/parseAffiliateFeed";
 
 /** Bygger et feed som Partner-ads leverer det: latin1 og uden mellemrum. */
 function feed(felter: Record<string, string>): Buffer {
@@ -119,5 +119,111 @@ describe("parseFeedXml", () => {
 
   it("giver en tom liste frem for at vaelte paa noget der ikke er et feed", () => {
     expect(parseFeedXml(Buffer.from("<html>502 Bad Gateway</html>", "latin1"), "prooutdoor")).toEqual([]);
+  });
+});
+
+/* ------------------------------------------------------------------ Awin-CSV */
+
+const AWIN_HEAD =
+  "aw_product_id,aw_deep_link,merchant_image_url,brand_name,merchant_category,product_name,description,search_price,custom_1,in_stock,is_for_sale";
+
+/** Bygger et Awin-CSV med de kolonner synken beder om. */
+function csv(...raekker: string[]): Buffer {
+  return Buffer.from([AWIN_HEAD, ...raekker].join("\n"), "utf8");
+}
+
+describe("csvFelter", () => {
+  it("deler paa komma uden for citationstegn", () => {
+    expect(csvFelter("a,b,c")).toEqual(["a", "b", "c"]);
+  });
+
+  it("lader komma i et citeret felt staa", () => {
+    // Produktnavne og beskrivelser er fulde af komma, og feedet er
+    // komma-separeret. Uden citat-reglen ville hver beskrivelse skubbe
+    // kolonnerne til hoejre, og prisen ville blive laest fra et andet felt.
+    expect(csvFelter('1,"Sovepose, dun, -5 grader",299')).toEqual([
+      "1",
+      "Sovepose, dun, -5 grader",
+      "299",
+    ]);
+  });
+
+  it("laeser et dobbelt citationstegn som ét tegn", () => {
+    expect(csvFelter('"Telt 2,5"" bund",1')).toEqual(['Telt 2,5" bund', "1"]);
+  });
+
+  it("giver et tomt felt til sidst naar linjen ender paa komma", () => {
+    expect(csvFelter("a,b,")).toEqual(["a", "b", ""]);
+  });
+});
+
+describe("awinPris", () => {
+  it("tager custom_1 og ikke search_price", () => {
+    // Faelden i feedet: felterne staar omvendt af Awins konvention.
+    // Bergans Flya staar med 2439 i search_price og 1220 i custom_1, og
+    // butikken tager 1220. En almindelig Awin-integration havde vist 2439.
+    expect(awinPris("2439.00", "1220.00")).toBe(1220);
+  });
+
+  it("falder tilbage paa search_price naar custom_1 er tom", () => {
+    expect(awinPris("499.00", "")).toBe(499);
+    expect(awinPris("499.00", "0.00")).toBe(499);
+  });
+
+  it("laeser komma som decimaltegn", () => {
+    expect(awinPris("", "106,62")).toBeCloseTo(106.62);
+  });
+
+  it("giver null naar ingen af felterne er en pris", () => {
+    expect(awinPris("", "")).toBeNull();
+    expect(awinPris("gratis", "-")).toBeNull();
+  });
+});
+
+describe("parseFeedCsv", () => {
+  const raekke =
+    '12345,https://awin.example/p/1,https://img.example/1.jpg,Bergans,Tunneltelte,"Bergans Trollhetta 3",' +
+    '"Et tunneltelt til tre, 3,1 kg",2439.00,1220.00,1,1';
+
+  it("laeser en raekke til en vare", () => {
+    const [p] = parseFeedCsv(csv(raekke), "outnorth");
+    expect(p.id).toBe("outnorth-12345");
+    expect(p.retailer).toBe("outnorth");
+    expect(p.brand).toBe("Bergans");
+    expect(p.product_name).toBe("Bergans Trollhetta 3");
+    expect(p.category_raw).toBe("Tunneltelte");
+    expect(p.price).toBe(1220);
+    expect(p.in_stock).toBe(true);
+  });
+
+  it("saetter aldrig en foer-pris", () => {
+    // Den vejledende udsalgspris er kendt, men den er ikke den pris butikken
+    // faktisk solgte til. Med den som foer-pris ville 61 % af kataloget staa
+    // som nedsat paa /tilbud og /black-friday og fortraenge de andre
+    // forhandleres rigtige nedsaettelser.
+    const [p] = parseFeedCsv(csv(raekke), "outnorth");
+    expect(p.price_original).toBeNull();
+    expect(p.discount_pct).toBeNull();
+  });
+
+  it("springer varer over der ikke er til salg", () => {
+    const udgaaet = raekke.replace(/,1$/, ",0");
+    expect(parseFeedCsv(csv(udgaaet), "outnorth")).toHaveLength(0);
+  });
+
+  it("springer varer uden billede, navn eller pris over", () => {
+    const udenBillede = raekke.replace("https://img.example/1.jpg", "");
+    const udenPris = raekke.replace("2439.00,1220.00", ",");
+    expect(parseFeedCsv(csv(udenBillede), "outnorth")).toHaveLength(0);
+    expect(parseFeedCsv(csv(udenPris), "outnorth")).toHaveLength(0);
+  });
+
+  it("springer afkortede linjer over frem for at laese felterne forskudt", () => {
+    expect(parseFeedCsv(csv("12345,https://awin.example/p/1"), "outnorth")).toHaveLength(0);
+  });
+
+  it("giver en tom liste frem for at vaelte paa noget der ikke er et feed", () => {
+    expect(parseFeedCsv(Buffer.from("502 Bad Gateway", "utf8"), "outnorth")).toEqual([]);
+    expect(parseFeedCsv(Buffer.from("", "utf8"), "outnorth")).toEqual([]);
   });
 });

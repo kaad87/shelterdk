@@ -70,7 +70,7 @@ async function main() {
   for (const p of varer) seen.set(p.id, p);
 
   const katFor = (p: NormalizedProduct) => {
-    const k = kategoriFor(p.product_name, p.category_raw);
+    const k = kategoriFor(p.product_name, p.category_raw, p.retailer);
     return k && prisOk(k, p.price) ? k : null;
   };
 

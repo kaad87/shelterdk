@@ -261,3 +261,145 @@ export function parseFeedXml(
 
   return normalized;
 }
+
+/* ------------------------------------------------------------------ Awin CSV */
+
+/**
+ * Awin leverer CSV, ikke XML, og felterne hedder noget andet. Den her
+ * oversaetter til den samme NormalizedProduct, saa resten af synken, udvalget
+ * og kategorikaeden ikke behoever at vide, hvilket netvaerk varen kom fra.
+ */
+
+/** Én CSV-linje til felter. Respekterer anfoerselstegn og doblede citater. */
+export function csvFelter(linje: string): string[] {
+  const ud: string[] = [];
+  let felt = "";
+  let iCitat = false;
+  for (let i = 0; i < linje.length; i++) {
+    const c = linje[i];
+    if (c === '"') {
+      if (iCitat && linje[i + 1] === '"') {
+        felt += '"';
+        i++;
+      } else {
+        iCitat = !iCitat;
+      }
+    } else if (c === "," && !iCitat) {
+      ud.push(felt);
+      felt = "";
+    } else {
+      felt += c;
+    }
+  }
+  ud.push(felt);
+  return ud;
+}
+
+/**
+ * Prisen kunden betaler, og den foerpris vi vil kendes ved.
+ *
+ * Her er faelden. Hos Outnorth staar de to priser OMVENDT af Awins
+ * konvention: `search_price` er "Vejl. pris", og `custom_1` er den pris, der
+ * staar paa knappen. Kontrolleret mod butikkens egne produktsider:
+ *
+ *   Bergans Flya Insulated Jacket
+ *     feed:   search_price 2439,00   custom_1 1220,00
+ *     butik:  "discounted price 1 220 kr" / "original price Vejl. pris 2 439 kr"
+ *
+ * Forholdet mellem de to felter er 1,33 / 1,43 / 1,25 / 1,67 paa tvaers af
+ * 58.989 varer, altsaa rene rabattrin paa 25, 30, 20 og 40 %. Havde det vaeret
+ * moms eller kostpris, ville tallene ikke ligge paa runde procenter.
+ *
+ * En almindelig Awin-integration ville have importeret search_price som
+ * prisen og vist priser op til 70 % for hoejt.
+ *
+ * price_original er bevidst ALTID null. Vi KENDER foerprisen, men den er en
+ * vejledende udsalgspris og ikke den pris, butikken faktisk solgte til.
+ * /black-friday lover, at den kun viser varer med et aegte prisfald, og
+ * /tilbud kraever 25 % rabat. Med en vejledende foerpris ville 61 % af
+ * kataloget staa som nedsat og fortraenge de andre forhandleres rigtige
+ * nedsaettelser. Outnorth er med for sine maerker og sin dybde i guiderne,
+ * ikke for at fylde rabat-siderne.
+ */
+export function awinPris(searchPrice: string, custom1: string): number | null {
+  const nu = parseFloat((custom1 ?? "").replace(/[^\d.,-]/g, "").replace(",", "."));
+  const vejl = parseFloat((searchPrice ?? "").replace(/[^\d.,-]/g, "").replace(",", "."));
+  if (!Number.isNaN(nu) && nu > 0) return nu;
+  if (!Number.isNaN(vejl) && vejl > 0) return vejl;
+  return null;
+}
+
+/**
+ * Parser et Awin-CSV til NormalizedProduct.
+ *
+ * Beskrivelser og navne er UTF-8 her, ikke iso-8859-1, men de kan have den
+ * samme dobbeltkodning som partner-ads-feedene, saa de koeres gennem den
+ * samme rettelse.
+ */
+export function parseFeedCsv(buffer: Buffer, retailer: Retailer): NormalizedProduct[] {
+  const tekst = retDobbeltkodning(buffer.toString("utf8"));
+  const linjer = tekst.split("\n");
+  if (linjer.length < 2) return [];
+
+  const head = csvFelter(linjer[0]).map((h) => h.trim());
+  const idx = (navn: string) => head.indexOf(navn);
+  const iId = idx("aw_product_id");
+  const iLink = idx("aw_deep_link");
+  const iNavn = idx("product_name");
+  const iPris = idx("search_price");
+  const iCustom = idx("custom_1");
+  if (iId < 0 || iLink < 0 || iNavn < 0 || iPris < 0) return [];
+
+  const iBillede = idx("merchant_image_url");
+  const iBilledeAw = idx("aw_image_url");
+  const iBrand = idx("brand_name");
+  const iBesk = idx("description");
+  const iKat = idx("merchant_category");
+  const iEan = idx("ean");
+  const iLager = idx("in_stock");
+  const iSalg = idx("is_for_sale");
+
+  const ud: NormalizedProduct[] = [];
+  for (let n = 1; n < linjer.length; n++) {
+    if (!linjer[n].trim()) continue;
+    const f = csvFelter(linjer[n]);
+    if (f.length < head.length) continue; // afkortet linje, spring over
+
+    const retailer_product_id = (f[iId] ?? "").trim();
+    const product_name = (f[iNavn] ?? "").trim();
+    const affiliate_url = (f[iLink] ?? "").trim();
+    const image_url = ((iBillede >= 0 ? f[iBillede] : "") || (iBilledeAw >= 0 ? f[iBilledeAw] : "") || "").trim();
+    const price = awinPris(f[iPris] ?? "", iCustom >= 0 ? f[iCustom] ?? "" : "");
+
+    if (!retailer_product_id || !product_name || !affiliate_url || !image_url || price == null) {
+      continue;
+    }
+
+    // Outnorth sender in_stock=1 paa hver eneste vare og intet lagerantal, saa
+    // feltet er ikke et signal. Varer, der ikke er til salg, ryger ud, og
+    // resten regnes paa lager. Synken markerer selv varer, den ikke har set i
+    // syv dage, som udsolgt, og det er det reelle lagersignal for det her feed.
+    if (iSalg >= 0 && (f[iSalg] ?? "").trim() === "0") continue;
+    const in_stock = iLager < 0 || (f[iLager] ?? "1").trim() !== "0";
+
+    ud.push({
+      id: `${retailer}-${retailer_product_id}`,
+      retailer,
+      retailer_product_id,
+      brand: iBrand >= 0 ? (f[iBrand] ?? "").trim() || null : null,
+      product_name: afkodEntiteter(product_name),
+      description: iBesk >= 0 ? fjernShortcodes(afkodEntiteter((f[iBesk] ?? "").trim())) || null : null,
+      category_raw: iKat >= 0 ? (f[iKat] ?? "").trim() || null : null,
+      price,
+      price_original: null, // bevidst. Se awinPris.
+      discount_pct: null,
+      shipping_cost: null, // Awin-feedet har ingen fragtkolonne med indhold
+      in_stock,
+      stock_count: null,
+      image_url,
+      affiliate_url,
+      ean: iEan >= 0 ? (f[iEan] ?? "").trim() || null : null,
+    });
+  }
+  return ud;
+}

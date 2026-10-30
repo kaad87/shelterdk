@@ -159,14 +159,179 @@ export const FEED_KATEGORIER: FeedKategori[] = [
  */
 
 /**
+ * Feeds med deres egen flade kategoriliste.
+ *
+ * Pro Outdoor og Outdoornu skriver kategorien som en gren i et traee fyldt
+ * med maerkenavne ("Brands > Patagonia > Patagonia Fleece"), og derfor maa de
+ * regnes ud af produktnavnet. Outnorth gaer ikke: feedet har 228 flade,
+ * danske kategorinavne, hvor "Tunneltelte", "Dunsoveposer" og "Pandelamper"
+ * betyder praecis det, de siger.
+ *
+ * Reglerne ovenfor var bygget til det modsatte problem og rammer kun 5 % af
+ * Outnorths 97.197 varer, fordi de blev skrevet for at lukke et hul i toej og
+ * fodtoej. Outnorths vaerdi er grejet. Et opslag er baade mere praecist og
+ * nemmere at laese end tyve regex-regler mere.
+ *
+ * Et opslag springer IKKE udelukkelsen over: rammer kategorien en regel
+ * ovenfor, skal varen stadig igennem dens `udeluk` og dens `maksPris`. Ellers
+ * ville "Cotton Down Parka" i grenen "Dunjakker" komme ind som dunjakke, selv
+ * om regelen ovenfor har brugt tre linjer paa at holde byjakker ude.
+ *
+ * Kategorier, der bevidst IKKE staar her: Loebesko, alt med ski, Hverdagssko,
+ * Badetoej, Jagt*, Agn, Litteratur og Hundedaekkener er ikke sheltergrej.
+ * Batterier, Teltilbehoer, Rygsaekstilbehoer og Skotilbehoer er tilbehoer og
+ * er praecis den stoej, fase 2 brugte en uge paa at faa ud af /tilbud.
+ * Mellemlag og Syntetjakker blandes af fleece og syntetisk fyld i samme gren,
+ * saa de overlades til fleece-reglen ovenfor, der kan se forskel paa navnet.
+ */
+/**
+ * Tilbehoer og reservedele i et opslag.
+ *
+ * Et fladt kategorinavn siger, hvad hylden hedder, ikke om varen er sagen
+ * selv. Outnorth laegger stavspidser under Vandrestave, filterpatroner under
+ * Vandrensning, et skedehylster under Multivaerktoej og ladekabler under
+ * Powerbanker. Maalt paa de 20 foerste i hver kategori var 6 af 20 vandrestave
+ * spidser og kurve, og 7 af 20 vandfiltre var reservedele.
+ *
+ * Det er den samme stoej, fase 2 skar ud af /tilbud. Den staar ét sted frem
+ * for i hver kategori, fordi det er feedets maade at skrive paa og ikke en
+ * egenskab ved den enkelte kategori.
+ *
+ * "kit" alene maa IKKE staa her: "First Aid Kit" er selve varen i
+ * foerstehjaelp. Derfor kun de sammensatte former.
+ */
+const TILBEHOER_OPSLAG =
+  /\bspare\b|\breplacement\b|\brefill\b|\bcartridges?\b|\b(?:maintenance|maintance|care|repair|cleaning)\s+kit\b|\btips?\b|\bbaskets?\b|\bsheath\b|\badapter\b|\bcables?\b|\bcharg(?:er|ing)\b|\bstabilizer\b|\bwick\b/i;
+
+/**
+ * Det en kategori selv skal holde ude, naar den kommer fra et opslag.
+ *
+ * Noeglen er ShelterDK-kategorien og ikke feedets kategorinavn, fordi flere
+ * af feedets grene lander samme sted: Lygter, Lommelygter og Andre lamper
+ * bliver alle til lygte, og de har den samme slags stoej.
+ *
+ * Kategorier, der ogsaa har en regel i FEED_KATEGORIER, staar ikke her. De
+ * arver reglens `udeluk`, som allerede er laest igennem og testet.
+ */
+const OPSLAG_UDELUK: Record<string, RegExp> = {
+  // Grenen "Haengekoejer" er halvt ophaeng: stropper, karabiner, en
+  // ridgeline-organizer og et par myggenet uden koeje.
+  haengekoje: /suspension|\bstraps?\b|webbing|carabiner|karabin|\borganizer\b|hanging kit|\brope\b|\bpouch\b|bugnet|\bstand\b|\btarp\b|underquilt/i,
+  // "Puder" er Outnorths rejsehylde saa meget som lejrhylden: nakkepuder og
+  // memory foam hoerer i en flyvemaskine, ikke i en sovepose.
+  soveudstyr: /\bneck\b|\btravel\b|memory\s*(?:foam|dreamer|zzz)|car\s*camp|cabeau/i,
+  // "Tarp & Shelters" rummer ogsaa bivyposer, strandly, en pavillon og et
+  // isoleret 9-personers telt til 8.951 kr.
+  tarp: /\bbiv(?:y|i|vy)\b|bivybag|\bbeach\b|vestibule|\bsauna\b|\btents?\b|\btelt\b|wind sack|jaktduk|onepush|gazebo|air shelter|survival shelter|\bbothy\b|skogskoja|\bglamp\b|fjellduk/i,
+  // Outnorth laegger vandfiltre og braendstofflasker under "Flasker".
+  drikkedunk: /\bfilter\b|lifestraw|miniworks|\bgravity\b|purif|fuel bottle|\bwine\b|carafe|\bmugs?\b|\blunch\b/i,
+  // Lygtegrenen er ogsaa reflekser, knaeklys og en hundelygte.
+  lygte: /\bglow\b|ljusstav|reflective|refleks|\bbeacon\b|work light|\bbelt\b|\blighter\b|\bbatter(?:y|i)/i,
+  // "Pakposer og organizere" har mulepose og en lugtfjerner med.
+  taske: /tote|freshener|smell|\btube\b|toiletry/i,
+  // "Toiletartikler" er haandklaeder plus creme, saebe og badeponchoer.
+  hygiejne: /\bponcho\b|\byoga\b|\bbottles?\b|squeezy|chamois|body\s?glide|\bcr[eè]mes?\b|\bsoap\b|shampoo|gogirl/i,
+  // Slibesten, hylstre og "plus accessories" staar hos knivene.
+  kniv: /sharpen|slibe|\bbryne|whetstone|accessories/i,
+  // Airtrim er naesefiltre til cykling, og "filter cap" er et laag.
+  vandfilter: /\bfilter cap\b|airtrim|racingfilter|sportfilter|filterel/i,
+  // Spidser og kurve er fanget ovenfor; her er handsker og trugerstave.
+  vandrestav: /\bgloves?\b|handske|snowshoe|truger/i,
+  // "Wallcharger" i ét ord slipper forbi \bcharger\b ovenfor.
+  elektronik: /wallcharger/i,
+  // Varmepuder og vaerktoejsruller er ikke kogegrej.
+  kogeudstyr: /heat pack|flameless|tool roll/i,
+  // Kasser og tasker staar under moeblerne.
+  campingmobler: /gear\s*(?:basket|tote|box)/i,
+};
+
+export const FEED_KATEGORI_MAP: Record<string, Record<string, string>> = {
+  outnorth: {
+    // Ly
+    Tunneltelte: "telt",
+    Kuppeltelte: "telt",
+    Campingtelte: "telt",
+    Tipitelte: "telt",
+    "Tarp & Shelters": "tarp",
+    // Soevn
+    Dunsoveposer: "sovepose",
+    "Syntetiske soveposer": "sovepose",
+    "Oppustelige liggeunderlag": "liggeunderlag",
+    "Selvoppustelige liggeunderlag": "liggeunderlag",
+    Skumliggeunderlag: "liggeunderlag",
+    Puder: "soveudstyr",
+    Hængekøjer: "haengekoje",
+    // Baeren
+    "Outdoor-rygsække": "rygsaek",
+    "Pakposer og organizere": "taske",
+    // Lys
+    Pandelamper: "pandelampe",
+    Lygter: "lygte",
+    Lommelygter: "lygte",
+    "Andre lamper": "lygte",
+    // Koekken og vand
+    Trekkøkkener: "kogeudstyr",
+    Campingkøkkener: "kogeudstyr",
+    Køkkenudstyr: "kogeudstyr",
+    Flasker: "drikkedunk",
+    Termoflasker: "drikkedunk",
+    Friluftsmad: "mad",
+    Vandrensning: "vandfilter",
+    // Vaerktoej, navigation og lejr
+    Knive: "kniv",
+    Multiværktøj: "kniv",
+    Kompasser: "navigation",
+    Kikkert: "kikkert",
+    Vandrestave: "vandrestav",
+    Førstehjælp: "foerstehjaelp",
+    "Powerbanker & opladere": "elektronik",
+    Campingmøbler: "campingmobler",
+    Toiletartikler: "hygiejne",
+    // Toej og fodtoej
+    Friluftsbukser: "vandrebukser",
+    Regnjakker: "regntoj",
+    Regnbukser: "regntoj",
+    Regnsæt: "regntoj",
+    Dunjakker: "dunjakke",
+    "Dunjakker mellemlag": "dunjakke",
+    Outdoorhandsker: "handsker",
+    Huer: "hue",
+    Friluftsstrømper: "sokker",
+    "Baselayer overdel": "undertoj",
+    "Baselayer bukser": "undertoj",
+    "Baselayer sæt": "undertoj",
+    Gamacher: "gamacher",
+    Vandrestøvler: "fodtoj",
+    Vandresko: "fodtoj",
+  },
+};
+
+/**
  * Den ShelterDK-kategori en vare hoerer til, eller null hvis den skal lades
  * ligge. Foerste match vinder, saa raekkefoelgen ovenfor er betydende:
  * en dunvest skal vaere dunjakke og ikke isoleringsvest.
  */
-export function kategoriFor(produktnavn: string, kategorinavn: string | null): string | null {
+export function kategoriFor(
+  produktnavn: string,
+  kategorinavn: string | null,
+  retailer?: string
+): string | null {
   const navn = produktnavn || "";
   const blob = `${navn} ${kategorinavn ?? ""}`;
   if (ALDRIG.test(blob)) return null;
+
+  // Et feed med sin egen flade kategoriliste spoerges foerst. Udelukkelsen
+  // deles med reglerne nedenfor, saa et opslag ikke bliver en bagdoer uden om
+  // det, de holder ude.
+  const kort = retailer ? FEED_KATEGORI_MAP[retailer] : undefined;
+  const fraKort = kort && kategorinavn ? kort[kategorinavn.trim()] : undefined;
+  if (fraKort) {
+    if (TILBEHOER_OPSLAG.test(navn)) return null;
+    if (OPSLAG_UDELUK[fraKort]?.test(navn)) return null;
+    const regel = FEED_KATEGORIER.find((x) => x.kategori === fraKort);
+    return regel && regel.udeluk.test(navn) ? null : fraKort;
+  }
+
   for (const k of FEED_KATEGORIER) {
     const kilde = k.kunNavn ? navn : blob;
     if (k.inkluder.test(kilde) && !k.udeluk.test(navn)) return k.kategori;

@@ -10,12 +10,14 @@
  * products not seen in the last 7 days as out-of-stock.
  */
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { gunzipSync } from "node:zlib";
 import {
   parseFeedXml,
+  parseFeedCsv,
   type NormalizedProduct,
   type Retailer,
 } from "../lib/parseAffiliateFeed";
-import { FEEDS, feedUrl, type FeedDef } from "../lib/affiliate-feeds";
+import { FEEDS, feedUrl, awinFeedUrl, type FeedDef } from "../lib/affiliate-feeds";
 import { kategoriFor, prisOk } from "../lib/feed-kategori-filter";
 import { kategoriFraNavn } from "../lib/kategori-fra-navn";
 import { vaelgUdvalg, basisNavn } from "../lib/feed-udvalg";
@@ -32,12 +34,22 @@ import { vaelgUdvalg, basisNavn } from "../lib/feed-udvalg";
 function urlFor(f: FeedDef): string | null {
   const fraEnv = process.env[`PARTNER_ADS_${f.retailer.toUpperCase()}_URL`];
   if (fraEnv) return fraEnv;
+  if (f.netvaerk === "awin") {
+    // Noeglen er hemmelig og staar kun i env. Mangler den, springes feedet
+    // over, saa de seks partner-ads-feeds koerer igennem alligevel.
+    const key = process.env.AWIN_API_KEY;
+    if (!key) {
+      console.warn(`[${f.retailer}] AWIN_API_KEY mangler, feedet springes over`);
+      return null;
+    }
+    return awinFeedUrl(f, key);
+  }
   return f.bannerId && f.feedId ? feedUrl(f) : null;
 }
 
 /** ShelterDK-kategorien for en vare i et filtreret feed, eller null. */
 function kategorien(p: NormalizedProduct): string | null {
-  const k = kategoriFor(p.product_name, p.category_raw);
+  const k = kategoriFor(p.product_name, p.category_raw, p.retailer);
   return k && prisOk(k, p.price) ? k : null;
 }
 
@@ -80,7 +92,11 @@ async function fetchFeed(url: string): Promise<Buffer> {
     headers: { "User-Agent": "ShelterDK/1.0 (+https://shelterdk.dk)" },
   });
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-  return Buffer.from(await res.arrayBuffer());
+  const buf = Buffer.from(await res.arrayBuffer());
+  // Awin leverer gzip. Vi pakker ud paa bytes frem for at stole paa
+  // content-encoding, for fetch pakker kun selv ud, naar serveren saetter den
+  // header, og Awin sender filen som et vedhaeftet dokument.
+  return buf[0] === 0x1f && buf[1] === 0x8b ? gunzipSync(buf) : buf;
 }
 
 async function upsertCategoryMappings(
@@ -147,10 +163,15 @@ async function syncRetailer(
   url: string
 ): Promise<SyncResult> {
   const retailer = feed.retailer as Retailer;
-  console.log(`[${retailer}] fetching ${url}`);
+  // Noeglen staar i adressen paa Awin-feedet, og loggen ender i GitHub
+  // Actions. Den maskeres.
+  console.log(`[${retailer}] fetching ${url.replace(/apikey\/[^/]+/, "apikey/***")}`);
   const buffer = await fetchFeed(url);
   console.log(`[${retailer}] parsing ${buffer.length} bytes`);
-  const products = parseFeedXml(buffer, retailer);
+  const products =
+    feed.netvaerk === "awin"
+      ? parseFeedCsv(buffer, retailer)
+      : parseFeedXml(buffer, retailer);
   console.log(`[${retailer}] parsed ${products.length} products`);
 
   // Deduplicate by id — some feeds contain the same product multiple times
