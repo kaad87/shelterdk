@@ -5,6 +5,7 @@ import { GearCard } from "@/components/GearCard";
 import { faqToJsonLd } from "@/lib/faq";
 import { buildItemListSchema } from "@/lib/buying-guides-schema";
 import { getGaveforslag } from "@/lib/kampagne";
+import { hasPublishedStayGuides } from "@/lib/nature-stays";
 
 // Et doegn. Forslagene kommer fra vores egne guider og skifter kun, naar en
 // guide bliver redigeret, eller en vare gaar ud af lager.
@@ -49,6 +50,11 @@ const FAQ = [
 
 export default async function JulegaverPage() {
   const trin = await getGaveforslag();
+  // Samme vagt som /bedste og footeren. /naturophold lister guider, og der
+  // er ingen udgivne endnu, saa hubben siger "Guiderne er paa vej". Et link
+  // dertil fra en gaveside er en blindgyde. Vagten taender det selv, naar
+  // den foerste guide bliver udgivet.
+  const visNaturophold = await hasPublishedStayGuides().catch(() => false);
   const alle = trin.flatMap((t) => t.forslag);
 
   const itemList =
@@ -163,10 +169,14 @@ export default async function JulegaverPage() {
             <Link href="/ruteplanner" className="text-accent underline">
               Planlæg en rute
             </Link>
-            <span className="mx-2 text-primary/30">·</span>
-            <Link href="/naturophold" className="text-accent underline">
-              Naturophold og glamping
-            </Link>
+            {visNaturophold && (
+              <>
+                <span className="mx-2 text-primary/30">·</span>
+                <Link href="/naturophold" className="text-accent underline">
+                  Naturophold og glamping
+                </Link>
+              </>
+            )}
           </p>
         </section>
 
