@@ -19,7 +19,7 @@ import {
 } from "../lib/parseAffiliateFeed";
 import { FEEDS, feedUrl, awinFeedUrl, type FeedDef } from "../lib/affiliate-feeds";
 import { kategoriFor, prisOk } from "../lib/feed-kategori-filter";
-import { kategoriFraNavn } from "../lib/kategori-fra-navn";
+import { kategoriFraNavn, sikkerKategoriFraNavn } from "../lib/kategori-fra-navn";
 import { vaelgUdvalg, basisNavn } from "../lib/feed-udvalg";
 
 /**
@@ -242,7 +242,15 @@ async function syncRetailer(
       // den forudsaetter at feedets egen kategori siger noget:
       // outdoortid::"Populaere produkter" daekker telte, stole, puder,
       // powerbanks og haandklaeder paa én gang.
-      category_mapped: kat ?? mapping?.mapped ?? kategoriFraNavn(navn) ?? null,
+      // sikkerKategoriFraNavn staar FOER kortlaegningen og er det eneste sted,
+      // hvor navnet maa overskrive feedets gren. Maalt 31. oktober 2026 laa
+      // fem optaendings-varer i kogeudstyr, som /bedste/bestik og
+      // /bedste/stormkoekken henter tilbud fra: et ildstaal kunne staa som
+      // aktuelt tilbud i en bestikguide. Deres gren kan ikke kortlaegges
+      // rigtigt, fordi outmore::"Brænder" er 36 gasbraendere og ét ildstaal.
+      // Moensteret rammer 52 af 18.126 navne, og alle 52 er optaending.
+      category_mapped:
+        kat ?? sikkerKategoriFraNavn(navn) ?? mapping?.mapped ?? kategoriFraNavn(navn) ?? null,
       price: p.price,
       price_original: p.price_original,
       discount_pct: p.discount_pct,

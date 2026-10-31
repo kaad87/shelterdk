@@ -5,7 +5,8 @@
  *   npx tsx scripts/afstem-kategorier.ts --tjek    # viser kun
  *   npx tsx scripts/afstem-kategorier.ts           # skriver
  *
- * Synken saetter `category_mapped: kat ?? mapping?.mapped ?? kategoriFraNavn(navn)`.
+ * Synken saetter `category_mapped: kat ?? sikkerKategoriFraNavn(navn) ??
+ * mapping?.mapped ?? kategoriFraNavn(navn)`.
  * Den koerer én gang i doegnet, saa efter en aendring i kortlaegningstabellen
  * eller i navnereglerne staar de gemte vaerdier og er uenige med koden indtil
  * naeste nat. Det her script lukker hullet med det samme.
@@ -17,7 +18,7 @@
  * Idempotent: koerer man igen uden at have aendret noget, rettes nul raekker.
  */
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { kategoriFraNavn } from "../lib/kategori-fra-navn";
+import { kategoriFraNavn, sikkerKategoriFraNavn } from "../lib/kategori-fra-navn";
 
 try {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -93,7 +94,11 @@ async function main() {
   const skift = new Map<string, number>();
   for (const v of varer) {
     const fraKort = v.category_raw ? kort.get(`${v.retailer}::${v.category_raw}`) ?? null : null;
-    const oensket = fraKort ?? kategoriFraNavn(v.product_name) ?? null;
+    // Samme raekkefoelge som synken, inklusive det sikre navnelag foran
+    // kortlaegningen. Staar de to uenige, flytter dette script varer tilbage
+    // hver gang det koerer.
+    const oensket =
+      sikkerKategoriFraNavn(v.product_name) ?? fraKort ?? kategoriFraNavn(v.product_name) ?? null;
     if (oensket === v.category_mapped) continue;
     const l = prNy.get(oensket) ?? [];
     l.push(v.id);

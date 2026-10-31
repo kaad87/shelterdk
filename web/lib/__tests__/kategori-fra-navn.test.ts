@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { kategoriFraNavn } from "../kategori-fra-navn";
+import { kategoriFraNavn, sikkerKategoriFraNavn } from "../kategori-fra-navn";
 
 /**
  * Proeverne er rigtige produktnavne fra kataloget, maalt 26. oktober 2026.
@@ -256,5 +256,89 @@ describe("kategoriFraNavn: kniv er ikke en vinaabner", () => {
   it("tager stadig en rigtig kniv og et rigtigt multitool", () => {
     expect(kategoriFraNavn("Morakniv Companion - Kniv")).toBe("kniv");
     expect(kategoriFraNavn("Leatherman Wave Plus - Multitool")).toBe("kniv");
+  });
+});
+
+/**
+ * Det sikre navnelag er det ENESTE sted, hvor navnet maa overskrive feedets
+ * egen kortlaegning, saa proeverne her er delt i to: de otte varer laget skal
+ * flytte, og de navne der ligner ild men ikke er det. Alle navne er rigtige
+ * katalognavne, maalt 31. oktober 2026.
+ */
+describe("sikkerKategoriFraNavn: optaending der laa i en forkert gren", () => {
+  const FLYTTES: string[] = [
+    // De fire /bedste/taendstaal-varer, hvis gren rummer alt andet.
+    "Optænding - Light My Fire TinderSticks - 180-220 gram", // laa i kogeudstyr
+    "Tændstål - Light My Fire FireSteel BIO - Sort", // laa i prepping
+    "Lifesystems Firestarter - Tilbehør til camping", // laa i tilbehoer
+    "Gerber Fire Starter praktisk ildstål | Outmore.dk", // laa i kogeudstyr
+    // Samme fejl, samme gren, fundet i samme maaling.
+    "Båltændingssæt - Light My Fire Firelighting Kit BIO",
+    "Vandtætte tændstikker - Lifesystems - Refill pakke - 15-stk",
+    "Vandtætte tændstikker inkl. etui - Lifesystems - 25-stk",
+    // outmore::"Tændstål" har slet ingen kortlaegningsraekke, saa den her laa
+    // uden kategori, fordi navnet siger FireLighting og ikke FireSteel.
+    "Light My Fire FireLighting Kit BIO sandygreen/cocoshell - sandygreen-cocoshell",
+  ];
+  it.each(FLYTTES)("%s er sikkert taendstaal", (navn) => {
+    expect(sikkerKategoriFraNavn(navn)).toBe("taendstaal");
+  });
+
+  it("svarer det samme som den brede regel, hvor begge svarer", () => {
+    expect(kategoriFraNavn("Kupilka Firesteel 8")).toBe("taendstaal");
+    expect(sikkerKategoriFraNavn("Kupilka Firesteel 8")).toBe("taendstaal");
+  });
+});
+
+describe("sikkerKategoriFraNavn: navne der ligner ild uden at vaere det", () => {
+  /**
+   * Det her er hele grunden til, at moensteret er snaevert. Laget overskriver
+   * en bevidst kortlaegning, saa ét forkert traef her flytter en loebevest
+   * eller en sovepose ind i taendstaal-puljen.
+   */
+  const RORES_IKKE: [string, string | null][] = [
+    ["Camelbak Women's Zephyr Pro - Flint Grey - Str. ONE SIZE - Løbevest", null],
+    ["Regnjakke Unisex - Trespass Qikpac - Flint Sort", "regntoj"],
+    ["Vandresko til dame - Merrell Speed Strike 2 WP - Grå", "fodtoj"],
+    ["Cebe Striker2 L Black - Skibriller", null],
+    ["Sea To Summit Spark -18c Down Sleeping Bag - Large Beluga Black", "sovepose"],
+    ["Firepot Chili Con Carne Med Ris - Reg - Mad", null],
+    ["Petromax Fire Skillet Fp30 With One Pan Handle - Pande", "baaludstyr"],
+    ["Petromax Fire Kettle Stainless Steel 0,75l - Kedel", "kogeudstyr"],
+    ["Gentlemen's Hardware Campfire Chess - Spil", null],
+    ["Winnerwell L-sized Flat Firepit - Bålsted", "baaludstyr"],
+    // Staar som kniv paa sitet, men det kommer fra outmore::Kniv-kortlaegningen:
+    // \bkniv\b rammer ikke "Morakniv". Netop derfor maa det sikre lag ikke
+    // svare paa den, for saa ville en kniv blive et taendstaal.
+    ["Morakniv Eldris With Fire Kit (s) Black", null],
+    ["Silva Ignite - Pandelampe", "pandelampe"],
+    ["2XU Ignition Hyper-Haptic Beanie Surf/silver Reflective", "hue"],
+    ["Biolite Firepit Carry Bag - Taske", null],
+  ];
+  it.each(RORES_IKKE)("%s roeres ikke af det sikre lag", (navn) => {
+    expect(sikkerKategoriFraNavn(navn)).toBeNull();
+  });
+
+  it("lader den brede regel beholde sit eget svar paa de samme navne", () => {
+    for (const [navn, bred] of RORES_IKKE) {
+      expect(kategoriFraNavn(navn), navn).toBe(bred);
+    }
+  });
+
+  it("giver ingen kategori til en engrospakke, heller ikke med et sikkert navn", () => {
+    // ENGROS gaelder foer alt andet, ogsaa her. Varen blev slettet fra
+    // /bedste/taendstaal netop fordi den er en 50-grams engrospakke.
+    expect(sikkerKategoriFraNavn("Light My Fire Tinder-on-a-Rope, 50g bulk")).toBeNull();
+  });
+
+  it("udelukker optaending der kun er en bivare", () => {
+    // Begge laa som taendstaal, fordi "optænding" stod i navnet.
+    expect(
+      sikkerKategoriFraNavn("Brænder - Esbit Emergency Stove - inkl. 3x14 g optændingstabletter")
+    ).toBeNull();
+    expect(
+      kategoriFraNavn("Brænder - Esbit Emergency Stove - inkl. 3x14 g optændingstabletter")
+    ).toBeNull();
+    expect(kategoriFraNavn("Robens Paracord reb med optændingsmulighed")).toBeNull();
   });
 });

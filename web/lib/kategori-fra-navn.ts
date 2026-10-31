@@ -35,6 +35,38 @@
  * er bevidst: en forkert regel kan tilfoeje stoej, men den kan ikke flytte en
  * vare, nogen har kortlagt med vilje.
  *
+ * ÉN UNDTAGELSE: SIKRE NAVNE. Nogle navne er saa entydige, at de afgoer
+ * kategorien uanset hvad feedets gren siger. "Tændstål", "FireSteel" og
+ * "Vandtætte tændstikker" kan ikke vaere andet end optaending. De regler der
+ * har et `sikker`-moenster laeses derfor FOER kortlaegningen:
+ *   kat ?? sikkerKategoriFraNavn(navn) ?? mapping?.mapped ?? kategoriFraNavn(navn)
+ *
+ * Grunden er maalt 31. oktober 2026. Otte optaendings-varer laa spredt over
+ * kogeudstyr, prepping og tilbehoer, fordi deres gren rummer alt andet:
+ * outmore::"Brænder" (37 varer, 36 gasbraendere), outmore::"Tilbehør til
+ * camping" (33 varer) og backpackerlife-stier paa op til ni grene paa én gang.
+ * Fem af dem laa i kogeudstyr, som /bedste/bestik og /bedste/stormkoekken
+ * henter deres tilbud fra, saa et ildstaal kunne staa som aktuelt tilbud i en
+ * bestikguide. Fire kunne rettes i kortlaegningstabellen, fordi deres gren KUN
+ * rummer optaending. De sidste fire kan tabellen ikke naa: en gren med 36
+ * gasbraendere og ét ildstaal har kun ét rigtigt svar, og det er gasbraender.
+ *
+ * `sikker` er derfor snaevert og maalt: moensteret rammer 52 af 18.126
+ * produktnavne, og alle 52 er optaending. De farlige navne staar udenfor med
+ * vilje: "Camelbak Zephyr Pro - Flint Grey" (loebevest), "Merrell Speed
+ * Strike" (vandresko), "Cebe Striker2" (skibriller), "Sea To Summit Spark"
+ * (sovepose), "Firepot Chili Con Carne" (frysetoerret mad), "Petromax Fire
+ * Skillet" (baalpande) og "Gentlemen's Hardware Campfire Chess" (et spil).
+ * Derfor staar der `flint\s*wheel` og ikke `flint`, og
+ * `fire\s*(?:steel|starter|...)` og ikke `fire`.
+ *
+ * ENGROS og `udeluk` gaelder ogsaa her: et sikkert navn paa en engrospakke
+ * giver stadig ingen kategori. Omvendt gaelder ENGROS IKKE for
+ * kortlaegningen, og det er med vilje: moensteret rammer "indbygget display"
+ * paa 11 powerbanks og "Str. Pcs" paa 12 Edelrid-karabiner, saa som veto over
+ * en bevidst kortlaegning ville det fjerne kategorien fra ~40 almindelige
+ * varer.
+ *
  * Boernevarer kategoriseres som alt andet. ALDRIG-vaernet i feed-filteret
  * handler om, hvad vi IMPORTERER; en boernesovepose er stadig en sovepose, og
  * /bedste/sovepose-til-boern har brug for at kunne finde den.
@@ -58,6 +90,13 @@ interface NavneRegel {
   inkluder: RegExp;
   /** Ting der ligner, men ikke er. Proeves foerst. */
   udeluk?: RegExp;
+  /**
+   * Den del af `inkluder` der er saa entydig, at navnet afgoer kategorien
+   * uanset hvad feedets gren siger. Laeses af sikkerKategoriFraNavn() FOER
+   * kortlaegningen; se "ÉN UNDTAGELSE" oeverst. Skal vaere en delmaengde af
+   * `inkluder`, saa de to funktioner ikke kan vaere uenige.
+   */
+  sikker?: RegExp;
 }
 
 /**
@@ -196,6 +235,18 @@ const REGLER: NavneRegel[] = [
       // UCO skriver dem paa engelsk: "UCO Hurricane Match Kit", "Hurricane
       // Survival Matches", "UCO Firestarting Kit".
       /tændstål|taendstaal|fire\s*steel|firesteel|ferro.?rod|tændstikker|tændblokke|optænding|optændings|firestart|\bmatches\b|match\s*kit|flint\s*(?:wheel|strike)|tinder/i,
+    // "optænding" alene rammer to varer, hvor optaendingen er en BIVARE:
+    // "Brænder - Esbit Emergency Stove - inkl. 3x14 g optændingstabletter" er
+    // et braendersaet, og "Robens Paracord reb med optændingsmulighed" er et
+    // reb. Begge laa som taendstaal og forurenede puljen bag /bedste/taendstaal.
+    // Samme slags fejl som fotohandsken "Hatchet" i oekse-reglen.
+    udeluk: /\bstove\b|paracord/i,
+    // Maalt mod alle 18.126 produktnavne: 52 traef, alle optaending. Se
+    // "ÉN UNDTAGELSE" oeverst for hvorfor moensteret er skrevet saa snaevert.
+    // "ildstål" staar her, fordi outmore skriver "Gerber Fire Starter
+    // praktisk ildstål" uden ordet taendstaal.
+    sikker:
+      /tændstål|taendstaal|ildstål|båltænding|fire\s*(?:steel|starter|starting|lighting)|ferro.?rod|flint\s*wheel|tændstikker|(?:stormproof|storm|waterproof|hurricane)\s*match|tinder\s*(?:sticks|-?quik|-?on-a-rope)/i,
   },
 
   // ── Baere ─────────────────────────────────────────────────────────────────
@@ -387,6 +438,28 @@ export function kategoriFraNavn(produktnavn: string): string | null {
   for (const r of REGLER) {
     if (r.udeluk?.test(navn)) continue;
     if (r.inkluder.test(navn)) return r.kategori;
+  }
+  return null;
+}
+
+/**
+ * Kategorien et navn er SIKKER paa, eller null.
+ *
+ * Det her er det eneste sted, hvor navnet maa overskrive feedets egen
+ * kortlaegning. Kun regler med et `sikker`-moenster svarer, og de staar i
+ * samme raekkefoelge som REGLER, saa ENGROS og `udeluk` gaelder uaendret.
+ *
+ * Null er det normale svar: moensteret findes kun paa optaending, fordi det er
+ * dér, grenene maaler sig til at vaere ubrugelige.
+ */
+export function sikkerKategoriFraNavn(produktnavn: string): string | null {
+  const navn = (produktnavn ?? "").trim();
+  if (!navn) return null;
+  if (ENGROS.test(navn)) return null;
+  for (const r of REGLER) {
+    if (!r.sikker) continue;
+    if (r.udeluk?.test(navn)) continue;
+    if (r.sikker.test(navn)) return r.kategori;
   }
   return null;
 }
