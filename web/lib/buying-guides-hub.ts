@@ -11,7 +11,7 @@ export const HUB_GROUPS: { group: string; categories: string[] }[] = [
   { group: "Sovegrej", categories: ["sovepose", "liggeunderlag", "haengekoje", "soveudstyr"] },
   { group: "Telte & ly", categories: ["telt", "tarp"] },
   { group: "Belysning", categories: ["pandelampe", "lygte"] },
-  { group: "Vand & mad", categories: ["vandfilter", "drikkedunk", "kogeudstyr", "stormkoekken", "frysetorret"] },
+  { group: "Vand & mad", categories: ["vandfilter", "drikkedunk", "kogeudstyr", "stormkoekken", "baalgrej", "frysetorret"] },
   { group: "Værktøj & udstyr", categories: ["kniv", "oekse", "multitool", "rygsaek", "kikkert", "kompas", "drybag", "optaending", "elektronik", "vandrestav"] },
   { group: "Lejr & komfort", categories: ["campingstol", "campingmobler", "myggenet", "siddeunderlag"] },
   // Rækkefølgen her er lag-på-lag udefra ind, så gruppen kan læses: baselag,
