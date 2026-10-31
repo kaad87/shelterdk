@@ -4,6 +4,7 @@ import { getPublishedGuides, getGuideTeasers } from "@/lib/buying-guides";
 import { hasPublishedStayGuides } from "@/lib/nature-stays";
 import { groupGuides } from "@/lib/buying-guides-hub";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
+import { BlackFridayNote } from "@/components/BlackFridayNote";
 
 export const revalidate = 3600;
 
@@ -74,6 +75,8 @@ export default async function BuyingGuidesIndexPage() {
               </p>
             )}
           </header>
+
+          <BlackFridayNote variant="hub" />
 
           <section className="mb-10 rounded-2xl border border-primary/10 bg-white p-6">
             <h2 className="mb-3 font-serif text-xl font-bold text-primary">

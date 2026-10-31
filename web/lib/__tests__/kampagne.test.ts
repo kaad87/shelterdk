@@ -3,6 +3,8 @@ import {
   aegteRabat,
   blackFridayDato,
   blackFridayStatus,
+  blackFridaySaeson,
+  formatBlackFridayDato,
   dageTil,
   rabatPct,
   vaelgKampagneTilbud,
@@ -223,6 +225,50 @@ describe("blackFridayStatus", () => {
       const s = blackFridayStatus(d);
       if (!s.erIGang) expect(s.dage, d.toISOString()).toBeGreaterThan(0);
     }
+  });
+});
+
+describe("blackFridaySaeson", () => {
+  it("er aaben de sidste 40 dage foer dagen", () => {
+    // 2026-11-27 minus 40 dage = 2026-10-18.
+    expect(blackFridaySaeson(new Date("2026-10-18T12:00:00Z"))?.aar).toBe(2026);
+    expect(blackFridaySaeson(new Date("2026-11-26T12:00:00Z"))?.dage).toBe(1);
+  });
+
+  it("er lukket dagen foer saesonen begynder", () => {
+    expect(blackFridaySaeson(new Date("2026-10-17T12:00:00Z"))).toBeNull();
+  });
+
+  it("er aaben til og med Cyber Monday", () => {
+    for (const dag of ["2026-11-27", "2026-11-28", "2026-11-29", "2026-11-30"]) {
+      expect(blackFridaySaeson(new Date(`${dag}T12:00:00Z`))?.erIGang, dag).toBe(true);
+    }
+  });
+
+  it("lukker tirsdagen efter og bliver ikke aabnet af naeste aars dato", () => {
+    // blackFridayStatus peger paa 2027 fra den dag. Uden den oevre graense
+    // ville linjen staa paa hver koebsguide hele aaret.
+    expect(blackFridaySaeson(new Date("2026-12-01T12:00:00Z"))).toBeNull();
+  });
+
+  it("er lukket det meste af aaret", () => {
+    let aabne = 0;
+    for (let i = 0; i < 365; i++) {
+      if (blackFridaySaeson(new Date(Date.UTC(2026, 0, 1 + i)))) aabne++;
+    }
+    // 40 dage foer, selve dagen og de tre dage efter.
+    expect(aabne).toBe(44);
+  });
+});
+
+describe("formatBlackFridayDato", () => {
+  it("skriver ugedag, dag og maaned paa dansk", () => {
+    expect(formatBlackFridayDato(blackFridayDato(2026))).toBe("fredag 27. november");
+  });
+
+  it("laeser datoen i UTC og ikke i serverens tidszone", () => {
+    // Midnat UTC ville blive dagen foer i en vestlig tidszone.
+    expect(formatBlackFridayDato(new Date("2026-11-27T00:00:00Z"))).toContain("27.");
   });
 });
 

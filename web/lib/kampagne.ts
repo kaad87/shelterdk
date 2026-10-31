@@ -83,6 +83,43 @@ export function blackFridayStatus(idag: Date): BlackFridayStatus {
 }
 
 /**
+ * Hvor mange dage foer Black Friday det giver mening at linke til siden.
+ *
+ * 40 dage rammer fra midten af oktober, altsaa foer forhandlerne begynder at
+ * tease. Google skal have tid til at finde siden igen, inden ugen gaar i gang,
+ * og et link, der staar hele aaret, er stoej paa en guide i marts.
+ */
+const SAESON_DAGE = 40;
+
+/**
+ * Status, naar vi er i den periode hvor et link til /black-friday hoerer til,
+ * ellers null.
+ *
+ * blackFridayStatus peger paa naeste aar fra Cyber Monday og frem, saa `dage`
+ * ligger altid mellem -3 og cirka 365. Derfor er den oevre graense nok.
+ */
+export function blackFridaySaeson(idag: Date): BlackFridayStatus | null {
+  const s = blackFridayStatus(idag);
+  return s.dage <= SAESON_DAGE ? s : null;
+}
+
+/**
+ * Datoen skrevet ud paa dansk, i UTC.
+ *
+ * Staar her og ikke i siden, fordi tre steder skriver den samme dato nu:
+ * /black-friday, /bedste og hver koebsguide. To formateringer, der er lidt
+ * forskellige, laeses som to forskellige datoer.
+ */
+export function formatBlackFridayDato(d: Date): string {
+  return new Intl.DateTimeFormat("da-DK", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    timeZone: "UTC",
+  }).format(d);
+}
+
+/**
  * Er prisfaldet aegte?
  *
  * discount_pct er regnet ud af feedet, og for ca. 97 % af varerne er

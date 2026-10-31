@@ -4,7 +4,7 @@ import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { GearCard } from "@/components/GearCard";
 import { faqToJsonLd } from "@/lib/faq";
 import { buildItemListSchema } from "@/lib/buying-guides-schema";
-import { getKampagneTilbud, blackFridayStatus } from "@/lib/kampagne";
+import { getKampagneTilbud, blackFridayStatus, formatBlackFridayDato } from "@/lib/kampagne";
 import { KATEGORI_GUIDE } from "@/lib/kategori-labels";
 
 // En time. Siden skal foelge feedet taet nok til at vaere rigtig i selve
@@ -60,15 +60,6 @@ function byggFaq(status: ReturnType<typeof blackFridayStatus>) {
   ];
 }
 
-function formatDato(d: Date): string {
-  return new Intl.DateTimeFormat("da-DK", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    timeZone: "UTC",
-  }).format(d);
-}
-
 export default async function BlackFridayPage() {
   const status = blackFridayStatus(new Date());
   const faq = byggFaq(status);
@@ -120,7 +111,7 @@ export default async function BlackFridayPage() {
               : status.dage === 1
                 ? "Black Friday er i morgen"
                 : `${status.dage} dage til Black Friday`}
-            <span className="font-normal text-white/70">{formatDato(status.dato)}</span>
+            <span className="font-normal text-white/70">{formatBlackFridayDato(status.dato)}</span>
           </p>
 
           <p className="mt-4 max-w-2xl text-primary/70">
