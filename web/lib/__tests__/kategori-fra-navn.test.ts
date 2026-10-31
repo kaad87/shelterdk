@@ -395,3 +395,91 @@ describe("kategoriFraNavn: de fem rigtige varer i outmore::Båludstyr", () => {
     expect(sikkerKategoriFraNavn("Coghlans Cg Camper's S'mores Grill - Båludstyr")).toBeNull();
   });
 });
+
+describe("sikkerKategoriFraNavn: beklaedning der laa i en opsamlingsspand", () => {
+  // Alle navne herunder er rigtige produktnavne fra kataloget 31. oktober
+  // 2026, og den kategori de LAA i staar i kommentaren. Grenene er
+  // sammensatte, saa kortlaegningstabellen kan ikke skille dem ud: "Bukser
+  // til herre > Herrebeklaedning > Toej og fodtoej" har kun ét rigtigt svar.
+  it("tager vandrebukser ud af bukser", () => {
+    // Laa i bukser. Ingen guide laeser bukser.
+    const navne = [
+      "Vandrebukser herre - Columbia Silver Ridge Utility Convertible Pants - Sand (Small/medium tilbage)",
+      "Vandrebukser dame - Trespass Bernia",
+      "Vandrebukser til herre - Black Diamond Dirtbag Pants - Sort",
+      "Vandrebukser til dame - Jack Wolfskin Hikeout Zip-off pants - Sort (M/L tilbage)",
+      "Vandrebukser kvinder - Trespass Rambler",
+    ];
+    for (const navn of navne) {
+      expect(sikkerKategoriFraNavn(navn)).toBe("vandrebukser");
+    }
+  });
+
+  it("tager fleecetroejer og fleecejakker ud af beklaedning og jakke", () => {
+    // De foerste tre laa i beklaedning, de sidste tre i jakke. Ingen guide
+    // laeser nogen af dem.
+    const navne = [
+      "Fleecetrøje herre - Treklife Sherpa - Sort (S tilbage)",
+      "Fleecetrøje til dame - Jack Wolfskin Taunus FZ W - Sort",
+      "Fleecejakke til herre - Jack Wolfskin Baiselberg FZ M - Blå",
+      "Fleecetrøje herre - Columbia Fast Trek II FZ Fleece - Navy",
+      "Fleecejakke dame - Montane Fury Hoodie - Blå",
+      "Fleecetrøje - Montane Roco Jacket - Grå",
+    ];
+    for (const navn of navne) {
+      expect(sikkerKategoriFraNavn(navn)).toBe("fleece");
+    }
+  });
+
+  it("tager uldundertoejssaet ud af beklaedning", () => {
+    expect(sikkerKategoriFraNavn("Uldundertøjssæt - Herre - 80% merino uld")).toBe("undertoj");
+    expect(sikkerKategoriFraNavn("Uldundertøj sæt - Dame - 100% merino uld - Grøn")).toBe("undertoj");
+  });
+
+  it("giver samme svar som den loese funktion", () => {
+    // `sikker` skal vaere en delmaengde af `inkluder`. Hvis de to kan vaere
+    // uenige, afhaenger kategorien af, hvor i kaeden navnet blev laest.
+    const navne = [
+      "Vandrebukser dame - Treklife Trail Pants",
+      "Fleecetrøje dame - Trespass Chatty - Sort",
+      "Fleecejakke dame - Montane F Caldus - Blå",
+      "Uldundertøj sæt - Herre - 100% merino uld - Sort",
+    ];
+    for (const navn of navne) {
+      const sikkert = sikkerKategoriFraNavn(navn);
+      expect(sikkert).not.toBeNull();
+      expect(kategoriFraNavn(navn)).toBe(sikkert);
+    }
+  });
+});
+
+describe("sikkerKategoriFraNavn: beklaedning der ligner uden at vaere det", () => {
+  it("laader fleeceforet tilbehoer staa, hvor det er kortlagt", () => {
+    // udeluk proeves foer sikker, saa en fleecehue kan ikke blive en
+    // fleecetroeje. Det er den eneste grund til, at \bfleece\b ikke er sikkert.
+    expect(sikkerKategoriFraNavn("Fleecehue - Trespass Tonkin - Sort")).toBeNull();
+    expect(sikkerKategoriFraNavn("Fleecehandsker - Trespass Plummet II")).toBeNull();
+    expect(sikkerKategoriFraNavn("Nordisk Fleece tæppe - Grå")).toBeNull();
+  });
+
+  it("gider ikke merino alene", () => {
+    // Ordet staar i sokker, huer og handsker. Den faelde er allerede gjort én
+    // gang med "crew"; se kommentaren paa undertoej-reglen.
+    expect(sikkerKategoriFraNavn("Vallerret Merino Wool Crew Sock")).toBeNull();
+    expect(sikkerKategoriFraNavn("Merino uld hue - Sort")).toBeNull();
+    expect(sikkerKategoriFraNavn("Icebreaker Merino 200 Oasis Glove Liner")).toBeNull();
+  });
+
+  it("gider ikke zip-off eller hiking pants", () => {
+    // Begge staar i inkluder, saa den loese funktion udfylder stadig huller
+    // med dem. De er bare ikke sikre nok til at overskrive en kortlaegning:
+    // zip-off staar ogsaa paa jakker med aftagelige aermer.
+    expect(sikkerKategoriFraNavn("Jack Wolfskin Zip Off Jacket M - Sort")).toBeNull();
+    expect(sikkerKategoriFraNavn("Trespass Hiking Pants - Sort")).toBeNull();
+  });
+
+  it("holder engrospakker ude ligesom paa optaending", () => {
+    expect(sikkerKategoriFraNavn("Fleecetrøje - Trespass Trouper - 50pcs bulk box")).toBeNull();
+    expect(sikkerKategoriFraNavn("Vandrebukser herre - gavesæt")).toBeNull();
+  });
+});

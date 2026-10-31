@@ -51,10 +51,22 @@
  * rummer optaending. De sidste fire kan tabellen ikke naa: en gren med 36
  * gasbraendere og ét ildstaal har kun ét rigtigt svar, og det er gasbraender.
  *
- * `sikker` er derfor snaevert og maalt: moensteret rammer 52 af 18.126
- * produktnavne, og alle 52 er optaending. De farlige navne staar udenfor med
- * vilje: "Camelbak Zephyr Pro - Flint Grey" (loebevest), "Merrell Speed
- * Strike" (vandresko), "Cebe Striker2" (skibriller), "Sea To Summit Spark"
+ * `sikker` er derfor snaevert og maalt hver gang. Fire regler har et i dag,
+ * og alle fire er maalt mod alle 18.126 produktnavne med kravet nul falske
+ * positiver: optaending (52 traef), fleece (86), vandrebukser (44) og
+ * undertoej (8). Kravet er ikke til diskussion; se hver regels kommentar for,
+ * hvad maalingen viste, og hvad der blev holdt udenfor.
+ *
+ * De tre beklaedningsregler kom til, fordi backpackerlifes grene er
+ * sammensatte: "Bukser til herre > Herrebeklaedning > Toej og fodtoej" rummer
+ * baade vandrebukser og alt andet benklaede, saa grenens eneste rigtige svar
+ * er bukser. 74 varer laa derfor i bukser, beklaedning og jakke, som ingen
+ * guide laeser, mens /bedste/vandrebukser, /bedste/fleece og
+ * /bedste/uldundertoj ikke kunne se dem.
+ *
+ * Optaendings-reglens egne faelder viser, hvad maalingen skal fange. De
+ * farlige navne staar udenfor med vilje: "Camelbak Zephyr Pro - Flint Grey"
+ * (loebevest), "Merrell Speed Strike" (vandresko), "Cebe Striker2" (skibriller), "Sea To Summit Spark"
  * (sovepose), "Firepot Chili Con Carne" (frysetoerret mad), "Petromax Fire
  * Skillet" (baalpande) og "Gentlemen's Hardware Campfire Chess" (et spil).
  * Derfor staar der `flint\s*wheel` og ikke `flint`, og
@@ -388,9 +400,22 @@ const REGLER: NavneRegel[] = [
   },
   {
     kategori: "fleece",
-    inkluder: /fleecetrøje|fleece\s*(?:jacket|hoody|sweater|pullover)|\bfleece\b/i,
+    // "fleecejakke" staar eksplicit, fordi \bfleece\b ikke rammer det
+    // sammensatte ord: der er ingen ordgraense mellem "fleece" og "jakke".
+    inkluder:
+      /fleecetrøje|fleecejakke|fleece\s*(?:jacket|hoody|sweater|pullover)|\bfleece\b/i,
     udeluk:
       /fleecehandske|fleecehue|fleece\s*(?:glove|hat|beanie|sock)|tæppe|blanket|thermarobe|badekåbe|\brobe\b/i,
+    // Maalt mod alle 18.126 produktnavne 31. oktober 2026: 86 traef, nul
+    // falske positiver. 35 af dem laa uden for fleece, fordi deres gren er en
+    // opsamlingsspand: backpackerlife::"Fleecetrøjer > Overdele > Toej og
+    // fodtoej" gav beklaedning for 26, og ni laa i jakke (Montane Fury
+    // Hoodie, Columbia Fast Trek II FZ Fleece). Ingen guide laeser
+    // beklaedning eller jakke, saa de 35 var usynlige for /bedste/fleece.
+    // Kun de danske sammensatte ord er sikre. \bfleece\b bliver IKKE sikkert:
+    // det staar i fleeceforede handsker, huer og taepper, som udeluk fanger i
+    // dag, men som en sikker regel ville tage fra en bevidst kortlaegning.
+    sikker: /fleecetrøje|fleecejakke/i,
   },
   {
     kategori: "sokker",
@@ -403,6 +428,13 @@ const REGLER: NavneRegel[] = [
       // "crew" stod i merino-alternativet og gjorde "Vallerret Merino Wool Crew
     // Sock" til undertoej. Sokker-reglen staar nu ogsaa foer denne.
     /uldundertøj|undertrøje|underbukser|uldunderbukser|base\s*layer|baselayer|long\s*(?:johns|janes)|netundertøj|\bmerino\b.*(?:trøje|bukser|zip\s*neck|turtle)/i,
+    // Maalt 31. oktober 2026: otte traef, alle uldundertoejssaet, der laa i
+    // beklaedning. Kun "uldundertøj" er sikkert. \bmerino\b alene maa aldrig
+    // staa her: ordet staar ogsaa i sokker, huer og handsker, og det var
+    // praecis den fejl, kommentaren ovenfor beskriver. "base layer" holdes
+    // ogsaa ude, fordi det er markedsfoeringssprog, der staar paa alt fra
+    // soveposer til jakker.
+    sikker: /uldundertøj/i,
   },
   {
     kategori: "solhat",
@@ -416,6 +448,15 @@ const REGLER: NavneRegel[] = [
   {
     kategori: "vandrebukser",
     inkluder: /vandrebukser|hiking\s*(?:trousers|pants)|trekking\s*(?:trousers|pants)|zip.?off/i,
+    // Maalt 31. oktober 2026: 44 traef, nul falske positiver, hverken baelter
+    // eller plejemidler. 31 af dem laa i bukser, fordi backpackerlifes gren
+    // "Bukser til herre > Herrebeklaedning > Toej og fodtoej" rummer baade
+    // vandrebukser og alt andet benklaede. Grenen har kun ét rigtigt svar, og
+    // det er bukser, saa kortlaegningstabellen kan ikke skille dem.
+    // Kun det danske sammensatte ord er sikkert. "zip.?off" bliver IKKE
+    // sikkert: det staar ogsaa paa jakker med aftagelige aermer, og
+    // "hiking pants" er bredt nok til at ramme shorts og termobukser.
+    sikker: /vandrebukser/i,
   },
   {
     kategori: "fodtoj",
@@ -484,8 +525,10 @@ export function kategoriFraNavn(produktnavn: string): string | null {
  * kortlaegning. Kun regler med et `sikker`-moenster svarer, og de staar i
  * samme raekkefoelge som REGLER, saa ENGROS og `udeluk` gaelder uaendret.
  *
- * Null er det normale svar: moensteret findes kun paa optaending, fordi det er
- * dér, grenene maaler sig til at vaere ubrugelige.
+ * Null er det normale svar: kun fire regler har et `sikker`-moenster
+ * (optaending, fleece, vandrebukser, undertoej), fordi det er dér, grenene
+ * maaler sig til at vaere ubrugelige. Raekkefoelgen er REGLERs egen, saa en ny
+ * sikker regel skal staa, hvor den snaevre staar foer den brede.
  */
 export function sikkerKategoriFraNavn(produktnavn: string): string | null {
   const navn = (produktnavn ?? "").trim();
