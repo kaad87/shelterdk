@@ -172,7 +172,9 @@ export function AdminBuyingGuides() {
     }
     await authFetch("/api/admin/buying-guides/entries", {
       method: "POST",
-      body: JSON.stringify({ guide_id: form.id, affiliate_product_id: p.id, rank: entries.length }),
+      // Ingen rank med: serveren laegger varen efter den hoejeste, der findes.
+      // entries.length ramte en eksisterende rang, naar serien havde et hul.
+      body: JSON.stringify({ guide_id: form.id, affiliate_product_id: p.id }),
     });
     loadEntries(form.id);
   }

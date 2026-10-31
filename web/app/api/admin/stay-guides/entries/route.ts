@@ -26,6 +26,25 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ entries: data ?? [] });
 }
 
+/**
+ * Næste rang i en guide: højeste rang + 1, eller 0 i en tom guide. Samme grund
+ * som i buying-guides/entries/route.ts: klienten sendte `entries.length`, hvad
+ * der kolliderer med en eksisterende rang, så snart serien har et hul.
+ */
+async function naesteRang(
+  sb: NonNullable<ReturnType<typeof admin>>,
+  guideId: number
+): Promise<number> {
+  const { data } = await sb
+    .from("stay_guide_entries")
+    .select("rank")
+    .eq("guide_id", guideId)
+    .order("rank", { ascending: false })
+    .limit(1);
+  const hoejeste = data?.[0]?.rank;
+  return typeof hoejeste === "number" ? hoejeste + 1 : 0;
+}
+
 /** POST — tilføj sted til guide: { guide_id, nature_stay_id, rank }. */
 export async function POST(req: NextRequest) {
   const sb = admin(req);
@@ -36,7 +55,11 @@ export async function POST(req: NextRequest) {
   }
   const { data, error } = await sb
     .from("stay_guide_entries")
-    .insert({ guide_id: body.guide_id, nature_stay_id: body.nature_stay_id, rank: Number(body.rank) || 0 })
+    .insert({
+      guide_id: body.guide_id,
+      nature_stay_id: body.nature_stay_id,
+      rank: typeof body.rank === "number" ? body.rank : await naesteRang(sb, body.guide_id),
+    })
     .select()
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

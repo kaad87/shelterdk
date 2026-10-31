@@ -11,6 +11,33 @@ function admin(req: NextRequest) {
   });
 }
 
+/**
+ * Næste rang i en guide: højeste rang + 1, eller 0 i en tom guide.
+ *
+ * Admin-fladen sendte før `rank: entries.length`. Det rammer en rang, der
+ * allerede findes, så snart serien har et hul, altså når en vare er slettet
+ * undervejs. Der er ingen unique-constraint på (guide_id, rank), så databasen
+ * siger ikke fra, og to entries med samme rang sorterer vilkårligt. Det er
+ * sket: se kommentaren til vaelgVinder i lib/buying-guides.ts, hvor campingstol
+ * navngav ét førstevalg på hub-kortet og et andet på selve siden.
+ *
+ * Serveren regner tallet selv, så ingen klient kan gætte forkert. Sender
+ * klienten en rang med (rækkefølge-redigering), bruges den uændret.
+ */
+async function naesteRang(
+  sb: NonNullable<ReturnType<typeof admin>>,
+  guideId: string
+): Promise<number> {
+  const { data } = await sb
+    .from("buying_guide_entries")
+    .select("rank")
+    .eq("guide_id", guideId)
+    .order("rank", { ascending: false })
+    .limit(1);
+  const hoejeste = data?.[0]?.rank;
+  return typeof hoejeste === "number" ? hoejeste + 1 : 0;
+}
+
 /** GET — ?guide_id= : entries for en guide (uanset status) + produkt-basics, til admin. */
 export async function GET(req: NextRequest) {
   const sb = admin(req);
@@ -48,7 +75,7 @@ export async function POST(req: NextRequest) {
   const row = {
     guide_id: body.guide_id,
     affiliate_product_id: body.affiliate_product_id,
-    rank: typeof body.rank === "number" ? body.rank : 0,
+    rank: typeof body.rank === "number" ? body.rank : await naesteRang(sb, body.guide_id),
     award_label: body.award_label ?? null,
     editorial_note: body.editorial_note ?? null,
     pros: Array.isArray(body.pros) ? body.pros : [],

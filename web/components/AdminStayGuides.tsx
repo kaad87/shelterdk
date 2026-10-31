@@ -114,7 +114,8 @@ export function AdminStayGuides() {
     if (typeof form.id !== "number" || !pick) return;
     await authFetch("/api/admin/stay-guides/entries", {
       method: "POST",
-      body: JSON.stringify({ guide_id: form.id, nature_stay_id: Number(pick), rank: entries.length }),
+      // Ingen rank med: serveren laegger stedet efter den hoejeste, der findes.
+      body: JSON.stringify({ guide_id: form.id, nature_stay_id: Number(pick) }),
     });
     setPick("");
     loadEntries(form.id);
