@@ -20,6 +20,21 @@ export default async function BuyingGuidesIndexPage() {
   const teasers = await getGuideTeasers(guides.map((g) => g.id));
   const showStays = await hasPublishedStayGuides().catch(() => false);
 
+  // Saetningen nedenfor lovede "6-8 udvalgte produkter". Det holdt, da den blev
+  // skrevet, men guiderne er siden vokset til 5-12, og en hub, der lover 6-8 og
+  // viser 12, er forkert om sit eget indhold. Spaendet regnes ud af de teasers,
+  // vi i forvejen har hentet, saa tallet ikke kan drive fra virkeligheden igen.
+  // Samme grund som kommentaren i /julegaver: et antal, der aendrer sig hver gang
+  // en vare gaar ud af lager, hoerer ikke i en haardkodet saetning.
+  const koebbare = [...teasers.values()].map((t) => t.buyable).filter((n) => n > 0);
+  const spaend = koebbare.length
+    ? (() => {
+        const lav = Math.min(...koebbare);
+        const hoej = Math.max(...koebbare);
+        return lav === hoej ? `${lav} udvalgte produkter` : `${lav}-${hoej} udvalgte produkter`;
+      })()
+    : "et udvalg af produkter";
+
   // CollectionPage + ItemList over guides → fortæller Google at hubben er
   // den kuraterede indgang til købsguide-klyngen.
   const collectionSchema = {
@@ -83,7 +98,7 @@ export default async function BuyingGuidesIndexPage() {
               Sådan arbejder vores købsguider
             </h2>
             <p className="text-sm leading-relaxed text-primary/80">
-              Hver guide scorer 6–8 udvalgte produkter på en 10-skala ud fra specs
+              Hver guide scorer {spaend} på en 10-skala ud fra specs
               (temperatur, vægt, R-værdi, lumen), pris og hvor godt de passer til
               shelterture i dansk klima. Vi viser åbent plusser og minusser for
               hvert produkt, og priser og lagerstatus opdateres automatisk fra
