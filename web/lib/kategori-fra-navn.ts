@@ -192,8 +192,14 @@ const REGLER: NavneRegel[] = [
   // som telt, OG goere alle 26 reservedele til baalgrej. Maalt 31. oktober 2026.
   {
     kategori: "baaludstyr",
+    // s'mores, grill basket, grid tray og barbecue tongs er de fire varer i
+    // outmore::"Båludstyr", der er rigtige produkter og ikke reservedele, og
+    // som ingen af de oevrige moenstre naaede. Fire moenstre, fire varer: hvert
+    // af dem rammer praecis sin egen vare i alle 18.126 navne, maalt
+    // 31. oktober 2026. De danske former staar med, fordi outmore blander
+    // sprog i samme gren, praecis som kulskovl/coal shovel nedenfor.
     inkluder:
-      /bålfad|bålsted|bålstativ|bålpande|bålgryde|bålrist|bålgaffel|bålskål|jægerpande|fire\s*pit|firepit|fire\s*bowl|fire\s*bridge|fire\s*anchor|campfire|dutch\s*oven|camp.?oven|støbejernspande|cast.?iron\s*(?:skillet|griddle|stack\s*grate|potato)|griddle\s*(?:plate|pan)|\bskillet\b|camp\s*grill|pack\s*grill|flatpack|grilliput|tri.?pod\s*grill|grillrist|snobrød|bread\s*skewer|bbq\s*skewer|camp\s*fork|telescoping\s*fork|kulskovl|coal\s*shovel|charcoal\s*(?:chimney|maker)|blow\s*pipe|fire\s*plunger/i,
+      /bålfad|bålsted|bålstativ|bålpande|bålgryde|bålrist|bålgaffel|bålskål|jægerpande|fire\s*pit|firepit|fire\s*bowl|fire\s*bridge|fire\s*anchor|campfire|dutch\s*oven|camp.?oven|støbejernspande|cast.?iron\s*(?:skillet|griddle|stack\s*grate|potato)|griddle\s*(?:plate|pan)|\bskillet\b|camp\s*grill|pack\s*grill|flatpack|grilliput|tri.?pod\s*grill|grillrist|s'?mores|grill\s*basket|poultry\s*grill|grillkurv|grid\s*tray|grillbakke|barbecue\s*tongs|bbq\s*tongs|grill\s*tongs|grilltang|snobrød|bread\s*skewer|bbq\s*skewer|camp\s*fork|telescoping\s*fork|kulskovl|coal\s*shovel|charcoal\s*(?:chimney|maker)|blow\s*pipe|fire\s*plunger/i,
     // Petromax saelger hele sit system som enkeltdele, saa klyngen er fuld af
     // reservedele. De navngiver nesten alle deres vaert paa engelsk ("Lid For
     // Pyron Fire Barrel", "Cooking Support for Atago", "Grate For Xl-sized
@@ -222,9 +228,17 @@ const REGLER: NavneRegel[] = [
   {
     kategori: "kogeudstyr",
     inkluder:
-      /stormkøkken|stormkoekken|\btrangia\b|gasbrænder|gasblus|kogesæt|\bgryde\b|kasserolle|\bstegepande\b|støbejernspande|\bkedel\b|\bbestik\b|\bspork\b|bestiksæt|tallerken|emaljetallerken|\bskål\b|\bkrus\b|termokrus|termokop|\bfoldekop\b|\bkop\b|kaffetragt|stempelkande|espressokande|primus\s*lite/i,
-    // "Trangia indsats til vindskaerm 27/25" er en reservedel.
-    udeluk: /madkasse|opvaskebørste|vaskemiddel|indsats\s*til|vindskærm|\blåg\b|\bpakning\b/i,
+      /stormkøkken|stormkoekken|\btrangia\b|gasbrænder|gasblus|kogesæt|\bgryde\b|kasserolle|\bstegepande\b|støbejernspande|\bkedel\b|\bbestik\b|\bspork\b|bestiksæt|tallerken|emaljetallerken|\bskål\b|\bkrus\b|termokrus|termokop|\bfoldekop\b|\bkop\b|kaffetragt|stempelkande|espressokande|primus\s*lite|loaf\s*pan/i,
+    // "Trangia indsats til vindskaerm 27/25" er en reservedel. "Baguette Pan
+    // for Petromax Loaf Pans" er en indsats TIL en broedform, og den danske
+    // "indsats til" naar den ikke, fordi navnet er engelsk.
+    //
+    // loaf_pan staar her og ikke i baaludstyr, selv om K12 ligger i outmores
+    // Båludstyr-gren: dens soeskende "Loaf Pan With Lid K8" ligger i
+    // Køkkenredskaber og er kortlagt til kogeudstyr, og kortlaegningen trumfer
+    // navnet. Satte vi K12 til baaludstyr, stod to stoerrelser af samme
+    // broedform i to kategorier. Maalt 31. oktober 2026.
+    udeluk: /madkasse|opvaskebørste|vaskemiddel|indsats\s*til|vindskærm|\blåg\b|\bpakning\b|baguette/i,
   },
   {
     kategori: "vandfilter",

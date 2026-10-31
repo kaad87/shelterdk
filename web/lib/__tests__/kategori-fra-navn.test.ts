@@ -342,3 +342,56 @@ describe("sikkerKategoriFraNavn: navne der ligner ild uden at vaere det", () => 
     expect(kategoriFraNavn("Robens Paracord reb med optændingsmulighed")).toBeNull();
   });
 });
+
+/**
+ * outmore::"Båludstyr" har ingen kortlaegningsraekke og maa ikke faa én:
+ * grenen blander varer med deres egne reservedele. 50 af de 78 koebbare varer
+ * havde derfor ingen kategori. 45 af dem er med vilje udenfor (26 heder
+ * "X for Y", 19 er tilbehoer, som udeluk naevner ved navn), og de fem
+ * nedenfor var de rigtige produkter, ingen regel naaede. Maalt 31. oktober 2026.
+ */
+describe("kategoriFraNavn: de fem rigtige varer i outmore::Båludstyr", () => {
+  const BAALGREJ: string[] = [
+    "Coghlans Cg Camper's S'mores Grill - Båludstyr",
+    "Petromax Hanging Poultry Grill Basket - Båludstyr",
+    "Petromax Grid Tray 40 Cm. Width - Båludstyr",
+    "Petromax Grid Tray 85 Cm. Width - Båludstyr",
+    "Petromax Barbecue Tongs Telescopic - Båludstyr",
+  ];
+  it.each(BAALGREJ)("%s er baaludstyr", (navn) => {
+    expect(kategoriFraNavn(navn)).toBe("baaludstyr");
+  });
+
+  it("lader broedformen foelge sin egen soeskende i kogeudstyr", () => {
+    // K8 ligger i outmores Køkkenredskaber og er kortlagt til kogeudstyr.
+    // Satte vi K12 til baaludstyr, stod to stoerrelser af samme form i to
+    // kategorier.
+    expect(kategoriFraNavn("Petromax Loaf Pan with Lid k12 - Båludstyr")).toBe("kogeudstyr");
+    expect(kategoriFraNavn("Petromax Loaf Pan With Lid K8 - Køkkenredskaber")).toBe("kogeudstyr");
+  });
+
+  it("holder stadig reservedelene ude", () => {
+    // "X for Y" er graensen mellem en vare og en del til en vare. Indsatsen
+    // til broedformen skal ikke blive kogeudstyr, blot fordi loaf_pan staar i
+    // reglen nu.
+    expect(kategoriFraNavn("Baguette Pan for Petromax Loaf Pans - Båludstyr")).toBeNull();
+    expect(kategoriFraNavn("Petromax Pan Rack for Fire Skillets - Båludstyr")).toBeNull();
+    expect(kategoriFraNavn("Winnerwell Grate For Xl-sized Flat Firepit - Båludstyr")).toBeNull();
+    expect(kategoriFraNavn("Petromax Aramid Handle Cover For Fire Skillet - Båludstyr")).toBeNull();
+  });
+
+  it("holder tilbehoeret ude, som udeluk naevner ved navn", () => {
+    expect(kategoriFraNavn("Petromax Atago Pizza Stone Pizzasten - Båludstyr")).toBeNull();
+    expect(kategoriFraNavn("Petromax Aramid Pro 300 Potholders - Båludstyr")).toBeNull();
+    expect(kategoriFraNavn("Muurikka Smoking Chips Apple 2 L - Stk. - Str. Stk. - Båludstyr")).toBeNull();
+    expect(kategoriFraNavn("Petromax Heat Diffuser - Båludstyr")).toBeNull();
+    expect(kategoriFraNavn("Petromax Tripod Lashing - Båludstyr")).toBeNull();
+  });
+
+  it("lader de nye moenstre ikke roere det sikre lag", () => {
+    // baaludstyr har ingen `sikker`, saa en kortlagt vare kan ikke flyttes af
+    // de fem nye moenstre.
+    expect(sikkerKategoriFraNavn("Petromax Grid Tray 40 Cm. Width - Båludstyr")).toBeNull();
+    expect(sikkerKategoriFraNavn("Coghlans Cg Camper's S'mores Grill - Båludstyr")).toBeNull();
+  });
+});
