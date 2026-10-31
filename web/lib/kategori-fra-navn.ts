@@ -179,6 +179,17 @@ const REGLER: NavneRegel[] = [
   // "bedste bålpande" en prioritet-1-mulighed, fordi SERP'en er svag, og
   // konkluderede samtidig, at vi ikke havde varerne. Vi havde dem; de havde
   // bare ingen kategori. Maalt 27. oktober 2026.
+  //
+  // KORTLAEG IKKE outmore::"Båludstyr". Det ser ud som et oplagt hul, fordi 50
+  // af de 78 koebbare varer stadig ingen kategori har, men grenen blander
+  // varer med deres egne reservedele: 26 af de 50 heder "X for Y" (Grate For
+  // Xl-sized Flat Firepit, Transport Bag For Fire Bridge, Aramid Handle Cover
+  // For Fire Skillet), og 19 mere er tilbehoer, som udeluk nedenfor naevner ved
+  // navn (potholders, heat reflector, pizzasten, lid holder, smoking chips,
+  // char cloth, lashing, flashing kit). En kortlaegningsraekke giver ÉT svar
+  // for hele grenen og vil derfor baade trumfe de to varer, navnereglerne
+  // sorterer rigtigt som taendstaal (flint wheel, optaendingsspaaner) og de to
+  // som telt, OG goere alle 26 reservedele til baalgrej. Maalt 31. oktober 2026.
   {
     kategori: "baaludstyr",
     inkluder:
@@ -241,6 +252,16 @@ const REGLER: NavneRegel[] = [
     // reb. Begge laa som taendstaal og forurenede puljen bag /bedste/taendstaal.
     // Samme slags fejl som fotohandsken "Hatchet" i oekse-reglen.
     udeluk: /\bstove\b|paracord/i,
+    // KORTLAEG IKKE outmore::"Tændblokke". Grenen er tre varer, hvoraf én er
+    // "Light My Fire Tinder-on-a-Rope, 50g bulk". ENGROS gaelder kun paa
+    // navne-stierne, saa en kortlaegning ville gnave engrospakken ind i
+    // puljen. Og ENGROS kan ikke udvides til et veto over kortlaegningen:
+    // maalt rammer \bpcs\b "Str. Pcs" paa 12 Edelrid-varer og \bdisplay\b
+    // "indbygget display" paa 11 powerbanks, mens en strammere \d+\s*pcs
+    // rammer "Helsport Pegs, Pk. 8 Pcs" og "Tatonka Spoon Set (4 Pcs)", som
+    // er almindelige forbrugerpakker. Begge retninger koster mere, end de
+    // giver. Grenens to rigtige varer faar taendstaal fra navnet alligevel.
+    //
     // Maalt mod alle 18.126 produktnavne: 52 traef, alle optaending. Se
     // "ÉN UNDTAGELSE" oeverst for hvorfor moensteret er skrevet saa snaevert.
     // "ildstål" staar her, fordi outmore skriver "Gerber Fire Starter
