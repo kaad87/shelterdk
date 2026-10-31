@@ -50,9 +50,9 @@ async function sundhed(sb: SupabaseClient, nu: Date) {
     .select("id, slug, last_reviewed_at, seo_title, seo_description")
     .eq("status", "published").range(f, t));
   const entries = await alle<{
-    guide_id: string; award_label: string | null; affiliate_product_id: string;
+    guide_id: string; award_label: string | null; affiliate_product_id: string; rank: number;
   }>("buying_guide_entries", (f, t) => sb.from("buying_guide_entries")
-    .select("guide_id, award_label, affiliate_product_id").range(f, t));
+    .select("guide_id, award_label, affiliate_product_id, rank").range(f, t));
 
   const ids = [...new Set(entries.map((e) => e.affiliate_product_id).filter(Boolean))];
   const prod = new Map<string, {
@@ -74,7 +74,7 @@ async function sundhed(sb: SupabaseClient, nu: Date) {
     liste.push({
       inStock: p?.in_stock ?? false, isBlocked: p?.is_blocked ?? true,
       lastSeenAt: p?.last_seen_at ?? null, awardLabel: e.award_label,
-      retailer: p?.retailer ?? null,
+      retailer: p?.retailer ?? null, rank: e.rank,
     });
     pr.set(e.guide_id, liste);
   }

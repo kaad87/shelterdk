@@ -358,3 +358,52 @@ describe("boerneprodukter i voksenguider", () => {
     expect(h.childItems).toEqual([]);
   });
 });
+
+describe("guideHealth: dublerede rangnumre", () => {
+  const medRang = (ranks: (number | undefined)[]): HealthInput => ({
+    ...base,
+    entries: ranks.map((r, i) => ({ ...base.entries[i % base.entries.length], rank: r })),
+  });
+
+  it("melder intet paa en taet serie", () => {
+    const h = guideHealth(medRang([0, 1, 2, 3]), NOW);
+    expect(h.duplicateRanks).toEqual([]);
+    expect(h.problems).toEqual([]);
+  });
+
+  it("melder intet paa en serie med huller", () => {
+    // Et hul sorterer korrekt, og siden nummererer efter position frem for
+    // efter rangtallet. Fem guider stod saadan, og et varsel ville vaere stoej.
+    const h = guideHealth(medRang([0, 1, 2, 4]), NOW);
+    expect(h.duplicateRanks).toEqual([]);
+    expect(h.problems).toEqual([]);
+  });
+
+  it("melder en rang der bruges to gange", () => {
+    // Tilstanden admin-fladen kunne skabe: `rank: entries.length` ramte en
+    // rang, der allerede fandtes, saa snart serien havde et hul.
+    const h = guideHealth(medRang([0, 1, 3, 3]), NOW);
+    expect(h.duplicateRanks).toEqual([3]);
+    expect(h.problems.join(" ")).toContain("rang 3 bruges af mere end én vare");
+  });
+
+  it("melder flere dubletter sorteret", () => {
+    const h = guideHealth(medRang([2, 2, 0, 0]), NOW);
+    expect(h.duplicateRanks).toEqual([0, 2]);
+  });
+
+  it("melder en rang der bruges tre gange som én dublet", () => {
+    const h = guideHealth(medRang([1, 1, 1, 0]), NOW);
+    expect(h.duplicateRanks).toEqual([1]);
+  });
+
+  it("springer tjekket over naar kalderen ikke sender rank", () => {
+    // base baerer ingen rang: aeldre kaldere maa ikke begynde at melde fejl.
+    expect(guideHealth(base, NOW).duplicateRanks).toEqual([]);
+  });
+
+  it("taeller kun de entries der har en rang", () => {
+    const h = guideHealth(medRang([0, undefined, undefined, 1]), NOW);
+    expect(h.duplicateRanks).toEqual([]);
+  });
+});

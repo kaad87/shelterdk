@@ -15,6 +15,11 @@ export interface HealthEntry {
   awardLabel: string | null;
   /** Hvem varen købes hos. Afgør om guiden har mere end ét svigtpunkt. */
   retailer: string | null;
+  /**
+   * Entryens rang i guiden. Valgfri, fordi ældre kaldere ikke sender den, og
+   * så springes dublet-tjekket nedenfor over.
+   */
+  rank?: number;
 }
 
 import { ALDRIG, guidenHandlerOmBoern } from "./feed-kategori-filter";
@@ -93,6 +98,37 @@ function findChildItems(input: HealthInput): string[] {
     .map((x) => x.navn.trim().slice(0, 60));
 }
 
+/**
+ * Rangnumre som mere end én entry i guiden bruger.
+ *
+ * Der er ingen unique-constraint på (guide_id, rank), så en dublet er fuldt
+ * tilladt i databasen, og sorteringen mellem de to bliver vilkårlig: begge
+ * sammenligninger i rankGuideEntries giver 0. Konsekvensen er set før. Da to
+ * entries blev fjernet fra campingstol, fik en ny vare samme rang som en
+ * eksisterende, og hub-kortet plus llms.txt navngav derfor et andet
+ * førstevalg end selve siden.
+ *
+ * POST-ruten tildeler nu selv højeste rang + 1, så mekanismen der skabte
+ * dubletter er lukket. Muligheden er den ikke: rang kan stadig sættes i hånden
+ * i admin, og en dublet er usynlig indtil nogen læser rækkefølgen efter.
+ *
+ * HULLER meldes med vilje IKKE. En serie som 0,1,2,4 sorterer korrekt, og
+ * siden nummererer efter position og ikke efter rangtallet, så et hul er
+ * kosmetisk. Fem guider stod sådan i oktober 2026, og et dagligt varsel om
+ * dem ville være støj af samme slags som koncentrationsgrænsen længere nede.
+ */
+function findDuplicateRanks(entries: HealthEntry[]): number[] {
+  const antal = new Map<number, number>();
+  for (const e of entries) {
+    if (typeof e.rank !== "number") continue;
+    antal.set(e.rank, (antal.get(e.rank) ?? 0) + 1);
+  }
+  return [...antal]
+    .filter(([, n]) => n > 1)
+    .map(([r]) => r)
+    .sort((a, b) => a - b);
+}
+
 export interface GuideHealth {
   slug: string;
   total: number;
@@ -120,6 +156,8 @@ export interface GuideHealth {
   staleBrands: string[];
   /** Boerne- eller hundeprodukter i en guide der ikke handler om dem. */
   childItems: string[];
+  /** Rangnumre som mere end én entry bruger. Tom, når kalderen ikke sender rank. */
+  duplicateRanks: number[];
   problems: string[];
 }
 
@@ -269,8 +307,14 @@ export function guideHealth(input: HealthInput, now: Date = new Date()): GuideHe
   // Tatonka) vejer 700-1.200 gram" lover ikke at siden saelger en Robens.
   const staleBrands = findStaleBrands(input);
   const childItems = findChildItems(input);
+  const duplicateRanks = findDuplicateRanks(input.entries);
 
   const problems: string[] = [];
+  if (duplicateRanks.length) {
+    problems.push(
+      `rang ${duplicateRanks.join(", ")} bruges af mere end én vare — rækkefølgen mellem dem er vilkårlig`
+    );
+  }
   if (childItems.length) {
     problems.push(
       `${childItems.length} boerne- eller hundeprodukt(er) i en voksenguide: ${childItems.join(", ")}`
@@ -311,6 +355,7 @@ export function guideHealth(input: HealthInput, now: Date = new Date()): GuideHe
     singleRetailerRisk: topRetailer != null && buyable > 0 && survivesTopRetailerLoss < MIN_SURVIVORS,
     staleBrands,
     childItems,
+    duplicateRanks,
     problems,
   };
 }

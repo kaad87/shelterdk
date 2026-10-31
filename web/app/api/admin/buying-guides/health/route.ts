@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
 
   const [{ data: guides }, { data: entries }] = await Promise.all([
     sb.from("buying_guides").select("id, slug, last_reviewed_at, seo_title, seo_description, body_md"),
-    sb.from("buying_guide_entries").select("guide_id, award_label, affiliate_product_id"),
+    sb.from("buying_guide_entries").select("guide_id, award_label, affiliate_product_id, rank"),
   ]);
   if (!guides || !entries) return NextResponse.json({ error: "db" }, { status: 500 });
 
@@ -70,6 +70,7 @@ export async function GET(req: NextRequest) {
             lastSeenAt: p?.last_seen_at ?? null,
             awardLabel: e.award_label,
             retailer: p?.retailer ?? null,
+            rank: e.rank,
           };
         });
       const navne = entries
