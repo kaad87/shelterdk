@@ -8,6 +8,26 @@ export interface FaqItem {
   answer: string;
 }
 
+/**
+ * Markdown-link i et FAQ-svar: [label](href).
+ *
+ * Staar her, saa visningen (components/FaqAnswer.tsx) og schemaet nedenfor
+ * bruger samme moenster. Hvis de to kom ud af trit, ville Google faa en anden
+ * tekst end laeseren ser.
+ */
+export const FAQ_LINK_RE = /\[([^\]]+)\]\(([^)]+)\)/;
+
+/**
+ * Svaret som ren tekst, med markdown-links foldet ned til deres label.
+ *
+ * FAQPage-schemaet er det, Google og sprogmodellerne laeser, og dér skal der
+ * staa "regnbukser" og ikke "[regnbukser](/bedste/regntoj)". Funktionen er en
+ * no-op paa de svar, der ikke har links, altsaa paa alle de haardkodede.
+ */
+export function faqAnswerText(answer: string): string {
+  return answer.replace(new RegExp(FAQ_LINK_RE.source, "g"), "$1");
+}
+
 /** Global site FAQs for /faq page – natural-language questions users and crawlers search for. */
 export const GLOBAL_FAQS: FaqItem[] = [
   {
@@ -224,7 +244,7 @@ export function faqToJsonLd(items: FaqItem[]): Record<string, unknown> {
       name: item.question,
       acceptedAnswer: {
         "@type": "Answer",
-        text: item.answer,
+        text: faqAnswerText(item.answer),
       },
     })),
   };

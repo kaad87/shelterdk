@@ -22,6 +22,7 @@ import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { renderContent } from "@/lib/renderContent";
 import { newestIsoDate } from "@/lib/content-dates";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
+import { FaqAnswer } from "@/components/FaqAnswer";
 import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
 export const revalidate = 3600;
@@ -283,7 +284,9 @@ export default async function BuyingGuidePage({
                 {faqItems.map((f, i) => (
                   <div key={i}>
                     <h3 className="font-semibold text-primary">{f.question}</h3>
-                    <p className="mt-1 text-sm leading-relaxed text-primary/80">{f.answer}</p>
+                    <p className="mt-1 text-sm leading-relaxed text-primary/80">
+                      <FaqAnswer answer={f.answer} />
+                    </p>
                   </div>
                 ))}
               </div>
