@@ -6,6 +6,7 @@ import { getProduktBySlug, getProduktSlugs } from "@/lib/produktside";
 import { produktSlug } from "@/lib/produkt-slug";
 import { rentNavn } from "@/lib/produktnavn";
 import { formatScore } from "@/lib/buying-guides-score";
+import { samlBeskrivelse } from "@/lib/produkt-meta";
 import { retailerLabel } from "@/lib/affiliate-retailer";
 import { billigstIalt } from "@/lib/produkt-match";
 import { buildProductSchema } from "@/lib/buying-guides-schema";
@@ -47,16 +48,28 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const data = await getProduktBySlug(params.slug);
   if (!data) return {};
-  const laveste = data.tilbud[0]?.price;
-  const beskrivelse = [
+  const billigste = data.tilbud[0];
+  // Prioriteret raekkefoelge: de foerste dele er dem der skal med, resten
+  // fylder snippet-pladsen ud naar der er plads. Se lib/produkt-meta.ts.
+  const beskrivelse = samlBeskrivelse([
     data.entry.best_for ? `${data.navn}: ${data.entry.best_for.toLowerCase()}.` : `${data.navn}.`,
     data.entry.score != null ? `Vi giver den ${formatScore(data.entry.score)} af 10.` : null,
     // kr() slutter selv paa "kr.", saa der maa ikke saettes punktum efter.
-    laveste != null ? `Pris fra ${kr(laveste)}` : null,
+    billigste ? `Pris fra ${kr(billigste.price)}` : null,
     data.tilbud.length > 1 ? `Sammenlignet hos ${data.tilbud.length} butikker.` : null,
-  ]
-    .filter(Boolean)
-    .join(" ");
+    data.entry.award_label ? `${data.entry.award_label}.` : null,
+    // Kun naar varen faktisk er blandt de koebbare. getProduktBySlug saetter
+    // plads til antalIGuiden + 1 for en udsolgt vare, og "nr. 10 af 9" er
+    // noget vroevl. Plads 1 staar der heller ikke, for den er enten daekket
+    // af award_label eller ikke vaerd at bruge pladsen paa.
+    data.plads > 1 && data.plads <= data.antalIGuiden
+      ? `Nr. ${data.plads} af ${data.antalIGuiden} i vores test.`
+      : null,
+    data.entry.pros[0] ? `Fordel: ${data.entry.pros[0].toLowerCase()}.` : null,
+    // Fri fragt er et koebsargument i sig selv, og det staar sjaeldent i
+    // konkurrenternes snippets.
+    billigste?.fragt === 0 ? "Fri fragt." : null,
+  ]);
   return {
     // Uden sitenavnet. Produktnavnene er lange (laengste maaler 80 tegn), og
     // "| ShelterDK" kostede 12 af de ~60 tegn Google viser: 24 af 40 maalte
