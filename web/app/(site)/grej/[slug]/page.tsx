@@ -22,14 +22,19 @@ export async function generateStaticParams() {
 }
 
 /**
- * Siderne er noindex, indtil de er set igennem paa rigtige data.
+ * Om produktsiderne maa indekseres.
  *
- * 362 nye sider paa én gang er et stort indgreb i et site der lever af
- * soegetrafik, og de kan ikke trilles tilbage: en side Google har
- * indekseret og derefter mistet, taeller som tabt kvalitet. Naar de er
- * godkendt, fjernes robots-blokken her og ruten lukkes ind i sitemappet.
+ * Stod paa false, mens de 362 sider blev set igennem: et site der lever af
+ * soegetrafik kan ikke trille saa stort et indgreb tilbage, for en side
+ * Google har indekseret og derefter mistet, taeller som tabt kvalitet.
+ * Aabnet 2. november 2026 efter QA af alle 362 sider (unikke titler,
+ * beskrivelser og h1, gyldigt Product-skema, skemapris lig den synlige,
+ * 9% tekstoverlap med guiderne og ét indgaaende link pr. side).
+ *
+ * Vendes den tilbage til false, skal /grej ogsaa ud af app/sitemap.ts igen:
+ * et sitemap der indsender noindex-sider er et modsat signal.
  */
-const INDEKSER = false;
+const INDEKSER = true;
 
 function kr(n: number): string {
   return `${n.toLocaleString("da-DK", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kr.`;

@@ -18,6 +18,7 @@ import {
 import { getFilterRegionCount } from "@/lib/fakta-db";
 import { getGuideCategories, getGuides } from "@/data/guides";
 import { getPublishedGuides } from "@/lib/buying-guides";
+import { produktIndeks } from "@/lib/produktside";
 import { getPublishedStayGuides } from "@/lib/nature-stays";
 import { SEARCH_SYNONYMS } from "@/lib/search-synonyms";
 import { slugifySegment } from "@/lib/slug";
@@ -518,6 +519,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const buyingGuides = await getPublishedGuides();
   for (const g of buyingGuides) {
     entries.push(entry(`${BASE_URL}/bedste/${g.slug}`, "weekly", 0.7, g.updated_at));
+  }
+
+  // Produktsider (/grej/[slug]) — én pr. vare i en publiceret guide.
+  //
+  // lastModified er GUIDENS dato, ikke produktets. Synken skriver
+  // affiliate_products.updated_at hver nat, så produktets dato ville gøre
+  // alle 362 sider "ændret i går" hver eneste dag. Det er ikke friskhed, det
+  // er støj, og Google diskonterer et sitemap hvor alt ændrer sig dagligt.
+  // Det der faktisk gør siden til indhold — score, fordele, ulemper og den
+  // redaktionelle vurdering — hører til guiden og ændrer sig med den.
+  //
+  // Prioritet 0,6, altså under guidernes 0,7: guiderne er målsiderne, og
+  // produktsiderne skal føde dem, ikke konkurrere med dem.
+  const guideOpdateret = new Map(buyingGuides.map((g) => [g.slug, g.updated_at]));
+  for (const opslag of (await produktIndeks()).values()) {
+    entries.push(
+      entry(`${BASE_URL}/grej/${opslag.slug}`, "weekly", 0.6, guideOpdateret.get(opslag.guideSlug))
+    );
   }
 
   // Naturophold/glamping-guider — kun når der ER publicerede guider (undgå at
