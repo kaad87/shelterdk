@@ -37,7 +37,10 @@ describe("buildProductSchema", () => {
   it("inkluderer navn, brand og offers med pris i DKK", () => {
     const s = buildProductSchema(product);
     expect(s["@type"]).toBe("Product");
-    expect(s.name).toBe("Test Sovepose");
+    // Navnet kommer fra rentNavn(), som saetter maerket foran naar det ikke
+    // staar i navnet. Google og en chatbot ser dermed samme entitet som
+    // brugeren laeser paa kortet.
+    expect(s.name).toBe("Acme Test Sovepose");
     expect((s.offers as { price: number }).price).toBe(999);
     expect((s.offers as { priceCurrency: string }).priceCurrency).toBe("DKK");
   });
@@ -128,10 +131,13 @@ describe("buildProductSchema – lager, pros/cons, reviewBody, priceValidUntil",
   });
 
   it("udelader brand når intet kendt brand findes i navnet", () => {
+    // Var "Sovepose - Sleepline 250 - 2 sæsons". Sleepline ER et maerke i
+    // kataloget og staar i MAERKER, saa rentMaerke() finder det nu, hvilket
+    // er det rigtige. Her bruges i stedet en vare uden maerke nogen steder.
     const s = buildProductSchema({
       ...product,
       brand: null,
-      product_name: "Sovepose - Sleepline 250 - 2 sæsons",
+      product_name: "Dry bag - 8 liter",
       in_stock: true,
     });
     expect(s.brand).toBeUndefined();
@@ -181,5 +187,52 @@ describe("buildProductSchema – Merchant listing-felter (Search Console)", () =
     const omPol = (om.offers as Record<string, unknown>).hasMerchantReturnPolicy as { merchantReturnDays: number };
     expect(bpPol.merchantReturnDays).toBe(100);
     expect(omPol.merchantReturnDays).toBe(14);
+  });
+});
+
+describe("buildProductSchema – flere butikker", () => {
+  const tilbud = [
+    { retailer: "outdoornu", price: 850, affiliate_url: "https://outdoornu/x" },
+    { retailer: "prooutdoor", price: 959.95, affiliate_url: "https://prooutdoor/x" },
+  ];
+
+  it("annoncerer den laveste pris, ikke sidens egen butik", () => {
+    // Produktsiden skriver "Laveste pris nu 850,00 kr." oeverst. Med et
+    // enkelt Offer stod der 959,95 i skemaet, og det er en
+    // prisuoverensstemmelse mod den synlige side.
+    const s = buildProductSchema({ ...product, price: 959.95 }, { tilbud });
+    const o = s.offers as { "@type": string; lowPrice: number; highPrice: number; offerCount: number };
+    expect(o["@type"]).toBe("AggregateOffer");
+    expect(o.lowPrice).toBe(850);
+    expect(o.highPrice).toBe(959.95);
+    expect(o.offerCount).toBe(2);
+  });
+
+  it("bliver ved et enkelt Offer, naar der kun er én butik", () => {
+    const s = buildProductSchema(product, { tilbud: [tilbud[0]] });
+    expect((s.offers as { "@type": string })["@type"]).toBe("Offer");
+  });
+
+  it("bliver ved et enkelt Offer, naar der ikke er oplyst tilbud", () => {
+    const s = buildProductSchema(product);
+    expect((s.offers as { "@type": string })["@type"]).toBe("Offer");
+  });
+});
+
+describe("buildProductSchema – stregkode", () => {
+  it("bruger feedets ean, naar den er en gyldig EAN13", () => {
+    const s = buildProductSchema({ ...product, ean: "7318841251806" });
+    expect(s.gtin13).toBe("7318841251806");
+  });
+
+  it("falder tilbage til Outmore-id'et, som selv ER en EAN13", () => {
+    const s = buildProductSchema({ ...product, id: "outmore-5709388146854", ean: null });
+    expect(s.gtin13).toBe("5709388146854");
+  });
+
+  it("udelader gtin13, naar stregkoden ikke er 13 cifre", () => {
+    // prooutdoor skriver 12-cifrede UPC-numre: "887194014705" er 12 cifre.
+    const s = buildProductSchema({ ...product, id: "prooutdoor-201-1008419", ean: "88719401470" });
+    expect(s.gtin13).toBeUndefined();
   });
 });

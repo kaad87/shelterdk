@@ -4,10 +4,19 @@ import { ExternalLink } from "lucide-react";
 import { trackAffiliateClick } from "@/lib/tracking";
 import { retailerLabel } from "@/lib/affiliate-retailer";
 import type { AffiliateProduct } from "@/lib/affiliate-products";
+import { rentNavn } from "@/lib/produktnavn";
 
 type P = Pick<
   AffiliateProduct,
-  "product_name" | "retailer" | "brand" | "category_mapped" | "price" | "affiliate_url" | "in_stock"
+  | "product_name"
+  | "display_name"
+  | "display_brand"
+  | "retailer"
+  | "brand"
+  | "category_mapped"
+  | "price"
+  | "affiliate_url"
+  | "in_stock"
 >;
 
 /**
@@ -39,10 +48,12 @@ export function AffiliateLink({
       href={product.affiliate_url}
       target="_blank"
       rel="sponsored nofollow noopener"
-      aria-label={`${label} — ${product.product_name}`}
+      aria-label={`${label} — ${rentNavn(product)}`}
       onClick={() =>
         trackAffiliateClick({
           url: product.affiliate_url,
+          // Som i GearCardClient: sporingen beholder feedets raa navn, saa
+          // klikhistorikken ikke splittes i to navne for samme vare.
           productName: product.product_name,
           retailer: product.retailer,
           brand: product.brand ?? undefined,

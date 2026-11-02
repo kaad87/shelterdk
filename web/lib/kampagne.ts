@@ -28,7 +28,7 @@ function sb() {
 }
 
 const SELECT_COLUMNS =
-  "id, retailer, brand, product_name, description, category_mapped, price, price_original, discount_pct, in_stock, stock_count, image_url, affiliate_url, is_blocked, shipping_cost";
+  "id, retailer, brand, product_name, display_name, display_brand, ean, description, category_mapped, price, price_original, discount_pct, in_stock, stock_count, image_url, affiliate_url, is_blocked, shipping_cost";
 
 /* ---------------------------------------------------------------- Black Friday */
 

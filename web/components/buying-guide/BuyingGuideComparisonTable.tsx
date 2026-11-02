@@ -1,5 +1,6 @@
 import type { GuideEntryWithProduct } from "@/lib/buying-guides";
 import { formatScore } from "@/lib/buying-guides-score";
+import { rentNavn } from "@/lib/produktnavn";
 import { StarRating } from "@/components/buying-guide/StarRating";
 import { AffiliateLink } from "@/components/buying-guide/AffiliateLink";
 import { PriceTag } from "@/components/buying-guide/PriceTag";
@@ -46,7 +47,7 @@ export function BuyingGuideComparisonTable({ entries }: { entries: GuideEntryWit
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={e.product.image_url}
-                      alt={e.product.product_name}
+                      alt={rentNavn(e.product)}
                       width={44}
                       height={44}
                       className="h-11 w-11 shrink-0 rounded-md object-contain"
@@ -55,7 +56,7 @@ export function BuyingGuideComparisonTable({ entries }: { entries: GuideEntryWit
                       href={`#produkt-${i + 1}`}
                       className="font-medium text-primary hover:text-accent hover:underline"
                     >
-                      {e.product.product_name}
+                      {rentNavn(e.product)}
                     </a>
                   </div>
                 </td>
@@ -88,13 +89,13 @@ export function BuyingGuideComparisonTable({ entries }: { entries: GuideEntryWit
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={e.product.image_url}
-                alt={e.product.product_name}
+                alt={rentNavn(e.product)}
                 width={48}
                 height={48}
                 className="h-12 w-12 shrink-0 rounded-md object-contain"
               />
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-primary line-clamp-2">{e.product.product_name}</p>
+                <p className="text-sm font-medium text-primary line-clamp-2">{rentNavn(e.product)}</p>
                 {e.best_for && <p className="text-xs text-primary/60">{e.best_for}</p>}
               </div>
             </div>

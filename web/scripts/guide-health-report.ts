@@ -15,6 +15,8 @@
  */
 import { createClient } from "@supabase/supabase-js";
 import { guideHealth, type GuideHealth, type HealthEntry } from "../lib/guide-health";
+import { tildelProduktSlugs, type SlugVare } from "../lib/produkt-slug";
+import { rentNavn } from "../lib/produktnavn";
 
 // Samme mønster som sync-affiliate-products.ts: i GitHub kommer nøglerne fra
 // workflowets env, lokalt fra .env.local.
@@ -97,15 +99,18 @@ async function main() {
 
   const ids = [...new Set(entries.map((e) => e.affiliate_product_id).filter(Boolean))];
   const produkter = new Map<string, {
+    id: string;
     in_stock: boolean | null; is_blocked: boolean | null;
     last_seen_at: string | null; retailer: string | null;
+    product_name: string; brand: string | null;
+    display_name: string | null; display_brand: string | null;
   }>();
   // Samme grund som ovenfor: et fejlet opslag efterlod produkterne ude af
   // kortet, og de faldt derefter tilbage på inStock:false/isBlocked:true —
   // altså blev sunde varer meldt døde.
   for (let i = 0; i < ids.length; i += 200) {
     const { data, error } = await sb.from("affiliate_products")
-      .select("id, in_stock, is_blocked, last_seen_at, retailer, product_name, brand")
+      .select("id, in_stock, is_blocked, last_seen_at, retailer, product_name, brand, display_name, display_brand")
       .in("id", ids.slice(i, i + 200));
     if (error) throw new Error(`affiliate_products: ${error.message}`);
     for (const p of data ?? []) produkter.set(p.id, p);
@@ -115,6 +120,23 @@ async function main() {
   // hentes én gang pr. koersel. Mindst tre varer pr. maerke, saa en enkelt
   // stavefejl i et feed ikke bliver et "maerke".
   const maerker = await hentMaerker(sb);
+
+  // Hvilke varer faar ingen side under /grej. Samme funktion som ruten
+  // bygger efter, saa tjekket ikke kan drifte fra virkeligheden.
+  //
+  // Kun varer fra UDGIVNE guider. `entries` hentes uden filter paa guidens
+  // status, saa kladdernes varer er med i `produkter`, mens produktIndeks kun
+  // ser de udgivne. Blev kladderne talt med, kunne en kladdevare med et
+  // lavere id vinde en slug og faa en udgivet vare meldt som "ingen
+  // produktside", selv om det er kladdevaren der ingen har.
+  const udgivneGuideIds = new Set(guides.map((g) => g.id));
+  const iUdgivneGuider = new Set(
+    entries.filter((e) => udgivneGuideIds.has(e.guide_id)).map((e) => e.affiliate_product_id)
+  );
+  const { uden } = tildelProduktSlugs(
+    [...produkter.values()].filter((p) => iUdgivneGuider.has(p.id)) as SlugVare[]
+  );
+  const udenSide = new Set(uden.map((u) => u.id));
 
   const nu = new Date();
   const pr = new Map<string, HealthEntry[]>();
@@ -132,6 +154,8 @@ async function main() {
       awardLabel: e.award_label,
       retailer: p?.retailer ?? null,
       rank: e.rank,
+      navn: p ? rentNavn(p) : undefined,
+      udenProduktside: udenSide.has(e.affiliate_product_id),
     });
     pr.set(e.guide_id, liste);
   }

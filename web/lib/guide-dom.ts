@@ -19,6 +19,7 @@
 import type { BuyingGuide, GuideEntryWithProduct } from "@/lib/buying-guides";
 import { vaelgVinder } from "@/lib/buying-guides";
 import { formatScore } from "@/lib/buying-guides-score";
+import { rentNavn } from "@/lib/produktnavn";
 
 export interface GuideDom {
   /** "ShelterDKs foerstevalg til campingstol" — uden kolon. */
@@ -95,7 +96,7 @@ export function guideDom(
   const b = (vinder.best_for ?? "").trim();
   return {
     overskrift: `ShelterDKs førstevalg til ${emne}`,
-    produkt: vinder.product.product_name,
+    produkt: rentNavn(vinder.product),
     pris: typeof vinder.product.price === "number" ? kroner(vinder.product.price) : null,
     score: vinder.score != null ? `${formatScore(vinder.score)} af 10` : null,
     begrundelse: b ? b.charAt(0).toUpperCase() + b.slice(1) : null,

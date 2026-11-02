@@ -407,3 +407,29 @@ describe("guideHealth: dublerede rangnumre", () => {
     expect(h.duplicateRanks).toEqual([]);
   });
 });
+
+describe("guideHealth – varer uden produktside", () => {
+  it("melder navnesammenfald som et problem med varens navn", () => {
+    const h = guideHealth({ ...base, entries: [
+      { ...base.entries[0], navn: "Treklife Rain Packaway", udenProduktside: true },
+      ...base.entries.slice(1),
+    ] }, NOW);
+    const p = h.problems.find((x) => x.includes("navnesammenfald"));
+    expect(p).toBeDefined();
+    expect(p).toContain("Treklife Rain Packaway");
+    expect(p).toContain("display_name");
+  });
+
+  it("taeller flere varer i det samme problem", () => {
+    const h = guideHealth({ ...base, entries: base.entries.map((e, i) => ({
+      ...e, navn: `Vare ${i}`, udenProduktside: i < 2,
+    })) }, NOW);
+    expect(h.problems.find((x) => x.includes("navnesammenfald"))).toContain("2 vare(r)");
+  });
+
+  it("melder intet naar kalderen ikke har maalt det", () => {
+    // Admin-endpointet saetter ikke feltet. Et udeladt felt maa ikke blive
+    // til "alle varer mangler en side".
+    expect(guideHealth(base, NOW).problems).toEqual([]);
+  });
+});

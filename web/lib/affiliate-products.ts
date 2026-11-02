@@ -12,6 +12,16 @@ export interface AffiliateProduct {
   retailer: "outmore" | "backpackerlife" | "outdoortid";
   brand: string | null;
   product_name: string;
+  /**
+   * Manuelle rettelser af navn og mærke til visning. Null betyder "brug
+   * udledningen i lib/produktnavn.ts", ikke "intet navn". Synken skriver dem
+   * ikke, i modsætning til `brand` og `product_name`, som den overskriver
+   * hver nat. Se migrations/066_affiliate_visningsnavn.sql.
+   */
+  display_name: string | null;
+  display_brand: string | null;
+  /** Stregkoden fra feedet. Findes paa 133 af de 362 guide-varer (37%). */
+  ean: string | null;
   description: string | null;
   category_mapped: string | null;
   price: number;
@@ -29,7 +39,7 @@ export interface AffiliateProduct {
 }
 
 const SELECT_COLUMNS =
-  "id, retailer, brand, product_name, description, category_mapped, price, price_original, discount_pct, in_stock, stock_count, image_url, affiliate_url, is_blocked, shipping_cost, updated_at";
+  "id, retailer, brand, product_name, display_name, display_brand, ean, description, category_mapped, price, price_original, discount_pct, in_stock, stock_count, image_url, affiliate_url, is_blocked, shipping_cost, updated_at";
 
 /**
  * Fetches a single product by id. Cached at the React request level to

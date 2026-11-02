@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { GearCardView } from "@/components/GearCard";
-import { Check, X } from "lucide-react";
+import { ArrowRight, Check, X } from "lucide-react";
+import { rentNavn } from "@/lib/produktnavn";
 import type { GuideEntryWithProduct } from "@/lib/buying-guides";
 import { formatScore } from "@/lib/buying-guides-score";
 import { StarRating } from "@/components/buying-guide/StarRating";
@@ -33,9 +35,16 @@ function formatSpec(key: string, val: unknown): string {
 export function BuyingGuideEntry({
   entry,
   position,
+  produktSlug,
 }: {
   entry: GuideEntryWithProduct;
   position: number;
+  /**
+   * Slug paa varens egen side under /grej. Undefined for de varer der ikke
+   * har en, og saa vises linket ikke. Slug'en slaas op i produktIndeks af
+   * guidesiden, ikke regnes ud her. Se lib/produktside.ts.
+   */
+  produktSlug?: string;
 }) {
   const { product } = entry;
   const specs = (product.specs ?? {}) as Record<string, unknown>;
@@ -98,6 +107,19 @@ export function BuyingGuideEntry({
             </div>
           ))}
         </dl>
+      )}
+
+      {produktSlug && (
+        <Link
+          href={`/grej/${produktSlug}`}
+          // inline-block, ikke inline-flex: produktnavnene brydes over to
+          // linjer paa en telefon, og en flex-pil blev efterladt yderst til
+          // hoejre i stedet for at foelge det sidste ord.
+          className="mt-3 inline-block text-sm font-medium text-accent-dark hover:underline"
+        >
+          Se pris og vurdering af {rentNavn(product)}
+          <ArrowRight size={15} className="ml-1 inline align-[-2px]" />
+        </Link>
       )}
     </article>
   );

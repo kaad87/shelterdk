@@ -1,4 +1,5 @@
 import type { GuideEntryWithProduct } from "@/lib/buying-guides";
+import { rentNavn } from "@/lib/produktnavn";
 import { formatScore } from "@/lib/buying-guides-score";
 import { StarRating } from "@/components/buying-guide/StarRating";
 import { AffiliateLink } from "@/components/buying-guide/AffiliateLink";
@@ -35,7 +36,7 @@ export function BuyingGuideOverview({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={e.product.image_url}
-              alt={e.product.product_name}
+              alt={rentNavn(e.product)}
               width={160}
               height={96}
               className="mx-auto h-24 w-full object-contain"
@@ -44,9 +45,11 @@ export function BuyingGuideOverview({
                 126 af 157 produktnavne (80%) — typisk netop sæson, størrelse
                 eller model, som er det der adskiller produkterne. Med tre
                 linjer klippes 27%. Titlen bliver aldrig lang nok til at
-                skubbe CTA'en ud af kortet, fordi grid'et er ens-højt. */}
+                skubbe CTA'en ud af kortet, fordi grid'et er ens-højt.
+                Målingen er fra før rentNavn(), som gør navnene kortere; tre
+                linjer er derfor rigeligt nu, ikke for lidt. */}
             <h3 className="mt-2 line-clamp-3 text-sm font-semibold text-primary">
-              {e.product.product_name}
+              {rentNavn(e.product)}
             </h3>
             {e.score != null && (
               <div className="mt-1 flex items-center gap-1.5">

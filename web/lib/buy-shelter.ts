@@ -12,7 +12,7 @@ import type { AffiliateProduct } from "@/lib/affiliate-products";
  */
 
 const SELECT =
-  "id, retailer, brand, product_name, description, category_raw, category_mapped, price, price_original, discount_pct, shipping_cost, in_stock, stock_count, image_url, affiliate_url, ean, specs, editor_score, is_blocked";
+  "id, retailer, brand, product_name, display_name, display_brand, description, category_raw, category_mapped, price, price_original, discount_pct, shipping_cost, in_stock, stock_count, image_url, affiliate_url, ean, specs, editor_score, is_blocked";
 
 const TTL_MS = 60 * 60 * 1000;
 let cache: { products: AffiliateProduct[]; expires: number } | null = null;

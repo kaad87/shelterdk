@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { ExternalLink } from "lucide-react";
 import type { AffiliateProduct } from "@/lib/affiliate-products";
+import { rentMaerke, rentNavn } from "@/lib/produktnavn";
 import { trackAffiliateClick } from "@/lib/tracking";
 
 function fireAffiliate(
@@ -11,6 +12,9 @@ function fireAffiliate(
 ) {
   trackAffiliateClick({
     url: product.affiliate_url,
+    // Sporingen beholder feedets raa navn, saa klikhistorikken i
+    // affiliate_clicks grupperer paa samme streng som foer udledningen kom
+    // til. Kun det brugeren laeser, skifter navn.
     productName: product.product_name,
     retailer: product.retailer,
     brand: product.brand ?? undefined,
@@ -37,16 +41,17 @@ function formatPrice(n: number): string {
 
 function EditorialVariant({ product, className }: { product: AffiliateProduct; className?: string }) {
   const outOfStock = !product.in_stock;
+  const navn = rentNavn(product);
   return (
     <div className={`my-6 flex gap-4 rounded-lg border border-primary/10 border-l-[3px] border-l-accent bg-white p-4 ${className ?? ""}`}>
       <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-md">
-        <Image src={product.image_url} alt={product.product_name} fill className="object-contain" sizes="96px" unoptimized />
+        <Image src={product.image_url} alt={navn} fill className="object-contain" sizes="96px" unoptimized />
       </div>
       <div className="min-w-0 flex-1">
         {product.category_mapped && (
           <div className="text-[11px] uppercase tracking-wide text-primary/50">{product.category_mapped}</div>
         )}
-        <h4 className="font-serif text-base font-bold text-primary leading-tight">{product.product_name}</h4>
+        <h4 className="font-serif text-base font-bold text-primary leading-tight">{navn}</h4>
         <div className="mt-1 flex items-baseline gap-2">
           <span className="text-lg font-bold text-primary">{formatPrice(product.price)}</span>
           {product.price_original != null && product.price_original > product.price && product.discount_pct != null && (
@@ -80,6 +85,8 @@ function EditorialVariant({ product, className }: { product: AffiliateProduct; c
 
 function ProductVariant({ product, className }: { product: AffiliateProduct; className?: string }) {
   const outOfStock = !product.in_stock;
+  const navn = rentNavn(product);
+  const maerke = rentMaerke(product);
   return (
     <div className={`relative overflow-hidden rounded-xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] flex flex-row md:flex-col ${className ?? ""}`}>
       {product.discount_pct != null && (
@@ -88,13 +95,13 @@ function ProductVariant({ product, className }: { product: AffiliateProduct; cla
         </div>
       )}
       <div className="relative w-28 shrink-0 md:w-full md:aspect-square bg-background">
-        <Image src={product.image_url} alt={product.product_name} fill className="object-contain p-3 md:p-4" sizes="(max-width: 768px) 112px, 33vw" unoptimized />
+        <Image src={product.image_url} alt={navn} fill className="object-contain p-3 md:p-4" sizes="(max-width: 768px) 112px, 33vw" unoptimized />
       </div>
       <div className="flex flex-1 flex-col p-3 md:p-4">
-        {product.brand && (
-          <div className="text-[10px] md:text-[11px] font-semibold uppercase tracking-wider text-accent">{product.brand}</div>
+        {maerke && (
+          <div className="text-[10px] md:text-[11px] font-semibold uppercase tracking-wider text-accent">{maerke}</div>
         )}
-        <h4 className="mt-0.5 md:mt-1 font-serif text-sm md:text-lg font-bold text-primary leading-tight line-clamp-2">{product.product_name}</h4>
+        <h4 className="mt-0.5 md:mt-1 font-serif text-sm md:text-lg font-bold text-primary leading-tight line-clamp-2">{navn}</h4>
         <div className="mt-1.5 md:mt-3 flex items-baseline gap-2">
           <span className="text-base md:text-xl font-bold text-primary">{formatPrice(product.price)}</span>
           {product.price_original != null && product.price_original > product.price && (
@@ -129,13 +136,14 @@ function ProductVariant({ product, className }: { product: AffiliateProduct; cla
 
 function PillVariant({ product, className }: { product: AffiliateProduct; className?: string }) {
   const outOfStock = !product.in_stock;
+  const navn = rentNavn(product);
   return (
     <a
       href={product.affiliate_url}
       target="_blank"
       rel="sponsored nofollow noopener"
       className={`inline-flex items-center gap-2 rounded-full border border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50 py-1.5 pl-1.5 pr-3 align-middle text-sm no-underline transition-all hover:-translate-y-0.5 hover:border-accent hover:shadow-md ${outOfStock ? "opacity-60" : ""} ${className ?? ""}`}
-      aria-label={`Affiliate-link til ${product.product_name}`}
+      aria-label={`Affiliate-link til ${navn}`}
       title="Annonce · Sponsoreret link"
       onClick={() => fireAffiliate(product, "pill")}
     >
@@ -144,7 +152,7 @@ function PillVariant({ product, className }: { product: AffiliateProduct; classN
       </span>
       <span className="flex flex-col leading-tight">
         <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-800">Grej-tip</span>
-        <span className="text-[13px] font-semibold text-primary">{product.product_name}</span>
+        <span className="text-[13px] font-semibold text-primary">{navn}</span>
       </span>
       <span className="text-[13px] font-bold text-primary">{formatPrice(product.price)}</span>
       {product.discount_pct != null && (

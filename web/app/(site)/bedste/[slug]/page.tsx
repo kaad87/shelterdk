@@ -18,6 +18,8 @@ import { GuideDeals } from "@/components/buying-guide/GuideDeals";
 import { BlackFridayNote } from "@/components/BlackFridayNote";
 import { QuickAnswer } from "@/components/seo/QuickAnswer";
 import { formatScore } from "@/lib/buying-guides-score";
+import { rentNavn } from "@/lib/produktnavn";
+import { produktSlugEfterId } from "@/lib/produktside";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { renderContent } from "@/lib/renderContent";
 import { newestIsoDate } from "@/lib/content-dates";
@@ -67,6 +69,11 @@ export default async function BuyingGuidePage({
   if (!data) notFound();
   const { guide, entries } = data;
   const allGuides = await getPublishedGuides();
+  // Varernes egne sider under /grej. Uden et link herfra er de 362 sider
+  // foraeldreloese: sitemappet alene faar dem ikke crawlet. Opslaget koster
+  // tre forespoergsler, men siden er ISR (revalidate ovenfor), saa de koeres
+  // én gang i timen pr. guide og ikke pr. request.
+  const produktSider = await produktSlugEfterId();
   const related = relatedGuides(guide.slug, allGuides);
   const parent = guide.parent_slug ? allGuides.find((x) => x.slug === guide.parent_slug) ?? null : null;
   const pageUrl = `https://shelterdk.dk/bedste/${guide.slug}`;
@@ -113,7 +120,7 @@ export default async function BuyingGuidePage({
   // "Vores valg", ikke "testvinder": scoren er en redaktionel vurdering ud fra
   // en fast rubrik, ikke en labtest — sådan står der også på /saadan-vurderer-vi.
   const answerText = topPick
-    ? `Vores førstevalg er ${topPick.product.product_name}${topPick.score != null ? ` (${formatScore(topPick.score)}/10)` : ""} — det bedste alround-valg.${budgetPick && budgetPick.id !== topPick.id ? ` Bedst til prisen: ${budgetPick.product.product_name}.` : ""}`
+    ? `Vores førstevalg er ${rentNavn(topPick.product)}${topPick.score != null ? ` (${formatScore(topPick.score)}/10)` : ""} — det bedste alround-valg.${budgetPick && budgetPick.id !== topPick.id ? ` Bedst til prisen: ${rentNavn(budgetPick.product)}.` : ""}`
     : guide.intro ?? "";
   const body = guide.body_md ? await renderContent(guide.body_md) : null;
 
@@ -263,7 +270,7 @@ export default async function BuyingGuidePage({
           <div className="mt-8 space-y-5">
             {entries.map((e, i) => (
               <div key={e.id} id={`produkt-${i + 1}`} className="scroll-mt-24">
-                <BuyingGuideEntry entry={e} position={i + 1} />
+                <BuyingGuideEntry entry={e} position={i + 1} produktSlug={produktSider.get(e.product.id)} />
               </div>
             ))}
           </div>
