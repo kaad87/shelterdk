@@ -177,7 +177,7 @@ async function hentTilbudOgHistorik(
   for (let fra = 0; ; fra += 1000) {
     const { data } = await db
       .from("affiliate_products")
-      .select("id, retailer, product_name, brand, display_name, display_brand, category_mapped, price, affiliate_url, in_stock, is_blocked")
+      .select("id, retailer, product_name, brand, display_name, display_brand, category_mapped, price, affiliate_url, in_stock, is_blocked, shipping_cost")
       .eq("category_mapped", produkt.category_mapped)
       .order("id")
       .range(fra, fra + 999);

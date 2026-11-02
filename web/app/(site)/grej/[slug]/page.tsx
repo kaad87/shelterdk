@@ -260,6 +260,7 @@ export default async function ProduktPage({ params }: { params: { slug: string }
             egetNavn={navn}
             affiliateUrl={p.affiliate_url}
             fragt={p.shipping_cost}
+            kategori={p.category_mapped}
           />
 
           <h2 className="mt-10 font-serif text-2xl font-semibold text-primary">Prisudvikling</h2>

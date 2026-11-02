@@ -1,5 +1,5 @@
 import { retailerLabel } from "@/lib/affiliate-retailer";
-import type { Tilbud } from "@/lib/produkt-match";
+import { billigstIalt, prisAfhaengerAfStoerrelse, type Tilbud } from "@/lib/produkt-match";
 
 function kr(n: number): string {
   return `${n.toLocaleString("da-DK", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kr.`;
@@ -20,12 +20,15 @@ export function Butikspriser({
   egetNavn,
   affiliateUrl,
   fragt,
+  kategori,
 }: {
   tilbud: Tilbud[];
   egetId: string;
   egetNavn: string;
   affiliateUrl: string;
   fragt: number | null;
+  /** Varens kategori. Afgoer om prisen kan gaelde én stoerrelse. */
+  kategori: string | null;
 }) {
   if (tilbud.length < 2) {
     const kun = tilbud[0];
@@ -35,6 +38,11 @@ export function Butikspriser({
           <span className="font-semibold text-primary">{retailerLabel(kun?.retailer ?? "")}</span>
           <span className="text-lg font-bold text-primary">{kr(kun?.price ?? 0)}</span>
         </div>
+        <p className="mt-0.5 text-xs text-primary/50">
+          {fragt != null
+            ? `+ ${kr(fragt)} fragt = ${kr((kun?.price ?? 0) + fragt)}`
+            : "fragt oplyses i kurven"}
+        </p>
         <a
           href={affiliateUrl}
           target="_blank"
@@ -50,6 +58,8 @@ export function Butikspriser({
       </div>
     );
   }
+
+  const ialtBilligst = billigstIalt(tilbud);
 
   return (
     <div>
@@ -87,6 +97,13 @@ export function Butikspriser({
               </div>
               <div className="shrink-0 text-right">
                 <p className="font-bold text-primary">{kr(t.price)}</p>
+                {/* Fragten staar ved prisen, fordi den kan vende
+                    raekkefoelgen: 12,00 + 49 er dyrere end 12,95 + 39. */}
+                <p className="text-xs text-primary/50">
+                  {t.ialt != null
+                    ? `+ ${kr(t.fragt ?? 0)} fragt = ${kr(t.ialt)}`
+                    : "fragt oplyses i kurven"}
+                </p>
                 <a
                   href={detteErSiden ? affiliateUrl : t.affiliate_url}
                   target="_blank"
@@ -100,10 +117,17 @@ export function Butikspriser({
           );
         })}
       </div>
+      {ialtBilligst && (
+        <p className="mt-2 rounded-lg bg-accent/10 px-3 py-2 text-xs font-medium leading-relaxed text-primary">
+          Billigst i alt er {retailerLabel(ialtBilligst.retailer)} til {kr(ialtBilligst.ialt!)} med
+          fragt, selv om {retailerLabel(tilbud[0].retailer)} har den laveste varepris.
+        </p>
+      )}
       <p className="mt-2 text-xs leading-relaxed text-primary/60">
         Butikkerne har ikke nødvendigvis samme størrelse eller farve på lager. Vi matcher på mærke og
         model, ikke på stregkode, så tjek varen hos butikken.
-        {fragt === 0 && " Fragten er oplyst hvor butikken oplyser den."}
+        {prisAfhaengerAfStoerrelse(kategori) &&
+          " Prisen her gælder den størrelse butikken har sendt os, og butikken fører ikke nødvendigvis alle størrelser til den pris."}
       </p>
     </div>
   );

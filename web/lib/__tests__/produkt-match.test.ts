@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { matchNoegle, modelOrd, samlTilbud, type MatchVare } from "../produkt-match";
+import {
+  billigstIalt,
+  matchNoegle,
+  modelOrd,
+  prisAfhaengerAfStoerrelse,
+  samlTilbud,
+  type MatchVare,
+} from "../produkt-match";
 
 // Alle navne herunder staar ordret i kataloget 1. november 2026. En matcher
 // skal maales mod det butikkerne faktisk skriver, for det er uenigheden
@@ -202,5 +209,76 @@ describe("samlTilbud", () => {
     const udsolgt = { ...katalog[0], in_stock: false };
     const t = samlTilbud(udsolgt, [udsolgt, ...katalog.slice(1)]);
     expect(t.some((x) => x.retailer === "prooutdoor")).toBe(true);
+  });
+});
+
+describe("fragt i sammenligningen", () => {
+  const spork = (over: Partial<MatchVare> & { id: string; retailer: string; price: number; shipping_cost: number | null }): MatchVare => ({
+    product_name: "Sea to Summit Camp Cutlery Spork",
+    brand: "Sea to Summit",
+    display_name: null,
+    display_brand: null,
+    category_mapped: "kogeudstyr",
+    affiliate_url: `https://x/${over.id}`,
+    in_stock: true,
+    is_blocked: false,
+    ...over,
+  });
+  // De rigtige tal fra kataloget 2. november 2026.
+  const katalog = [
+    spork({ id: "backpackerlife-1", retailer: "backpackerlife", price: 12.0, shipping_cost: 49 }),
+    spork({ id: "outmore-1", retailer: "outmore", price: 12.95, shipping_cost: 39 }),
+  ];
+
+  it("regner total ud pr. butik", () => {
+    const t = samlTilbud(katalog[0], katalog);
+    expect(t[0].fragt).toBe(49);
+    expect(t[0].ialt).toBe(61);
+    expect(t[1].ialt).toBeCloseTo(51.95);
+  });
+
+  it("sorterer stadig paa vareprisen, saa overskrift og skema er enige", () => {
+    const t = samlTilbud(katalog[0], katalog);
+    expect(t[0].price).toBe(12.0);
+    expect(t[0].retailer).toBe("backpackerlife");
+  });
+
+  it("udpeger den butik der er billigst inklusive fragt", () => {
+    const b = billigstIalt(samlTilbud(katalog[0], katalog));
+    expect(b?.retailer).toBe("outmore");
+    expect(b?.ialt).toBeCloseTo(51.95);
+  });
+
+  it("melder intet naar den billigste ogsaa er billigst i alt", () => {
+    const lige = [
+      spork({ id: "a-1", retailer: "a", price: 12.0, shipping_cost: 39 }),
+      spork({ id: "b-1", retailer: "b", price: 20.0, shipping_cost: 39 }),
+    ];
+    expect(billigstIalt(samlTilbud(lige[0], lige))).toBeNull();
+  });
+
+  it("gaetter ikke naar en fragt er ukendt", () => {
+    const ukendt = [
+      spork({ id: "a-1", retailer: "a", price: 12.0, shipping_cost: null }),
+      spork({ id: "b-1", retailer: "b", price: 12.95, shipping_cost: 39 }),
+    ];
+    const t = samlTilbud(ukendt[0], ukendt);
+    expect(t[0].ialt).toBeNull();
+    expect(billigstIalt(t)).toBeNull();
+  });
+});
+
+describe("prisAfhaengerAfStoerrelse", () => {
+  it("er sand for fodtoej og toej", () => {
+    // Outdoornus Keen Arroyo II er én raekke for str. 45, og butikssiden bag
+    // linket har ingen stoerrelsesvaelger. Pro-Outdoors har 18.
+    expect(prisAfhaengerAfStoerrelse("vandresandal")).toBe(true);
+    expect(prisAfhaengerAfStoerrelse("fleece")).toBe(true);
+  });
+
+  it("er falsk for grej uden stoerrelser og for ukendt kategori", () => {
+    expect(prisAfhaengerAfStoerrelse("kogeudstyr")).toBe(false);
+    expect(prisAfhaengerAfStoerrelse("pandelampe")).toBe(false);
+    expect(prisAfhaengerAfStoerrelse(null)).toBe(false);
   });
 });

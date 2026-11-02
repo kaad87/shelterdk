@@ -35,6 +35,42 @@ export interface MatchVare {
   affiliate_url: string;
   in_stock: boolean;
   is_blocked?: boolean;
+  /** Butikkens faste fragt. Null naar feedet ikke oplyser den. */
+  shipping_cost?: number | null;
+}
+
+/**
+ * Kategorier hvor prisen kan gaelde én stoerrelse.
+ *
+ * Feedene giver os ikke altid hele sortimentet: Outdoornus Keen Arroyo II er
+ * én raekke for str. 45, og butikssiden bag linket har ingen
+ * stoerrelsesvaelger, mens Pro-Outdoors side har 18. Sammenligningen kan
+ * derfor fremhaeve en pris, laeseren ikke kan koebe til i sin stoerrelse.
+ *
+ * Vi kan ikke se forskel paa "butikken foerer kun str. 45" og "feedet sendte
+ * os str. 45", saa siden lover ikke noget, den siger det. Listen er
+ * kategorier og ikke forhandlere: en regel pr. forhandler ville vaere et
+ * lappetaeppe, der skulle vedligeholdes hver gang et feed aendrer sig.
+ */
+const STOERRELSESKATEGORIER = new Set([
+  "vandresandal",
+  "vandresko",
+  "vandrestovler",
+  "vandrebukser",
+  "vandresokker",
+  "fleece",
+  "dunjakke",
+  "regntoj",
+  "uldundertoj",
+  "handsker",
+  "hue",
+  "solhat",
+  "gamacher",
+]);
+
+/** Om prisen i denne kategori kan gaelde én stoerrelse og ikke hele sortimentet. */
+export function prisAfhaengerAfStoerrelse(kategori: string | null): boolean {
+  return kategori != null && STOERRELSESKATEGORIER.has(kategori);
 }
 
 /** Koen. Samme sko saelges som "Mens", "Men", "herre" og "M". */
@@ -155,6 +191,10 @@ export interface Tilbud {
   affiliate_url: string;
   /** Samme vare kan ligge som én raekke pr. stoerrelse; her er der talt. */
   varianter: number;
+  /** Butikkens faste fragt, eller null naar den ikke er oplyst. */
+  fragt: number | null;
+  /** price + fragt. Null naar fragten er ukendt, saa der ikke gaettes. */
+  ialt: number | null;
 }
 
 /**
@@ -187,6 +227,8 @@ export function samlTilbud(vare: MatchVare, katalog: MatchVare[]): Tilbud[] {
         navn: k.product_name,
         affiliate_url: k.affiliate_url,
         varianter: 1,
+        fragt: k.shipping_cost ?? null,
+        ialt: k.shipping_cost == null ? null : k.price + k.shipping_cost,
       });
       continue;
     }
@@ -196,7 +238,35 @@ export function samlTilbud(vare: MatchVare, katalog: MatchVare[]): Tilbud[] {
       haves.id = k.id;
       haves.navn = k.product_name;
       haves.affiliate_url = k.affiliate_url;
+      haves.fragt = k.shipping_cost ?? null;
+      haves.ialt = k.shipping_cost == null ? null : k.price + k.shipping_cost;
     }
   }
+  // Sorteret paa VAREprisen, ikke paa totalen. Sidens overskrift og skemaets
+  // lowPrice skal vaere det samme tal, og schema.org's Offer.price er varens
+  // pris; fragten hoerer i shippingDetails. Sorterede vi paa totalen, ville
+  // overskriften vise 51,95 mens skemaet sagde 12,00, og det er praecis den
+  // prisuoverensstemmelse AggregateOffer blev indfoert for at undgaa.
+  // At totalen kan vende raekkefoelgen siger siden i stedet med rene ord,
+  // se billigstIalt nedenfor.
   return [...perButik.values()].sort((a, b) => a.price - b.price);
+}
+
+/**
+ * Butikken der er billigst INKLUSIVE fragt, naar det ikke er den foerste.
+ *
+ * Maalt 2. november 2026 paa de syv varer der har mere end én butik: det
+ * skete for én af dem, og dér var det afgoerende. Sea to Summit-sporken
+ * koster 12,00 hos Backpackerlife og 12,95 hos Outmore, men fragten er 49
+ * mod 39, saa Outmore er 9,05 billigere i alt. En side der skriver "laveste
+ * pris 12,00" uden mere tager fejl med 17% paa en vare til en tier.
+ *
+ * Returnerer null naar den billigste ogsaa er billigst i alt, eller naar en
+ * af fragterne er ukendt: saa er der intet at sammenligne med.
+ */
+export function billigstIalt(tilbud: Tilbud[]): Tilbud | null {
+  if (tilbud.length < 2) return null;
+  if (tilbud.some((t) => t.ialt == null)) return null;
+  const bedst = [...tilbud].sort((a, b) => a.ialt! - b.ialt!)[0];
+  return bedst.id === tilbud[0].id ? null : bedst;
 }
