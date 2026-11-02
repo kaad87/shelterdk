@@ -25,16 +25,18 @@ describe("emneFraTitel", () => {
 });
 
 describe("guideDom", () => {
+  // Navnene er feedets egne ("Typebeskrivelse - Maerke Model"). Dommen gaar
+  // gennem rentNavn(), saa "Stol - " falder vaek og maerket staar foran.
   const entries = [
-    entry(0, "Bedste komfort", 8.1, "Lange aftener", "Stol - High-back UL", 599),
-    entry(1, "Vores valg", 8.7, "shelterturen hvor stolen skal bæres", "Stol - Low-back UL", 449),
+    entry(0, "Bedste komfort", 8.1, "Lange aftener", "Stol - Treklife High-back UL Chair", 599),
+    entry(1, "Vores valg", 8.7, "shelterturen hvor stolen skal bæres", "Stol - Treklife Low-back UL Chair", 449),
     entry(2, "Bedst til prisen", 8.0, "Bilen", "Festivalstol", 149),
   ];
 
   it("bygger dommen om varen med topprædikat, ikke den foerste", () => {
     const d = guideDom({ title: "Bedste campingstol 2026" }, entries);
     expect(d?.overskrift).toBe("ShelterDKs førstevalg til campingstol");
-    expect(d?.produkt).toBe("Stol - Low-back UL");
+    expect(d?.produkt).toBe("Treklife Low-back UL Chair");
     expect(d?.pris).toBe("449 kr.");
     expect(d?.score).toBe("8,7 af 10");
     expect(d?.begrundelse).toBe("Shelterturen hvor stolen skal bæres");
@@ -72,11 +74,11 @@ describe("guideDom", () => {
 describe("domSomTekst", () => {
   it("samler dommen til én citérbar linje", () => {
     const d = guideDom({ title: "Bedste campingstol 2026" }, [
-      entry(0, "Vores valg", 8.7, "shelterturen hvor stolen skal bæres", "Stol - Low-back UL", 449),
+      entry(0, "Vores valg", 8.7, "shelterturen hvor stolen skal bæres", "Stol - Treklife Low-back UL Chair", 449),
       entry(1, "Bedst til prisen", 8.0, "Bilen", "Festivalstol", 149),
     ]);
     expect(domSomTekst(d)).toBe(
-      "ShelterDKs førstevalg til campingstol: Stol - Low-back UL, 449 kr., 8,7 af 10. " +
+      "ShelterDKs førstevalg til campingstol: Treklife Low-back UL Chair, 449 kr., 8,7 af 10. " +
       "Shelterturen hvor stolen skal bæres. Guiden sammenligner 2 produkter fra 149 kr. til 449 kr."
     );
   });

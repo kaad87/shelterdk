@@ -79,6 +79,86 @@ async function hentGemteIds(
   }
 }
 
+/**
+ * Prisen som den stod FOER denne koersel, pr. vare.
+ *
+ * Skal laeses foer upserten, ellers er den gamle pris vaek: synken skriver
+ * `price` paa plads. Det er hele grunden til at der ikke fandtes prishistorik.
+ */
+async function hentPriserFoer(
+  supabase: SupabaseClient,
+  retailer: Retailer
+): Promise<Map<string, number | null>> {
+  const ud = new Map<string, number | null>();
+  const SIDE = 1000;
+  for (let fra = 0; ; fra += SIDE) {
+    const { data, error } = await supabase
+      .from("affiliate_products")
+      .select("id, price")
+      .eq("retailer", retailer)
+      .order("id")
+      .range(fra, fra + SIDE - 1);
+    if (error) throw new Error(`Kunne ikke laese priser foer synk: ${error.message}`);
+    const side = (data ?? []) as { id: string; price: number | null }[];
+    for (const r of side) ud.set(r.id, r.price);
+    if (side.length < SIDE) return ud;
+  }
+}
+
+/**
+ * Gemmer de priser der har AENDRET sig, i affiliate_price_history.
+ *
+ * Kun aendringer logges. 13.391 koebbare varer gange 365 dage ville vaere
+ * ~4,9 mio. raekker om aaret, og projektet har allerede haft
+ * egress-overforbrug. En priskurve er en trappefunktion, saa
+ * aendringspunkterne er praecis det der skal tegnes, og de dage hvor prisen
+ * stod stille tilfoejer ingenting.
+ *
+ * En vare uden tidligere pris logges ogsaa, saa kurven har et startpunkt fra
+ * den dag varen kom ind i kataloget.
+ *
+ * Helt defensiv, som bumpChangedGuides: en fejl her maa aldrig vaelte synken.
+ * Historikken er rar at have, men varerne og priserne er det vigtige.
+ */
+async function logPrisHistorik(
+  supabase: SupabaseClient,
+  retailer: Retailer,
+  rows: { id: string; price: number | null; price_original: number | null; in_stock: boolean }[],
+  foer: Map<string, number | null>
+): Promise<void> {
+  try {
+    const aendret = rows.filter((r) => {
+      if (r.price == null) return false;
+      const gammel = foer.get(r.id);
+      // `undefined` er en ny vare, `null` er en vare uden kendt pris. Begge
+      // skal have et startpunkt.
+      return gammel === undefined || gammel === null || Math.abs(gammel - r.price) > 0.009;
+    });
+    if (aendret.length === 0) {
+      console.log(`[${retailer}] prishistorik: ingen prisændringer`);
+      return;
+    }
+    const idag = new Date().toISOString().slice(0, 10);
+    const BATCH = 500;
+    for (let i = 0; i < aendret.length; i += BATCH) {
+      const batch = aendret.slice(i, i + BATCH).map((r) => ({
+        product_id: r.id,
+        observeret: idag,
+        price: r.price,
+        price_original: r.price_original,
+        in_stock: r.in_stock,
+      }));
+      const { error } = await supabase
+        .from("affiliate_price_history")
+        .upsert(batch, { onConflict: "product_id,observeret" });
+      if (error) throw new Error(error.message);
+    }
+    console.log(`[${retailer}] prishistorik: ${aendret.length} prisændringer gemt`);
+  } catch (e) {
+    console.warn(`[${retailer}] prishistorik sprang over: ${e instanceof Error ? e.message : String(e)}`);
+  }
+}
+
 interface SyncResult {
   retailer: Retailer;
   total: number;
@@ -264,6 +344,10 @@ async function syncRetailer(
     };
   });
 
+  // Prisen som den stod inden vi skriver. Skal hentes HER: upserten nedenfor
+  // overskriver `price`, og saa er sammenligningsgrundlaget vaek.
+  const priserFoer = await hentPriserFoer(supabase, retailer);
+
   // Upsert in smaller batches with retry/backoff. Smaller batches stay under the
   // Postgres statement_timeout (important when the DB is throttled/under load), and
   // the retry means a single transient timeout doesn't abort the whole sync.
@@ -302,6 +386,8 @@ async function syncRetailer(
     }
     console.log(`[${retailer}] upserted ${i + batch.length}/${rows.length}`);
   }
+
+  await logPrisHistorik(supabase, retailer, rows, priserFoer);
 
   return {
     retailer,

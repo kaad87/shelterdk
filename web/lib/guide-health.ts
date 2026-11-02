@@ -20,6 +20,18 @@ export interface HealthEntry {
    * så springes dublet-tjekket nedenfor over.
    */
   rank?: number;
+  /** Produktnavnet, til de problemer der skal kunne pege paa en bestemt vare. */
+  navn?: string;
+  /**
+   * Varen har ingen side under /grej, fordi dens navn kolliderer med en
+   * andens. Valgfri: kaldere der ikke har kørt tildelProduktSlugs sender den
+   * ikke, og så rapporteres der ikke om noget der ikke er maalt.
+   *
+   * Et link fra guiden til en side der ikke findes bliver aldrig renderet, saa
+   * tabet er tavst: varen mister sin egen side uden at noget fejler. Derfor
+   * skal den opdages her. Rettelsen er et display_name paa varen.
+   */
+  udenProduktside?: boolean;
 }
 
 import { ALDRIG, guidenHandlerOmBoern } from "./feed-kategori-filter";
@@ -323,6 +335,15 @@ export function guideHealth(input: HealthInput, now: Date = new Date()): GuideHe
   if (staleBrands.length) {
     problems.push(
       `teksten anbefaler ${staleBrands.join(", ")}, som ikke er paa siden`
+    );
+  }
+  const udenSide = input.entries.filter((e) => e.udenProduktside);
+  if (udenSide.length) {
+    const navne = udenSide.map((e) => e.navn).filter(Boolean).join(", ");
+    problems.push(
+      `${udenSide.length} vare(r) har ingen produktside paa grund af navnesammenfald` +
+        (navne ? `: ${navne}` : "") +
+        " — saet display_name"
     );
   }
   if (buyable < MIN_BUYABLE) problems.push(`kun ${buyable} produkter kan købes`);

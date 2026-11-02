@@ -1,11 +1,15 @@
 import type { AffiliateProduct } from "@/lib/affiliate-products";
 import { helTekst } from "@/lib/feed-beskrivelse";
+import { rentMaerke, rentNavn } from "@/lib/produktnavn";
 
 type P = Pick<
   AffiliateProduct,
   | "id"
   | "product_name"
   | "brand"
+  | "display_name"
+  | "display_brand"
+  | "ean"
   | "description"
   | "image_url"
   | "price"
@@ -24,49 +28,16 @@ export interface ProductSchemaOpts {
   cons?: string[];
   /** Redaktionel note → review.reviewBody. */
   reviewBody?: string | null;
-}
-
-/**
- * Feeds har ofte intet brand-felt — brandet står i produktnavnet
- * ("Sovepose - Treklife Peak 4S"). Konservativ inferens mod kendte mærker;
- * null hvis intet sikkert match (hellere udeladt end forkert).
- */
-const KNOWN_BRANDS = [
-  "Sea to Summit",
-  "High Peak",
-  "Black Diamond",
-  "Easy Camp",
-  "Therm-a-Rest",
-  "Treklife",
-  "Highlander",
-  "Snugpak",
-  "Nordisk",
-  "Trespass",
-  "Opinel",
-  "Carinthia",
-  "Klymit",
-  "Nemo",
-  "Robens",
-  "Outwell",
-  "Vango",
-  "Petzl",
-  "Ledlenser",
-  "Exped",
-  "Katadyn",
-  "LifeStraw",
-  "Morakniv",
-  "Mora",
-  "Helikon-Tex",
-];
-
-export function inferBrandFromName(productName: string): string | null {
-  for (const brand of KNOWN_BRANDS) {
-    const escaped = brand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    if (new RegExp(`(^|[\\s\\-–])${escaped}([\\s\\-–]|$)`, "i").test(productName)) {
-      return brand;
-    }
-  }
-  return null;
+  /**
+   * Priserne hos de butikker der foerer samme model, billigst foerst.
+   *
+   * Uden den beskriver skemaet kun den ene butik siden tilhoerer, mens siden
+   * selv staar med "laveste pris nu" fra en anden. Google sammenligner
+   * skemaets pris med den synlige, og en side der viser 850 kr. og
+   * annoncerer 959,95 i skemaet er en prisuoverensstemmelse. Med flere
+   * butikker bliver det derfor et AggregateOffer med lav og hoej pris.
+   */
+  tilbud?: { retailer: string; price: number; affiliate_url: string }[];
 }
 
 /**
@@ -89,6 +60,21 @@ function returnPolicy(retailer: string): Record<string, unknown> {
     returnMethod: "https://schema.org/ReturnByMail",
     returnFees: "https://schema.org/ReturnFeesCustomerResponsibility",
   };
+}
+
+/**
+ * Stregkoden, naar den er en gyldig EAN13.
+ *
+ * Feedets egen `ean` foerst: den findes paa 37% af guide-varerne, mens
+ * udledningen fra id'et kun virker for Outmore, hvis id'er ER EAN-numre.
+ * Uden den stod produktsiderne uden gtin13, og stregkoden er den staerkeste
+ * identifikator Google og en sprogmodel har til at vide hvilken vare der er
+ * tale om.
+ */
+function gtin13(p: Pick<P, "id" | "ean">): string | null {
+  const fraFeed = (p.ean ?? "").trim();
+  if (/^\d{13}$/.test(fraFeed)) return fraFeed;
+  return gtin13FromId(p.id);
 }
 
 /** Outmore-id'er er rene EAN13-numre ("outmore-5709388146854"). */
@@ -120,15 +106,17 @@ function priceValidUntil(): string {
  * Kun for tredjeparts-produkter (grej), jf. Googles guidelines.
  */
 export function buildProductSchema(p: P, opts: ProductSchemaOpts = {}): Record<string, unknown> {
-  const { score, pros, cons, reviewBody } = opts;
-  const brand = p.brand || inferBrandFromName(p.product_name);
-  const gtin = gtin13FromId(p.id);
+  const { score, pros, cons, reviewBody, tilbud } = opts;
+  // Navn og mærke udledes samme sted som på kortene og i llms.txt, så Google
+  // og en chatbot ser den samme entitet som brugeren. Se lib/produktnavn.ts.
+  const brand = rentMaerke(p);
+  const gtin = gtin13(p);
   // Forhandlernes feeds klipper beskrivelsen midt i et ord; teksten går ellers
   // ordret videre til Google. Se lib/feed-beskrivelse.ts.
   const description = helTekst(p.description, 500);
   return {
     "@type": "Product",
-    name: p.product_name,
+    name: rentNavn(p),
     ...(brand ? { brand: { "@type": "Brand", name: brand } } : {}),
     ...(gtin ? { gtin13: gtin } : {}),
     ...(description ? { description } : {}),
@@ -145,33 +133,54 @@ export function buildProductSchema(p: P, opts: ProductSchemaOpts = {}): Record<s
           },
         }
       : {}),
-    offers: {
-      "@type": "Offer",
-      price: p.price,
-      priceCurrency: "DKK",
-      priceValidUntil: priceValidUntil(),
-      availability: p.in_stock
-        ? "https://schema.org/InStock"
-        : "https://schema.org/OutOfStock",
-      url: p.affiliate_url,
-      hasMerchantReturnPolicy: returnPolicy(p.retailer),
-      ...(p.shipping_cost != null
+    offers:
+      tilbud && tilbud.length > 1
         ? {
-            shippingDetails: {
-              "@type": "OfferShippingDetails",
-              shippingRate: {
-                "@type": "MonetaryAmount",
-                value: p.shipping_cost,
-                currency: "DKK",
-              },
-              shippingDestination: {
-                "@type": "DefinedRegion",
-                addressCountry: "DK",
-              },
-            },
+            "@type": "AggregateOffer",
+            priceCurrency: "DKK",
+            lowPrice: Math.min(...tilbud.map((t) => t.price)),
+            highPrice: Math.max(...tilbud.map((t) => t.price)),
+            offerCount: tilbud.length,
+            offers: tilbud.map((t) => ({
+              "@type": "Offer",
+              price: t.price,
+              priceCurrency: "DKK",
+              priceValidUntil: priceValidUntil(),
+              availability: "https://schema.org/InStock",
+              url: t.affiliate_url,
+              seller: { "@type": "Organization", name: t.retailer },
+              hasMerchantReturnPolicy: returnPolicy(t.retailer),
+            })),
           }
-        : {}),
-    },
+        : enkeltTilbud(p),
+  };
+}
+
+function enkeltTilbud(p: P): Record<string, unknown> {
+  return {
+    "@type": "Offer",
+    price: p.price,
+    priceCurrency: "DKK",
+    priceValidUntil: priceValidUntil(),
+    availability: p.in_stock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+    url: p.affiliate_url,
+    hasMerchantReturnPolicy: returnPolicy(p.retailer),
+    ...(p.shipping_cost != null
+      ? {
+          shippingDetails: {
+            "@type": "OfferShippingDetails",
+            shippingRate: {
+              "@type": "MonetaryAmount",
+              value: p.shipping_cost,
+              currency: "DKK",
+            },
+            shippingDestination: {
+              "@type": "DefinedRegion",
+              addressCountry: "DK",
+            },
+          },
+        }
+      : {}),
   };
 }
 

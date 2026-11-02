@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import type { AffiliateProduct } from "@/lib/affiliate-products";
+import { rentNavn } from "@/lib/produktnavn";
 
 function getServiceClient() {
   return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
@@ -132,7 +133,7 @@ export function resolveAwards(entries: GuideEntryWithProduct[]): GuideEntryWithP
 }
 
 const PRODUCT_COLS =
-  "id, retailer, brand, product_name, description, category_mapped, price, price_original, discount_pct, in_stock, stock_count, image_url, affiliate_url, is_blocked, shipping_cost, updated_at, last_seen_at, specs";
+  "id, retailer, brand, product_name, display_name, display_brand, ean, description, category_mapped, price, price_original, discount_pct, in_stock, stock_count, image_url, affiliate_url, is_blocked, shipping_cost, updated_at, last_seen_at, specs";
 
 export async function getPublishedGuides(): Promise<BuyingGuide[]> {
   const sb = getServiceClient();
@@ -220,7 +221,9 @@ export async function getGuideTeasers(guideIds: string[]): Promise<Map<string, G
   const ids = [...new Set(entries.map((e) => e.affiliate_product_id))];
   const { data: products } = await sb
     .from("affiliate_products")
-    .select("id, product_name, price, in_stock, is_blocked")
+    // brand + display_* skal med, fordi rentNavn() sætter mærket foran, og
+    // 203 af guide-varerne har intet brand-felt.
+    .select("id, product_name, brand, display_name, display_brand, price, in_stock, is_blocked")
     .in("id", ids);
   const byId = new Map((products ?? []).map((p) => [p.id, p]));
   for (const gid of guideIds) {
@@ -247,7 +250,7 @@ export async function getGuideTeasers(guideIds: string[]): Promise<Map<string, G
       .map((e) => byId.get(e.affiliate_product_id)?.price)
       .filter((n): n is number => typeof n === "number");
     out.set(gid, {
-      winnerName: winnerProduct?.product_name ?? null,
+      winnerName: winnerProduct ? rentNavn(winnerProduct) : null,
       winnerScore: winner?.score ?? null,
       winnerReason: (winner as { best_for?: string | null } | null)?.best_for ?? null,
       minPrice: prices.length ? Math.min(...prices) : null,

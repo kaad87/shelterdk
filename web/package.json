@@ -27,7 +27,8 @@
     "match:booking-urls:apply": "node ../scripts/match-booking-urls-from-naturstyrelsen.js --apply",
     "match:booking-urls:apply:empty": "node ../scripts/match-booking-urls-from-naturstyrelsen.js --apply --only-empty",
     "sync:nst-availability": "tsx scripts/sync-naturstyrelsen-availability.ts",
-    "generate:favicon": "node scripts/generate-favicon.js"
+    "generate:favicon": "node scripts/generate-favicon.js",
+    "prishistorik-baseline": "tsx scripts/prishistorik-baseline.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
