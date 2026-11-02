@@ -192,8 +192,8 @@ describe("buildProductSchema – Merchant listing-felter (Search Console)", () =
 
 describe("buildProductSchema – flere butikker", () => {
   const tilbud = [
-    { retailer: "outdoornu", price: 850, affiliate_url: "https://outdoornu/x" },
-    { retailer: "prooutdoor", price: 959.95, affiliate_url: "https://prooutdoor/x" },
+    { retailer: "outdoornu", id: "outdoornu-1", price: 850, affiliate_url: "https://outdoornu/x" },
+    { retailer: "prooutdoor", id: "prooutdoor-1", price: 959.95, affiliate_url: "https://prooutdoor/x" },
   ];
 
   it("annoncerer den laveste pris, ikke sidens egen butik", () => {
@@ -234,5 +234,71 @@ describe("buildProductSchema – stregkode", () => {
     // prooutdoor skriver 12-cifrede UPC-numre: "887194014705" er 12 cifre.
     const s = buildProductSchema({ ...product, id: "prooutdoor-201-1008419", ean: "88719401470" });
     expect(s.gtin13).toBeUndefined();
+  });
+});
+
+describe("buildProductSchema – UPC-A og kontrolciffer", () => {
+  it("konverterer en 12-cifret UPC-A til EAN13 med et nul foran", () => {
+    // Keen skriver UPC. 887194014705 er den rigtige kode paa Arroyo II, og
+    // 0887194014705 er den samme vare som EAN13.
+    const s = buildProductSchema({ ...product, ean: "887194014705" });
+    expect(s.gtin13).toBe("0887194014705");
+  });
+
+  it("afviser en kode hvis kontrolciffer ikke passer", () => {
+    // Et forkert gtin er vaerre end intet: Google matcher varen mod en anden.
+    const s = buildProductSchema({ ...product, id: "backpackerlife-1", ean: "7318841251807" });
+    expect(s.gtin13).toBeUndefined();
+  });
+
+  it("afviser en 12-cifret kode der ikke bliver gyldig med nullet", () => {
+    // 123456789012 er faktisk en GYLDIG UPC-A (kontrolciffer 2), saa den
+    // duer ikke som negativ proeve. Her er sidste ciffer forkert.
+    const s = buildProductSchema({ ...product, id: "backpackerlife-1", ean: "123456789013" });
+    expect(s.gtin13).toBeUndefined();
+  });
+
+  it("tager imod den gyldige UPC-A 123456789012", () => {
+    const s = buildProductSchema({ ...product, ean: "123456789012" });
+    expect(s.gtin13).toBe("0123456789012");
+  });
+
+  it("validerer ogsaa den kode der udledes af Outmore-id'et", () => {
+    const god = buildProductSchema({ ...product, id: "outmore-5709388146854", ean: null });
+    expect(god.gtin13).toBe("5709388146854");
+    const daarlig = buildProductSchema({ ...product, id: "outmore-5709388146855", ean: null });
+    expect(daarlig.gtin13).toBeUndefined();
+  });
+});
+
+describe("buildProductSchema – én butik med flere varianter", () => {
+  it("annoncerer den variant siden viser, ikke guidens egen raekke", () => {
+    // Petzl Swift RL: guidens raekke er den hvide til 903,95, men samlTilbud
+    // folder Outmores varianter sammen til den billigste der kan koebes,
+    // Black/Orange til 799,95, og det er den siden skriver.
+    const s = buildProductSchema(
+      { ...product, id: "outmore-3342540840980", price: 903.95 },
+      { tilbud: [{ retailer: "outmore", id: "outmore-3342540851917", price: 799.95, affiliate_url: "https://outmore/bo" }] }
+    );
+    const o = s.offers as { "@type": string; price: number; url: string };
+    expect(o["@type"]).toBe("Offer");
+    expect(o.price).toBe(799.95);
+    expect(o.url).toBe("https://outmore/bo");
+  });
+
+  it("melder paa lager, naar den viste variant er en anden end den udsolgte raekke", () => {
+    const s = buildProductSchema(
+      { ...product, id: "outmore-a", price: 903.95, in_stock: false },
+      { tilbud: [{ retailer: "outmore", id: "outmore-b", price: 799.95, affiliate_url: "https://outmore/b" }] }
+    );
+    expect((s.offers as { availability: string }).availability).toBe("https://schema.org/InStock");
+  });
+
+  it("beholder udsolgt, naar den viste raekke ER varen selv", () => {
+    const s = buildProductSchema(
+      { ...product, id: "outmore-a", price: 903.95, in_stock: false },
+      { tilbud: [{ retailer: "outmore", id: "outmore-a", price: 903.95, affiliate_url: "https://outmore/a" }] }
+    );
+    expect((s.offers as { availability: string }).availability).toBe("https://schema.org/OutOfStock");
   });
 });

@@ -37,7 +37,7 @@ export interface ProductSchemaOpts {
    * annoncerer 959,95 i skemaet er en prisuoverensstemmelse. Med flere
    * butikker bliver det derfor et AggregateOffer med lav og hoej pris.
    */
-  tilbud?: { retailer: string; price: number; affiliate_url: string }[];
+  tilbud?: { retailer: string; id: string; price: number; affiliate_url: string }[];
 }
 
 /**
@@ -73,14 +73,47 @@ function returnPolicy(retailer: string): Record<string, unknown> {
  */
 function gtin13(p: Pick<P, "id" | "ean">): string | null {
   const fraFeed = (p.ean ?? "").trim();
-  if (/^\d{13}$/.test(fraFeed)) return fraFeed;
+  if (ean13Gyldig(fraFeed)) return fraFeed;
+  const fraUpc = upcTilEan13(fraFeed);
+  if (fraUpc) return fraUpc;
   return gtin13FromId(p.id);
+}
+
+/**
+ * Kontrolcifret i en EAN13. Vaegtene er 1 og 3 skiftevis fra foerste ciffer.
+ *
+ * Et forkert gtin er vaerre end intet: Google matcher varen mod et andet
+ * produkt. Maalt 2. november 2026 bestod alle 104 feed-koder og alle 61
+ * id-udledte, saa valideringen fjerner ingenting i dag og fanger den dag et
+ * feed sender vroevl.
+ */
+function ean13Gyldig(kode: string): boolean {
+  if (!/^\d{13}$/.test(kode)) return false;
+  let sum = 0;
+  for (let i = 0; i < 12; i++) sum += Number(kode[i]) * (i % 2 === 0 ? 1 : 3);
+  return (10 - (sum % 10)) % 10 === Number(kode[12]);
+}
+
+/**
+ * UPC-A (12 cifre) som EAN13.
+ *
+ * Et nul foran er hele konverteringen, og kontrolcifret er uaendret: EAN13
+ * vejer position 1 med 1, og nullet bidrager derfor ingenting, hvorefter de
+ * resterende cifre faar praecis de vaegte UPC-A gav dem. De amerikanske
+ * maerker i feedene skriver UPC: Keen, Salomon, Gerber, Coghlans. 29 af de
+ * 362 guide-varer har en 12-cifret kode, og 28 af dem er gyldige; den sidste
+ * falder paa kontrolcifret og faar derfor ingen gtin.
+ */
+function upcTilEan13(kode: string): string | null {
+  if (!/^\d{12}$/.test(kode)) return null;
+  const ean = "0" + kode;
+  return ean13Gyldig(ean) ? ean : null;
 }
 
 /** Outmore-id'er er rene EAN13-numre ("outmore-5709388146854"). */
 function gtin13FromId(id: string): string | null {
   const num = (id ?? "").split("-").slice(1).join("-");
-  return /^\d{13}$/.test(num) ? num : null;
+  return ean13Gyldig(num) ? num : null;
 }
 
 function notesList(notes: string[]): Record<string, unknown> {
@@ -152,18 +185,37 @@ export function buildProductSchema(p: P, opts: ProductSchemaOpts = {}): Record<s
               hasMerchantReturnPolicy: returnPolicy(t.retailer),
             })),
           }
-        : enkeltTilbud(p),
+        : enkeltTilbud(p, tilbud?.[0]),
   };
 }
 
-function enkeltTilbud(p: P): Record<string, unknown> {
+/**
+ * Offer naar der kun er én butik.
+ *
+ * `valgt` er den raekke SIDEN viser, og den er ikke altid `p`. samlTilbud
+ * folder butikkens varianter sammen til den billigste der kan koebes, saa
+ * Petzl Swift RL staar som 799,95 (Black/Orange) paa siden, mens guidens egen
+ * raekke er den hvide til 903,95. Uden `valgt` annoncerede skemaet 903,95
+ * under en side der skrev 799,95: den prisuoverensstemmelse ramte 7 af de 362
+ * sider, maalt 2. november 2026.
+ *
+ * Lagerstatus foelger med: naar den valgte raekke ikke er `p`, er den kommet
+ * gennem samlTilbuds in_stock-filter og kan altsaa koebes.
+ */
+function enkeltTilbud(
+  p: P,
+  valgt?: { id: string; price: number; affiliate_url: string }
+): Record<string, unknown> {
+  const pris = valgt ? valgt.price : p.price;
+  const url = valgt ? valgt.affiliate_url : p.affiliate_url;
+  const paaLager = valgt && valgt.id !== p.id ? true : p.in_stock;
   return {
     "@type": "Offer",
-    price: p.price,
+    price: pris,
     priceCurrency: "DKK",
     priceValidUntil: priceValidUntil(),
-    availability: p.in_stock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-    url: p.affiliate_url,
+    availability: paaLager ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+    url,
     hasMerchantReturnPolicy: returnPolicy(p.retailer),
     ...(p.shipping_cost != null
       ? {

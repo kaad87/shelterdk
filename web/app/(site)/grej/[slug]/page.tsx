@@ -7,6 +7,7 @@ import { produktSlug } from "@/lib/produkt-slug";
 import { rentNavn } from "@/lib/produktnavn";
 import { formatScore } from "@/lib/buying-guides-score";
 import { retailerLabel } from "@/lib/affiliate-retailer";
+import { billigstIalt } from "@/lib/produkt-match";
 import { buildProductSchema } from "@/lib/buying-guides-schema";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { StarRating } from "@/components/buying-guide/StarRating";
@@ -76,7 +77,14 @@ export default async function ProduktPage({ params }: { params: { slug: string }
     data;
   const p = entry.product;
   const laveste = tilbud[0];
-  const udsolgt = !p.in_stock || p.is_blocked;
+  const heroFragt = laveste ? laveste.fragt : p.shipping_cost;
+  const ialtBilligst = billigstIalt(tilbud);
+  // Samme regel som skemaets enkeltTilbud: er den viste raekke en ANDEN end
+  // guidens egen, er den kommet gennem samlTilbuds in_stock-filter og kan
+  // koebes. Ellers ville siden skrive "Udsolgt lige nu" over en pris paa en
+  // variant der er paa lager, mens skemaet sagde InStock.
+  const udsolgt =
+    laveste && laveste.id !== p.id ? false : !p.in_stock || p.is_blocked;
 
   const skema = {
     "@context": "https://schema.org",
@@ -222,11 +230,25 @@ export default async function ProduktPage({ params }: { params: { slug: string }
                 <s>{kr(p.price_original)}</s> før
               </p>
             )}
+            {/* Fragten skal hoere til DEN pris der staar ovenfor. Prisen er
+                det billigste tilbud, som kan vaere en anden butik end sidens
+                egen vare, og saa ville p.shipping_cost blande to butikker
+                sammen paa samme maade som foerprisen gjorde. */}
             <p className="mt-2 text-xs text-primary/60">
               {tilbud.length > 1 ? `Hos ${tilbud.length} butikker` : retailerLabel(p.retailer)}
-              {p.shipping_cost === 0 ? " · fragt 0 kr." : p.shipping_cost != null ? ` · fragt ${kr(p.shipping_cost)}` : " · fragt oplyses i kurven"}
+              {heroFragt === 0 ? " · fragt 0 kr." : heroFragt != null ? ` · fragt ${kr(heroFragt)}` : " · fragt oplyses i kurven"}
               {udsolgt ? " · udsolgt" : " · på lager"}
             </p>
+            {/* Overskriften er den laveste VAREpris, fordi den skal vaere det
+                samme tal som skemaets lowPrice. Er en anden butik billigere
+                med fragt, skal det staa her ved knappen og ikke kun nede i
+                tabellen: det er her laeseren vaelger. */}
+            {ialtBilligst && (
+              <p className="mt-2 rounded-lg bg-accent/10 px-2.5 py-2 text-xs font-medium leading-relaxed text-primary">
+                {retailerLabel(ialtBilligst.retailer)} er billigst i alt:{" "}
+                {kr(ialtBilligst.ialt!)} med fragt.
+              </p>
+            )}
             {udsolgt ? (
               <p className="mt-4 flex min-h-11 items-center justify-center rounded-lg bg-primary/5 px-4 text-center text-sm font-medium text-primary/60">
                 Udsolgt lige nu

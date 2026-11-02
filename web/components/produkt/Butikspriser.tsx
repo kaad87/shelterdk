@@ -66,20 +66,30 @@ export function Butikspriser({
       <div className="overflow-hidden rounded-xl border border-primary/10 bg-white">
         {tilbud.map((t, i) => {
           const billigst = i === 0;
+          const billigstMedFragt = ialtBilligst?.id === t.id;
           const detteErSiden = t.id === egetId;
           return (
             <div
               key={t.retailer}
               className={`flex items-center gap-3 p-4 ${i > 0 ? "border-t border-primary/10" : ""} ${
-                billigst ? "border-l-[3px] border-l-pine" : ""
+                billigst || billigstMedFragt ? "border-l-[3px] border-l-pine" : ""
               }`}
             >
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-semibold text-primary">{retailerLabel(t.retailer)}</span>
+                  {/* Naar fragten vender raekkefoelgen, er "Billigst" alene
+                      forkert: raekken har den laveste VAREpris, mens en anden
+                      butik er billigere at koebe hos. Begge maerkater staar,
+                      saa de forklarer hinanden i stedet for at modsige sig. */}
                   {billigst && (
                     <span className="rounded bg-pine px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
-                      Billigst
+                      {ialtBilligst ? "Laveste varepris" : "Billigst"}
+                    </span>
+                  )}
+                  {billigstMedFragt && (
+                    <span className="rounded bg-accent-dark px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                      Billigst i alt
                     </span>
                   )}
                 </div>
