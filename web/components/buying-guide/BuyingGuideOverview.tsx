@@ -28,11 +28,21 @@ export function BuyingGuideOverview({
             key={e.id}
             className="flex flex-col rounded-xl border border-primary/10 bg-white p-3 shadow-sm"
           >
-            {e.award_label && (
-              <span className="mb-2 self-start rounded-full bg-accent/10 px-2 py-0.5 text-[11px] font-bold text-accent">
-                {e.award_label}
-              </span>
-            )}
+            {/* Fast hoejde til to linjer badge.
+                55 af de 239 badges paa tvaers af guiderne er over 18 tegn og
+                bryder over to linjer ved kortets 175 px. Uden reservationen
+                starter billedet 16 px laengere nede i netop de kort, og saa
+                staar raekken af kort ikke paa linje. Badget er valgfrit, saa
+                raekken skal ogsaa kunne staa tom.
+                leading-4 goer hoejden forudsigelig: 16 px linje + 2 x 2 px
+                padding = 20 px for én linje, 36 px for to. */}
+            <div className="mb-2 min-h-[2.25rem]">
+              {e.award_label && (
+                <span className="inline-block rounded-full bg-accent/10 px-2 py-0.5 text-[11px] font-bold leading-4 text-accent">
+                  {e.award_label}
+                </span>
+              )}
+            </div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={e.product.image_url}
@@ -51,24 +61,33 @@ export function BuyingGuideOverview({
             <h3 className="mt-2 line-clamp-3 text-sm font-semibold text-primary">
               {rentNavn(e.product)}
             </h3>
-            {e.score != null && (
-              <div className="mt-1 flex items-center gap-1.5">
-                <StarRating score={e.score} size={13} />
-                <span className="text-xs font-bold text-primary">
-                  {formatScore(e.score)}
-                  <span className="font-normal text-primary/40">/10</span>
-                </span>
+            {/* Score, pris og knap hoerer sammen og laegges i bunden.
+                Titlen fylder 1-3 linjer, saa uden mt-auto stod stjerner,
+                pris og CTA 20 eller 40 px forskudt fra kort til kort. Det
+                er dem oejet sammenligner paa tvaers, saa det er dem der
+                skal staa paa linje; at titlens underkant er ujaevn goer
+                ikke noget. Kortene er allerede lige hoeje, fordi grid
+                straekker dem, saa mt-auto er nok. */}
+            <div className="mt-auto pt-2">
+              {e.score != null && (
+                <div className="flex items-center gap-1.5">
+                  <StarRating score={e.score} size={13} />
+                  <span className="text-xs font-bold text-primary">
+                    {formatScore(e.score)}
+                    <span className="font-normal text-primary/40">/10</span>
+                  </span>
+                </div>
+              )}
+              <div className="mt-1 text-sm">
+                <PriceTag
+                  price={e.product.price}
+                  priceOriginal={e.product.price_original}
+                  discountPct={e.product.discount_pct}
+                  shippingCost={e.product.shipping_cost}
+                />
               </div>
-            )}
-            <div className="mt-1 text-sm">
-              <PriceTag
-                price={e.product.price}
-                priceOriginal={e.product.price_original}
-                discountPct={e.product.discount_pct}
-                shippingCost={e.product.shipping_cost}
-              />
+              <AffiliateLink product={e.product} position="guide_overview" className="mt-2 w-full" />
             </div>
-            <AffiliateLink product={e.product} position="guide_overview" className="mt-2 w-full" />
           </div>
         ))}
       </div>
