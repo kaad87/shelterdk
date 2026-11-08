@@ -15,6 +15,8 @@ import { DataSummaryBlock } from "@/components/DataSummaryBlock";
 import { getFilterRegionCount, getCountPerRegion } from "@/lib/fakta-db";
 import { REGION_SLUGS, REGION_NAMES, REGION_SHORT_NAMES } from "@/lib/cross-page-config";
 import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
+import { GuideTeaser } from "@/components/GuideTeaser";
+import { TEMA_KANDIDATER, resolveGuideLinks } from "@/lib/guide-links";
 
 const BAAL_FAQ: FaqItem[] = [
   { question: "Hvornår er der bålforbud i Danmark?", answer: "Bålforbud udstedes af lokale beredskaber i perioder med tørke og forhøjet brandfare, typisk om sommeren. Tjek altid Beredskabsstyrelsens hjemmeside eller lokal skiltning inden du tænder bål. Ved bålforbud må du heller ikke bruge gasblus eller engangsgrill i naturen." },
@@ -54,6 +56,12 @@ function shelterHref(
 }
 
 export default async function ShelterMedBaalpladsPage() {
+  // Temasiden har ét konkret emne, saa koblingen til guiderne er
+  // redaktionel og ikke en udfyldningsblok. Listen bor i lib/guide-links.
+  const temaGuider = await resolveGuideLinks(TEMA_KANDIDATER["shelter-med-baalplads"]).catch(
+    () => []
+  );
+
   const shelters = await getSheltersWithFirewood(50);
 
   // Fetch summary data for DataSummaryBlock
@@ -205,6 +213,14 @@ export default async function ShelterMedBaalpladsPage() {
             .
           </p>
         </section>
+
+        <GuideTeaser
+          guides={temaGuider}
+          kilde="tema"
+          heading="Grej til bålpladsen"
+          intro="Vi scorer og prissammenligner udstyret, så du ved hvad der er værd at pakke."
+          visAlleLink
+        />
 
         <section className="mt-12 pt-8 border-t border-primary/10">
           <h2 className="font-serif text-xl font-bold text-primary mb-6">

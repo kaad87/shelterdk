@@ -160,16 +160,34 @@ export interface StedFakta {
 }
 
 /**
+ * Under dette antal pladser faar en stedsside ingen guide-blok.
+ *
+ * Variationen er hele begrundelsen for at laegge blokken paa stedssiderne, og
+ * paa de smaa sider findes den ikke. Stikproeve paa 60 af de 955 by-sider
+ * 8. november 2026: median 1 shelter, gennemsnit 3,1. Paa en side med én
+ * plads bliver blokken "Til overnatning i shelter" + "1 af pladserne har ikke
+ * vand" + saesonguiden, altsaa stort set ordret den samme tekst paa flere
+ * hundrede sider — praecis den boilerplate blokken skulle undgaa.
+ *
+ * Fem pladser rammer ~64 af de 955 sider. Det er dem der har trafik
+ * (/by/koebenhavn 413 Google-klik paa 90 dage) og dem hvor tallet faktisk
+ * varierer: Koebenhavn 5 uden vand, Bornholm 16.
+ */
+export const MIN_STEDSTOERRELSE = 5;
+
+/**
  * Guider til en stedsside (by, omraade, region).
  *
- * Sitet har 955 by-sider. En identisk blok paa dem alle er praecis den slags
- * boilerplate Google rabatterer, saa begrundelsen skal komme fra stedets egne
- * tal: hvor mange af netop disse pladser der mangler vand, og hvilken saeson
- * det er. Det er den samme mekanik som grej-blokken paa shelter-siderne, bare
- * aggregeret, og det koster ingen ekstra query — by-siden har allerede
- * `shelters` og `withWater` i haanden.
+ * Begrundelsen kommer fra stedets egne tal: hvor mange af netop disse pladser
+ * der mangler vand, og hvilken saeson det er. Det er den samme mekanik som
+ * grej-blokken paa shelter-siderne, bare aggregeret, og det koster ingen
+ * ekstra query — by-siden har allerede `shelters` og `withWater` i haanden.
+ *
+ * Tom liste under MIN_STEDSTOERRELSE: GuideTeaser rendrer ikke uden links, saa
+ * blokken forsvinder af sig selv paa de tynde sider.
  */
 export function stedKandidater(f: StedFakta): GuideKandidat[] {
+  if (f.antal < MIN_STEDSTOERRELSE) return [];
   const udenVand = Math.max(0, f.antal - f.medVand);
   const kold = erKoldSaeson(f.maaned);
 
@@ -237,5 +255,19 @@ export const TEMA_KANDIDATER: Record<string, GuideKandidat[]> = {
   teltplads: [
     { slug: "telt", reason: "Til overnatning på teltpladsen" },
     { slug: "sovepose", reason: "Til overnatning i naturen" },
+  ],
+  baalhytte: [
+    { slug: "taendstaal", reason: "Til at få ild i bålet" },
+    { slug: "oekse", reason: "Brændet skal skæres" },
+    { slug: "baalpande", reason: "Hvor bålet skal hæves fra jorden" },
+  ],
+  haervejen: [
+    { slug: "vandrestovler", reason: "Du går langt på ruten" },
+    { slug: "sovepose", reason: "Til overnatning undervejs" },
+    { slug: "liggeunderlag", reason: "Isolering mod den kolde bund" },
+  ],
+  gudenaaen: [
+    { slug: "dry-bag", reason: "Grejet skal holdes tørt i kanoen" },
+    { slug: "sovepose", reason: "Til overnatning undervejs" },
   ],
 };

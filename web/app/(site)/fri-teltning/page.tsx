@@ -12,6 +12,8 @@ import { loadFriTeltningIndex, groupByRegion, formatHa, summarize } from "@/lib/
 import { canonicalRegionSlug, REGION_SHORT_NAMES } from "@/lib/cross-page-config";
 import { prepositionForRegionName } from "@/lib/area-db";
 import { slugifySegment } from "@/lib/slug";
+import { GuideTeaser } from "@/components/GuideTeaser";
+import { TEMA_KANDIDATER, resolveGuideLinks } from "@/lib/guide-links";
 
 /**
  * /fri-teltning — Search Console sep. 2026: "fri teltning" (310 visn), "fri
@@ -63,7 +65,14 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function FriTeltningPage() {
+// async for at kunne hente guide-titlerne. Siden prerendres stadig statisk.
+export default async function FriTeltningPage() {
+  // Temasiden har ét konkret emne, saa koblingen til guiderne er
+  // redaktionel og ikke en udfyldningsblok. Listen bor i lib/guide-links.
+  const temaGuider = await resolveGuideLinks(TEMA_KANDIDATER["fri-teltning"]).catch(
+    () => []
+  );
+
   const areas = loadFriTeltningIndex();
   const { count, totalHa, kommuner } = summarize(areas);
   const groups = groupByRegion(areas);
@@ -207,6 +216,14 @@ export default function FriTeltningPage() {
               </section>
             );
           })}
+
+          <GuideTeaser
+            guides={temaGuider}
+            kilde="tema"
+            heading="Grej til fri teltning"
+            intro="Vi scorer og prissammenligner udstyret, så du ved hvad der er værd at pakke."
+            visAlleLink
+          />
 
           <section className="mb-10 pt-8 border-t border-primary/10">
             <h2 className="font-serif text-2xl font-bold text-primary mb-5">Ofte stillede spørgsmål om fri teltning</h2>

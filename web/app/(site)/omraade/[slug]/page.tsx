@@ -19,6 +19,8 @@ import {
   prepositionForArea,
 } from "@/lib/area-db";
 import { faqToJsonLd, getAreaFaqItems } from "@/lib/faq";
+import { GuideTeaser } from "@/components/GuideTeaser";
+import { resolveGuideLinks, stedKandidater } from "@/lib/guide-links";
 import { slugifySegment } from "@/lib/slug";
 import { canonicalRegionSlug } from "@/lib/cross-page-config";
 
@@ -119,11 +121,22 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
   const faqItems = getAreaFaqItems(primaryName, prep);
   const faqJsonLd = JSON.stringify(faqToJsonLd(faqItems));
   const capPrep = `${prep.charAt(0).toUpperCase()}${prep.slice(1)}`;
+  const medVand = shelters.filter((s) => getWater(s) === true).length;
   const quickAnswer = buildQuickAnswer(`${capPrep} ${primaryName}`, {
     count: shelters.length,
     bookable: shelters.filter((s) => isStructuredBookable(s)).length,
-    water: shelters.filter((s) => getWater(s) === true).length,
+    water: medVand,
   });
+  // Samme mekanik som by-siderne: begrundelsen kommer fra omraadets egne tal,
+  // saa blokken ikke er den samme paa alle 19 omraadesider.
+  const omraadeGuider = await resolveGuideLinks(
+    stedKandidater({
+      antal: shelters.length,
+      medVand,
+      maaned: new Date().getMonth() + 1,
+    })
+  ).catch(() => []);
+
   const featuredShelters = shelters.slice(0, 12);
   // Region-HUBBEN bor på kort kanonisk slug; slugifySegment ville give
   // redirect-URL'en for "Sjælland og Øerne".
@@ -402,6 +415,16 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
               </div>
             ) : null}
           </section>
+
+          <div className="mb-12">
+            <GuideTeaser
+              guides={omraadeGuider}
+              kilde="omraade"
+              heading={`Grej til en sheltertur ${prep} ${primaryName}`}
+              intro="Vi scorer og prissammenligner udstyret, så du ved hvad der er værd at pakke."
+              visAlleLink
+            />
+          </div>
 
           <AreaFaq
             areaName={primaryName}

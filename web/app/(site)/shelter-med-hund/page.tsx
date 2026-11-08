@@ -15,6 +15,8 @@ import { DataSummaryBlock } from "@/components/DataSummaryBlock";
 import { getFilterRegionCount, getCountPerRegion } from "@/lib/fakta-db";
 import { REGION_SLUGS, REGION_NAMES, REGION_SHORT_NAMES } from "@/lib/cross-page-config";
 import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
+import { GuideTeaser } from "@/components/GuideTeaser";
+import { TEMA_KANDIDATER, resolveGuideLinks } from "@/lib/guide-links";
 
 const HUND_FAQ: FaqItem[] = [
   { question: "Skal hunden være i snor på shelterpladser?", answer: "Ja, i perioden 1. april til 30. september skal hunde altid føres i snor i danske skove og naturområder – også på shelterpladser. Resten af året må hunde gå løse hvis de er under fuld kontrol, men tjek altid lokal skiltning." },
@@ -54,6 +56,12 @@ function shelterHref(
 }
 
 export default async function ShelterMedHundPage() {
+  // Temasiden har ét konkret emne, saa koblingen til guiderne er
+  // redaktionel og ikke en udfyldningsblok. Listen bor i lib/guide-links.
+  const temaGuider = await resolveGuideLinks(TEMA_KANDIDATER["shelter-med-hund"]).catch(
+    () => []
+  );
+
   const shelters = await getSheltersWithPets(50);
 
   // Fetch summary data for DataSummaryBlock
@@ -219,6 +227,14 @@ export default async function ShelterMedHundPage() {
             .
           </p>
         </section>
+
+        <GuideTeaser
+          guides={temaGuider}
+          kilde="tema"
+          heading="Grej til turen med hund"
+          intro="Vi scorer og prissammenligner udstyret, så du ved hvad der er værd at pakke."
+          visAlleLink
+        />
 
         <section className="mt-12 pt-8 border-t border-primary/10">
           <h2 className="font-serif text-xl font-bold text-primary mb-6">

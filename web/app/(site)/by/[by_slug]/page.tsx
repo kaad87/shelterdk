@@ -25,6 +25,8 @@ import { SpeakableSchema } from "@/components/seo/SpeakableSchema";
 import { CityDestinationSchema } from "@/components/seo/CityDestinationSchema";
 import { newestIsoDate } from "@/lib/content-dates";
 import { getCityEditorial } from "@/lib/city-editorial";
+import { GuideTeaser } from "@/components/GuideTeaser";
+import { resolveGuideLinks, stedKandidater } from "@/lib/guide-links";
 
 interface PageProps {
   params: Promise<{ by_slug: string }>;
@@ -249,6 +251,19 @@ export default async function ByPage({ params, searchParams }: PageProps) {
   }
   const kommuneLinks = [...kommuneMap.values()].slice(0, 3);
 
+  // Koebsguider valgt ud fra byens egne tal. En identisk blok paa alle 955
+  // by-sider ville vaere boilerplate, saa begrundelsen kommer fra hvor mange
+  // af netop disse pladser der mangler vand, og fra saesonen. Tallene er
+  // allerede beregnet ovenfor, saa det koster ingen ekstra query, og
+  // guide-titlerne er proces-cachet en time.
+  const stedGuider = await resolveGuideLinks(
+    stedKandidater({
+      antal: shelters.length,
+      medVand: withWater,
+      maaned: new Date().getMonth() + 1,
+    })
+  ).catch(() => []);
+
   const byFaq = generatePlacePageFaq(placeName, {
     totalCount: shelters.length,
     freeCount,
@@ -358,6 +373,16 @@ export default async function ByPage({ params, searchParams }: PageProps) {
             kommuneLinks={kommuneLinks}
             usesMunicipalityExpansion={usesMunicipalityExpansion}
           />
+
+          <div className="mt-10">
+            <GuideTeaser
+              guides={stedGuider}
+              kilde="by"
+              heading={`Grej til en sheltertur ved ${placeName}`}
+              intro="Vi scorer og prissammenligner udstyret, så du ved hvad der er værd at pakke."
+              visAlleLink
+            />
+          </div>
 
           {shelters.length > 0 && (
             <section className="mt-12 pt-8 border-t border-primary/10">

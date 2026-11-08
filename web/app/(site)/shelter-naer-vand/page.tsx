@@ -14,6 +14,8 @@ import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import { DataSummaryBlock } from "@/components/DataSummaryBlock";
 import { REGION_SLUGS, REGION_NAMES, REGION_SHORT_NAMES } from "@/lib/cross-page-config";
 import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
+import { GuideTeaser } from "@/components/GuideTeaser";
+import { TEMA_KANDIDATER, resolveGuideLinks } from "@/lib/guide-links";
 
 export const revalidate = 86400;
 
@@ -67,6 +69,12 @@ function shelterHref(region: string | null, kommune: string | null, slug: string
 }
 
 export default async function ShelterNaerVandPage() {
+  // Temasiden har ét konkret emne, saa koblingen til guiderne er
+  // redaktionel og ikke en udfyldningsblok. Listen bor i lib/guide-links.
+  const temaGuider = await resolveGuideLinks(TEMA_KANDIDATER["shelter-naer-vand"]).catch(
+    () => []
+  );
+
   const shelters = await getStrandShelters(50);
 
   const regionCounts = await Promise.all(
@@ -192,7 +200,15 @@ export default async function ShelterNaerVandPage() {
             </p>
           </section>
 
-          <section className="mt-12 pt-8 border-t border-primary/10">
+          <GuideTeaser
+          guides={temaGuider}
+          kilde="tema"
+          heading="Grej når du sover ved vandet"
+          intro="Vi scorer og prissammenligner udstyret, så du ved hvad der er værd at pakke."
+          visAlleLink
+        />
+
+        <section className="mt-12 pt-8 border-t border-primary/10">
             <h2 className="font-serif text-xl font-bold text-primary mb-6">
               Ofte stillede spørgsmål om shelters nær vand
             </h2>

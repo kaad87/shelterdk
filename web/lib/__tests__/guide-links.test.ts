@@ -9,6 +9,7 @@ import {
   FORSIDE_GUIDER,
   TEMA_KANDIDATER,
   _nulstilGuideTitelCache,
+  MIN_STEDSTOERRELSE,
   erKoldSaeson,
   guideHref,
   resolveGuideLinks,
@@ -109,6 +110,19 @@ describe("erKoldSaeson", () => {
 });
 
 describe("stedKandidater", () => {
+  it("giver ingen blok paa de tynde sider, hvor teksten ville vaere ens", () => {
+    // Median paa by-siderne er 1 shelter. Uden taersklen ville flere hundrede
+    // sider faa ordret samme tre linjer.
+    expect(stedKandidater({ antal: MIN_STEDSTOERRELSE - 1, medVand: 0, maaned: 11 })).toEqual([]);
+    expect(stedKandidater({ antal: 1, medVand: 0, maaned: 6 })).toEqual([]);
+  });
+
+  it("giver en blok fra og med taersklen", () => {
+    expect(
+      stedKandidater({ antal: MIN_STEDSTOERRELSE, medVand: 0, maaned: 11 }).length
+    ).toBeGreaterThan(0);
+  });
+
   it("naevner stedets eget tal, saa blokken ikke er den samme paa 955 by-sider", () => {
     const k = stedKandidater({ antal: 12, medVand: 5, maaned: 11 });
     const vand = k.find((x) => x.slug === "vandfilter")!;
@@ -117,19 +131,19 @@ describe("stedKandidater", () => {
   });
 
   it("boejer ental korrekt", () => {
-    const k = stedKandidater({ antal: 4, medVand: 3, maaned: 6 });
+    const k = stedKandidater({ antal: 6, medVand: 5, maaned: 6 });
     expect(k.find((x) => x.slug === "vandfilter")!.reason).toBe("1 af pladserne har ikke vand");
   });
 
   it("udelader vandfilter naar alle pladser har vand", () => {
-    const k = stedKandidater({ antal: 3, medVand: 3, maaned: 6 });
+    const k = stedKandidater({ antal: 7, medVand: 7, maaned: 6 });
     expect(k.find((x) => x.slug === "vandfilter")!.when).toBe(false);
   });
 
   it("taeller ikke negativt hvis medVand overstiger antal", () => {
     // Taellingerne kommer fra to forskellige filtre paa by-siden, saa de kan
     // i princippet komme ud af trit. "-2 af pladserne" maa ikke naa siden.
-    const k = stedKandidater({ antal: 2, medVand: 5, maaned: 6 });
+    const k = stedKandidater({ antal: 5, medVand: 9, maaned: 6 });
     expect(k.find((x) => x.slug === "vandfilter")!.when).toBe(false);
   });
 
@@ -177,9 +191,15 @@ describe("faste lister", () => {
     // og begrundelserne er skrevet lige ved siden af. Foerste udgave af
     // forsidens blok naaede helt til skaermen med "nattesoevnen", "naetter"
     // og "paa pladsen". Typen skelner dem ikke, saa det skal en test.
+    //
+    // Nogle rigtige danske ord indeholder digraferne hen over en
+    // stavelsesgraense ("kanoen"). De staar her, saa vagten bliver ved med
+    // at vaere skarp i stedet for at blive slaaet fra.
+    const RIGTIGE_ORD = /\b(kanoen|kano|zoo)\b/gi;
     const digrafer = /(oe|ae|aa)/i;
     for (const g of [...FORSIDE_GUIDER, ...Object.values(TEMA_KANDIDATER).flat()]) {
-      expect(g.reason, `"${g.reason}" ligner translitteration af ø/æ/å`).not.toMatch(
+      const uden = g.reason.replace(RIGTIGE_ORD, "");
+      expect(uden, `"${g.reason}" ligner translitteration af ø/æ/å`).not.toMatch(
         digrafer
       );
     }

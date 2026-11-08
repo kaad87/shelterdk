@@ -6,6 +6,8 @@ import { ChevronRight, Bike, MapPin, Ruler } from "lucide-react";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import type { CuratedRouteIndex } from "@/types/curated-route";
+import { GuideTeaser } from "@/components/GuideTeaser";
+import { TEMA_KANDIDATER, resolveGuideLinks } from "@/lib/guide-links";
 
 export const revalidate = 86400;
 
@@ -66,7 +68,14 @@ function loadRouteIndex(): CuratedRouteIndex[] {
   }
 }
 
-export default function ShelterTilCykelturPage() {
+// async for at kunne hente guide-titlerne. Siden prerendres stadig statisk.
+export default async function ShelterTilCykelturPage() {
+  // Temasiden har ét konkret emne, saa koblingen til guiderne er
+  // redaktionel og ikke en udfyldningsblok. Listen bor i lib/guide-links.
+  const temaGuider = await resolveGuideLinks(TEMA_KANDIDATER["shelter-til-cykeltur"]).catch(
+    () => []
+  );
+
   const allRoutes = loadRouteIndex();
 
   const topRoutes = [...allRoutes]
@@ -232,7 +241,15 @@ export default function ShelterTilCykelturPage() {
           </section>
 
           {/* FAQ */}
-          <section className="mt-12 pt-8 border-t border-primary/10">
+          <GuideTeaser
+          guides={temaGuider}
+          kilde="tema"
+          heading="Grej til cykelturen"
+          intro="Vi scorer og prissammenligner udstyret, så du ved hvad der er værd at pakke."
+          visAlleLink
+        />
+
+        <section className="mt-12 pt-8 border-t border-primary/10">
             <h2 className="font-serif text-xl font-bold text-primary mb-6">
               Ofte stillede spørgsmål om sheltertur på cykel
             </h2>

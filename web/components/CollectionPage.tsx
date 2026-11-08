@@ -11,6 +11,8 @@ import { showInFeedAdAt } from "@/lib/adsense";
 import { toMapShelters } from "@/lib/map-shelter";
 import { buildQuickAnswer } from "@/lib/quick-answer";
 import { faqToJsonLd } from "@/lib/faq";
+import { GuideTeaser } from "@/components/GuideTeaser";
+import { TEMA_KANDIDATER, resolveGuideLinks } from "@/lib/guide-links";
 import { getWater } from "@/lib/shelter-detail";
 import { isStructuredBookable } from "@shared/lib/shelter-detail";
 import { slugifySegment } from "@/lib/slug";
@@ -44,13 +46,19 @@ function shelterHref(shelter: Shelter): string {
  * de har rigtigt indhold — intro, opsummering, FAQ og interne links — og ikke
  * bare en liste med kort.
  */
-export function CollectionPage({
+export async function CollectionPage({
   config,
   shelters,
 }: {
   config: CollectionConfig;
   shelters: Shelter[];
 }) {
+  // Koblingen bor her frem for i de fem sider, saa den foelger config.slug:
+  // en samleside uden en redaktionel kobling i TEMA_KANDIDATER faar ingen
+  // blok, og en ny samleside faar den ved at tilfoeje en noegle.
+  const temaGuider = await resolveGuideLinks(
+    TEMA_KANDIDATER[config.slug] ?? []
+  ).catch(() => []);
   const count = shelters.length;
   const bookable = shelters.filter((s) => isStructuredBookable(s)).length;
   const withWater = shelters.filter((s) => getWater(s) === true).length;
@@ -221,6 +229,14 @@ export function CollectionPage({
               )}
             </section>
           ))}
+
+          <GuideTeaser
+            guides={temaGuider}
+            kilde="tema"
+            heading={`Grej til ${config.h1.replace(/^\w/, (c) => c.toLowerCase())}`}
+            intro="Vi scorer og prissammenligner udstyret, så du ved hvad der er værd at pakke."
+            visAlleLink
+          />
 
           <section className="mb-10">
             <h2 className="font-serif text-2xl font-bold text-primary mb-5">

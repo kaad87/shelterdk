@@ -17,6 +17,8 @@ import { REGION_SLUGS, REGION_NAMES, REGION_SHORT_NAMES } from "@/lib/cross-page
 import { LastVerifiedBadge } from "@/components/LastVerifiedBadge";
 import { SpeakableSchema } from "@/components/seo/SpeakableSchema";
 import { getSitePageModified } from "@/lib/content-dates";
+import { GuideTeaser } from "@/components/GuideTeaser";
+import { TEMA_KANDIDATER, resolveGuideLinks } from "@/lib/guide-links";
 
 const VAND_FAQ: FaqItem[] = [
   { question: "Er vandet på shelterpladser drikkevand?", answer: "Det varierer fra plads til plads. Nogle shelterpladser har vandhaner med godkendt drikkevand, mens andre kun har vand til opvask. Tjek altid lokal skiltning ved vandhanen, og medtag drikkevand som backup hvis du er i tvivl." },
@@ -58,6 +60,12 @@ function shelterHref(
 }
 
 export default async function ShelterMedVandPage() {
+  // Temasiden har ét konkret emne, saa koblingen til guiderne er
+  // redaktionel og ikke en udfyldningsblok. Listen bor i lib/guide-links.
+  const temaGuider = await resolveGuideLinks(TEMA_KANDIDATER["shelter-med-vand"]).catch(
+    () => []
+  );
+
   const shelters = await getSheltersWithWater(50);
   const lastVerified = getSitePageModified("/shelter-med-vand");
 
@@ -263,6 +271,14 @@ export default async function ShelterMedVandPage() {
             så brug den enkelte shelterside som sidste tjek før du planlægger turen.
           </p>
         </section>
+
+        <GuideTeaser
+          guides={temaGuider}
+          kilde="tema"
+          heading="Grej til shelterturen"
+          intro="Vi scorer og prissammenligner udstyret, så du ved hvad der er værd at pakke."
+          visAlleLink
+        />
 
         <section className="mt-12 pt-8 border-t border-primary/10">
           <h2 className="font-serif text-xl font-bold text-primary mb-6">
