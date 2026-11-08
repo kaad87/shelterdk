@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AdInFeed } from "@/components/AdInFeed";
+import { InFeedSlot } from "@/components/InFeedSlot";
+import type { InFeedAnnonce } from "@/lib/infeed-annonce";
 import { showInFeedAdAt, inFeedAdIndex } from "@/lib/adsense";
 import { useRouter } from "next/navigation";
 import { useSafeSearchParams } from "@/lib/useSafeSearchParams";
@@ -173,11 +174,18 @@ export function ByShelterExplorer({
   shelters,
   initialView = "split",
   initialFilters = {},
+  inFeedAnnonce = null,
 }: {
   placeName: string;
   shelters: Shelter[];
   initialView?: ViewMode;
   initialFilters?: SoegFilters;
+  /**
+   * In-feed-annoncen til foerste plads, hentet paa serveren. Se
+   * lib/infeed-annonce.ts. null betyder "koer AdSense som hidtil", saa en
+   * kaldende side der ikke er med i forsoeget ikke skal aendres.
+   */
+  inFeedAnnonce?: InFeedAnnonce | null;
 }) {
   const router = useRouter();
   const searchParams = useSafeSearchParams();
@@ -399,10 +407,10 @@ export function ByShelterExplorer({
             </div>
             <div className="grid grid-cols-1 gap-4 pb-6 sm:grid-cols-2">
               {/* Stabil key på annoncen: listen re-sorteres/filtreres live, og uden
-                  den ville <AdInFeed> unmounte+remounte ved hver ændring = gentagne
+                  den ville <InFeedSlot> unmounte+remounte ved hver ændring = gentagne
                   AdSense-kald på samme slot. */}
               {sortedShelters.slice(0, listDisplayCount).flatMap((shelter, i, arr) => [
-                ...(showInFeedAdAt(i, arr.length) ? [<AdInFeed key={`infeed-ad-${inFeedAdIndex(i)}`} />] : []),
+                ...(showInFeedAdAt(i, arr.length) ? [<InFeedSlot key={`infeed-ad-${inFeedAdIndex(i)}`} nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />] : []),
                 <ShelterCard key={shelter.id} shelter={shelter} href={shelterHref(shelter)} />,
               ])}
             </div>
@@ -442,7 +450,7 @@ export function ByShelterExplorer({
           </div>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {sortedAllShelters.flatMap((shelter, i) => [
-              ...(showInFeedAdAt(i, sortedAllShelters.length) ? [<AdInFeed key={`infeed-ad-${inFeedAdIndex(i)}`} />] : []),
+              ...(showInFeedAdAt(i, sortedAllShelters.length) ? [<InFeedSlot key={`infeed-ad-${inFeedAdIndex(i)}`} nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />] : []),
               <ShelterCard key={shelter.id} shelter={shelter} href={shelterHref(shelter)} />,
             ])}
           </div>

@@ -22,6 +22,7 @@ import { FILTER_CONFIGS, REGION_SLUGS, REGION_NAMES } from "@/lib/cross-page-con
 import { fetchPostnummerBbox, lookupPostnummer } from "@/lib/postnummer";
 import { GuideTeaser } from "@/components/GuideTeaser";
 import { resolveGuideLinks, stedKandidater } from "@/lib/guide-links";
+import { hentInFeedAnnonce } from "@/lib/infeed-annonce";
 
 interface PageProps {
   params: Promise<{ region: string }>;
@@ -230,13 +231,21 @@ export default async function DanmarkRegionPage({ params, searchParams }: PagePr
   const freeCount = facilityCounts.gratis;
   // Samme mekanik som by- og omraadesiderne. facilityCounts er allerede
   // hentet ovenfor, saa blokken koster ingen ekstra query.
-  const regionGuider = await resolveGuideLinks(
-    stedKandidater({
-      antal: totalCount,
-      medVand: facilityCounts.water,
-      maaned: new Date().getMonth() + 1,
-    })
-  ).catch(() => []);
+  // Kandidaterne bruges to steder: guide-blokken og in-feed-annoncen.
+  // Samme liste, saa kortet aldrig anbefaler noget andet end siden selv.
+  const inFeedKandidater = stedKandidater({
+    antal: totalCount,
+    medVand: facilityCounts.water,
+    maaned: new Date().getMonth() + 1,
+  });
+  const regionGuider = await resolveGuideLinks(inFeedKandidater).catch(() => []);
+  // Stien er den kanoniske, ikke den fra params: /danmark/sjaelland-og-oeerne
+  // redirecter til /danmark/sjaelland, og armen skal foelge den side folk
+  // faktisk lander paa, ellers passer den ikke med affiliate_clicks.path.
+  const inFeedAnnonce = await hentInFeedAnnonce(
+    `/danmark/${canonicalRegionSlug}`,
+    inFeedKandidater
+  );
   const topInRegion = topRated.find(
     (s) => (s.region ?? "").trim() === regionName
   );
@@ -378,6 +387,7 @@ export default async function DanmarkRegionPage({ params, searchParams }: PagePr
               initialFilters={filters}
               view={view}
               basePath={`/danmark/${canonicalRegionSlug}`}
+              inFeedAnnonce={inFeedAnnonce}
             />
           </Suspense>
 

@@ -6,8 +6,8 @@ import { getSheltersWithToilet } from "@/lib/shelters-with-toilet";
 import { slugifySegment } from "@/lib/slug";
 import { Fragment } from "react";
 import { ShelterCard } from "@/components/ShelterCard";
-import { AdInFeed } from "@/components/AdInFeed";
-import { showInFeedAdAt } from "@/lib/adsense";
+import { InFeedSlot } from "@/components/InFeedSlot";
+import { showInFeedAdAt, inFeedAdIndex } from "@/lib/adsense";
 import { ShelterMap } from "@/components/ShelterMap";
 import { toMapShelters } from "@/lib/map-shelter";
 import { getToilet } from "@/lib/shelter-detail";
@@ -20,6 +20,7 @@ import { SpeakableSchema } from "@/components/seo/SpeakableSchema";
 import { getSitePageModified } from "@/lib/content-dates";
 import { GuideTeaser } from "@/components/GuideTeaser";
 import { resolveGuideLinks, stedKandidater } from "@/lib/guide-links";
+import { hentInFeedAnnonce } from "@/lib/infeed-annonce";
 
 const TOILET_FAQ: FaqItem[] = [
   { question: "Hvad er et muldtoilet på en shelterplads?", answer: "Et muldtoilet (også kaldet tørkloset) er et toilet uden vandskyl, der bruger naturlig nedbrydning. Det er det mest almindelige toilettype på shelterpladser i Danmark. Man tilfører typisk savsmuld eller lignende efter brug for at reducere lugt og fremme kompostering." },
@@ -69,14 +70,16 @@ export default async function ShelterMedToiletPage() {
   const shelters = await getSheltersWithToilet(50);
   // Temasiden har rigtige pladser i haanden, saa blokken bruger de samme
   // faktiske tal som by- og omraadesiderne frem for en fast liste.
-  const temaGuider = await resolveGuideLinks(
-    stedKandidater({
+  // Kandidaterne bruges to steder: guide-blokken og in-feed-annoncen.
+  // Samme liste, saa kortet aldrig anbefaler noget andet end siden selv.
+  const inFeedKandidater = stedKandidater({
       antal: shelters.length,
       // Siden henter ikke vand-kolonnen, saa tallet er ukendt frem for 0.
       medVand: null,
       maaned: new Date().getMonth() + 1,
-    })
-  ).catch(() => []);
+    });
+  const temaGuider = await resolveGuideLinks(inFeedKandidater).catch(() => []);
+  const inFeedAnnonce = await hentInFeedAnnonce("/shelter-med-toilet", inFeedKandidater);
 
   const lastVerified = getSitePageModified("/shelter-med-toilet");
 
@@ -155,7 +158,7 @@ export default async function ShelterMedToiletPage() {
 
                     return (
                       <Fragment key={shelter.id}>
-                        {showInFeedAdAt(i, shelters.length) && <AdInFeed />}
+                        {showInFeedAdAt(i, shelters.length) && <InFeedSlot nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />}
                         <div className="relative">
                         <ShelterCard
                           shelter={shelter}

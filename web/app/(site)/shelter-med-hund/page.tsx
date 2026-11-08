@@ -6,8 +6,8 @@ import { getSheltersWithPets } from "@/lib/shelters-with-pets";
 import { slugifySegment } from "@/lib/slug";
 import { Fragment } from "react";
 import { ShelterCard } from "@/components/ShelterCard";
-import { AdInFeed } from "@/components/AdInFeed";
-import { showInFeedAdAt } from "@/lib/adsense";
+import { InFeedSlot } from "@/components/InFeedSlot";
+import { showInFeedAdAt, inFeedAdIndex } from "@/lib/adsense";
 import { ShelterMap } from "@/components/ShelterMap";
 import { toMapShelters } from "@/lib/map-shelter";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
@@ -17,6 +17,7 @@ import { REGION_SLUGS, REGION_NAMES, REGION_SHORT_NAMES } from "@/lib/cross-page
 import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 import { GuideTeaser } from "@/components/GuideTeaser";
 import { temaKandidater, resolveGuideLinks } from "@/lib/guide-links";
+import { hentInFeedAnnonce } from "@/lib/infeed-annonce";
 
 const HUND_FAQ: FaqItem[] = [
   { question: "Skal hunden være i snor på shelterpladser?", answer: "Ja, i perioden 1. april til 30. september skal hunde altid føres i snor i danske skove og naturområder – også på shelterpladser. Resten af året må hunde gå løse hvis de er under fuld kontrol, men tjek altid lokal skiltning." },
@@ -58,9 +59,11 @@ function shelterHref(
 export default async function ShelterMedHundPage() {
   // Temasiden har ét konkret emne, saa koblingen til guiderne er
   // redaktionel og ikke en udfyldningsblok. Listen bor i lib/guide-links.
-  const temaGuider = await resolveGuideLinks(temaKandidater("shelter-med-hund", new Date().getMonth() + 1)).catch(
-    () => []
-  );
+  // Kandidaterne bruges to steder: guide-blokken og in-feed-annoncen.
+  // Samme liste, saa kortet aldrig anbefaler noget andet end siden selv.
+  const inFeedKandidater = temaKandidater("shelter-med-hund", new Date().getMonth() + 1);
+  const temaGuider = await resolveGuideLinks(inFeedKandidater).catch(() => []);
+  const inFeedAnnonce = await hentInFeedAnnonce("/shelter-med-hund", inFeedKandidater);
 
   const shelters = await getSheltersWithPets(50);
 
@@ -131,7 +134,7 @@ export default async function ShelterMedHundPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6">
                   {shelters.map((shelter, i) => (
                     <Fragment key={shelter.id}>
-                      {showInFeedAdAt(i, shelters.length) && <AdInFeed />}
+                      {showInFeedAdAt(i, shelters.length) && <InFeedSlot nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />}
                       <ShelterCard
                         shelter={shelter}
                         href={shelterHref(

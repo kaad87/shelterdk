@@ -27,6 +27,7 @@ import { newestIsoDate } from "@/lib/content-dates";
 import { getCityEditorial } from "@/lib/city-editorial";
 import { GuideTeaser } from "@/components/GuideTeaser";
 import { resolveGuideLinks, stedKandidater } from "@/lib/guide-links";
+import { hentInFeedAnnonce } from "@/lib/infeed-annonce";
 
 interface PageProps {
   params: Promise<{ by_slug: string }>;
@@ -256,13 +257,15 @@ export default async function ByPage({ params, searchParams }: PageProps) {
   // af netop disse pladser der mangler vand, og fra saesonen. Tallene er
   // allerede beregnet ovenfor, saa det koster ingen ekstra query, og
   // guide-titlerne er proces-cachet en time.
-  const stedGuider = await resolveGuideLinks(
-    stedKandidater({
-      antal: shelters.length,
-      medVand: withWater,
-      maaned: new Date().getMonth() + 1,
-    })
-  ).catch(() => []);
+  // Kandidaterne bruges to steder: guide-blokken og in-feed-annoncen.
+  // Samme liste, saa kortet aldrig anbefaler noget andet end siden selv.
+  const inFeedKandidater = stedKandidater({
+    antal: shelters.length,
+    medVand: withWater,
+    maaned: new Date().getMonth() + 1,
+  });
+  const stedGuider = await resolveGuideLinks(inFeedKandidater).catch(() => []);
+  const inFeedAnnonce = await hentInFeedAnnonce(`/by/${by_slug}`, inFeedKandidater);
 
   const byFaq = generatePlacePageFaq(placeName, {
     totalCount: shelters.length,
@@ -361,6 +364,7 @@ export default async function ByPage({ params, searchParams }: PageProps) {
             shelters={shelters}
             initialView={initialView}
             initialFilters={initialFilters}
+            inFeedAnnonce={inFeedAnnonce}
           />
 
           <ByProse

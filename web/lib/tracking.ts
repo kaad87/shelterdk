@@ -108,7 +108,13 @@ export function trackAffiliateClick(args: {
     | "guide_table"
     | "naturophold_guide"
     | "naturophold_planb"
-    | "naturophold_map";
+    | "naturophold_map"
+    // De tre arme i in-feed-forsøget. Hver arm har sin egen værdi, fordi hele
+    // formålet er at kunne skelne dem i affiliate_clicks.placement uden at
+    // skulle gætte ud fra stien. Se lib/infeed-annonce.ts.
+    | "infeed_ren"
+    | "infeed_tilbud"
+    | "infeed_kontekst";
   priceDkk?: number;
 }) {
   push("affiliate_click", {
@@ -222,4 +228,26 @@ export function trackWishlist(action: "add" | "remove", shelterId: string) {
 /** Fired when a Stripe checkout is cancelled (user returns via cancel_url). */
 export function trackPaymentCancelled(bookingId: string) {
   push("payment_cancelled", { booking_id: bookingId });
+}
+
+/**
+ * In-feed-annoncekortet kom i viewporten. Højst én gang pr. sidevisning.
+ *
+ * Nævneren til forsøget. Uden den kan en arm med få klik ikke skelnes fra en
+ * arm der sjældent bliver vist, og tilbudsarmen falder med vilje tilbage til
+ * AdSense når ingen matchet vare er reelt nedsat. Samme begrundelse som
+ * gear_block_seen, hvor et klik alene heller ikke kunne bedømme blokken.
+ */
+export function trackInFeedSeen(args: {
+  arm: string;
+  guideSlug: string;
+  produktId: string;
+  priceDkk: number;
+}) {
+  push("infeed_seen", {
+    infeed_arm: args.arm,
+    guide_slug: args.guideSlug,
+    product_id: args.produktId,
+    value: args.priceDkk,
+  });
 }

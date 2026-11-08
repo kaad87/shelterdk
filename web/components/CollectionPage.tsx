@@ -6,13 +6,14 @@ import { ShelterListSchema } from "@/components/seo/ShelterListSchema";
 import { QuickAnswer } from "@/components/seo/QuickAnswer";
 import { ShelterCard } from "@/components/ShelterCard";
 import { ShelterMap } from "@/components/ShelterMap";
-import { AdInFeed } from "@/components/AdInFeed";
-import { showInFeedAdAt } from "@/lib/adsense";
+import { InFeedSlot } from "@/components/InFeedSlot";
+import { showInFeedAdAt, inFeedAdIndex } from "@/lib/adsense";
 import { toMapShelters } from "@/lib/map-shelter";
 import { buildQuickAnswer } from "@/lib/quick-answer";
 import { faqToJsonLd } from "@/lib/faq";
 import { GuideTeaser } from "@/components/GuideTeaser";
 import { temaKandidater, resolveGuideLinks } from "@/lib/guide-links";
+import { hentInFeedAnnonce } from "@/lib/infeed-annonce";
 import { getWater } from "@/lib/shelter-detail";
 import { isStructuredBookable } from "@shared/lib/shelter-detail";
 import { slugifySegment } from "@/lib/slug";
@@ -56,9 +57,11 @@ export async function CollectionPage({
   // Koblingen bor her frem for i de fem sider, saa den foelger config.slug:
   // en samleside uden en redaktionel kobling i TEMA_KANDIDATER faar ingen
   // blok, og en ny samleside faar den ved at tilfoeje en noegle.
-  const temaGuider = await resolveGuideLinks(
-    temaKandidater(config.slug, new Date().getMonth() + 1)
-  ).catch(() => []);
+  // Kandidaterne bruges to steder: guide-blokken og in-feed-annoncen.
+  // Samme liste, saa kortet aldrig anbefaler noget andet end siden selv.
+  const inFeedKandidater = temaKandidater(config.slug, new Date().getMonth() + 1);
+  const temaGuider = await resolveGuideLinks(inFeedKandidater).catch(() => []);
+  const inFeedAnnonce = await hentInFeedAnnonce(`/${config.slug}`, inFeedKandidater);
   const count = shelters.length;
   const bookable = shelters.filter((s) => isStructuredBookable(s)).length;
   const withWater = shelters.filter((s) => getWater(s) === true).length;
@@ -167,7 +170,7 @@ export async function CollectionPage({
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {visible.map((shelter, i) => (
                 <Fragment key={shelter.id}>
-                  {showInFeedAdAt(i, visible.length) && <AdInFeed />}
+                  {showInFeedAdAt(i, visible.length) && <InFeedSlot nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />}
                   <ShelterCard
                     // blur_data_url fjernes for kort der ikke viser blur — ellers
                     // ligger de ~411 bytes stadig i RSC-payloaden uden at blive brugt.

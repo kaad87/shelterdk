@@ -6,8 +6,8 @@ import { getSheltersWithBeach } from "@/lib/shelters-with-beach";
 import { slugifySegment } from "@/lib/slug";
 import { Fragment } from "react";
 import { ShelterCard } from "@/components/ShelterCard";
-import { AdInFeed } from "@/components/AdInFeed";
-import { showInFeedAdAt } from "@/lib/adsense";
+import { InFeedSlot } from "@/components/InFeedSlot";
+import { showInFeedAdAt, inFeedAdIndex } from "@/lib/adsense";
 import { ShelterMap } from "@/components/ShelterMap";
 import { toMapShelters } from "@/lib/map-shelter";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
@@ -17,6 +17,7 @@ import { REGION_SLUGS, REGION_NAMES, REGION_SHORT_NAMES } from "@/lib/cross-page
 import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 import { GuideTeaser } from "@/components/GuideTeaser";
 import { resolveGuideLinks, stedKandidater } from "@/lib/guide-links";
+import { hentInFeedAnnonce } from "@/lib/infeed-annonce";
 import { getWater } from "@/lib/shelter-detail";
 
 const BEACH_FAQ: FaqItem[] = [
@@ -54,13 +55,15 @@ export default async function ShelterMedStrandPage() {
   const shelters = await getSheltersWithBeach(50);
   // Temasiden har rigtige pladser i haanden, saa blokken bruger de samme
   // faktiske tal som by- og omraadesiderne frem for en fast liste.
-  const temaGuider = await resolveGuideLinks(
-    stedKandidater({
+  // Kandidaterne bruges to steder: guide-blokken og in-feed-annoncen.
+  // Samme liste, saa kortet aldrig anbefaler noget andet end siden selv.
+  const inFeedKandidater = stedKandidater({
       antal: shelters.length,
       medVand: shelters.filter((s) => getWater(s) === true).length,
       maaned: new Date().getMonth() + 1,
-    })
-  ).catch(() => []);
+    });
+  const temaGuider = await resolveGuideLinks(inFeedKandidater).catch(() => []);
+  const inFeedAnnonce = await hentInFeedAnnonce("/shelter-med-strand", inFeedKandidater);
 
 
   // Fetch summary data for DataSummaryBlock
@@ -111,7 +114,7 @@ export default async function ShelterMedStrandPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6">
                   {shelters.map((shelter, i) => (
                     <Fragment key={shelter.id}>
-                      {showInFeedAdAt(i, shelters.length) && <AdInFeed />}
+                      {showInFeedAdAt(i, shelters.length) && <InFeedSlot nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />}
                       <ShelterCard shelter={shelter}
                       href={shelterHref(shelter.region ?? null, shelter.kommune ?? null, shelter.slug)} />
                     </Fragment>

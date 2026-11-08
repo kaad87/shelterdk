@@ -6,8 +6,8 @@ import { getSheltersWithWater } from "@/lib/shelters-with-water";
 import { slugifySegment } from "@/lib/slug";
 import { Fragment } from "react";
 import { ShelterCard } from "@/components/ShelterCard";
-import { AdInFeed } from "@/components/AdInFeed";
-import { showInFeedAdAt } from "@/lib/adsense";
+import { InFeedSlot } from "@/components/InFeedSlot";
+import { showInFeedAdAt, inFeedAdIndex } from "@/lib/adsense";
 import { ShelterMap } from "@/components/ShelterMap";
 import { toMapShelters } from "@/lib/map-shelter";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
@@ -19,6 +19,7 @@ import { SpeakableSchema } from "@/components/seo/SpeakableSchema";
 import { getSitePageModified } from "@/lib/content-dates";
 import { GuideTeaser } from "@/components/GuideTeaser";
 import { temaKandidater, resolveGuideLinks } from "@/lib/guide-links";
+import { hentInFeedAnnonce } from "@/lib/infeed-annonce";
 
 const VAND_FAQ: FaqItem[] = [
   { question: "Er vandet på shelterpladser drikkevand?", answer: "Det varierer fra plads til plads. Nogle shelterpladser har vandhaner med godkendt drikkevand, mens andre kun har vand til opvask. Tjek altid lokal skiltning ved vandhanen, og medtag drikkevand som backup hvis du er i tvivl." },
@@ -62,9 +63,11 @@ function shelterHref(
 export default async function ShelterMedVandPage() {
   // Temasiden har ét konkret emne, saa koblingen til guiderne er
   // redaktionel og ikke en udfyldningsblok. Listen bor i lib/guide-links.
-  const temaGuider = await resolveGuideLinks(temaKandidater("shelter-med-vand", new Date().getMonth() + 1)).catch(
-    () => []
-  );
+  // Kandidaterne bruges to steder: guide-blokken og in-feed-annoncen.
+  // Samme liste, saa kortet aldrig anbefaler noget andet end siden selv.
+  const inFeedKandidater = temaKandidater("shelter-med-vand", new Date().getMonth() + 1);
+  const temaGuider = await resolveGuideLinks(inFeedKandidater).catch(() => []);
+  const inFeedAnnonce = await hentInFeedAnnonce("/shelter-med-vand", inFeedKandidater);
 
   const shelters = await getSheltersWithWater(50);
   const lastVerified = getSitePageModified("/shelter-med-vand");
@@ -137,7 +140,7 @@ export default async function ShelterMedVandPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6">
                   {shelters.map((shelter, i) => (
                     <Fragment key={shelter.id}>
-                      {showInFeedAdAt(i, shelters.length) && <AdInFeed />}
+                      {showInFeedAdAt(i, shelters.length) && <InFeedSlot nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />}
                       <ShelterCard
                         shelter={shelter}
                         href={shelterHref(

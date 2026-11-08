@@ -36,6 +36,7 @@ export const TRACKABLE_EVENTS = new Set([
   "gear_block_seen",
   "guide_teaser_click",
   "guide_view",
+  "infeed_seen",
   "community_submit",
   "book_button_clicked",
   "wishlist_changed",
@@ -72,6 +73,12 @@ export const INTERNAL_EVENTS = new Set([
   // hårdest netop hos folk der søger på grej. Samme oprindelse slipper
   // igennem: affiliate-klik står 191 i Supabase mod 7 i GA4.
   "guide_view",
+  // Nævneren til in-feed-forsøget. Uden en visning pr. arm kan en lav
+  // klikrate ikke skelnes fra en arm der sjældent bliver vist: tilbudsarmen
+  // falder med vilje tilbage til AdSense når ingen vare i de matchede guider
+  // er reelt nedsat, og det sker ofte, fordi rabatterne sidder i de billige
+  // varer. Uden dette event ville den arm se ud som om den ikke virker.
+  "infeed_seen",
 ]);
 
 /** Parametre der aldrig må logges, uanset hvor de kommer fra. */

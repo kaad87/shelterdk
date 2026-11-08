@@ -21,8 +21,8 @@ import { canonicalRegionSlug } from "@/lib/cross-page-config";
 import { prepositionForRegionName } from "@/lib/area-db";
 import { Fragment } from "react";
 import { ShelterCard } from "@/components/ShelterCard";
-import { AdInFeed } from "@/components/AdInFeed";
-import { showInFeedAdAt } from "@/lib/adsense";
+import { InFeedSlot } from "@/components/InFeedSlot";
+import { showInFeedAdAt, inFeedAdIndex } from "@/lib/adsense";
 import { getWater, getToilet, getPetsAllowed } from "@/lib/shelter-detail";
 import { isStructuredBookable } from "@shared/lib/shelter-detail";
 import { generateMunicipalityPageFaq } from "@/lib/fakta-faq";
@@ -30,6 +30,7 @@ import { faqToJsonLd } from "@/lib/faq";
 import type { Shelter } from "@/types/shelter";
 import { GuideTeaser } from "@/components/GuideTeaser";
 import { resolveGuideLinks, stedKandidater } from "@/lib/guide-links";
+import { hentInFeedAnnonce } from "@/lib/infeed-annonce";
 
 interface PageProps {
   params: Promise<{ region: string; municipality: string }>;
@@ -270,13 +271,15 @@ export default async function DanmarkMunicipalityPage({ params }: PageProps) {
   const freeCount = shelters.filter((s) => !isStructuredBookable(s)).length;
   // Samme mekanik som by-siderne, inkl. taersklen paa fem pladser: de tynde
   // kommunesider faar ingen blok.
-  const kommuneGuider = await resolveGuideLinks(
-    stedKandidater({
-      antal: shelters.length,
-      medVand: withWater,
-      maaned: new Date().getMonth() + 1,
-    })
-  ).catch(() => []);
+  // Kandidaterne bruges to steder: guide-blokken og in-feed-annoncen.
+  // Samme liste, saa kortet aldrig anbefaler noget andet end siden selv.
+  const inFeedKandidater = stedKandidater({
+    antal: shelters.length,
+    medVand: withWater,
+    maaned: new Date().getMonth() + 1,
+  });
+  const kommuneGuider = await resolveGuideLinks(inFeedKandidater).catch(() => []);
+  const inFeedAnnonce = await hentInFeedAnnonce(`/danmark/${regionSlug}/${municipalitySlug}`, inFeedKandidater);
 
   const quickAnswer = buildQuickAnswer(`I ${displayName} Kommune`, {
     count: shelters.length,
@@ -355,7 +358,7 @@ export default async function DanmarkMunicipalityPage({ params }: PageProps) {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {shelters.map((shelter, i) => (
               <Fragment key={shelter.id}>
-                {showInFeedAdAt(i, shelters.length) && <AdInFeed />}
+                {showInFeedAdAt(i, shelters.length) && <InFeedSlot nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />}
                 <ShelterCard
                   shelter={shelter}
                   href={shelterHref(regionName, shelter.kommune ?? null, shelter.slug)}

@@ -6,7 +6,8 @@ import { useSafeSearchParams } from "@/lib/useSafeSearchParams";
 import { ArrowUpDown, ChevronDown, List, LayoutGrid, MapPin } from "lucide-react";
 import { SearchBar } from "@/components/SearchBar";
 import { ShelterCard } from "@/components/ShelterCard";
-import { AdInFeed } from "@/components/AdInFeed";
+import { InFeedSlot } from "@/components/InFeedSlot";
+import type { InFeedAnnonce } from "@/lib/infeed-annonce";
 import { showInFeedAdAt, inFeedAdIndex } from "@/lib/adsense";
 import { ShelterMap, type MapBounds } from "@/components/ShelterMap";
 import type { Shelter } from "@/types/shelter";
@@ -135,6 +136,12 @@ interface SoegContentProps {
   /** Hvis sat, navigerer filter-toggles til denne URL-base i stedet for /soeg.
    *  Bruges på regions-sider (/danmark/bornholm) så filteret ikke nulstiller regionen. */
   basePath?: string;
+  /**
+   * In-feed-annoncen til foerste plads, hentet paa serveren. Se
+   * lib/infeed-annonce.ts. null betyder "koer AdSense som hidtil", saa /soeg
+   * (som ikke har redaktionelle kandidater) ikke skal aendres.
+   */
+  inFeedAnnonce?: InFeedAnnonce | null;
 }
 
 export function SoegContent({
@@ -147,6 +154,7 @@ export function SoegContent({
   initialAvailabilityMap,
   view: initialView,
   basePath,
+  inFeedAnnonce = null,
 }: SoegContentProps) {
   const searchParams = useSafeSearchParams();
   const urlFilters = useMemo(() => parseFiltersFromParams(searchParams), [searchParams]);
@@ -554,7 +562,7 @@ export function SoegContent({
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6">
               {sortedShelters.slice(0, listDisplayCount).flatMap((shelter, i, arr) => [
-                ...(showInFeedAdAt(i, arr.length) ? [<AdInFeed key={`infeed-ad-${inFeedAdIndex(i)}`} />] : []),
+                ...(showInFeedAdAt(i, arr.length) ? [<InFeedSlot key={`infeed-ad-${inFeedAdIndex(i)}`} nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />] : []),
                 <ShelterCard key={shelter.id} shelter={shelter} availabilityState={availabilityMap?.[shelter.id] ?? null} activeDate={effectiveFilters?.date ?? null} />,
               ])}
             </div>
@@ -607,7 +615,7 @@ export function SoegContent({
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {sortedAllShelters.flatMap((shelter, i) => [
-              ...(showInFeedAdAt(i, sortedAllShelters.length) ? [<AdInFeed key={`infeed-ad-${inFeedAdIndex(i)}`} />] : []),
+              ...(showInFeedAdAt(i, sortedAllShelters.length) ? [<InFeedSlot key={`infeed-ad-${inFeedAdIndex(i)}`} nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />] : []),
               <ShelterCard key={shelter.id} shelter={shelter} availabilityState={availabilityMap?.[shelter.id] ?? null} activeDate={effectiveFilters?.date ?? null} />,
             ])}
           </div>

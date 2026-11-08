@@ -1,8 +1,8 @@
 import { Fragment } from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { AdInFeed } from "@/components/AdInFeed";
-import { showInFeedAdAt } from "@/lib/adsense";
+import { InFeedSlot } from "@/components/InFeedSlot";
+import { showInFeedAdAt, inFeedAdIndex } from "@/lib/adsense";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { ShelterListSchema } from "@/components/seo/ShelterListSchema";
 import { QuickAnswer } from "@/components/seo/QuickAnswer";
@@ -15,6 +15,9 @@ import { slugifySegment } from "@/lib/slug";
 import { canonicalRegionSlug } from "@/lib/cross-page-config";
 import { regionDisplayName } from "@/data/region-content";
 import { isStructuredBookable } from "@shared/lib/shelter-detail";
+import { getWater } from "@/lib/shelter-detail";
+import { temaKandidater, stedKandidater } from "@/lib/guide-links";
+import { hentInFeedAnnonce } from "@/lib/infeed-annonce";
 import type { Shelter } from "@/types/shelter";
 
 function shelterHref(region: string | null, kommune: string | null, slug: string): string {
@@ -43,7 +46,7 @@ interface CrossFilterRegionPageProps {
   relatedLinks: { label: string; href: string }[];
 }
 
-export function CrossFilterRegionPage({
+export async function CrossFilterRegionPage({
   filterLabel,
   filterLabelLong,
   regionName,
@@ -63,6 +66,26 @@ export function CrossFilterRegionPage({
   const regionSlug = slugifySegment(regionName);
   const hubSlug = canonicalRegionSlug(regionName);
   const hubHref = `/danmark/${hubSlug}`;
+  // In-feed-annoncen henter sine kandidater af facetten frem for af regionen:
+  // "shelter med baalplads paa Sjaelland" er en baalplads-side foerst, saa
+  // taendstaal og sovepose rammer bedre end et generisk stedsforslag. De fire
+  // facetter uden redaktionel kobling (bruser, toilet, strand, booking) falder
+  // tilbage paa stedslisten, saa pladsen aldrig staar tom med en tom liste.
+  // Stien er den samme som canonical: parentFilterHref + hubSlug.
+  const inFeedMaaned = new Date().getMonth() + 1;
+  const facetKandidater = temaKandidater(parentFilterHref.replace(/^\//, ""), inFeedMaaned);
+  const inFeedKandidater =
+    facetKandidater.length > 0
+      ? facetKandidater
+      : stedKandidater({
+          antal: shelters.length,
+          medVand: shelters.filter((s) => getWater(s) === true).length,
+          maaned: inFeedMaaned,
+        });
+  const inFeedAnnonce = await hentInFeedAnnonce(
+    `${parentFilterHref}/${hubSlug}`,
+    inFeedKandidater
+  );
   const topShelters = shelters.slice(0, 5);
   const placeCounts = new Map<string, number>();
   for (const shelter of shelters) {
@@ -224,7 +247,7 @@ export function CrossFilterRegionPage({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6">
                     {shelters.map((s, i) => (
                       <Fragment key={s.id}>
-                        {showInFeedAdAt(i, shelters.length) && <AdInFeed />}
+                        {showInFeedAdAt(i, shelters.length) && <InFeedSlot nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />}
                         <ShelterCard shelter={s} href={shelterHref(s.region ?? null, s.kommune ?? null, s.slug)} />
                       </Fragment>
                     ))}

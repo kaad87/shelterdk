@@ -6,8 +6,8 @@ import { getHandicapShelters, getFilterRegionCount } from "@/lib/fakta-db";
 import { slugifySegment } from "@/lib/slug";
 import { Fragment } from "react";
 import { ShelterCard } from "@/components/ShelterCard";
-import { AdInFeed } from "@/components/AdInFeed";
-import { showInFeedAdAt } from "@/lib/adsense";
+import { InFeedSlot } from "@/components/InFeedSlot";
+import { showInFeedAdAt, inFeedAdIndex } from "@/lib/adsense";
 import { ShelterMap } from "@/components/ShelterMap";
 import { toMapShelters } from "@/lib/map-shelter";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
@@ -15,6 +15,7 @@ import { DataSummaryBlock } from "@/components/DataSummaryBlock";
 import { REGION_SLUGS, REGION_NAMES, REGION_SHORT_NAMES } from "@/lib/cross-page-config";
 import { GuideTeaser } from "@/components/GuideTeaser";
 import { resolveGuideLinks, stedKandidater } from "@/lib/guide-links";
+import { hentInFeedAnnonce } from "@/lib/infeed-annonce";
 
 export const revalidate = 86400;
 
@@ -78,14 +79,16 @@ export default async function HandicapvenligeSheltersPage() {
   const shelters = await getHandicapShelters(50);
   // Temasiden har rigtige pladser i haanden, saa blokken bruger de samme
   // faktiske tal som by- og omraadesiderne frem for en fast liste.
-  const temaGuider = await resolveGuideLinks(
-    stedKandidater({
+  // Kandidaterne bruges to steder: guide-blokken og in-feed-annoncen.
+  // Samme liste, saa kortet aldrig anbefaler noget andet end siden selv.
+  const inFeedKandidater = stedKandidater({
       antal: shelters.length,
       // Siden henter ikke vand-kolonnen, saa tallet er ukendt frem for 0.
       medVand: null,
       maaned: new Date().getMonth() + 1,
-    })
-  ).catch(() => []);
+    });
+  const temaGuider = await resolveGuideLinks(inFeedKandidater).catch(() => []);
+  const inFeedAnnonce = await hentInFeedAnnonce("/handicapvenlige-shelters", inFeedKandidater);
 
 
   const regionCounts = await Promise.all(
@@ -145,7 +148,7 @@ export default async function HandicapvenligeSheltersPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6">
                     {shelters.map((shelter, i) => (
                     <Fragment key={shelter.id}>
-                      {showInFeedAdAt(i, shelters.length) && <AdInFeed />}
+                      {showInFeedAdAt(i, shelters.length) && <InFeedSlot nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />}
                       <ShelterCard shelter={shelter}
                         href={shelterHref(
                           shelter.region ?? null,
