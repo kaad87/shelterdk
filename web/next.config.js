@@ -62,6 +62,19 @@ const embedCsp = [
   "manifest-src 'self'",
 ].join("; ");
 
+// Kommunesider der er 100% dubletter af den tilsvarende /by/-side. Listen bor i
+// data/municipality-by-redirects.json, så next.config.js (redirects) og
+// app/sitemap.ts (udelukkelse) læser præcis samme kilde.
+//
+// HVORFOR redirects HER og ikke i siden: kommuneruten er statisk prerendret
+// (generateStaticParams + revalidate). Kalder man permanentRedirect() inde i
+// render, kan Next 14 ikke sende en 308 ved build — den skriver i stedet en
+// HTML-fil med <meta http-equiv="refresh">, der udleveres med status 200 og kun
+// layoutet (ingen <h1>, ingen kort, ingen FAQ). Google ser en 200 uden indhold
+// = soft-404, og URL'erne er linket fra breadcrumbs på alle shelter-sider.
+// Som next.config-redirect bliver det en rigtig 308 før routing.
+const municipalityByRedirects = require("./data/municipality-by-redirects.json");
+
 const nextConfig = {
   // Sitemap.ts genererer 2.900+ URL'er + DB-kald ved build; default 60s-timeout
   // kan rammes på CI (flaky → fejlet deploy). Giv tunge static-genereringer mere tid.
@@ -152,6 +165,14 @@ const nextConfig = {
       // Facet-region-landingssider (fx /shelter-med-vand/fyn-og-oeerne → .../fyn).
       { source: "/:facet(shelter-[a-z0-9-]+)/fyn-og-oeerne", destination: "/:facet/fyn", permanent: true },
       { source: "/:facet(shelter-[a-z0-9-]+)/sjaelland-og-oeerne", destination: "/:facet/sjaelland", permanent: true },
+      // Kommuneside → /by/-side for de kommuner hvor by-siden dækker præcis det
+      // samme shelter-sæt. Bevidst EKSAKTE paths (ingen :rest*), så shelter-
+      // detaljesiderne under /danmark/:region/:kommune/:slug ikke rammes.
+      ...municipalityByRedirects.map(({ from, to }) => ({
+        source: from,
+        destination: to,
+        permanent: true,
+      })),
     ];
   },
   images: {

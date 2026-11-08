@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound, permanentRedirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { ShelterListSchema } from "@/components/seo/ShelterListSchema";
 import { QuickAnswer } from "@/components/seo/QuickAnswer";
@@ -246,13 +246,18 @@ export default async function DanmarkMunicipalityPage({ params }: PageProps) {
       : segmentSlugToName(municipalitySlug, municipalities);
   if (municipalitySlug !== NO_KOMMUNE_SLUG && !municipalityName) notFound();
 
-  const { shelters: rawShelters, redirectBySlug } = await getMunicipalityPageContext(
+  // Kommuner hvis side er en ren dublet af /by/<kommune> 308'er i
+  // next.config.js, FØR routing. Siden må ikke selv kalde redirect(): ruten er
+  // statisk prerendret, og Next 14 kan ikke sende en 308 fra en build-render —
+  // den skriver en <meta http-equiv="refresh">-side ud med status 200 og kun
+  // layoutet, hvilket Google læser som soft-404. Rammer en sådan URL alligevel
+  // siden (fx hvis listen i data/municipality-by-redirects.json er bagud),
+  // rendrer vi rigtigt indhold med canonical mod /by/<kommune> — en dublet med
+  // korrekt canonical, ikke en tom 200.
+  const { shelters: rawShelters } = await getMunicipalityPageContext(
     regionName,
     municipalityName
   );
-  if (redirectBySlug) {
-    permanentRedirect(`/by/${redirectBySlug}`);
-  }
   const shelters = await enrichSheltersWithGooglePhotoRef(rawShelters);
   const displayName = municipalityName ?? "Ukendt kommune";
 

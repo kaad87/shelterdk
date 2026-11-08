@@ -1,0 +1,104 @@
+[
+  {
+    "kommune": "Odense",
+    "region": "Fyn",
+    "from": "/danmark/fyn/odense",
+    "to": "/by/odense"
+  },
+  {
+    "kommune": "Svendborg",
+    "region": "Fyn",
+    "from": "/danmark/fyn/svendborg",
+    "to": "/by/svendborg"
+  },
+  {
+    "kommune": "Aalborg",
+    "region": "Jylland",
+    "from": "/danmark/jylland/aalborg",
+    "to": "/by/aalborg"
+  },
+  {
+    "kommune": "Aarhus",
+    "region": "Jylland",
+    "from": "/danmark/jylland/aarhus",
+    "to": "/by/aarhus"
+  },
+  {
+    "kommune": "Billund",
+    "region": "Jylland",
+    "from": "/danmark/jylland/billund",
+    "to": "/by/billund"
+  },
+  {
+    "kommune": "Esbjerg",
+    "region": "Jylland",
+    "from": "/danmark/jylland/esbjerg",
+    "to": "/by/esbjerg"
+  },
+  {
+    "kommune": "Herning",
+    "region": "Jylland",
+    "from": "/danmark/jylland/herning",
+    "to": "/by/herning"
+  },
+  {
+    "kommune": "Holstebro",
+    "region": "Jylland",
+    "from": "/danmark/jylland/holstebro",
+    "to": "/by/holstebro"
+  },
+  {
+    "kommune": "Horsens",
+    "region": "Jylland",
+    "from": "/danmark/jylland/horsens",
+    "to": "/by/horsens"
+  },
+  {
+    "kommune": "Kolding",
+    "region": "Jylland",
+    "from": "/danmark/jylland/kolding",
+    "to": "/by/kolding"
+  },
+  {
+    "kommune": "Randers",
+    "region": "Jylland",
+    "from": "/danmark/jylland/randers",
+    "to": "/by/randers"
+  },
+  {
+    "kommune": "Silkeborg",
+    "region": "Jylland",
+    "from": "/danmark/jylland/silkeborg",
+    "to": "/by/silkeborg"
+  },
+  {
+    "kommune": "Vejle",
+    "region": "Jylland",
+    "from": "/danmark/jylland/vejle",
+    "to": "/by/vejle"
+  },
+  {
+    "kommune": "Viborg",
+    "region": "Jylland",
+    "from": "/danmark/jylland/viborg",
+    "to": "/by/viborg"
+  },
+  {
+    "kommune": "Helsingør",
+    "region": "Sjælland og Øerne",
+    "from": "/danmark/sjaelland-og-oeerne/helsingoer",
+    "to": "/by/helsingoer"
+  },
+  {
+    "kommune": "Næstved",
+    "region": "Sjælland og Øerne",
+    "from": "/danmark/sjaelland-og-oeerne/naestved",
+    "to": "/by/naestved"
+  },
+  {
+    "kommune": "Roskilde",
+    "region": "Sjælland og Øerne",
+    "from": "/danmark/sjaelland-og-oeerne/roskilde",
+    "to": "/by/roskilde"
+  }
+]

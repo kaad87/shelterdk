@@ -6,15 +6,12 @@ import { getAllAreas } from "@/lib/area-db";
 import { getFileModified, newestIsoDate } from "@/lib/content-dates";
 import { FILTER_CONFIGS, REGION_NAMES, REGION_SLUGS, canonicalRegionSlug } from "@/lib/cross-page-config";
 import {
-  getByLandingData,
   getDistinctByLandingPages,
   getDistinctRegions,
   getRegionKommunePairs,
   NO_KOMMUNE_SLUG,
-  getSheltersByMunicipalityName,
-  shouldRedirectMunicipalityToByPage,
-  PRIORITY_BY_CITY_NAMES,
 } from "@/lib/danmark-silo";
+import { REDIRECTING_MUNICIPALITY_NAMES } from "@/lib/municipality-by-redirects";
 import { getFilterRegionCount } from "@/lib/fakta-db";
 import { getGuideCategories, getGuides } from "@/data/guides";
 import { getPublishedGuides } from "@/lib/buying-guides";
@@ -43,37 +40,6 @@ type SitemapShelterMeta = {
 const BY_LANDING_SEARCH_SYNONYM_KEYS: Partial<Record<string, string>> = {
   "København": "københavn",
 };
-
-const PRIORITY_BY_CITY_NAME_SET = new Set<string>(PRIORITY_BY_CITY_NAMES);
-
-async function getRedirectingMunicipalityNames(): Promise<Set<string>> {
-  const pairs = await getRegionKommunePairs(2);
-  const municipalityNames = [...new Set(pairs.map((pair) => pair.kommune).filter(Boolean))] as string[];
-
-  // shouldRedirectMunicipalityToByPage() afviser alt der ikke er en priority-by
-  // med det samme, så vi behøver kun de dyre per-kommune-opslag for de ~18 byer.
-  // (Tidligere kørte vi opslagene for alle ~98 kommuner sekventielt → sitemap-
-  // genereringen tippede forbi staticPageGenerationTimeout og væltede buildet.)
-  const candidates = municipalityNames.filter((name) => PRIORITY_BY_CITY_NAME_SET.has(name));
-
-  const results = await Promise.all(
-    candidates.map(async (municipalityName) => {
-      const [municipalityShelters, byLanding] = await Promise.all([
-        getSheltersByMunicipalityName(municipalityName),
-        getByLandingData(municipalityName),
-      ]);
-      return shouldRedirectMunicipalityToByPage(
-        municipalityName,
-        municipalityShelters,
-        byLanding.shelters
-      )
-        ? municipalityName
-        : null;
-    })
-  );
-
-  return new Set(results.filter((name): name is string => name !== null));
-}
 
 const STATIC_PAGES: Array<{
   path: string;
@@ -573,12 +539,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     );
   }
 
-  const [pairs, redirectingMunicipalities] = await Promise.all([
-    getRegionKommunePairs(2),
-    getRedirectingMunicipalityNames(),
-  ]);
+  // Kommuner der 308'er til /by/<kommune> hører ikke i sitemappet — kun den
+  // kanoniske URL skal indsendes. Samme kilde som redirectene i next.config.js
+  // (data/municipality-by-redirects.json), så de to aldrig kan være uenige.
+  const pairs = await getRegionKommunePairs(2);
   for (const { region, kommune } of pairs) {
-    if (kommune && redirectingMunicipalities.has(kommune)) continue;
+    if (kommune && REDIRECTING_MUNICIPALITY_NAMES.has(kommune)) continue;
     const regionSlug = slugifySegment(region);
     const municipalitySlug = kommune ? slugifySegment(kommune) : NO_KOMMUNE_SLUG;
     if (!regionSlug || !municipalitySlug) continue;
