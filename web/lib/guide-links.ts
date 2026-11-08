@@ -261,6 +261,7 @@ export const TEMA_KANDIDATER: Record<string, GuideKandidat[]> = {
   ],
   "shelter-til-familier": [
     { slug: "sovepose-til-boern", reason: "Soveposer i børnestørrelser" },
+    { slug: "familietelt", reason: "Plads til hele familien" },
     { slug: "liggeunderlag", reason: "Isolering mod den kolde bund" },
   ],
   "shelter-til-cykeltur": [
@@ -268,11 +269,13 @@ export const TEMA_KANDIDATER: Record<string, GuideKandidat[]> = {
     { slug: "liggeunderlag", reason: "Isolering mod den kolde bund" },
   ],
   "fri-teltning": [
-    { slug: "telt", reason: "Til de pladser hvor du selv rejser lejr" },
+    { slug: "letvaegtstelt", reason: "Du bærer alt selv" },
     { slug: "sovepose", reason: "Til overnatning i naturen" },
+    { slug: "haengekoje", reason: "Et alternativ hvor der er træer" },
   ],
   teltplads: [
     { slug: "telt", reason: "Til overnatning på teltpladsen" },
+    { slug: "familietelt", reason: "Plads til hele familien" },
     { slug: "sovepose", reason: "Til overnatning i naturen" },
   ],
   baalhytte: [

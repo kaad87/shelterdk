@@ -304,6 +304,7 @@ Hvis du bare vil have den korte version, så pak mindst:
 - Tandbørste, toiletpapir og **håndsprit**
 - Telefon + **powerbank**
 - Lille **førstehjælpskit**
+- En [rygsæk](/bedste/vandrerygsaek) der kan rumme det hele
 - Skraldeposer til affald og vådt tøj
 
 Det er minimumspakken til en almindelig sheltertur med én overnatning. Nedenfor får du den komplette tjekliste, plus ekstra udstyr til børn, vinter og begyndere.
@@ -346,10 +347,10 @@ Vejret kan skifte hurtigt. Brug lag-på-lag, så du kan justere undervejs.
 Pak fx:
 
 - Uld eller syntetisk **undertøj**
-- 1–2 trøjer (fx fleece eller uld)
-- Vind- og vandtæt jakke
+- 1–2 trøjer (fx fleece eller uld) - se [bedste fleecetrøje](/bedste/fleece)
+- Vind- og vandtæt jakke - se [bedste regntøj](/bedste/regntoj)
 - Ekstra sokker (gerne uld) og undertøj
-- Hue, handsker og halstørklæde uden for sommersæsonen
+- Hue, handsker og halstørklæde uden for sommersæsonen - se [bedste hue](/bedste/hue) og [bedste handsker](/bedste/handsker)
 
 Til børn er det bedre at have **ét lag for meget** end ét for lidt – især om aftenen ved bålet. Læs også vores artikel om [shelter med børn](/blog/shelter-med-boern) for flere familietips.
 
@@ -377,7 +378,7 @@ Grundlæggende køkken:
 - Trangia eller lille gasbrænder
 - Brændstof / gas + tændstikker/[tændstål og optænding](/bedste/taendstaal)
 - 1 gryde og evt. 1 pande
-- Krus, tallerken og bestik pr. person
+- Krus, tallerken og bestik pr. person - se [bedste bestik](/bedste/bestik)
 - Skarp kniv og lille skærebræt
 
 ::gear[backpackerlife-361944]
@@ -402,10 +403,10 @@ Det behøver ikke være luksus – men lidt komfort gør turen markant bedre.
 
 Pak fx:
 
-- Tandbørste, tandpasta og evt. lille håndklæde
+- Tandbørste, tandpasta og evt. lille håndklæde - se [bedste rejsehåndklæde](/bedste/haandklaede)
 - Håndsprit eller vådservietter
 - Toiletrulle i vandtæt pose
-- Lille førstehjælpskit (plaster, sportstape, smertestillende, vabelplastre)
+- Lille førstehjælpskit (plaster, sportstape, smertestillende, vabelplastre) - se [bedste førstehjælpskit](/bedste/foerstehjaelp)
 
 ## Pakkeliste til sheltertur om vinteren
 
@@ -429,8 +430,9 @@ Det bliver **mørkt** i skoven – også selvom du er tæt på byen.
 Husk:
 
 - Pandelygte til alle + ekstra batterier – se [bedste pandelampe](/bedste/pandelampe)
-- Powerbank til telefon
-- Kort eller offline kort på mobilen
+- Evt. en [lanterne](/bedste/lanterne) til selve shelteret. En pandelygte lyser kun derhen hvor du kigger, og det bliver trættende når I sidder og spiser
+- Powerbank til telefon - se [bedste powerbank](/bedste/powerbank)
+- Kort eller offline kort på mobilen, og gerne et [kompas](/bedste/kompas) der ikke løber tør for strøm
 
 ::gear[outmore-9328389030533]
 
@@ -459,7 +461,8 @@ Hvis du vil undgå den klassiske "vi mangler noget"-følelse, så pak aftenen f�
 
 Det er ofte de små ting, man bliver gladest for:
 
-- Siddemåtte eller lille foldestol
+- [Siddeunderlag](/bedste/siddeunderlag) eller lille foldestol
+- [Myggenet](/bedste/myggenet) til shelterets åbning fra maj til september
 - Spil eller kort til aftenen
 - En god bog eller notesbog
 - Skumfiduser, chokolade eller anden lille luksus
@@ -889,7 +892,9 @@ Til vinter skal du have:
 
 - Sovepose med **comfort-temperatur under** forventet nattemperatur – se [bedste sovepose til vinter](/bedste/sovepose-til-vinter)
 - Minimum ét godt liggeunderlag – gerne to (skum + oppusteligt), se [bedste liggeunderlag til vinter](/bedste/liggeunderlag-til-vinter)
-- Hue, halsedisse og tørre uldsokker kun til nat
+- Hue, halsedisse og tørre uldsokker kun til nat - se [bedste hue](/bedste/hue)
+
+Dun eller syntetisk? Dun vejer mindre og pakker mindre for samme varme, men mister isolering når det bliver fugtigt, og i et shelter er luftfugtigheden høj hele natten. Har du en [dunsovepose](/bedste/dunsovepose), så luft den ud hver morgen og hold den væk fra shelterets vægge. Syntetisk fyld er tungere, men tilgiver fugt bedre.
 
 Undgå at sove i fugtigt tøj – skift til tørt sæt, før du lægger dig. Se også vores [udstyrguide for begyndere](/blog/udstyr-guide-begyndere) for anbefalinger til soveposer og liggeunderlag.
 
@@ -898,7 +903,7 @@ Undgå at sove i fugtigt tøj – skift til tørt sæt, før du lægger dig. Se 
 Brug klassisk 3-lags princip:
 
 - Inderst: uld eller svedtransporterende lag
-- Mellem: isolerende lag (fleece/uld)
+- Mellem: isolerende lag (fleece/uld) - se [bedste fleecetrøje](/bedste/fleece)
 - Yderst: vind- og vandtæt jakke
 
 Vigtigt:
