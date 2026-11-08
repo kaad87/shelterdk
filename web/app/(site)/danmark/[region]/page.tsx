@@ -20,6 +20,8 @@ import { generateRegionPageFaq } from "@/lib/fakta-faq";
 import { faqToJsonLd } from "@/lib/faq";
 import { FILTER_CONFIGS, REGION_SLUGS, REGION_NAMES } from "@/lib/cross-page-config";
 import { fetchPostnummerBbox, lookupPostnummer } from "@/lib/postnummer";
+import { GuideTeaser } from "@/components/GuideTeaser";
+import { resolveGuideLinks, stedKandidater } from "@/lib/guide-links";
 
 interface PageProps {
   params: Promise<{ region: string }>;
@@ -226,6 +228,15 @@ export default async function DanmarkRegionPage({ params, searchParams }: PagePr
 
   const totalCount = hasActiveQuery ? initialShelters.length : facilityCounts.total;
   const freeCount = facilityCounts.gratis;
+  // Samme mekanik som by- og omraadesiderne. facilityCounts er allerede
+  // hentet ovenfor, saa blokken koster ingen ekstra query.
+  const regionGuider = await resolveGuideLinks(
+    stedKandidater({
+      antal: totalCount,
+      medVand: facilityCounts.water,
+      maaned: new Date().getMonth() + 1,
+    })
+  ).catch(() => []);
   const topInRegion = topRated.find(
     (s) => (s.region ?? "").trim() === regionName
   );
@@ -430,6 +441,14 @@ export default async function DanmarkRegionPage({ params, searchParams }: PagePr
           })()}
 
           {/* FAQ with JSON-LD */}
+          <GuideTeaser
+            guides={regionGuider}
+            kilde="region"
+            heading={`Grej til en sheltertur ${prep} ${displayName}`}
+            intro="Vi scorer og prissammenligner udstyret, så du ved hvad der er værd at pakke."
+            visAlleLink
+          />
+
           <section className="mt-12 pt-8 border-t border-primary/10">
             <h2 className="font-serif text-xl font-bold text-primary mb-6">
               Ofte stillede spørgsmål om shelters {prep} {displayName}

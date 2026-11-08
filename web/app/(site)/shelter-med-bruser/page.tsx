@@ -15,6 +15,9 @@ import { DataSummaryBlock } from "@/components/DataSummaryBlock";
 import { getFilterRegionCount, getCountPerRegion } from "@/lib/fakta-db";
 import { REGION_SLUGS, REGION_NAMES, REGION_SHORT_NAMES } from "@/lib/cross-page-config";
 import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
+import { GuideTeaser } from "@/components/GuideTeaser";
+import { resolveGuideLinks, stedKandidater } from "@/lib/guide-links";
+import { getWater } from "@/lib/shelter-detail";
 
 const SHOWER_FAQ: FaqItem[] = [
   { question: "Har shelters i Danmark bruser?", answer: "Nogle shelterpladser i Danmark har adgang til bruser eller badefaciliteter. Det er dog langt fra alle — de fleste primitive shelterpladser har ikke bruser. På ShelterDK kan du filtrere efter shelters med bruser/bad for at finde pladser med denne facilitet." },
@@ -48,6 +51,16 @@ function shelterHref(region: string | null, kommune: string | null, slug: string
 
 export default async function ShelterMedBruserPage() {
   const shelters = await getSheltersWithShower(50);
+  // Temasiden har rigtige pladser i haanden, saa blokken bruger de samme
+  // faktiske tal som by- og omraadesiderne frem for en fast liste.
+  const temaGuider = await resolveGuideLinks(
+    stedKandidater({
+      antal: shelters.length,
+      medVand: shelters.filter((s) => getWater(s) === true).length,
+      maaned: new Date().getMonth() + 1,
+    })
+  ).catch(() => []);
+
 
   // Fetch summary data for DataSummaryBlock
   const regionCounts = await Promise.all(
@@ -174,6 +187,14 @@ export default async function ShelterMedBruserPage() {
             <Link href="/danmark" className="text-accent hover:underline">udforsk alle shelters i Danmark</Link>.
           </p>
         </section>
+
+        <GuideTeaser
+          guides={temaGuider}
+          kilde="tema"
+          heading="Grej til shelterturen"
+          intro="Vi scorer og prissammenligner udstyret, så du ved hvad der er værd at pakke."
+          visAlleLink
+        />
 
         <section className="mt-12 pt-8 border-t border-primary/10">
           <h2 className="font-serif text-xl font-bold text-primary mb-6">

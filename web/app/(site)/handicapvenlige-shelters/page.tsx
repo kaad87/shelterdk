@@ -13,6 +13,8 @@ import { toMapShelters } from "@/lib/map-shelter";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import { DataSummaryBlock } from "@/components/DataSummaryBlock";
 import { REGION_SLUGS, REGION_NAMES, REGION_SHORT_NAMES } from "@/lib/cross-page-config";
+import { GuideTeaser } from "@/components/GuideTeaser";
+import { resolveGuideLinks, stedKandidater } from "@/lib/guide-links";
 
 export const revalidate = 86400;
 
@@ -74,6 +76,17 @@ function shelterHref(
 
 export default async function HandicapvenligeSheltersPage() {
   const shelters = await getHandicapShelters(50);
+  // Temasiden har rigtige pladser i haanden, saa blokken bruger de samme
+  // faktiske tal som by- og omraadesiderne frem for en fast liste.
+  const temaGuider = await resolveGuideLinks(
+    stedKandidater({
+      antal: shelters.length,
+      // Siden henter ikke vand-kolonnen, saa tallet er ukendt frem for 0.
+      medVand: null,
+      maaned: new Date().getMonth() + 1,
+    })
+  ).catch(() => []);
+
 
   const regionCounts = await Promise.all(
     REGION_SLUGS.map(async (slug) => ({
@@ -224,6 +237,14 @@ export default async function HandicapvenligeSheltersPage() {
               <Link href="/danmark" className="text-accent hover:underline">udforsk alle shelters i Danmark</Link>.
             </p>
           </section>
+
+          <GuideTeaser
+            guides={temaGuider}
+            kilde="tema"
+            heading="Grej til shelterturen"
+            intro="Vi scorer og prissammenligner udstyret, så du ved hvad der er værd at pakke."
+            visAlleLink
+          />
 
           <section className="mt-12 pt-8 border-t border-primary/10">
             <h2 className="font-serif text-xl font-bold text-primary mb-6">

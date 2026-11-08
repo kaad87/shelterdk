@@ -8,12 +8,22 @@ export interface GuideLink {
 }
 
 /** Hvor i sitet linket staar. Foelger med ind i affiliate_clicks.path. */
-export type GuideKilde = "shelter" | "forside" | "by" | "omraade" | "tema" | "hub";
+export type GuideKilde =
+  | "shelter"
+  | "forside"
+  | "by"
+  | "kommune"
+  | "region"
+  | "omraade"
+  | "tema"
+  | "hub";
 
 const KILDER: readonly GuideKilde[] = [
   "shelter",
   "forside",
   "by",
+  "kommune",
+  "region",
   "omraade",
   "tema",
   "hub",
@@ -153,8 +163,17 @@ export const FORSIDE_GUIDER: GuideKandidat[] = [
 export interface StedFakta {
   /** Antal shelters paa siden. */
   antal: number;
-  /** Hvor mange af dem der har adgang til vand. */
-  medVand: number;
+  /**
+   * Hvor mange af dem der har adgang til vand, eller null naar siden ikke
+   * henter vand-kolonnen.
+   *
+   * null er ikke det samme som 0. /shelter-med-toilet henter sine 50 pladser
+   * med et select uden `water`, saa getWater gav false for dem alle, og
+   * blokken skrev "50 af pladserne har ikke vand" paa siden. Det er en
+   * paastand om virkeligheden, ikke en tom tilstand, saa typen skal kunne
+   * sige "ved ikke" og kalderen skal tage stilling.
+   */
+  medVand: number | null;
   /** Maaned 1-12. Injiceres, saa render og test er forudsigelige. */
   maaned: number;
 }
@@ -188,7 +207,7 @@ export const MIN_STEDSTOERRELSE = 5;
  */
 export function stedKandidater(f: StedFakta): GuideKandidat[] {
   if (f.antal < MIN_STEDSTOERRELSE) return [];
-  const udenVand = Math.max(0, f.antal - f.medVand);
+  const udenVand = f.medVand === null ? 0 : Math.max(0, f.antal - f.medVand);
   const kold = erKoldSaeson(f.maaned);
 
   return [

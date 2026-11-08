@@ -18,6 +18,8 @@ import { REGION_SLUGS, REGION_NAMES, REGION_SHORT_NAMES } from "@/lib/cross-page
 import { LastVerifiedBadge } from "@/components/LastVerifiedBadge";
 import { SpeakableSchema } from "@/components/seo/SpeakableSchema";
 import { getSitePageModified } from "@/lib/content-dates";
+import { GuideTeaser } from "@/components/GuideTeaser";
+import { resolveGuideLinks, stedKandidater } from "@/lib/guide-links";
 
 const TOILET_FAQ: FaqItem[] = [
   { question: "Hvad er et muldtoilet på en shelterplads?", answer: "Et muldtoilet (også kaldet tørkloset) er et toilet uden vandskyl, der bruger naturlig nedbrydning. Det er det mest almindelige toilettype på shelterpladser i Danmark. Man tilfører typisk savsmuld eller lignende efter brug for at reducere lugt og fremme kompostering." },
@@ -65,6 +67,17 @@ const TOILET_LABELS: Record<string, string> = {
 
 export default async function ShelterMedToiletPage() {
   const shelters = await getSheltersWithToilet(50);
+  // Temasiden har rigtige pladser i haanden, saa blokken bruger de samme
+  // faktiske tal som by- og omraadesiderne frem for en fast liste.
+  const temaGuider = await resolveGuideLinks(
+    stedKandidater({
+      antal: shelters.length,
+      // Siden henter ikke vand-kolonnen, saa tallet er ukendt frem for 0.
+      medVand: null,
+      maaned: new Date().getMonth() + 1,
+    })
+  ).catch(() => []);
+
   const lastVerified = getSitePageModified("/shelter-med-toilet");
 
   // Fetch summary data for DataSummaryBlock
@@ -283,6 +296,14 @@ export default async function ShelterMedToiletPage() {
             så klik videre til den enkelte shelterside, hvis du vil være helt sikker på faciliteterne.
           </p>
         </section>
+
+        <GuideTeaser
+          guides={temaGuider}
+          kilde="tema"
+          heading="Grej til shelterturen"
+          intro="Vi scorer og prissammenligner udstyret, så du ved hvad der er værd at pakke."
+          visAlleLink
+        />
 
         <section className="mt-12 pt-8 border-t border-primary/10">
           <h2 className="font-serif text-xl font-bold text-primary mb-6">
