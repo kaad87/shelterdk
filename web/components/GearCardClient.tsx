@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import { ExternalLink } from "lucide-react";
 import type { AffiliateProduct } from "@/lib/affiliate-products";
 import { rentMaerke, rentNavn } from "@/lib/produktnavn";
 import { trackAffiliateClick } from "@/lib/tracking";
+import { ProduktBillede } from "@/components/ProduktBillede";
 
 function fireAffiliate(
   product: AffiliateProduct,
@@ -45,7 +45,7 @@ function EditorialVariant({ product, className }: { product: AffiliateProduct; c
   return (
     <div className={`my-6 flex gap-4 rounded-lg border border-primary/10 border-l-[3px] border-l-accent bg-white p-4 ${className ?? ""}`}>
       <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-md">
-        <Image src={product.image_url} alt={navn} fill className="object-contain" sizes="96px" unoptimized />
+        <ProduktBillede src={product.image_url} alt={navn} fill className="object-contain" sizes="96px" />
       </div>
       <div className="min-w-0 flex-1">
         {product.category_mapped && (
@@ -95,7 +95,7 @@ function ProductVariant({ product, className }: { product: AffiliateProduct; cla
         </div>
       )}
       <div className="relative w-28 shrink-0 md:w-full md:aspect-square bg-background">
-        <Image src={product.image_url} alt={navn} fill className="object-contain p-3 md:p-4" sizes="(max-width: 768px) 112px, 33vw" unoptimized />
+        <ProduktBillede src={product.image_url} alt={navn} fill className="object-contain p-3 md:p-4" sizes="(max-width: 768px) 112px, 33vw" />
       </div>
       <div className="flex flex-1 flex-col p-3 md:p-4">
         {maerke && (
@@ -148,7 +148,7 @@ function PillVariant({ product, className }: { product: AffiliateProduct; classN
       onClick={() => fireAffiliate(product, "pill")}
     >
       <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full bg-white">
-        <Image src={product.image_url} alt="" fill className="object-contain" sizes="32px" unoptimized />
+        <ProduktBillede src={product.image_url} alt="" fill className="object-contain" sizes="32px" />
       </span>
       <span className="flex flex-col leading-tight">
         <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-800">Grej-tip</span>

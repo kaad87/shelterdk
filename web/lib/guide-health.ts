@@ -32,6 +32,8 @@ export interface HealthEntry {
    * skal den opdages her. Rettelsen er et display_name paa varen.
    */
   udenProduktside?: boolean;
+  /** Billed-URL'en fra feedet svarer ikke. Saettes af det daglige tjek. */
+  billedeDoedt?: boolean;
 }
 
 import { ALDRIG, guidenHandlerOmBoern } from "./feed-kategori-filter";
@@ -344,6 +346,19 @@ export function guideHealth(input: HealthInput, now: Date = new Date()): GuideHe
       `${udenSide.length} vare(r) har ingen produktside paa grund af navnesammenfald` +
         (navne ? `: ${navne}` : "") +
         " — saet display_name"
+    );
+  }
+  // Siden viser et neutralt felt i stedet for en brudt billedkasse, naar
+  // URL'en er doed (components/ProduktBillede.tsx). Det er pointen med
+  // reserven, men den goer ogsaa problemet usynligt, og et produktfoto er et
+  // koebssignal. Derfor meldes det her, saa varen kan skiftes ud.
+  const udenBillede = input.entries.filter((e) => e.billedeDoedt);
+  if (udenBillede.length) {
+    const navne = udenBillede.map((e) => e.navn).filter(Boolean).join(", ");
+    problems.push(
+      `${udenBillede.length} vare(r) har et billede der ikke svarer` +
+        (navne ? `: ${navne}` : "") +
+        " — feedet skriver URL'en igen hver nat, saa varen skal skiftes ud"
     );
   }
   if (buyable < MIN_BUYABLE) problems.push(`kun ${buyable} produkter kan købes`);

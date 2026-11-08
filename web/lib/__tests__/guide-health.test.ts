@@ -433,3 +433,29 @@ describe("guideHealth – varer uden produktside", () => {
     expect(guideHealth(base, NOW).problems).toEqual([]);
   });
 });
+
+describe("guideHealth – doede produktbilleder", () => {
+  it("melder et billede der ikke svarer, med varens navn", () => {
+    const h = guideHealth({ ...base, entries: [
+      { ...base.entries[0], navn: "Highlander Mull", billedeDoedt: true },
+      ...base.entries.slice(1),
+    ] }, NOW);
+    const p = h.problems.find((x) => x.includes("billede der ikke svarer"));
+    expect(p).toBeDefined();
+    expect(p).toContain("Highlander Mull");
+    // Rettelsen er at skifte varen ud, ikke at rette raekken: synken
+    // skriver image_url igen hver nat.
+    expect(p).toContain("hver nat");
+  });
+
+  it("taeller flere varer i det samme problem", () => {
+    const h = guideHealth({ ...base, entries: base.entries.map((e, i) => ({
+      ...e, navn: `Vare ${i}`, billedeDoedt: i < 3,
+    })) }, NOW);
+    expect(h.problems.find((x) => x.includes("billede der ikke svarer"))).toContain("3 vare(r)");
+  });
+
+  it("melder ingenting naar alle billeder svarer", () => {
+    expect(guideHealth(base, NOW).problems.find((x) => x.includes("billede"))).toBeUndefined();
+  });
+});

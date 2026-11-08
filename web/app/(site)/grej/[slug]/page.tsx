@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getProduktBySlug, getProduktSlugs } from "@/lib/produktside";
 import { produktSlug } from "@/lib/produkt-slug";
@@ -12,6 +11,7 @@ import { billigstIalt } from "@/lib/produkt-match";
 import { buildProductSchema } from "@/lib/buying-guides-schema";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { StarRating } from "@/components/buying-guide/StarRating";
+import { ProduktBillede } from "@/components/ProduktBillede";
 import { Butikspriser } from "@/components/produkt/Butikspriser";
 import { Prishistorik } from "@/components/produkt/Prishistorik";
 
@@ -158,13 +158,12 @@ export default async function ProduktPage({ params }: { params: { slug: string }
           ved siden af hinanden, og saa er billedet foerst igen. */}
       <div className="mt-4 grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)_minmax(0,0.95fr)] md:items-start">
         <div className="relative order-2 h-44 overflow-hidden rounded-xl border border-primary/10 bg-white md:order-1 md:h-auto md:aspect-square">
-          <Image
+          <ProduktBillede
             src={p.image_url}
             alt={navn}
             fill
             className="object-contain p-4"
             sizes="(max-width: 768px) 100vw, 320px"
-            unoptimized
             priority
           />
         </div>
@@ -426,13 +425,12 @@ export default async function ProduktPage({ params }: { params: { slug: string }
                       className="flex items-center gap-3 rounded-xl border border-primary/10 bg-white p-3.5 hover:border-accent"
                     >
                       <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md">
-                        <Image
+                        <ProduktBillede
                           src={e.product.image_url}
                           alt=""
                           fill
                           className="object-contain"
                           sizes="64px"
-                          unoptimized
                         />
                       </div>
                       <div className="min-w-0 flex-1">

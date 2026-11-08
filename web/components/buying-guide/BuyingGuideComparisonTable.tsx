@@ -4,6 +4,7 @@ import { rentNavn } from "@/lib/produktnavn";
 import { StarRating } from "@/components/buying-guide/StarRating";
 import { AffiliateLink } from "@/components/buying-guide/AffiliateLink";
 import { PriceTag } from "@/components/buying-guide/PriceTag";
+import { ProduktBillede } from "@/components/ProduktBillede";
 
 function ScoreCell({ score }: { score: number | null }) {
   if (score == null) return <span className="text-primary/30">–</span>;
@@ -44,8 +45,7 @@ export function BuyingGuideComparisonTable({ entries }: { entries: GuideEntryWit
               <tr key={e.id} className="align-middle">
                 <td className="py-3 pr-3">
                   <div className="flex items-center gap-3">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                    <ProduktBillede
                       src={e.product.image_url}
                       alt={rentNavn(e.product)}
                       width={44}
@@ -86,8 +86,7 @@ export function BuyingGuideComparisonTable({ entries }: { entries: GuideEntryWit
         {entries.map((e) => (
           <li key={e.id} className="rounded-xl border border-primary/10 bg-white p-3">
             <div className="flex items-center gap-3">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <ProduktBillede
                 src={e.product.image_url}
                 alt={rentNavn(e.product)}
                 width={48}

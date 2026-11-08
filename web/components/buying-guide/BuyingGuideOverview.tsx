@@ -4,6 +4,7 @@ import { formatScore } from "@/lib/buying-guides-score";
 import { StarRating } from "@/components/buying-guide/StarRating";
 import { AffiliateLink } from "@/components/buying-guide/AffiliateLink";
 import { PriceTag } from "@/components/buying-guide/PriceTag";
+import { ProduktBillede } from "@/components/ProduktBillede";
 
 /**
  * "Hurtigt overblik" — de højest-rangerede produkter som fremhævede kort til
@@ -43,8 +44,7 @@ export function BuyingGuideOverview({
                 </span>
               )}
             </div>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <ProduktBillede
               src={e.product.image_url}
               alt={rentNavn(e.product)}
               width={160}

@@ -110,7 +110,7 @@ async function main() {
   // altså blev sunde varer meldt døde.
   for (let i = 0; i < ids.length; i += 200) {
     const { data, error } = await sb.from("affiliate_products")
-      .select("id, in_stock, is_blocked, last_seen_at, retailer, product_name, brand, display_name, display_brand")
+      .select("id, in_stock, is_blocked, last_seen_at, retailer, product_name, brand, display_name, display_brand, image_url")
       .in("id", ids.slice(i, i + 200));
     if (error) throw new Error(`affiliate_products: ${error.message}`);
     for (const p of data ?? []) produkter.set(p.id, p);
@@ -138,6 +138,36 @@ async function main() {
   );
   const udenSide = new Set(uden.map((u) => u.id));
 
+  // Doede produktbilleder. ProduktBillede viser et neutralt felt i stedet
+  // for en brudt billedkasse, saa siden ser hel ud, men varen staar uden
+  // foto. Det skal meldes, ellers forsvinder problemet bare.
+  //
+  // Kun varer i UDGIVNE guider tjekkes, altsaa 362 kald og ikke 18.000.
+  // Browseren koder selv mellemrum og ikke-ASCII i stien; fetch goer ikke,
+  // og uden kodningen meldes fire velfungerende billeder som doede.
+  const doedeBilleder = new Set<string>();
+  const skalTjekkes = [...produkter.values()].filter(
+    (p) => iUdgivneGuider.has(p.id) && (p.image_url ?? "").trim()
+  );
+  for (let i = 0; i < skalTjekkes.length; i += 20) {
+    await Promise.all(
+      skalTjekkes.slice(i, i + 20).map(async (p) => {
+        try {
+          const u = new URL(p.image_url as string);
+          const svar = await fetch(u.toString(), {
+            method: "HEAD",
+            signal: AbortSignal.timeout(20000),
+          });
+          if (!svar.ok) doedeBilleder.add(p.id);
+        } catch {
+          // En enkelt timeout eller netvaerksfejl er ikke bevis for at
+          // billedet er vaek, og et falsk alarmpunkt hver nat faar hele
+          // rapporten til at blive overset. Der meldes kun paa et svar.
+        }
+      })
+    );
+  }
+
   const nu = new Date();
   const pr = new Map<string, HealthEntry[]>();
   const navne = new Map<string, string[]>();
@@ -156,6 +186,7 @@ async function main() {
       rank: e.rank,
       navn: p ? rentNavn(p) : undefined,
       udenProduktside: udenSide.has(e.affiliate_product_id),
+      billedeDoedt: doedeBilleder.has(e.affiliate_product_id),
     });
     pr.set(e.guide_id, liste);
   }
