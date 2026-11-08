@@ -12,7 +12,7 @@ import { ShelterMap } from "@/components/ShelterMap";
 import { toMapShelters } from "@/lib/map-shelter";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import { GuideTeaser } from "@/components/GuideTeaser";
-import { TEMA_KANDIDATER, resolveGuideLinks } from "@/lib/guide-links";
+import { temaKandidater, resolveGuideLinks } from "@/lib/guide-links";
 
 export const revalidate = 86400;
 
@@ -70,7 +70,7 @@ function shelterHref(region: string | null, kommune: string | null, slug: string
 export default async function ShelterTilFamilierPage() {
   // Temasiden har ét konkret emne, saa koblingen til guiderne er
   // redaktionel og ikke en udfyldningsblok. Listen bor i lib/guide-links.
-  const temaGuider = await resolveGuideLinks(TEMA_KANDIDATER["shelter-til-familier"]).catch(
+  const temaGuider = await resolveGuideLinks(temaKandidater("shelter-til-familier", new Date().getMonth() + 1)).catch(
     () => []
   );
 

@@ -7,7 +7,7 @@ import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import type { CuratedRouteIndex } from "@/types/curated-route";
 import { GuideTeaser } from "@/components/GuideTeaser";
-import { TEMA_KANDIDATER, resolveGuideLinks } from "@/lib/guide-links";
+import { temaKandidater, resolveGuideLinks } from "@/lib/guide-links";
 
 export const revalidate = 86400;
 
@@ -72,7 +72,7 @@ function loadRouteIndex(): CuratedRouteIndex[] {
 export default async function ShelterTilCykelturPage() {
   // Temasiden har ét konkret emne, saa koblingen til guiderne er
   // redaktionel og ikke en udfyldningsblok. Listen bor i lib/guide-links.
-  const temaGuider = await resolveGuideLinks(TEMA_KANDIDATER["shelter-til-cykeltur"]).catch(
+  const temaGuider = await resolveGuideLinks(temaKandidater("shelter-til-cykeltur", new Date().getMonth() + 1)).catch(
     () => []
   );
 

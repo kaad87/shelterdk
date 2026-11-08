@@ -12,7 +12,7 @@ import { toMapShelters } from "@/lib/map-shelter";
 import { buildQuickAnswer } from "@/lib/quick-answer";
 import { faqToJsonLd } from "@/lib/faq";
 import { GuideTeaser } from "@/components/GuideTeaser";
-import { TEMA_KANDIDATER, resolveGuideLinks } from "@/lib/guide-links";
+import { temaKandidater, resolveGuideLinks } from "@/lib/guide-links";
 import { getWater } from "@/lib/shelter-detail";
 import { isStructuredBookable } from "@shared/lib/shelter-detail";
 import { slugifySegment } from "@/lib/slug";
@@ -57,7 +57,7 @@ export async function CollectionPage({
   // en samleside uden en redaktionel kobling i TEMA_KANDIDATER faar ingen
   // blok, og en ny samleside faar den ved at tilfoeje en noegle.
   const temaGuider = await resolveGuideLinks(
-    TEMA_KANDIDATER[config.slug] ?? []
+    temaKandidater(config.slug, new Date().getMonth() + 1)
   ).catch(() => []);
   const count = shelters.length;
   const bookable = shelters.filter((s) => isStructuredBookable(s)).length;

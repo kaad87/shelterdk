@@ -16,7 +16,7 @@ import { getFilterRegionCount, getCountPerRegion } from "@/lib/fakta-db";
 import { REGION_SLUGS, REGION_NAMES, REGION_SHORT_NAMES } from "@/lib/cross-page-config";
 import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 import { GuideTeaser } from "@/components/GuideTeaser";
-import { TEMA_KANDIDATER, resolveGuideLinks } from "@/lib/guide-links";
+import { temaKandidater, resolveGuideLinks } from "@/lib/guide-links";
 
 const HUND_FAQ: FaqItem[] = [
   { question: "Skal hunden være i snor på shelterpladser?", answer: "Ja, i perioden 1. april til 30. september skal hunde altid føres i snor i danske skove og naturområder – også på shelterpladser. Resten af året må hunde gå løse hvis de er under fuld kontrol, men tjek altid lokal skiltning." },
@@ -58,7 +58,7 @@ function shelterHref(
 export default async function ShelterMedHundPage() {
   // Temasiden har ét konkret emne, saa koblingen til guiderne er
   // redaktionel og ikke en udfyldningsblok. Listen bor i lib/guide-links.
-  const temaGuider = await resolveGuideLinks(TEMA_KANDIDATER["shelter-med-hund"]).catch(
+  const temaGuider = await resolveGuideLinks(temaKandidater("shelter-med-hund", new Date().getMonth() + 1)).catch(
     () => []
   );
 

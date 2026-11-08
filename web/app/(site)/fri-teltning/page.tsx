@@ -13,7 +13,7 @@ import { canonicalRegionSlug, REGION_SHORT_NAMES } from "@/lib/cross-page-config
 import { prepositionForRegionName } from "@/lib/area-db";
 import { slugifySegment } from "@/lib/slug";
 import { GuideTeaser } from "@/components/GuideTeaser";
-import { TEMA_KANDIDATER, resolveGuideLinks } from "@/lib/guide-links";
+import { temaKandidater, resolveGuideLinks } from "@/lib/guide-links";
 
 /**
  * /fri-teltning — Search Console sep. 2026: "fri teltning" (310 visn), "fri
@@ -69,7 +69,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function FriTeltningPage() {
   // Temasiden har ét konkret emne, saa koblingen til guiderne er
   // redaktionel og ikke en udfyldningsblok. Listen bor i lib/guide-links.
-  const temaGuider = await resolveGuideLinks(TEMA_KANDIDATER["fri-teltning"]).catch(
+  const temaGuider = await resolveGuideLinks(temaKandidater("fri-teltning", new Date().getMonth() + 1)).catch(
     () => []
   );
 

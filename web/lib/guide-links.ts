@@ -96,6 +96,14 @@ export interface GuideKandidat {
   reason: string;
   /** null = altid relevant. */
   when?: boolean;
+  /**
+   * Kun med i den halvdel af aaret. Udeladt = hele aaret.
+   *
+   * Findes fordi TEMA_KANDIDATER er en statisk tabel og derfor ikke kan kalde
+   * erKoldSaeson() selv, sådan som stedKandidater og ruteKandidater goer.
+   * `temaKandidater()` oversaetter feltet til et `when` ved opslaget.
+   */
+  saeson?: "kold" | "varm";
 }
 
 /**
@@ -242,12 +250,24 @@ export function stedKandidater(f: StedFakta): GuideKandidat[] {
  * Temasiderne (/shelter-med-*, /fri-teltning, ...). Hver side har ét konkret
  * emne, saa koblingen til en guide er aegte redaktionel og ikke en
  * udfyldningsblok. Sider der ikke staar her faar ingen blok.
+ *
+ * Slaa altid op med `temaKandidater()`, ikke direkte i tabellen: den
+ * oversaetter `saeson` til et `when`, og et direkte opslag ville vise begge
+ * saesonvarianter paa én gang.
  */
 export const TEMA_KANDIDATER: Record<string, GuideKandidat[]> = {
+  // Baalplads og baalhytte havde tre ildpladser hver. Maalt 8. november 2026
+  // over 150 dage gav oekse og baalpande NUL affiliate-klik fra seks primaere
+  // slots, mens taendstaal gav 31 klik til 78 kr. stykket. De to doede
+  // pladser er erstattet af sovegrej, som er det der faktisk koebes af folk
+  // der planlaegger en overnatning: sovepose 719 kr./klik, vintersovepose
+  // 979 kr., liggeunderlag 912 kr. Taendstaal bliver, fordi relevansen er
+  // aegte og klikkene er der.
   "shelter-med-baalplads": [
     { slug: "taendstaal", reason: "Til at få ild i bålet" },
-    { slug: "oekse", reason: "Brændet skal skæres" },
-    { slug: "baalpande", reason: "Hvor bålet skal hæves fra jorden" },
+    { slug: "sovepose-til-vinter", reason: "Til nætter under frysepunktet", saeson: "kold" },
+    { slug: "sovepose", reason: "Til overnatning i shelter", saeson: "varm" },
+    { slug: "liggeunderlag", reason: "Isolering mod den kolde bund" },
   ],
   "shelter-med-vand": [
     { slug: "drikkedunk", reason: "Til at fylde op på pladsen" },
@@ -282,8 +302,9 @@ export const TEMA_KANDIDATER: Record<string, GuideKandidat[]> = {
   ],
   baalhytte: [
     { slug: "taendstaal", reason: "Til at få ild i bålet" },
-    { slug: "oekse", reason: "Brændet skal skæres" },
-    { slug: "baalpande", reason: "Hvor bålet skal hæves fra jorden" },
+    { slug: "sovepose-til-vinter", reason: "Til nætter under frysepunktet", saeson: "kold" },
+    { slug: "sovepose", reason: "Til overnatning i bålhytten", saeson: "varm" },
+    { slug: "liggeunderlag", reason: "Isolering mod den kolde bund" },
   ],
   haervejen: [
     { slug: "vandrestovler", reason: "Du går langt på ruten" },
@@ -295,6 +316,22 @@ export const TEMA_KANDIDATER: Record<string, GuideKandidat[]> = {
     { slug: "sovepose", reason: "Til overnatning undervejs" },
   ],
 };
+
+/**
+ * Temaets kandidater for den aktuelle maaned.
+ *
+ * `saeson` oversaettes til `when`, saa resolveGuideLinks kan behandle
+ * saesonvarianter som alle andre betingede kandidater. Ukendt tema giver en
+ * tom liste, og GuideTeaser rendrer ikke uden links.
+ */
+export function temaKandidater(tema: string, maaned: number): GuideKandidat[] {
+  const kold = erKoldSaeson(maaned);
+  return (TEMA_KANDIDATER[tema] ?? []).map((k) =>
+    k.saeson === undefined
+      ? k
+      : { ...k, when: k.when !== false && (k.saeson === "kold") === kold }
+  );
+}
 
 /**
  * Under denne laengde faar en rute ingen grej-blok.

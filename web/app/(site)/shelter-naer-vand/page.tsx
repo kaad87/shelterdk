@@ -15,7 +15,7 @@ import { DataSummaryBlock } from "@/components/DataSummaryBlock";
 import { REGION_SLUGS, REGION_NAMES, REGION_SHORT_NAMES } from "@/lib/cross-page-config";
 import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 import { GuideTeaser } from "@/components/GuideTeaser";
-import { TEMA_KANDIDATER, resolveGuideLinks } from "@/lib/guide-links";
+import { temaKandidater, resolveGuideLinks } from "@/lib/guide-links";
 
 export const revalidate = 86400;
 
@@ -71,7 +71,7 @@ function shelterHref(region: string | null, kommune: string | null, slug: string
 export default async function ShelterNaerVandPage() {
   // Temasiden har ét konkret emne, saa koblingen til guiderne er
   // redaktionel og ikke en udfyldningsblok. Listen bor i lib/guide-links.
-  const temaGuider = await resolveGuideLinks(TEMA_KANDIDATER["shelter-naer-vand"]).catch(
+  const temaGuider = await resolveGuideLinks(temaKandidater("shelter-naer-vand", new Date().getMonth() + 1)).catch(
     () => []
   );
 

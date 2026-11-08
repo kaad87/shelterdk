@@ -16,6 +16,7 @@ import {
   resolveGuideLinks,
   ruteKandidater,
   stedKandidater,
+  temaKandidater,
 } from "@/lib/guide-links";
 
 function svar(slugs: string[]) {
@@ -204,6 +205,64 @@ describe("faste lister", () => {
       expect(uden, `"${g.reason}" ligner translitteration af ø/æ/å`).not.toMatch(
         digrafer
       );
+    }
+  });
+});
+
+describe("temaKandidater", () => {
+  const aktive = (tema: string, maaned: number) =>
+    temaKandidater(tema, maaned).filter((k) => k.when !== false).map((k) => k.slug);
+
+  it("vaelger vintersoveposen i den kolde halvdel og den almindelige i den varme", () => {
+    expect(aktive("shelter-med-baalplads", 1)).toContain("sovepose-til-vinter");
+    expect(aktive("shelter-med-baalplads", 1)).not.toContain("sovepose");
+    expect(aktive("shelter-med-baalplads", 7)).toContain("sovepose");
+    expect(aktive("shelter-med-baalplads", 7)).not.toContain("sovepose-til-vinter");
+  });
+
+  it("giver praecis én saesonvariant uanset maaned", () => {
+    for (let m = 1; m <= 12; m++) {
+      for (const tema of Object.keys(TEMA_KANDIDATER)) {
+        const sae = temaKandidater(tema, m).filter((k) => k.saeson && k.when !== false);
+        expect(sae.length, `${tema} i maaned ${m}`).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+
+  it("lader temaer uden saesonvarianter staa uroert", () => {
+    expect(temaKandidater("shelter-naer-vand", 1)).toEqual(TEMA_KANDIDATER["shelter-naer-vand"]);
+    expect(temaKandidater("shelter-naer-vand", 7)).toEqual(TEMA_KANDIDATER["shelter-naer-vand"]);
+  });
+
+  it("giver tom liste for et ukendt tema", () => {
+    expect(temaKandidater("findes-ikke", 5)).toEqual([]);
+  });
+
+  // Baalplads og baalhytte har praecis tre aktive kandidater, og
+  // resolveGuideLinks henter kun de tre foerste. Et ekstra forslag indsat
+  // foer sovegrejet ville skubbe det ud uden at noget fejler — netop den
+  // fejl de to sider allerede har haft, hvor oekse og baalpande optog
+  // pladserne og gav nul klik paa 150 dage.
+  it("baalplads og baalhytte leverer sovegrej inden for de tre foerste pladser", async () => {
+    for (const tema of ["shelter-med-baalplads", "baalhytte"]) {
+      for (const [maaned, vinter] of [[1, true], [7, false]] as const) {
+        _nulstilGuideTitelCache();
+        svar(["taendstaal", "sovepose", "sovepose-til-vinter", "liggeunderlag"]);
+        const ud = await resolveGuideLinks(temaKandidater(tema, maaned));
+        expect(ud.map((g) => g.slug), `${tema} i maaned ${maaned}`).toEqual([
+          "taendstaal",
+          vinter ? "sovepose-til-vinter" : "sovepose",
+          "liggeunderlag",
+        ]);
+      }
+    }
+  });
+
+  it("foreslaar ikke laengere oekse eller baalpande, som gav nul klik", () => {
+    for (const tema of ["shelter-med-baalplads", "baalhytte"]) {
+      const slugs = TEMA_KANDIDATER[tema].map((k) => k.slug);
+      expect(slugs, tema).not.toContain("oekse");
+      expect(slugs, tema).not.toContain("baalpande");
     }
   });
 });
