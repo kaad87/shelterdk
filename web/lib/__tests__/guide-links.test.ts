@@ -9,10 +9,12 @@ import {
   FORSIDE_GUIDER,
   TEMA_KANDIDATER,
   _nulstilGuideTitelCache,
+  MIN_RUTE_KM,
   MIN_STEDSTOERRELSE,
   erKoldSaeson,
   guideHref,
   resolveGuideLinks,
+  ruteKandidater,
   stedKandidater,
 } from "@/lib/guide-links";
 
@@ -202,6 +204,70 @@ describe("faste lister", () => {
       expect(uden, `"${g.reason}" ligner translitteration af ø/æ/å`).not.toMatch(
         digrafer
       );
+    }
+  });
+});
+
+describe("ruteKandidater", () => {
+  const slugs = (f: Parameters<typeof ruteKandidater>[0]) =>
+    ruteKandidater(f).filter((k) => k.when !== false).map((k) => k.slug);
+
+  it("giver ingen blok paa de korte ruter", () => {
+    // Median er 9,75 km, men 69 af de 224 ruter er under 5. Et raad om
+    // vandrestoevler paa en tur til 3 km er udfyldning.
+    expect(ruteKandidater({ km: MIN_RUTE_KM - 0.1, shelterAntal: 4, maaned: 11 })).toEqual([]);
+    expect(ruteKandidater({ km: 0.3, shelterAntal: 2, maaned: 6 })).toEqual([]);
+  });
+
+  it("foreslaar dagstursgrej under 15 km", () => {
+    expect(slugs({ km: 8, shelterAntal: 3, maaned: 6 })).toEqual(["vandresko", "drikkedunk"]);
+  });
+
+  it("skifter til flerdagsgrej fra 40 km", () => {
+    const ud = slugs({ km: 60, shelterAntal: 9, maaned: 11 });
+    expect(ud).toContain("vandrestovler");
+    expect(ud).toContain("vandrestav");
+    expect(ud).toContain("vandrebukser");
+    expect(ud).not.toContain("vandresko");
+  });
+
+  it("naevner rutens eget antal shelters, saa blokken varierer", () => {
+    const en = ruteKandidater({ km: 25, shelterAntal: 1, maaned: 11 });
+    expect(en.find((k) => k.slug === "sovepose")!.reason).toBe(
+      "Der ligger 1 shelter langs ruten"
+    );
+    const flere = ruteKandidater({ km: 25, shelterAntal: 12, maaned: 11 });
+    expect(flere.find((k) => k.slug === "sovepose")!.reason).toBe(
+      "Der ligger 12 shelters langs ruten"
+    );
+  });
+
+  it("runder laengden af i begrundelsen", () => {
+    const k = ruteKandidater({ km: 23.6, shelterAntal: 2, maaned: 6 });
+    expect(k.find((x) => x.slug === "vandrestovler")!.reason).toBe("24 km slider på fødderne");
+  });
+
+  it("udelader sovepose naar der ikke er shelters langs ruten", () => {
+    expect(slugs({ km: 30, shelterAntal: 0, maaned: 11 })).not.toContain("sovepose");
+  });
+
+  it("bytter gamacher og solhat med saesonen", () => {
+    expect(slugs({ km: 25, shelterAntal: 3, maaned: 12 })).toContain("gamacher");
+    expect(slugs({ km: 25, shelterAntal: 3, maaned: 7 })).toContain("solhat");
+    expect(slugs({ km: 25, shelterAntal: 3, maaned: 7 })).not.toContain("gamacher");
+  });
+
+  it("holder begrundelserne paa rigtigt dansk", () => {
+    const tilfaelde = [
+      { km: 8, shelterAntal: 3, maaned: 6 },
+      { km: 25, shelterAntal: 1, maaned: 12 },
+      { km: 646, shelterAntal: 40, maaned: 7 },
+    ];
+    for (const f of tilfaelde) {
+      for (const k of ruteKandidater(f)) {
+        expect(k.reason, k.reason).not.toMatch(/(oe|ae|aa)/i);
+        expect(() => guideHref(k.slug, "rute")).not.toThrow();
+      }
     }
   });
 });

@@ -15,6 +15,7 @@ export type GuideKilde =
   | "kommune"
   | "region"
   | "omraade"
+  | "rute"
   | "tema"
   | "hub";
 
@@ -25,6 +26,7 @@ const KILDER: readonly GuideKilde[] = [
   "kommune",
   "region",
   "omraade",
+  "rute",
   "tema",
   "hub",
 ];
@@ -293,3 +295,63 @@ export const TEMA_KANDIDATER: Record<string, GuideKandidat[]> = {
     { slug: "sovepose", reason: "Til overnatning undervejs" },
   ],
 };
+
+/**
+ * Under denne laengde faar en rute ingen grej-blok.
+ *
+ * De 224 ruter spaender fra 0,3 til 646 km med median 9,75. En tur paa tre
+ * kilometer kraever ingen vandrestoevler, og et raad om fodtoej dér er
+ * udfyldning, ikke hjaelp. Graensen holder blokken vaek fra 69 af de 224.
+ */
+export const MIN_RUTE_KM = 5;
+
+export interface RuteFakta {
+  /** Rutens laengde i km. */
+  km: number;
+  /** Antal shelters langs ruten. */
+  shelterAntal: number;
+  /** Maaned 1-12. Injiceres, saa render og test er forudsigelige. */
+  maaned: number;
+}
+
+/**
+ * Guider til en vandrerute.
+ *
+ * Vandrebeklaedning er den eneste gruppe koebsguider uden en aegte vaert
+ * blandt shelter-siderne — en pakkeliste til shelter handler om at sove ude,
+ * ikke om at gaa langt. Rutesiderne er det modsatte, og de har `length_km`,
+ * saa forslaget kan foelge turens faktiske karakter i stedet for at vaere ens
+ * paa 224 sider: en dagstur paa 8 km og Haervejens 646 km faar ikke det samme.
+ *
+ * Graenserne: under 15 km er det en dagstur, fra 40 km er det flere dage.
+ */
+export function ruteKandidater(f: RuteFakta): GuideKandidat[] {
+  if (f.km < MIN_RUTE_KM) return [];
+  const dagstur = f.km < 15;
+  const flerdags = f.km >= 40;
+  const kold = erKoldSaeson(f.maaned);
+  const km = Math.round(f.km);
+
+  return [
+    { slug: "vandresko", reason: "Ruten kan gås på en dag", when: dagstur },
+    { slug: "vandrestovler", reason: `${km} km slider på fødderne`, when: !dagstur },
+    {
+      slug: "sovepose",
+      reason:
+        f.shelterAntal === 1
+          ? "Der ligger 1 shelter langs ruten"
+          : `Der ligger ${f.shelterAntal} shelters langs ruten`,
+      when: !dagstur && f.shelterAntal > 0,
+    },
+    { slug: "drikkedunk", reason: "Vand nok mellem pladserne", when: dagstur },
+    { slug: "vandrestav", reason: "Lange etaper slider på knæene", when: flerdags },
+    { slug: "vandrebukser", reason: "Du går i det samme i flere dage", when: flerdags },
+    {
+      slug: "vandrerygsaek",
+      reason: "Du bærer det hele selv",
+      when: !dagstur && !flerdags,
+    },
+    { slug: "gamacher", reason: "Vådt og mudret underlag", when: !dagstur && kold },
+    { slug: "solhat", reason: "Der er ingen skygge på åben hede", when: !dagstur && !kold },
+  ];
+}

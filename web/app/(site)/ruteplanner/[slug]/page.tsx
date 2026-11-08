@@ -11,6 +11,8 @@ import { formatDistance } from "@/lib/haversine";
 import { slugifySegment } from "@/lib/slug";
 import type { CuratedRouteIndex, CuratedRouteDataMap, RouteShelter } from "@/types/curated-route";
 import { DEFAULT_OG_IMAGE, truncateAtWord } from "@/lib/seo-meta";
+import { GuideTeaser } from "@/components/GuideTeaser";
+import { resolveGuideLinks, ruteKandidater } from "@/lib/guide-links";
 
 export const revalidate = 86400;
 export const dynamicParams = false;
@@ -88,6 +90,20 @@ export default async function RouteDetailPage({ params }: PageProps) {
     (s) => s.toilet && s.toilet !== "none" && s.toilet !== "unknown"
   );
   const totalCapacity = shelters.reduce((sum, s) => sum + (s.capacity ?? 0), 0);
+
+  // Vandrebeklaedning har ingen aegte vaert blandt shelter-siderne; rutesiden
+  // er det modsatte. Forslaget foelger rutens laengde og antal shelters, saa
+  // en dagstur paa 8 km og Haervejens 646 km ikke faar det samme. Fire links
+  // frem for tre: en flerdagsrute har plads til bade fodtoej, sovegrej og
+  // beklaedning. Ruter under 5 km faar ingen blok.
+  const ruteGuider = await resolveGuideLinks(
+    ruteKandidater({
+      km: route.length_km,
+      shelterAntal: route.shelter_count,
+      maaned: new Date().getMonth() + 1,
+    }),
+    4
+  ).catch(() => []);
 
   const faqItems: FaqItem[] = [
     {
@@ -228,6 +244,14 @@ export default async function RouteDetailPage({ params }: PageProps) {
               </div>
             </section>
           )}
+
+          <GuideTeaser
+            guides={ruteGuider}
+            kilde="rute"
+            heading={`Grej til ${route.name}`}
+            intro="Vi scorer og prissammenligner udstyret, så du ved hvad der er værd at pakke."
+            visAlleLink
+          />
 
           {/* Interactive ruteplanner link */}
           <section className="mb-10 rounded-xl border border-accent/20 bg-accent/5 p-6 text-center">
