@@ -1,15 +1,9 @@
-import { createPublicClient } from "@/utils/supabase/server-public";
 import { getWater, getSeason, getFirewood } from "@/lib/shelter-detail";
+import { guideHref, resolveGuideLinks } from "@/lib/guide-links";
+import type { GuideKandidat, GuideLink } from "@/lib/guide-links";
 import type { Shelter } from "@/types/shelter";
 
-export interface GuideLink {
-  slug: string;
-  title: string;
-  /** Hvorfor netop denne guide er relevant for netop dette shelter. */
-  reason: string;
-}
-
-type GuideRow = { slug: string; title: string };
+export type { GuideLink };
 
 /**
  * Købsguider (/bedste) er den kanal der beviseligt tjener. Shelter-siderne har
@@ -36,6 +30,10 @@ type GuideRow = { slug: string; title: string };
  * Derfor staar sovepose nu foerst uanset pladsens faciliteter. De specifikke
  * forslag beholder plads to og tre, hvor de stadig giver relevans og interne
  * links til de guider, der ellers ingen har.
+ *
+ * Titelopslaget og slug-valideringen ligger i lib/guide-links.ts, som ogsaa
+ * driver blokkene paa forsiden, stedssiderne og temasiderne. De skal dele
+ * proces-cachen: ellers henter hver sidetype titlerne for sig.
  */
 
 /** Kandidater i prioriteret rækkefølge. `when` = null betyder altid relevant. */
@@ -91,37 +89,6 @@ const RULES: Array<{
   { slug: "pandelampe", reason: "til de mørke timer", when: null },
 ];
 
-const TTL_MS = 60 * 60 * 1000;
-let cache: { guides: Map<string, string>; expires: number } | null = null;
-let inflight: Promise<Map<string, string>> | null = null;
-
-/** slug → titel for publicerede guider. Let query (2 kolonner), proces-cachet. */
-async function getPublishedGuideTitles(): Promise<Map<string, string>> {
-  if (cache && cache.expires > Date.now()) return cache.guides;
-  if (inflight) return inflight;
-
-  inflight = (async () => {
-    try {
-      const { data } = await createPublicClient()
-        .from("buying_guides")
-        .select("slug, title")
-        .eq("status", "published");
-      const map = new Map<string, string>(
-        ((data as GuideRow[]) ?? []).map((g) => [g.slug, g.title])
-      );
-      if (map.size > 0) cache = { guides: map, expires: Date.now() + TTL_MS };
-      return map;
-    } catch (error) {
-      console.error("Supabase error (guide titles for gear suggestions):", error);
-      return new Map<string, string>();
-    } finally {
-      inflight = null;
-    }
-  })();
-
-  return inflight;
-}
-
 /**
  * Op til `limit` købsguider der passer til dette shelter. Kun guider der
  * faktisk er publicerede returneres, så vi aldrig linker til en død side.
@@ -130,23 +97,12 @@ export async function getGearSuggestions(
   shelter: Shelter,
   limit = 3
 ): Promise<GuideLink[]> {
-  const titles = await getPublishedGuideTitles();
-  if (titles.size === 0) return [];
-
-  const out: GuideLink[] = [];
-  const seen = new Set<string>();
-
-  for (const rule of RULES) {
-    if (out.length >= limit) break;
-    if (seen.has(rule.slug)) continue;
-    if (rule.when && !rule.when(shelter)) continue;
-    const title = titles.get(rule.slug);
-    if (!title) continue;
-    seen.add(rule.slug);
-    out.push({ slug: rule.slug, title, reason: rule.reason });
-  }
-
-  return out;
+  const kandidater: GuideKandidat[] = RULES.map((r) => ({
+    slug: r.slug,
+    reason: r.reason,
+    when: r.when ? r.when(shelter) : true,
+  }));
+  return resolveGuideLinks(kandidater, limit);
 }
 
 /**
@@ -156,12 +112,12 @@ export async function getGearSuggestions(
  * tredjedel af sitets Google-klik, men den havde ingen måling overhovedet —
  * hverken på klikket eller på hvad det førte til. `?fra=shelter` følger med
  * ind i `affiliate_clicks.path`, så et køb kan henføres til tragten uden ny
- * infrastruktur. Guidens canonical peger på den rene URL, så parameteren
- * skaber ikke en dublet i indekset.
+ * infrastruktur.
+ *
+ * Kilden holdes adskilt fra de andre blokkes (`forside`, `by`, `tema`, ...),
+ * fordi de 30-dages-tal der er dokumenteret ovenfor kun kan sammenlignes over
+ * tid hvis `fra=shelter` bliver ved med kun at betyde shelter-siderne.
  */
 export function gearSuggestionHref(slug: string): string {
-  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
-    throw new Error(`gearSuggestionHref: ugyldigt guide-slug "${slug}"`);
-  }
-  return `/bedste/${slug}?fra=shelter`;
+  return guideHref(slug, "shelter");
 }

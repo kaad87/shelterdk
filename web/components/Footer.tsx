@@ -31,12 +31,24 @@ const contentLinks = [
   { label: "Blog", href: "/blog" },
 ];
 
+// Footerens fire guide-slots er de eneste site-wide links nogen guide faar,
+// saa de skal gaa til dem der tjener. Affiliate-klik pr. guide, maalt
+// 8. november 2026 over seks maaneder (jun-nov):
+//
+//   sovepose 213, campingstol 133, sovepose-til-vinter 116, vandfilter 110,
+//   liggeunderlag 102, vandrestovler 46, telt 46, ... pandelampe 20
+//
+// Pandelampe (20) og telt (46) havde et slot, mens sovepose-til-vinter (116)
+// og vandfilter (110) ikke havde ét. Campingstol er med i toppen, men er ren
+// sommer (jun 31, jul 62, nov 0) og egner sig derfor ikke til et slot der
+// staar hele aaret. Udskiftningen er den billigste aendring i hele
+// link-arbejdet: én liste, ingen nye sider.
 const gearGuideLinks = [
   { label: "Bedste outdoor-grej", href: "/bedste" },
   { label: "Bedste sovepose", href: "/bedste/sovepose" },
+  { label: "Bedste vintersovepose", href: "/bedste/sovepose-til-vinter" },
+  { label: "Bedste vandfilter", href: "/bedste/vandfilter" },
   { label: "Bedste liggeunderlag", href: "/bedste/liggeunderlag" },
-  { label: "Bedste pandelampe", href: "/bedste/pandelampe" },
-  { label: "Bedste telt", href: "/bedste/telt" },
   { label: "Køb shelter – priser og typer", href: "/koeb-shelter" },
   { label: "Byggetilladelse til shelter", href: "/byggetilladelse-til-shelter" },
 ];

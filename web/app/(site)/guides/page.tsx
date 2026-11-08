@@ -69,6 +69,15 @@ export default function GuidesIndexPage() {
             til en god nat i det fri. Siden udbygges løbende, så du altid kan
             finde ny inspiration.
           </p>
+          {/* Modstykket til krydslinket paa /bedste. Hubben naevnte udstyr i
+              sin egen beskrivelse men linkede ikke til de 47 koebsguider. */}
+          <p className="mt-4 text-white/80 max-w-2xl text-base leading-relaxed">
+            Skal du vælge selve grejet? Vi scorer og prissammenligner udstyret i{" "}
+            <Link href="/bedste" className="font-semibold text-white underline">
+              vores købsguider
+            </Link>
+            .
+          </p>
           <div className="mt-6 flex flex-wrap gap-2">
             {categories.map((category) => (
               <Link

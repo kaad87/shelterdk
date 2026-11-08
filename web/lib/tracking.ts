@@ -156,6 +156,27 @@ export function trackGearBlockSeen(args: { shelterSlug: string; guideCount: numb
 }
 
 /**
+ * Klik fra en guide-blok uden for shelter-siderne: forsiden, stedssiderne
+ * (by/omraade), temasiderne og de to hubs.
+ *
+ * Eget event frem for `gear_suggestion_click`, fordi den maalings 30-dages-tal
+ * er dokumenteret i lib/gear-suggestions.ts og kun kan sammenlignes over tid
+ * hvis shelter-tragten bliver ved med at staa for sig. `kilde` svarer til
+ * `?fra=` paa linket, saa klikket og landingen kan parres.
+ */
+export function trackGuideTeaserClick(args: {
+  guideSlug: string;
+  kilde: string;
+  reason: string;
+}) {
+  push("guide_teaser_click", {
+    guide_slug: args.guideSlug,
+    kilde: args.kilde,
+    reason: args.reason,
+  });
+}
+
+/**
  * Besøg på en købsguide — nævneren til affiliate-konvertering.
  * Se GuideViewTracker for hvorfor GA4 ikke kan bruges til det.
  */

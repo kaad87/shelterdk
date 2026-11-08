@@ -18,6 +18,8 @@ import { getPublishedStayPins } from "@/lib/nature-stays";
 import { WeekendCTACard } from "@/components/WeekendCTACard";
 import { NyeSheltersStrip } from "@/components/NyeSheltersStrip";
 import { createPublicClient } from "@/utils/supabase/server-public";
+import { GuideTeaser } from "@/components/GuideTeaser";
+import { FORSIDE_GUIDER, resolveGuideLinks } from "@/lib/guide-links";
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 import { getDistinctPlacesWithCounts } from "@/lib/danmark-silo";
 import { slugifySegment } from "@/lib/slug";
@@ -253,31 +255,38 @@ export default async function HomePage() {
   const featuredCities = ["Aarhus", "Billund", "Silkeborg", "Svendborg", "Vejle", "Horsens"];
   const supabaseForCount = createPublicClient();
 
-  const [featuredShelters, primaryForMap, shelterCountRaw, places] = await Promise.all([
-    getFeaturedShelters().catch((err) => {
-      console.error("Forside: kunne ikke hente udvalgte shelters:", err);
-      return [] as Shelter[];
-    }),
-    getPrimaryShelters(FRONT_PAGE_MAP_SHELTER_LIMIT).catch((err) => {
-      console.error("Forside: kunne ikke hente shelters til kortet:", err);
-      return [] as Shelter[];
-    }),
-    (async () => {
-      try {
-        const { count } = await supabaseForCount
-          .from("shelters")
-          .select("id", { count: "exact", head: true })
-          .is("duplicate_of_shelter_id", null);
-        return count ?? 0;
-      } catch {
-        return 0;
-      }
-    })(),
-    getDistinctPlacesWithCounts(1).catch((err) => {
-      console.error("Forside: kunne ikke hente bylinks:", err);
-      return [] as { place: string; count: number }[];
-    }),
-  ]);
+  const [featuredShelters, primaryForMap, shelterCountRaw, places, forsideGuider] =
+    await Promise.all([
+      getFeaturedShelters().catch((err) => {
+        console.error("Forside: kunne ikke hente udvalgte shelters:", err);
+        return [] as Shelter[];
+      }),
+      getPrimaryShelters(FRONT_PAGE_MAP_SHELTER_LIMIT).catch((err) => {
+        console.error("Forside: kunne ikke hente shelters til kortet:", err);
+        return [] as Shelter[];
+      }),
+      (async () => {
+        try {
+          const { count } = await supabaseForCount
+            .from("shelters")
+            .select("id", { count: "exact", head: true })
+            .is("duplicate_of_shelter_id", null);
+          return count ?? 0;
+        } catch {
+          return 0;
+        }
+      })(),
+      getDistinctPlacesWithCounts(1).catch((err) => {
+        console.error("Forside: kunne ikke hente bylinks:", err);
+        return [] as { place: string; count: number }[];
+      }),
+      // Titlerne er proces-cachet en time i lib/guide-links, saa opslaget her
+      // koster ikke egress pr. forsidevisning.
+      resolveGuideLinks(FORSIDE_GUIDER, 4).catch((err) => {
+        console.error("Forside: kunne ikke hente koebsguider:", err);
+        return [];
+      }),
+    ]);
 
   // Forside-grid: de udvalgte shelters.
   // Kortet må gerne have flere pins fra start, så man ser et mere fyldigt Danmarkskort.
@@ -618,6 +627,20 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Forsiden er sitets staerkeste interne link-kilde (4.029 Google-klik
+          paa 90 dage) og havde nul in-content links til koebsguiderne — kun de
+          fem site-wide footer-links, som Google rabatterer. Blokken staar
+          lige efter turplanlaegningen, fordi det er dér intentionen er.
+          Se lib/guide-links.ts for hvorfor netop disse fire guider. */}
+      <GuideTeaser
+        guides={forsideGuider}
+        kilde="forside"
+        variant="kort"
+        heading="Grej til shelterturen"
+        intro="Vi scorer og prissammenligner udstyret, så du kan se hvad der er værd at tage med, og hvad du kan spare."
+        visAlleLink
+      />
 
       <section className="py-8 bg-background">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

@@ -83,6 +83,16 @@ export default async function BuyingGuidesIndexPage() {
               </Link>
               .
             </p>
+            {/* De to indholdshubs linkede ikke til hinanden: /guides havde nul
+                in-content links til /bedste og omvendt, selv om /guides'
+                egen beskrivelse lover guides om "udstyr". */}
+            <p className="mt-3 text-sm text-primary/60">
+              Skal du bruge grejet i praksis? Se vores{" "}
+              <Link href="/guides" className="font-medium text-accent hover:underline">
+                guides til pakkeliste og turplanlægning
+              </Link>
+              .
+            </p>
             {showStays && (
               <p className="mt-3 text-sm text-primary/60">
                 Leder du efter luksus i naturen i stedet for grej? Se vores{" "}

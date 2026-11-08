@@ -34,6 +34,7 @@ export const TRACKABLE_EVENTS = new Set([
   "affiliate_click",
   "gear_suggestion_click",
   "gear_block_seen",
+  "guide_teaser_click",
   "guide_view",
   "community_submit",
   "book_button_clicked",
@@ -58,6 +59,11 @@ export const INTERNAL_EVENTS = new Set([
   // Den lå seks sektioner nede, og kun 4,4% af de 7255 visninger på
   // shelter-siderne scroller så dybt — så den anden forklaring var den rigtige.
   "gear_block_seen",
+  // Klik fra guide-blokkene uden for shelter-siderne. Skal med her af samme
+  // grund som gear_suggestion_click: GA4 ser omkring 3% af dem, og hele
+  // formaalet med blokkene er at kunne afgoere hvilke sidetyper der sender
+  // koebsklar trafik ind i guiderne.
+  "guide_teaser_click",
   "book_button_clicked",
   // Nævneren til affiliate-konvertering. Målt over 28 dage fik /bedste-siderne
   // 0,65 GA4-visninger pr. Google-klik — færre visninger end klik, altså
