@@ -1,0 +1,782 @@
+[
+  {
+    "slug": "shelter-12472",
+    "canonicalSlug": "handocapvenlig-shelter-12472",
+    "from": "/danmark/danmark/klintholm-havn/shelter-12472",
+    "to": "/danmark/sjaelland-og-oeerne/vordingborg/handocapvenlig-shelter-12472"
+  },
+  {
+    "slug": "lejrplads-med-shelter-i-lille-rise-skov-10431",
+    "canonicalSlug": "lille-rise-skoven-10431",
+    "from": "/danmark/fyn/aeroeskoebing/lejrplads-med-shelter-i-lille-rise-skov-10431",
+    "to": "/danmark/fyn/aeroe/lille-rise-skoven-10431"
+  },
+  {
+    "slug": "naturlejrplads-ved-ejby-mose-12058",
+    "canonicalSlug": "naturlejrplads-ejby-so-12062",
+    "from": "/danmark/fyn/ejby/naturlejrplads-ved-ejby-mose-12058",
+    "to": "/danmark/sjaelland-og-oeerne/koege/naturlejrplads-ejby-so-12062"
+  },
+  {
+    "slug": "shelterplads-i-knebel-plantage-shelter-nr-2-bookbar-10503",
+    "canonicalSlug": "shelterplads-knebel-plantage-shelter-nr-1-bookbar-10504",
+    "from": "/danmark/fyn/knebel/shelterplads-i-knebel-plantage-shelter-nr-2-bookbar-10503",
+    "to": "/danmark/jylland/syddjurs/shelterplads-knebel-plantage-shelter-nr-1-bookbar-10504"
+  },
+  {
+    "slug": "shelterplads-i-knebel-plantage-shelter-nr-3-bookbar-10503",
+    "canonicalSlug": "shelterplads-knebel-plantage-shelter-nr-1-bookbar-10504",
+    "from": "/danmark/fyn/knebel/shelterplads-i-knebel-plantage-shelter-nr-3-bookbar-10503",
+    "to": "/danmark/jylland/syddjurs/shelterplads-knebel-plantage-shelter-nr-1-bookbar-10504"
+  },
+  {
+    "slug": "shelterplads-i-knebel-plantage-shelter-nr-4-ikke-bookbar-10503",
+    "canonicalSlug": "shelterplads-knebel-plantage-shelter-nr-1-bookbar-10504",
+    "from": "/danmark/fyn/knebel/shelterplads-i-knebel-plantage-shelter-nr-4-ikke-bookbar-10503",
+    "to": "/danmark/jylland/syddjurs/shelterplads-knebel-plantage-shelter-nr-1-bookbar-10504"
+  },
+  {
+    "slug": "shelter-1-sydlangeland-ostre-gulvstav-10696",
+    "canonicalSlug": "shelterplads-sydlangeland-ostre-gulvstav-10696",
+    "from": "/danmark/fyn/langeland/shelter-1-sydlangeland-ostre-gulvstav-10696",
+    "to": "/danmark/fyn/langeland/shelterplads-sydlangeland-ostre-gulvstav-10696"
+  },
+  {
+    "slug": "shelter-3-sydlangeland-ostre-gulvstav-10696",
+    "canonicalSlug": "shelterplads-sydlangeland-ostre-gulvstav-10696",
+    "from": "/danmark/fyn/langeland/shelter-3-sydlangeland-ostre-gulvstav-10696",
+    "to": "/danmark/fyn/langeland/shelterplads-sydlangeland-ostre-gulvstav-10696"
+  },
+  {
+    "slug": "lejrplads-med-shelter-1-kirkendrup-skov-10342",
+    "canonicalSlug": "lejrplads-med-shelter-2-kirkendrup-skov-10342",
+    "from": "/danmark/fyn/odense/lejrplads-med-shelter-1-kirkendrup-skov-10342",
+    "to": "/danmark/fyn/odense/lejrplads-med-shelter-2-kirkendrup-skov-10342"
+  },
+  {
+    "slug": "stige-o-enlig-shelter-i-skoven-10428",
+    "canonicalSlug": "stige-o-sheltergruppe-i-skoven-10427",
+    "from": "/danmark/fyn/odense/stige-o-enlig-shelter-i-skoven-10428",
+    "to": "/danmark/fyn/odense/stige-o-sheltergruppe-i-skoven-10427"
+  },
+  {
+    "slug": "knudsens-plads-ostskoven-shelter-3-85300",
+    "canonicalSlug": "knudsens-plads-ostskoven-shelter-1-85300",
+    "from": "/danmark/jylland/andrup/knudsens-plads-ostskoven-shelter-3-85300",
+    "to": "/danmark/jylland/esbjerg/knudsens-plads-ostskoven-shelter-1-85300"
+  },
+  {
+    "slug": "knudsens-plads-ostskoven-shelter-4-85302",
+    "canonicalSlug": "knudsens-plads-ostskoven-shelter-1-85300",
+    "from": "/danmark/jylland/andrup/knudsens-plads-ostskoven-shelter-4-85302",
+    "to": "/danmark/jylland/esbjerg/knudsens-plads-ostskoven-shelter-1-85300"
+  },
+  {
+    "slug": "kjaellinghol-lejrplads-shelter-nr-1-bookbar-96956",
+    "canonicalSlug": "lejrplads-kjaellinghol-shelter-nr-3-ikke-bookbar-96956",
+    "from": "/danmark/jylland/bjerringbro/kjaellinghol-lejrplads-shelter-nr-1-bookbar-96956",
+    "to": "/danmark/jylland/viborg/lejrplads-kjaellinghol-shelter-nr-3-ikke-bookbar-96956"
+  },
+  {
+    "slug": "shelter-3-bork-vikingehavn-82659",
+    "canonicalSlug": "shelter-2-bork-vikingehavn-82659",
+    "from": "/danmark/jylland/bork-havn/shelter-3-bork-vikingehavn-82659",
+    "to": "/danmark/jylland/ringkoebing-skjern/shelter-2-bork-vikingehavn-82659"
+  },
+  {
+    "slug": "bryrupbanestien-braedstruppladsen-shelter-2-95975",
+    "canonicalSlug": "bryrupbanestien-braedstruppladsen-shelter-1-95974",
+    "from": "/danmark/jylland/braedstrup/bryrupbanestien-braedstruppladsen-shelter-2-95975",
+    "to": "/danmark/jylland/horsens/bryrupbanestien-braedstruppladsen-shelter-1-95974"
+  },
+  {
+    "slug": "soheden-skov-bookbart-shelter-egernbo-10202",
+    "canonicalSlug": "soheden-skov-bookbart-shelter-graevlingebo-10202",
+    "from": "/danmark/jylland/broenderslev/soheden-skov-bookbart-shelter-egernbo-10202",
+    "to": "/danmark/jylland/broenderslev/soheden-skov-bookbart-shelter-graevlingebo-10202"
+  },
+  {
+    "slug": "soheden-skov-primitiv-shelterplads-10204",
+    "canonicalSlug": "soheden-skov-bookbart-shelter-graevlingebo-10202",
+    "from": "/danmark/jylland/broenderslev/soheden-skov-primitiv-shelterplads-10204",
+    "to": "/danmark/jylland/broenderslev/soheden-skov-bookbart-shelter-graevlingebo-10202"
+  },
+  {
+    "slug": "davinde-so-naer-badehusene-10537",
+    "canonicalSlug": "davinde-so-10536",
+    "from": "/danmark/jylland/davinde/davinde-so-naer-badehusene-10537",
+    "to": "/danmark/fyn/odense/davinde-so-10536"
+  },
+  {
+    "slug": "myrthuegard-shelter-3-83054",
+    "canonicalSlug": "myrthuegard-shelter-2-83054",
+    "from": "/danmark/jylland/esbjerg/myrthuegard-shelter-3-83054",
+    "to": "/danmark/jylland/esbjerg/myrthuegard-shelter-2-83054"
+  },
+  {
+    "slug": "myrthuegard-shelter-4-83055",
+    "canonicalSlug": "myrthuegard-shelter-2-83054",
+    "from": "/danmark/jylland/esbjerg/myrthuegard-shelter-4-83055",
+    "to": "/danmark/jylland/esbjerg/myrthuegard-shelter-2-83054"
+  },
+  {
+    "slug": "hawskoven-1-86358",
+    "canonicalSlug": "hawskoven-4-86375",
+    "from": "/danmark/jylland/hanstholm/hawskoven-1-86358",
+    "to": "/danmark/jylland/thisted/hawskoven-4-86375"
+  },
+  {
+    "slug": "hawskoven-2-86359",
+    "canonicalSlug": "hawskoven-4-86375",
+    "from": "/danmark/jylland/hanstholm/hawskoven-2-86359",
+    "to": "/danmark/jylland/thisted/hawskoven-4-86375"
+  },
+  {
+    "slug": "hawskoven-3-86367",
+    "canonicalSlug": "hawskoven-4-86375",
+    "from": "/danmark/jylland/hanstholm/hawskoven-3-86367",
+    "to": "/danmark/jylland/thisted/hawskoven-4-86375"
+  },
+  {
+    "slug": "hawskoven-6-86376",
+    "canonicalSlug": "hawskoven-4-86375",
+    "from": "/danmark/jylland/hanstholm/hawskoven-6-86376",
+    "to": "/danmark/jylland/thisted/hawskoven-4-86375"
+  },
+  {
+    "slug": "shelter-ved-hatting-legeplads-97641",
+    "canonicalSlug": "jordhuleshelter-i-hatting-parken-97640",
+    "from": "/danmark/jylland/hatting/shelter-ved-hatting-legeplads-97641",
+    "to": "/danmark/jylland/horsens/jordhuleshelter-i-hatting-parken-97640"
+  },
+  {
+    "slug": "koutrup-skov-2-sheltere-94040",
+    "canonicalSlug": "koutrup-skov-shelter-1-94038",
+    "from": "/danmark/jylland/hedensted/koutrup-skov-2-sheltere-94040",
+    "to": "/danmark/jylland/hedensted/koutrup-skov-shelter-1-94038"
+  },
+  {
+    "slug": "shelterplads-ved-spidsbjergvej-shelter-1-81343",
+    "canonicalSlug": "shelterplads-ved-spidsbjergvej-shelter-2-81344",
+    "from": "/danmark/jylland/holstebro/shelterplads-ved-spidsbjergvej-shelter-1-81343",
+    "to": "/danmark/jylland/holstebro/shelterplads-ved-spidsbjergvej-shelter-2-81344"
+  },
+  {
+    "slug": "shelterplads-ved-spidsbjergvej-shelter-3-81343",
+    "canonicalSlug": "shelterplads-ved-spidsbjergvej-shelter-2-81344",
+    "from": "/danmark/jylland/holstebro/shelterplads-ved-spidsbjergvej-shelter-3-81343",
+    "to": "/danmark/jylland/holstebro/shelterplads-ved-spidsbjergvej-shelter-2-81344"
+  },
+  {
+    "slug": "bryrupbanestien-lundum-shelter-1-97678",
+    "canonicalSlug": "bryrupbanestien-lundum-shelter-2-97677",
+    "from": "/danmark/jylland/horsens/bryrupbanestien-lundum-shelter-1-97678",
+    "to": "/danmark/jylland/horsens/bryrupbanestien-lundum-shelter-2-97677"
+  },
+  {
+    "slug": "egebjerg-hansted-so-shelters-98530",
+    "canonicalSlug": "skovgard-shelterplads-98464",
+    "from": "/danmark/jylland/horsens/egebjerg-hansted-so-shelters-98530",
+    "to": "/danmark/jylland/horsens/skovgard-shelterplads-98464"
+  },
+  {
+    "slug": "shelter-2-lyngvig-havn-81249",
+    "canonicalSlug": "shelter-3-lyngvig-havn-81249",
+    "from": "/danmark/jylland/hvide-sande/shelter-2-lyngvig-havn-81249",
+    "to": "/danmark/jylland/ringkoebing-skjern/shelter-3-lyngvig-havn-81249"
+  },
+  {
+    "slug": "gludsted-plantage-shelterplads-ved-trotylsoen-shelter-1-93255",
+    "canonicalSlug": "gludsted-plantage-shelterplads-ved-trotylsoen-shelter-2-93256",
+    "from": "/danmark/jylland/ikast-brande/gludsted-plantage-shelterplads-ved-trotylsoen-shelter-1-93255",
+    "to": "/danmark/jylland/ikast-brande/gludsted-plantage-shelterplads-ved-trotylsoen-shelter-2-93256"
+  },
+  {
+    "slug": "shelterplads-harrild-hede-shelter-1-91776",
+    "canonicalSlug": "shelterplads-harrild-hede-shelter-4-91778",
+    "from": "/danmark/jylland/ikast-brande/shelterplads-harrild-hede-shelter-1-91776",
+    "to": "/danmark/jylland/ikast-brande/shelterplads-harrild-hede-shelter-4-91778"
+  },
+  {
+    "slug": "shelterplads-harrild-hede-shelter-2-91776",
+    "canonicalSlug": "shelterplads-harrild-hede-shelter-4-91778",
+    "from": "/danmark/jylland/ikast-brande/shelterplads-harrild-hede-shelter-2-91776",
+    "to": "/danmark/jylland/ikast-brande/shelterplads-harrild-hede-shelter-4-91778"
+  },
+  {
+    "slug": "shelter-2-skraenten-momhoje-88548",
+    "canonicalSlug": "shelter-1-skraenten-momhoje-88548",
+    "from": "/danmark/jylland/kibaek/shelter-2-skraenten-momhoje-88548",
+    "to": "/danmark/jylland/ringkoebing-skjern/shelter-1-skraenten-momhoje-88548"
+  },
+  {
+    "slug": "shelter-3-skraenten-momhoje-88549",
+    "canonicalSlug": "shelter-1-skraenten-momhoje-88548",
+    "from": "/danmark/jylland/kibaek/shelter-3-skraenten-momhoje-88549",
+    "to": "/danmark/jylland/ringkoebing-skjern/shelter-1-skraenten-momhoje-88548"
+  },
+  {
+    "slug": "shelter-skraenten-momhoje-88544",
+    "canonicalSlug": "shelter-1-skraenten-momhoje-88548",
+    "from": "/danmark/jylland/kibaek/shelter-skraenten-momhoje-88544",
+    "to": "/danmark/jylland/ringkoebing-skjern/shelter-1-skraenten-momhoje-88548"
+  },
+  {
+    "slug": "shelter-klokkerholm-molleso-10156",
+    "canonicalSlug": "shelter-10153",
+    "from": "/danmark/jylland/klokkerholm/shelter-klokkerholm-molleso-10156",
+    "to": "/danmark/jylland/broenderslev/shelter-10153"
+  },
+  {
+    "slug": "ferup-so-shelter-2-93965",
+    "canonicalSlug": "ferup-so-shelter-1-93966",
+    "from": "/danmark/jylland/kolding/ferup-so-shelter-2-93965",
+    "to": "/danmark/jylland/kolding/ferup-so-shelter-1-93966"
+  },
+  {
+    "slug": "ferup-so-shelter-3-93964",
+    "canonicalSlug": "ferup-so-shelter-1-93966",
+    "from": "/danmark/jylland/kolding/ferup-so-shelter-3-93964",
+    "to": "/danmark/jylland/kolding/ferup-so-shelter-1-93966"
+  },
+  {
+    "slug": "shelter-2-94423",
+    "canonicalSlug": "shelter-1-94426",
+    "from": "/danmark/jylland/kollund/shelter-2-94423",
+    "to": "/danmark/jylland/aabenraa/shelter-1-94426"
+  },
+  {
+    "slug": "shelterplads-v-staldhojevej-shelter-nr-1-83013",
+    "canonicalSlug": "shelterplads-v-staldhojevej-shelter-2-83014",
+    "from": "/danmark/jylland/lemvig/shelterplads-v-staldhojevej-shelter-nr-1-83013",
+    "to": "/danmark/jylland/lemvig/shelterplads-v-staldhojevej-shelter-2-83014"
+  },
+  {
+    "slug": "flyvestation-vaerlose-handikapshelter-herkules-12335",
+    "canonicalSlug": "flyvestation-vaerlose-shelter-dakota-12336",
+    "from": "/danmark/jylland/laanshoej/flyvestation-vaerlose-handikapshelter-herkules-12335",
+    "to": "/danmark/sjaelland-og-oeerne/furesoe/flyvestation-vaerlose-shelter-dakota-12336"
+  },
+  {
+    "slug": "flyvestation-vaerlose-shelter-catalina-12335",
+    "canonicalSlug": "flyvestation-vaerlose-shelter-dakota-12336",
+    "from": "/danmark/jylland/laanshoej/flyvestation-vaerlose-shelter-catalina-12335",
+    "to": "/danmark/sjaelland-og-oeerne/furesoe/flyvestation-vaerlose-shelter-dakota-12336"
+  },
+  {
+    "slug": "moldrup-bal-og-aktivitetsplads-99437",
+    "canonicalSlug": "moldrup-bal-og-aktivitetsplads-99435",
+    "from": "/danmark/jylland/mariagerfjord/moldrup-bal-og-aktivitetsplads-99437",
+    "to": "/danmark/jylland/mariagerfjord/moldrup-bal-og-aktivitetsplads-99435"
+  },
+  {
+    "slug": "ejerslev-havn-shelters-pa-vandet-89215",
+    "canonicalSlug": "ejerslev-havn-89216",
+    "from": "/danmark/jylland/morsoe/ejerslev-havn-shelters-pa-vandet-89215",
+    "to": "/danmark/jylland/morsoe/ejerslev-havn-89216"
+  },
+  {
+    "slug": "traedestenen-nebel-bjerg-fri-82692",
+    "canonicalSlug": "traedestenen-nebel-bjerg-shelter-1-82698",
+    "from": "/danmark/jylland/noerre-nebel/traedestenen-nebel-bjerg-fri-82692",
+    "to": "/danmark/jylland/varde/traedestenen-nebel-bjerg-shelter-1-82698"
+  },
+  {
+    "slug": "shelterplads-i-skablund-skov-shelter-2-10049",
+    "canonicalSlug": "shelterplads-i-skablund-skov-shelter-1-10049",
+    "from": "/danmark/jylland/odder/shelterplads-i-skablund-skov-shelter-2-10049",
+    "to": "/danmark/jylland/odder/shelterplads-i-skablund-skov-shelter-1-10049"
+  },
+  {
+    "slug": "lejrplads-randers-nordre-faelled-shelter-nr-1-bookbar-10036",
+    "canonicalSlug": "lejrplads-randers-nordre-faelled-shelter-nr-2-ikke-bookbar-10036",
+    "from": "/danmark/jylland/randers/lejrplads-randers-nordre-faelled-shelter-nr-1-bookbar-10036",
+    "to": "/danmark/jylland/randers/lejrplads-randers-nordre-faelled-shelter-nr-2-ikke-bookbar-10036"
+  },
+  {
+    "slug": "lejrplads-randers-norreskov-shelter-nr-1-bookbar-10014",
+    "canonicalSlug": "lejrplads-randers-norreskov-shelter-nr-2-ikke-bookbar-10013",
+    "from": "/danmark/jylland/randers/lejrplads-randers-norreskov-shelter-nr-1-bookbar-10014",
+    "to": "/danmark/jylland/randers/lejrplads-randers-norreskov-shelter-nr-2-ikke-bookbar-10013"
+  },
+  {
+    "slug": "vilsted-so-shelterplads-ved-ranum-sohus-92412",
+    "canonicalSlug": "vilsted-so-ranum-sohus-92405",
+    "from": "/danmark/jylland/ranum/vilsted-so-shelterplads-ved-ranum-sohus-92412",
+    "to": "/danmark/jylland/vesthimmerlands/vilsted-so-ranum-sohus-92405"
+  },
+  {
+    "slug": "rold-skov-shelterplads-ved-mosskovpavillonen-shelter-nr-1-98757",
+    "canonicalSlug": "rold-skov-shelterplads-ved-mosskovpavillonen-shelter-nr-2-98759",
+    "from": "/danmark/jylland/rebild/rold-skov-shelterplads-ved-mosskovpavillonen-shelter-nr-1-98757",
+    "to": "/danmark/jylland/rebild/rold-skov-shelterplads-ved-mosskovpavillonen-shelter-nr-2-98759"
+  },
+  {
+    "slug": "rold-skov-shelterplads-ved-mosskovpavillonen-shelter-nr-3-98760",
+    "canonicalSlug": "rold-skov-shelterplads-ved-mosskovpavillonen-shelter-nr-2-98759",
+    "from": "/danmark/jylland/rebild/rold-skov-shelterplads-ved-mosskovpavillonen-shelter-nr-3-98760",
+    "to": "/danmark/jylland/rebild/rold-skov-shelterplads-ved-mosskovpavillonen-shelter-nr-2-98759"
+  },
+  {
+    "slug": "rold-skov-stendalen-98526",
+    "canonicalSlug": "rold-skov-stendalen-shelter-1-98526",
+    "from": "/danmark/jylland/rebild/rold-skov-stendalen-98526",
+    "to": "/danmark/jylland/rebild/rold-skov-stendalen-shelter-1-98526"
+  },
+  {
+    "slug": "traedesten-pumpestation-nord-fri-84111",
+    "canonicalSlug": "pumpestation-nord-shelter-1-84112",
+    "from": "/danmark/jylland/ringkoebing-skjern/traedesten-pumpestation-nord-fri-84111",
+    "to": "/danmark/jylland/ringkoebing-skjern/pumpestation-nord-shelter-1-84112"
+  },
+  {
+    "slug": "shelter-2-vona-ringkobing-82314",
+    "canonicalSlug": "shelter-1-vona-ringkobing-82313",
+    "from": "/danmark/jylland/ringkoebing/shelter-2-vona-ringkobing-82314",
+    "to": "/danmark/jylland/ringkoebing-skjern/shelter-1-vona-ringkobing-82313"
+  },
+  {
+    "slug": "shelter-3-vona-ringkobing-82315",
+    "canonicalSlug": "shelter-1-vona-ringkobing-82313",
+    "from": "/danmark/jylland/ringkoebing/shelter-3-vona-ringkobing-82315",
+    "to": "/danmark/jylland/ringkoebing-skjern/shelter-1-vona-ringkobing-82313"
+  },
+  {
+    "slug": "vaeksthus-spottrup-87869",
+    "canonicalSlug": "shelter-i-pometet-rodding-skive-87912",
+    "from": "/danmark/jylland/roedding/vaeksthus-spottrup-87869",
+    "to": "/danmark/jylland/skive/shelter-i-pometet-rodding-skive-87912"
+  },
+  {
+    "slug": "hinge-sobad-94882",
+    "canonicalSlug": "hinge-sobad-94880",
+    "from": "/danmark/jylland/silkeborg/hinge-sobad-94882",
+    "to": "/danmark/jylland/silkeborg/hinge-sobad-94880"
+  },
+  {
+    "slug": "lejrplads-stendal-plantage-shelter-nr-2-93022",
+    "canonicalSlug": "lejrplads-stendal-plantage-shelter-nr-1-93023",
+    "from": "/danmark/jylland/silkeborg/lejrplads-stendal-plantage-shelter-nr-2-93022",
+    "to": "/danmark/jylland/silkeborg/lejrplads-stendal-plantage-shelter-nr-1-93023"
+  },
+  {
+    "slug": "lejrplads-stendal-plantage-shelter-nr-3-93023",
+    "canonicalSlug": "lejrplads-stendal-plantage-shelter-nr-1-93023",
+    "from": "/danmark/jylland/silkeborg/lejrplads-stendal-plantage-shelter-nr-3-93023",
+    "to": "/danmark/jylland/silkeborg/lejrplads-stendal-plantage-shelter-nr-1-93023"
+  },
+  {
+    "slug": "lejrplads-stendal-plantage-shelter-nr-4-93024",
+    "canonicalSlug": "lejrplads-stendal-plantage-shelter-nr-1-93023",
+    "from": "/danmark/jylland/silkeborg/lejrplads-stendal-plantage-shelter-nr-4-93024",
+    "to": "/danmark/jylland/silkeborg/lejrplads-stendal-plantage-shelter-nr-1-93023"
+  },
+  {
+    "slug": "shelterplads-grathe-hede-shelter-2-92996",
+    "canonicalSlug": "shelterplads-grathe-hede-shelter-1-93000",
+    "from": "/danmark/jylland/silkeborg/shelterplads-grathe-hede-shelter-2-92996",
+    "to": "/danmark/jylland/silkeborg/shelterplads-grathe-hede-shelter-1-93000"
+  },
+  {
+    "slug": "fur-shelterplads-pa-nordfur-90014",
+    "canonicalSlug": "fur-shelterplads-pa-nordfur-90015",
+    "from": "/danmark/jylland/skive/fur-shelterplads-pa-nordfur-90014",
+    "to": "/danmark/jylland/skive/fur-shelterplads-pa-nordfur-90015"
+  },
+  {
+    "slug": "havbjerg-skov-shelterplads-91046",
+    "canonicalSlug": "havbjerg-skov-shelterplads-91045",
+    "from": "/danmark/jylland/skive/havbjerg-skov-shelterplads-91046",
+    "to": "/danmark/jylland/skive/havbjerg-skov-shelterplads-91045"
+  },
+  {
+    "slug": "klosterheden-hornet-shelter-1-85032",
+    "canonicalSlug": "klosterheden-hornet-shelter-3-85031",
+    "from": "/danmark/jylland/struer/klosterheden-hornet-shelter-1-85032",
+    "to": "/danmark/jylland/struer/klosterheden-hornet-shelter-3-85031"
+  },
+  {
+    "slug": "shelterplads-hyllested-bjerge-shelter-nr-1-bookbar-10751",
+    "canonicalSlug": "bronhoj-skov-shelters-10748",
+    "from": "/danmark/jylland/syddjurs/shelterplads-hyllested-bjerge-shelter-nr-1-bookbar-10751",
+    "to": "/danmark/jylland/syddjurs/bronhoj-skov-shelters-10748"
+  },
+  {
+    "slug": "shelterplads-hyllested-bjerge-shelter-nr-2-ikke-bookbar-10751",
+    "canonicalSlug": "bronhoj-skov-shelters-10748",
+    "from": "/danmark/jylland/syddjurs/shelterplads-hyllested-bjerge-shelter-nr-2-ikke-bookbar-10751",
+    "to": "/danmark/jylland/syddjurs/bronhoj-skov-shelters-10748"
+  },
+  {
+    "slug": "slettervang-shelter-nr-1-10521",
+    "canonicalSlug": "slettervang-shelter-nr-2-10521",
+    "from": "/danmark/jylland/syddjurs/slettervang-shelter-nr-1-10521",
+    "to": "/danmark/jylland/syddjurs/slettervang-shelter-nr-2-10521"
+  },
+  {
+    "slug": "slettervang-shelter-nr-3-10521",
+    "canonicalSlug": "slettervang-shelter-nr-2-10521",
+    "from": "/danmark/jylland/syddjurs/slettervang-shelter-nr-3-10521",
+    "to": "/danmark/jylland/syddjurs/slettervang-shelter-nr-2-10521"
+  },
+  {
+    "slug": "slettervang-shelter-nr-4-10521",
+    "canonicalSlug": "slettervang-shelter-nr-2-10521",
+    "from": "/danmark/jylland/syddjurs/slettervang-shelter-nr-4-10521",
+    "to": "/danmark/jylland/syddjurs/slettervang-shelter-nr-2-10521"
+  },
+  {
+    "slug": "tvorup-vest-84075",
+    "canonicalSlug": "tvorup-vest-shelterplads-84092",
+    "from": "/danmark/jylland/thisted/tvorup-vest-84075",
+    "to": "/danmark/jylland/thisted/tvorup-vest-shelterplads-84092"
+  },
+  {
+    "slug": "shelterplads-i-tjaereborg-gamle-grusgrave-85815",
+    "canonicalSlug": "sheltersplads-i-tjaereborg-gamle-grusgrave-85822",
+    "from": "/danmark/jylland/tjaereborg/shelterplads-i-tjaereborg-gamle-grusgrave-85815",
+    "to": "/danmark/jylland/esbjerg/sheltersplads-i-tjaereborg-gamle-grusgrave-85822"
+  },
+  {
+    "slug": "shelter-ved-varde-sommerland-to-shelter-ved-toiletbygningen-84908",
+    "canonicalSlug": "shelter-i-varde-sommerland-3-shelter-ved-grillhytten-84933",
+    "from": "/danmark/jylland/varde/shelter-ved-varde-sommerland-to-shelter-ved-toiletbygningen-84908",
+    "to": "/danmark/jylland/varde/shelter-i-varde-sommerland-3-shelter-ved-grillhytten-84933"
+  },
+  {
+    "slug": "jenle-plantage-shelter-94767",
+    "canonicalSlug": "jenle-plantage-shelter-1-94765",
+    "from": "/danmark/jylland/vegger/jenle-plantage-shelter-94767",
+    "to": "/danmark/jylland/vesthimmerlands/jenle-plantage-shelter-1-94765"
+  },
+  {
+    "slug": "ballesbaekhus-shelter-93646",
+    "canonicalSlug": "ballesbaekgard-93625",
+    "from": "/danmark/jylland/vejle/ballesbaekhus-shelter-93646",
+    "to": "/danmark/jylland/vejle/ballesbaekgard-93625"
+  },
+  {
+    "slug": "birkelund-shelter-1-92811",
+    "canonicalSlug": "birkelund-shelter-4-92810",
+    "from": "/danmark/jylland/vejle/birkelund-shelter-1-92811",
+    "to": "/danmark/jylland/vejle/birkelund-shelter-4-92810"
+  },
+  {
+    "slug": "birkelund-shelter-2-92812",
+    "canonicalSlug": "birkelund-shelter-4-92810",
+    "from": "/danmark/jylland/vejle/birkelund-shelter-2-92812",
+    "to": "/danmark/jylland/vejle/birkelund-shelter-4-92810"
+  },
+  {
+    "slug": "birkelund-shelter-3-92811",
+    "canonicalSlug": "birkelund-shelter-4-92810",
+    "from": "/danmark/jylland/vejle/birkelund-shelter-3-92811",
+    "to": "/danmark/jylland/vejle/birkelund-shelter-4-92810"
+  },
+  {
+    "slug": "hastrup-plantage-shelter-1-92549",
+    "canonicalSlug": "hastrup-plantage-shelter-2-92549",
+    "from": "/danmark/jylland/vejle/hastrup-plantage-shelter-1-92549",
+    "to": "/danmark/jylland/vejle/hastrup-plantage-shelter-2-92549"
+  },
+  {
+    "slug": "hastrup-plantage-shelter-3-92550",
+    "canonicalSlug": "hastrup-plantage-shelter-2-92549",
+    "from": "/danmark/jylland/vejle/hastrup-plantage-shelter-3-92550",
+    "to": "/danmark/jylland/vejle/hastrup-plantage-shelter-2-92549"
+  },
+  {
+    "slug": "hastrup-plantage-shelter-4-92555",
+    "canonicalSlug": "hastrup-plantage-shelter-2-92549",
+    "from": "/danmark/jylland/vejle/hastrup-plantage-shelter-4-92555",
+    "to": "/danmark/jylland/vejle/hastrup-plantage-shelter-2-92549"
+  },
+  {
+    "slug": "kirstinelyst-shelter-nr-2-og-3-91838",
+    "canonicalSlug": "kirstinelyst-shelter-nr-4-og-5-91848",
+    "from": "/danmark/jylland/vejle/kirstinelyst-shelter-nr-2-og-3-91838",
+    "to": "/danmark/jylland/vejle/kirstinelyst-shelter-nr-4-og-5-91848"
+  },
+  {
+    "slug": "shelter-3-venner-a-83107",
+    "canonicalSlug": "shelter-1-venner-a-83105",
+    "from": "/danmark/jylland/velling/shelter-3-venner-a-83107",
+    "to": "/danmark/jylland/ringkoebing-skjern/shelter-1-venner-a-83105"
+  },
+  {
+    "slug": "bakkely-rundshelter-11262",
+    "canonicalSlug": "bakkely-skov-shelterplads-vemmelev-11265",
+    "from": "/danmark/jylland/vemmelev/bakkely-rundshelter-11262",
+    "to": "/danmark/sjaelland-og-oeerne/slagelse/bakkely-skov-shelterplads-vemmelev-11265"
+  },
+  {
+    "slug": "digeborsteshelterne-2-86572",
+    "canonicalSlug": "digeborsteshelterne-1-86572",
+    "from": "/danmark/jylland/vester-vedsted/digeborsteshelterne-2-86572",
+    "to": "/danmark/jylland/esbjerg/digeborsteshelterne-1-86572"
+  },
+  {
+    "slug": "digeborsteshelterne-3-86573",
+    "canonicalSlug": "digeborsteshelterne-1-86572",
+    "from": "/danmark/jylland/vester-vedsted/digeborsteshelterne-3-86573",
+    "to": "/danmark/jylland/esbjerg/digeborsteshelterne-1-86572"
+  },
+  {
+    "slug": "digeborsteshelterne-4-86574",
+    "canonicalSlug": "digeborsteshelterne-1-86572",
+    "from": "/danmark/jylland/vester-vedsted/digeborsteshelterne-4-86574",
+    "to": "/danmark/jylland/esbjerg/digeborsteshelterne-1-86572"
+  },
+  {
+    "slug": "tanghuset-ved-sundstrup-92973",
+    "canonicalSlug": "shelters-ved-virksund-lystbadehavn-92907",
+    "from": "/danmark/jylland/viborg/tanghuset-ved-sundstrup-92973",
+    "to": "/danmark/jylland/skive/shelters-ved-virksund-lystbadehavn-92907"
+  },
+  {
+    "slug": "shelter-530-90938",
+    "canonicalSlug": "shelter-530-90942",
+    "from": "/danmark/jylland/vorbasse/shelter-530-90938",
+    "to": "/danmark/jylland/billund/shelter-530-90942"
+  },
+  {
+    "slug": "shelter-530-90939",
+    "canonicalSlug": "shelter-530-90942",
+    "from": "/danmark/jylland/vorbasse/shelter-530-90939",
+    "to": "/danmark/jylland/billund/shelter-530-90942"
+  },
+  {
+    "slug": "bryrupbanen-vrads-station-shelter-1-94702",
+    "canonicalSlug": "bryrupbanen-vrads-station-shelter-2-94708",
+    "from": "/danmark/jylland/vrads/bryrupbanen-vrads-station-shelter-1-94702",
+    "to": "/danmark/jylland/silkeborg/bryrupbanen-vrads-station-shelter-2-94708"
+  },
+  {
+    "slug": "bryrupbanen-vrads-station-shelter-3-94702",
+    "canonicalSlug": "bryrupbanen-vrads-station-shelter-2-94708",
+    "from": "/danmark/jylland/vrads/bryrupbanen-vrads-station-shelter-3-94702",
+    "to": "/danmark/jylland/silkeborg/bryrupbanen-vrads-station-shelter-2-94708"
+  },
+  {
+    "slug": "shelterplads-nord-stevninghus-94232",
+    "canonicalSlug": "shelterplads-vest-stevninghus-94229",
+    "from": "/danmark/jylland/aabenraa/shelterplads-nord-stevninghus-94232",
+    "to": "/danmark/jylland/aabenraa/shelterplads-vest-stevninghus-94229"
+  },
+  {
+    "slug": "halkaer-voldsted-shelterplads-95750",
+    "canonicalSlug": "halkaer-voldsted-shelterplads-95751",
+    "from": "/danmark/jylland/aalborg/halkaer-voldsted-shelterplads-95750",
+    "to": "/danmark/jylland/aalborg/halkaer-voldsted-shelterplads-95751"
+  },
+  {
+    "slug": "shelter-knorrenborg-vang-12429",
+    "canonicalSlug": "karpen-shelter-12429",
+    "from": "/danmark/sjaelland-og-oeerne/fredensborg/shelter-knorrenborg-vang-12429",
+    "to": "/danmark/sjaelland-og-oeerne/fredensborg/karpen-shelter-12429"
+  },
+  {
+    "slug": "shelter-bifrost-12092",
+    "canonicalSlug": "shelter-valhal-12092",
+    "from": "/danmark/sjaelland-og-oeerne/frederikssund/shelter-bifrost-12092",
+    "to": "/danmark/sjaelland-og-oeerne/frederikssund/shelter-valhal-12092"
+  },
+  {
+    "slug": "shelter-hugin-12092",
+    "canonicalSlug": "shelter-valhal-12092",
+    "from": "/danmark/sjaelland-og-oeerne/frederikssund/shelter-hugin-12092",
+    "to": "/danmark/sjaelland-og-oeerne/frederikssund/shelter-valhal-12092"
+  },
+  {
+    "slug": "shelter-njord-12092",
+    "canonicalSlug": "shelter-valhal-12092",
+    "from": "/danmark/sjaelland-og-oeerne/frederikssund/shelter-njord-12092",
+    "to": "/danmark/sjaelland-og-oeerne/frederikssund/shelter-valhal-12092"
+  },
+  {
+    "slug": "asevang-shelterplads-nord-12414",
+    "canonicalSlug": "asevang-shelterplads-syd-12414",
+    "from": "/danmark/sjaelland-og-oeerne/furesoe/asevang-shelterplads-nord-12414",
+    "to": "/danmark/sjaelland-og-oeerne/furesoe/asevang-shelterplads-syd-12414"
+  },
+  {
+    "slug": "shelter-nr-1-ved-kulsvierhytten-i-aggebo-og-graested-hegn-12248",
+    "canonicalSlug": "kulsvierhytten-i-aggebo-og-graested-hegn-12248",
+    "from": "/danmark/sjaelland-og-oeerne/gribskov/shelter-nr-1-ved-kulsvierhytten-i-aggebo-og-graested-hegn-12248",
+    "to": "/danmark/sjaelland-og-oeerne/gribskov/kulsvierhytten-i-aggebo-og-graested-hegn-12248"
+  },
+  {
+    "slug": "shelter-nr-2-ved-kulsvierhytten-i-aggebo-og-graested-hegn-12248",
+    "canonicalSlug": "kulsvierhytten-i-aggebo-og-graested-hegn-12248",
+    "from": "/danmark/sjaelland-og-oeerne/gribskov/shelter-nr-2-ved-kulsvierhytten-i-aggebo-og-graested-hegn-12248",
+    "to": "/danmark/sjaelland-og-oeerne/gribskov/kulsvierhytten-i-aggebo-og-graested-hegn-12248"
+  },
+  {
+    "slug": "shelter-nr-3-hind-borg-ved-kulsvierhytten-i-aggebo-og-graested-hegn-12249",
+    "canonicalSlug": "kulsvierhytten-i-aggebo-og-graested-hegn-12248",
+    "from": "/danmark/sjaelland-og-oeerne/gribskov/shelter-nr-3-hind-borg-ved-kulsvierhytten-i-aggebo-og-graested-hegn-12249",
+    "to": "/danmark/sjaelland-og-oeerne/gribskov/kulsvierhytten-i-aggebo-og-graested-hegn-12248"
+  },
+  {
+    "slug": "trompethatten-shelter-12362",
+    "canonicalSlug": "hvinanden-shelter-12368",
+    "from": "/danmark/sjaelland-og-oeerne/gribskov/trompethatten-shelter-12362",
+    "to": "/danmark/sjaelland-og-oeerne/gribskov/hvinanden-shelter-12368"
+  },
+  {
+    "slug": "book-en-shelter-rideshelter-bavnehoj-11844",
+    "canonicalSlug": "book-en-shelter-cykelshelter-bavnehoj-11838",
+    "from": "/danmark/sjaelland-og-oeerne/guldborgsund/book-en-shelter-rideshelter-bavnehoj-11844",
+    "to": "/danmark/sjaelland-og-oeerne/guldborgsund/book-en-shelter-cykelshelter-bavnehoj-11838"
+  },
+  {
+    "slug": "lojen-12360",
+    "canonicalSlug": "glas-gulalen-12360",
+    "from": "/danmark/sjaelland-og-oeerne/hilleroed/lojen-12360",
+    "to": "/danmark/sjaelland-og-oeerne/hilleroed/glas-gulalen-12360"
+  },
+  {
+    "slug": "shelterplads-holbaek-dyrehave-11683",
+    "canonicalSlug": "shelterpladser-holbaek-dyrehave-11682",
+    "from": "/danmark/sjaelland-og-oeerne/holbaek/shelterplads-holbaek-dyrehave-11683",
+    "to": "/danmark/sjaelland-og-oeerne/holbaek/shelterpladser-holbaek-dyrehave-11682"
+  },
+  {
+    "slug": "shelter-v-skarreso-v-jyderup-11393",
+    "canonicalSlug": "shelter-v-skarreso-i-jyderup-11393",
+    "from": "/danmark/sjaelland-og-oeerne/jyderup/shelter-v-skarreso-v-jyderup-11393",
+    "to": "/danmark/sjaelland-og-oeerne/holbaek/shelter-v-skarreso-i-jyderup-11393"
+  },
+  {
+    "slug": "shelters-v-skarreso-jyderup-11393",
+    "canonicalSlug": "shelter-v-skarreso-i-jyderup-11393",
+    "from": "/danmark/sjaelland-og-oeerne/jyderup/shelters-v-skarreso-jyderup-11393",
+    "to": "/danmark/sjaelland-og-oeerne/holbaek/shelter-v-skarreso-i-jyderup-11393"
+  },
+  {
+    "slug": "book-en-shelter-nakskov-fjord-camping-11089",
+    "canonicalSlug": "book-en-shelter-hestehoved-lystbadehavn-11094",
+    "from": "/danmark/sjaelland-og-oeerne/lolland/book-en-shelter-nakskov-fjord-camping-11089",
+    "to": "/danmark/sjaelland-og-oeerne/lolland/book-en-shelter-hestehoved-lystbadehavn-11094"
+  },
+  {
+    "slug": "nordstjernen-bookbar-handicapvenligt-shelter-pa-nordhus-shelterplads-14884",
+    "canonicalSlug": "polaris-handicapvenligt-shelter-pa-nordhus-shelterplads-14883",
+    "from": "/danmark/sjaelland-og-oeerne/roenne/nordstjernen-bookbar-handicapvenligt-shelter-pa-nordhus-shelterplads-14884",
+    "to": "/danmark/bornholm/bornholm/polaris-handicapvenligt-shelter-pa-nordhus-shelterplads-14883"
+  },
+  {
+    "slug": "himmelsoen-markfirbenet-12061",
+    "canonicalSlug": "himmelsoen-fjordternen-12060",
+    "from": "/danmark/sjaelland-og-oeerne/roskilde/himmelsoen-markfirbenet-12061",
+    "to": "/danmark/sjaelland-og-oeerne/roskilde/himmelsoen-fjordternen-12060"
+  },
+  {
+    "slug": "salvadparken-havornen-12112",
+    "canonicalSlug": "salvadparken-12112",
+    "from": "/danmark/sjaelland-og-oeerne/roskilde/salvadparken-havornen-12112",
+    "to": "/danmark/sjaelland-og-oeerne/roskilde/salvadparken-12112"
+  },
+  {
+    "slug": "kalo-hovedgard-shelter-nr-1-bookbar-10499",
+    "canonicalSlug": "kalo-hovedgard-shelter-nr-3-ikke-bookbar-10500",
+    "from": "/danmark/sjaelland-og-oeerne/rostved/kalo-hovedgard-shelter-nr-1-bookbar-10499",
+    "to": "/danmark/jylland/syddjurs/kalo-hovedgard-shelter-nr-3-ikke-bookbar-10500"
+  },
+  {
+    "slug": "jaegersborg-hegn-terrassen-shelter-naermest-bollemosen-12559",
+    "canonicalSlug": "jaegersborg-hegn-shelter-den-hemmelige-12556",
+    "from": "/danmark/sjaelland-og-oeerne/skodsborg/jaegersborg-hegn-terrassen-shelter-naermest-bollemosen-12559",
+    "to": "/danmark/sjaelland-og-oeerne/rudersdal/jaegersborg-hegn-shelter-den-hemmelige-12556"
+  },
+  {
+    "slug": "jaegersborg-hegn-terrassen-shelter-naermest-madpakkehuset-12559",
+    "canonicalSlug": "jaegersborg-hegn-shelter-den-hemmelige-12556",
+    "from": "/danmark/sjaelland-og-oeerne/skodsborg/jaegersborg-hegn-terrassen-shelter-naermest-madpakkehuset-12559",
+    "to": "/danmark/sjaelland-og-oeerne/rudersdal/jaegersborg-hegn-shelter-den-hemmelige-12556"
+  },
+  {
+    "slug": "strandmollepladsen-shelter-nr-1-med-plads-til-5-6-12574",
+    "canonicalSlug": "strandmollepladsen-shelter-nr-2-med-plads-til-5-6-12574",
+    "from": "/danmark/sjaelland-og-oeerne/skodsborg/strandmollepladsen-shelter-nr-1-med-plads-til-5-6-12574",
+    "to": "/danmark/sjaelland-og-oeerne/rudersdal/strandmollepladsen-shelter-nr-2-med-plads-til-5-6-12574"
+  },
+  {
+    "slug": "shelter-naturlejrpladsen-ved-hulby-mollegard-11197",
+    "canonicalSlug": "shelter-naturlejrpladsen-ved-hulby-mollegard-11198",
+    "from": "/danmark/sjaelland-og-oeerne/slagelse/shelter-naturlejrpladsen-ved-hulby-mollegard-11197",
+    "to": "/danmark/sjaelland-og-oeerne/slagelse/shelter-naturlejrpladsen-ved-hulby-mollegard-11198"
+  },
+  {
+    "slug": "hyldevang-shelterplads-nyord-shelter-1-12204",
+    "canonicalSlug": "hyldevang-shelterplads-nyord-shelter-3-12204",
+    "from": "/danmark/sjaelland-og-oeerne/vordingborg/hyldevang-shelterplads-nyord-shelter-1-12204",
+    "to": "/danmark/sjaelland-og-oeerne/vordingborg/hyldevang-shelterplads-nyord-shelter-3-12204"
+  },
+  {
+    "slug": "hyldevang-shelterplads-nyord-shelter-2-12204",
+    "canonicalSlug": "hyldevang-shelterplads-nyord-shelter-3-12204",
+    "from": "/danmark/sjaelland-og-oeerne/vordingborg/hyldevang-shelterplads-nyord-shelter-2-12204",
+    "to": "/danmark/sjaelland-og-oeerne/vordingborg/hyldevang-shelterplads-nyord-shelter-3-12204"
+  },
+  {
+    "slug": "hyldevang-shelterplads-nyord-shelter-4-12204",
+    "canonicalSlug": "hyldevang-shelterplads-nyord-shelter-3-12204",
+    "from": "/danmark/sjaelland-og-oeerne/vordingborg/hyldevang-shelterplads-nyord-shelter-4-12204",
+    "to": "/danmark/sjaelland-og-oeerne/vordingborg/hyldevang-shelterplads-nyord-shelter-3-12204"
+  },
+  {
+    "slug": "mons-klint-shelter-1-12548",
+    "canonicalSlug": "mons-klint-shelter-3-12548",
+    "from": "/danmark/sjaelland-og-oeerne/vordingborg/mons-klint-shelter-1-12548",
+    "to": "/danmark/sjaelland-og-oeerne/vordingborg/mons-klint-shelter-3-12548"
+  },
+  {
+    "slug": "mons-klint-shelter-2-12548",
+    "canonicalSlug": "mons-klint-shelter-3-12548",
+    "from": "/danmark/sjaelland-og-oeerne/vordingborg/mons-klint-shelter-2-12548",
+    "to": "/danmark/sjaelland-og-oeerne/vordingborg/mons-klint-shelter-3-12548"
+  },
+  {
+    "slug": "mons-klint-shelter-4-12548",
+    "canonicalSlug": "mons-klint-shelter-3-12548",
+    "from": "/danmark/sjaelland-og-oeerne/vordingborg/mons-klint-shelter-4-12548",
+    "to": "/danmark/sjaelland-og-oeerne/vordingborg/mons-klint-shelter-3-12548"
+  },
+  {
+    "slug": "mosehaeldgard-bla-shelter-12299",
+    "canonicalSlug": "mosehaeldgard-gul-shelter-h-12299",
+    "from": "/danmark/sjaelland-og-oeerne/vordingborg/mosehaeldgard-bla-shelter-12299",
+    "to": "/danmark/sjaelland-og-oeerne/vordingborg/mosehaeldgard-gul-shelter-h-12299"
+  },
+  {
+    "slug": "mosehaeldgard-rundtommershelter-udby-pa-mon-12299",
+    "canonicalSlug": "mosehaeldgard-gul-shelter-h-12299",
+    "from": "/danmark/sjaelland-og-oeerne/vordingborg/mosehaeldgard-rundtommershelter-udby-pa-mon-12299",
+    "to": "/danmark/sjaelland-og-oeerne/vordingborg/mosehaeldgard-gul-shelter-h-12299"
+  },
+  {
+    "slug": "nokkeskoven-avno-shelter-1-11770",
+    "canonicalSlug": "nokkeskoven-avno-shelter-4-11771",
+    "from": "/danmark/sjaelland-og-oeerne/vordingborg/nokkeskoven-avno-shelter-1-11770",
+    "to": "/danmark/sjaelland-og-oeerne/vordingborg/nokkeskoven-avno-shelter-4-11771"
+  },
+  {
+    "slug": "nokkeskoven-avno-shelter-3-11771",
+    "canonicalSlug": "nokkeskoven-avno-shelter-4-11771",
+    "from": "/danmark/sjaelland-og-oeerne/vordingborg/nokkeskoven-avno-shelter-3-11771",
+    "to": "/danmark/sjaelland-og-oeerne/vordingborg/nokkeskoven-avno-shelter-4-11771"
+  },
+  {
+    "slug": "nygammelso-b-b-12221",
+    "canonicalSlug": "shelter-2-ved-camonopausen-ny-gammelso-b-b-12221",
+    "from": "/danmark/sjaelland-og-oeerne/vordingborg/nygammelso-b-b-12221",
+    "to": "/danmark/sjaelland-og-oeerne/vordingborg/shelter-2-ved-camonopausen-ny-gammelso-b-b-12221"
+  },
+  {
+    "slug": "shelterplads-ved-sprovegade-12-12156",
+    "canonicalSlug": "sprove-shelterplads-12156",
+    "from": "/danmark/sjaelland-og-oeerne/vordingborg/shelterplads-ved-sprovegade-12-12156",
+    "to": "/danmark/sjaelland-og-oeerne/vordingborg/sprove-shelterplads-12156"
+  }
+]

@@ -75,6 +75,25 @@ const embedCsp = [
 // Som next.config-redirect bliver det en rigtig 308 før routing.
 const municipalityByRedirects = require("./data/municipality-by-redirects.json");
 
+// Dublet-shelters (duplicate_of_shelter_id sat af dedupe_shelters_by_google_place.py).
+// Deres URL'er var engang rigtige, indekserede shelter-sider, saa de skal 308'e
+// til det kanoniske shelter i stedet for at soft-404'e.
+//
+// HVORFOR HER OG IKKE I SIDEN: shelter-detaljeruten er statisk (●). Maalt mod
+// next build + next start giver permanentRedirect() fra den rute en 308 UDEN
+// Location-header og med 32 kB HTML i kroppen — ubrugelig for baade browser og
+// Google. Fra render-traeet bliver det i stedet 200 med <meta http-equiv="refresh">.
+// Ingen af dem er et brugbart redirect. Som next.config-redirect rammer det foer
+// routing og bliver en rigtig 308 med Location.
+//
+// Listen genereres med scripts/generate-shelter-duplicate-redirects.mjs og skal
+// regenereres efter dedupe-scriptet. Er den bagud, svarer siden et aerligt 404
+// paa den manglende dublet — ikke en soft-404.
+//
+// `from` er skrevet i den form requestet HAR, naar det rammer reglen: region-
+// kanoniseringen ovenfor er allerede sket (sjaelland → sjaelland-og-oeerne).
+const shelterDuplicateRedirects = require("./data/shelter-duplicate-redirects.json");
+
 const nextConfig = {
   // Sitemap.ts genererer 2.900+ URL'er + DB-kald ved build; default 60s-timeout
   // kan rammes på CI (flaky → fejlet deploy). Giv tunge static-genereringer mere tid.
@@ -169,6 +188,12 @@ const nextConfig = {
       // samme shelter-sæt. Bevidst EKSAKTE paths (ingen :rest*), så shelter-
       // detaljesiderne under /danmark/:region/:kommune/:slug ikke rammes.
       ...municipalityByRedirects.map(({ from, to }) => ({
+        source: from,
+        destination: to,
+        permanent: true,
+      })),
+      // Dublet-shelter → kanonisk shelter. Eksakte paths, ingen wildcards.
+      ...shelterDuplicateRedirects.map(({ from, to }) => ({
         source: from,
         destination: to,
         permanent: true,

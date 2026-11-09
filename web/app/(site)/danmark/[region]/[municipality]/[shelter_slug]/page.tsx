@@ -1,11 +1,7 @@
-import { cache } from "react";
-import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import {
-  getShelterBySlugInSilo,
-  getShelterBySlugIncludingDuplicates,
-  getCanonicalShelterForRedirect,
   getReviews,
   getRegionKommunePairs,
   getMunicipalitiesInRegion,
@@ -14,6 +10,7 @@ import {
   NO_KOMMUNE_SLUG,
 } from "@/lib/danmark-silo";
 import { segmentSlugToName } from "@/lib/slug";
+import { resolveShelterSilo } from "@/lib/shelter-silo-resolve.server";
 import { canonicalRegionSlug } from "@/lib/cross-page-config";
 import { canonicalMunicipalityHref } from "@/lib/municipality-by-redirects";
 import { getPublishedGuestReviews } from "@/lib/guest-reviews";
@@ -77,12 +74,25 @@ export async function generateStaticParams() {
   }));
 }
 
-const getCachedShelterInSilo = cache(getShelterBySlugInSilo);
-
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { region: regionSlug, municipality: municipalitySlug, shelter_slug } = await params;
-  const { shelter } = await getCachedShelterInSilo(shelter_slug);
-  if (!shelter) return { title: "Shelter ikke fundet" };
+  const resolution = await resolveShelterSilo(regionSlug, municipalitySlug, shelter_slug);
+  // HVORFOR 404/308 LIGGER I generateMetadata OG IKKE KUN I render:
+  // ruten er statisk (●) med dynamicParams = true, så en ukendt slug renderes
+  // on-demand i static-generation-tilstand. Dér er der ingen response at sætte
+  // status på, så et notFound()/redirect() fra render-træet bliver bagt ind i
+  // HTML'en (errored suspense boundary / <meta http-equiv="refresh">) og
+  // udleveret med 200 — en soft-404 Netlify holdt i 24 timer.
+  // generateMetadata kører FØR render-streamen, så throwet herfra kan stadig
+  // bestemme statuskoden. Målt: uden dette var svaret 200 uanset om kaldet stod
+  // i page.tsx eller i et layout.tsx uden for enhver Suspense-grænse.
+  // Samme familie som kommunesidernes soft-404 (ab19c61).
+  // Alt andet end "found" er 404 HERFRA. Redirectene (dublet-slugs) ligger i
+  // next.config.js, fordi et permanentRedirect() fra denne statiske rute maalt
+  // giver en 308 UDEN Location-header — ubrugelig. Er redirect-listen bagud,
+  // er et aerligt 404 det rigtige fald-tilbage.
+  if (resolution.kind !== "found") notFound();
+  const { shelter } = resolution;
 
   const title = normalizeSeoTitle(shelter.seo_title, buildSeoTitle(shelter));
   const description = chooseMetaDescription(
@@ -124,43 +134,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function DanmarkShelterPage({ params }: PageProps) {
   const { region: regionSlug, municipality: municipalitySlug, shelter_slug } = await params;
 
-  let result = await getCachedShelterInSilo(shelter_slug);
-  if (!result.shelter) {
-    // Fallback: slug kan matche en duplicate – redirect til kanonisk shelter
-    const fallback = await getShelterBySlugIncludingDuplicates(shelter_slug);
-    if (!fallback.shelter) notFound();
-    const dupId = (fallback.shelter as { duplicate_of_shelter_id?: string | null }).duplicate_of_shelter_id;
-    if (dupId) {
-      const canonical = await getCanonicalShelterForRedirect(dupId);
-      if (canonical) {
-        const regionSlug = slugifySegment(canonical.region);
-        const municipalitySlug = canonical.kommune ? slugifySegment(canonical.kommune) : NO_KOMMUNE_SLUG;
-        redirect(`/danmark/${regionSlug}/${municipalitySlug}/${canonical.slug}`);
-      }
-      // Duplicate uden funden kanonisk – undgå loop
-      notFound();
-    }
-    // Ikke-duplicate: vis på /shelter (har evt. ikke region)
-    redirect(`/shelter/${shelter_slug}`);
-  }
-  const { shelter, region: shelterRegion, kommune: shelterKommune } = result;
+  // Statuskoden er allerede afgjort i generateMetadata (se hvorfor dér).
+  // Kaldene her er nødvendige for KROPPEN: kommer throwet kun fra metadata-
+  // passet, har render-træet intet at vise, og 404-siden bliver tom. Herfra
+  // rammer notFound() app/not-found.tsx som den skal. Resultatet er
+  // cache()-delt, så det er samme opslag — ikke et nyt Supabase-kald.
+  const resolution = await resolveShelterSilo(regionSlug, municipalitySlug, shelter_slug);
+  if (resolution.kind !== "found") notFound();
+  const { shelter, region: shelterRegion, kommune: shelterKommune } = resolution;
 
   const pairs = await getRegionKommunePairs();
   const regions = [...new Set(pairs.map((p) => p.region))];
   const regionName = segmentSlugToName(regionSlug, regions);
 
-  const expectedRegionSlug = shelterRegion ? slugifySegment(shelterRegion) : null;
-  const expectedMunicipalitySlug = shelterKommune
-    ? slugifySegment(shelterKommune)
-    : NO_KOMMUNE_SLUG;
-
-  if (
-    expectedRegionSlug &&
-    expectedMunicipalitySlug &&
-    (regionSlug !== expectedRegionSlug || municipalitySlug !== expectedMunicipalitySlug)
-  ) {
-    redirect(`/danmark/${expectedRegionSlug}/${expectedMunicipalitySlug}/${shelter_slug}`);
-  }
+  // Forkert region/kommune i pathen håndteres som 308 i layout.tsx (se dér
+  // hvorfor det ikke kan ske herfra).
 
   const areaSlug = (shelter as { area_slug?: string | null }).area_slug?.trim() || null;
   const [municipalitiesResult, reviews, area, bookableShelters, guestReviews, gearSuggestions] = await Promise.all([

@@ -270,7 +270,19 @@ export async function getSheltersForStaticParams(): Promise<
   try {
     rows = await fetchAllShelterRows<{ region: string; kommune: string | null; slug: string }>(
       "region, kommune, slug",
-      (query) => query.not("region", "is", null).neq("region", "").not("slug", "is", null)
+      (query) =>
+        query
+          .not("region", "is", null)
+          .neq("region", "")
+          .not("slug", "is", null)
+          // Dubletter UD af static params. Deres side 308'er til det kanoniske
+          // shelter (se [shelter_slug]/layout.tsx), og et redirect under
+          // build-prerender kan Next 14 ikke sende som 308 — det bliver en
+          // <meta http-equiv="refresh">-side med status 200 og kun layoutet,
+          // altså en soft-404 (samme fælde som kommunesiderne i ab19c61).
+          // Uden for static params renderes de on-demand, hvor redirectet
+          // bliver en rigtig 308. Sitemappet udelader dem i forvejen.
+          .is("duplicate_of_shelter_id", null)
     );
   } catch (error) {
     console.error("Supabase error (shelters for params):", error);
