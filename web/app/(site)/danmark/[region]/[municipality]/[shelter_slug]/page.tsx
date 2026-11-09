@@ -59,8 +59,29 @@ interface PageProps {
   params: Promise<{ region: string; municipality: string; shelter_slug: string }>;
 }
 
-// true = tillad on-demand rendering af shelters der ikke var med ved sidste build
-export const dynamicParams = true;
+// false = en slug der ikke er i generateStaticParams svarer 404 UDEN at blive
+// renderet, og Next udleverer den færdigbyggede app/not-found.tsx med krop og
+// alt — præcis som kommuneruten. Det er den eneste variant der giver både
+// rigtig statuskode og synligt indhold her. Målt mod next build + next start:
+//
+//   dynamicParams = true,  notFound() i render-træet       -> 200 + tom skal
+//   dynamicParams = true,  notFound() i generateMetadata   -> 404 + tom krop
+//   dynamicParams = false, not-found.tsx i segmentet       -> 404 + tom krop
+//   dynamicParams = false, ingen not-found.tsx             -> 404 + krop  <- denne
+//
+// Hvorfor en not-found.tsx i SEGMENTET tømmer kroppen igen: med sin egen
+// not-found-grænse skal Next rendere 404-siden on-demand i stedet for at sende
+// den prerendrede, og i static-generation-tilstand havner indholdet kun i
+// RSC-payloaden (klient-renderet, nul <h1> i HTML'en). Læg derfor ikke en
+// not-found.tsx her — der er en test der vogter på det.
+//
+// Redirects kan af samme grund ikke komme fra siden. De 130 dublet-URL'er ligger
+// som eksakte paths i next.config.js.
+//
+// PRISEN: et nyimporteret shelter svarer 404 indtil næste deploy. Kør derfor et
+// deploy efter import_new_shelters_only.py — static params og sitemappet dækker
+// samme 1.700 shelters (verificeret), så der er ingen levende URL udenfor.
+export const dynamicParams = false;
 
 /** ISR: cache 1 time for hurtig TTFB. Efter første load serveres siden fra cache. */
 export const revalidate = 86400;

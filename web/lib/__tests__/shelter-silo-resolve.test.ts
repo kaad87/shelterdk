@@ -147,8 +147,10 @@ describe("statuskoden skal afgøres før render-streamen", () => {
   // suspense boundary) og udleveret med 200 — en soft-404. Målt: 200 både fra
   // page.tsx og fra et layout.tsx uden for enhver Suspense-grænse.
   // generateMetadata kører før streamen, så throwet DÉR sætter statuskoden.
-  // Kaldet i page-komponenten skal også blive, og segmentet skal have sin egen
-  // not-found.tsx — ellers er 404-kroppen tom.
+  // Kaldet i page-komponenten skal også blive. Kroppen kommer fra at Next
+  // udleverer den prerendrede app/not-found.tsx — det kræver at segmentet IKKE
+  // har sin egen not-found.tsx (den tvinger en on-demand-render, og så er
+  // kroppen tom igen).
   const read = (file: string) => {
     const source = readFileSync(path.join(REPO_WEB_ROOT, SEGMENT, file), "utf8");
     return source.replace(/\/\/[^\n]*/g, "").replace(/\/\*[\s\S]*?\*\//g, "");
@@ -159,8 +161,30 @@ describe("statuskoden skal afgøres før render-streamen", () => {
     expect(existsSync(path.join(REPO_WEB_ROOT, SEGMENT, "layout.tsx"))).toBe(false);
   });
 
-  it("har sin egen not-found.tsx, så 404-kroppen ikke er tom", () => {
-    expect(existsSync(path.join(REPO_WEB_ROOT, SEGMENT, "not-found.tsx"))).toBe(true);
+  it("har ingen not-found.tsx — en egen 404-grænse i segmentet tømmer kroppen", () => {
+    // Målt: med dynamicParams = false OG en not-found.tsx her svarede ruten 404
+    // med nul <h1> — indholdet lå kun i RSC-payloaden. Uden filen udleverer Next
+    // den prerendrede app/not-found.tsx, og kroppen er synlig.
+    expect(existsSync(path.join(REPO_WEB_ROOT, SEGMENT, "not-found.tsx"))).toBe(false);
+  });
+
+  it("har dynamicParams = false, så 404-kroppen ikke er tom", () => {
+    // Det er dét der giver en 404 med synligt indhold: Next svarer uden at
+    // rendere siden. Med true var kroppen tom, uanset hvor notFound() stod —
+    // også med et not-found.tsx i segmentet.
+    const code = read("page.tsx");
+    expect(code).toMatch(/export const dynamicParams = false/);
+    expect(code).not.toMatch(/export const dynamicParams = true/);
+  });
+
+  it("har static params der daekker hver levende shelter-slug", () => {
+    // Med dynamicParams = false er generateStaticParams den ENESTE kilde til
+    // hvilke shelter-URL'er der findes. Mangler en slug, er siden 404 — derfor
+    // skal filteret matche sitemappets (begge udelader kun dubletter).
+    const silo = readFileSync(path.join(REPO_WEB_ROOT, "lib/danmark-silo.ts"), "utf8");
+    const fn = silo.slice(silo.indexOf("export async function getSheltersForStaticParams"));
+    expect(fn).toContain('is("duplicate_of_shelter_id", null)');
+    expect(fn).toContain('not("slug", "is", null)');
   });
 
   it("kalder notFound() i BÅDE generateMetadata og page-komponenten", () => {
