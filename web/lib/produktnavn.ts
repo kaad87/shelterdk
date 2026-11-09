@@ -424,3 +424,18 @@ export function navnBehoeverHaand(p: {
   if (/^\d+(?:[.,]\d+)?\s*(?:l\b|liter|ml|cl|cm|mm|g\b|kg|stk|dele|personer|par)/i.test(navn)) return true;
   return false;
 }
+
+/**
+ * Foerste ord uden tegnsaetning, smaa bogstaver. Bruges til at afgoere om et
+ * maerke allerede staar i navnet, saa et kort ikke skriver det to gange.
+ *
+ * Optalt 9. november 2026 over de 362 varer i publicerede guider: 307 har
+ * hele maerket som optakt til navnet ("Light My Fire" + "Light My Fire
+ * FireSteel BIO"). De sidste otte med maerke er samme ord med en
+ * stavevariant: "Coghlan's" mod "Coghlans", "Columbia Sportswear" mod
+ * "Columbia ...". En prefix-test fanger de 307, men ikke de otte, saa
+ * sammenligningen gaar paa foerste ord uden tegn.
+ */
+export function foersteOrd(s: string): string {
+  return (s.trim().split(/\s+/)[0] ?? "").toLowerCase().replace(/[^a-z0-9æøå]/g, "");
+}

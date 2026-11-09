@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { rentNavn, rentMaerke, navnBehoeverHaand } from "../produktnavn";
+import { rentNavn, rentMaerke, navnBehoeverHaand, foersteOrd } from "../produktnavn";
 
 // Alle navne herunder er rigtige produktnavne fra kataloget 1. november 2026.
 // Ingen af dem er opdigtet: udledningen skal maales mod det feedene faktisk
@@ -200,5 +200,38 @@ describe("navnBehoeverHaand", () => {
     expect(
       navnBehoeverHaand({ product_name: "Dry bag - 8 liter", brand: null, display_name: "Treklife Drybag 8 liter" })
     ).toBe(false);
+  });
+});
+
+describe("foersteOrd", () => {
+  it("gennemskuer de stavevarianter katalogets maerker faktisk har", () => {
+    // De otte varer hvor maerket ikke er et rent prefix af navnet, optalt
+    // 9. november 2026. Alle otte er samme ord med en variant imellem, saa
+    // en prefix-test ville lade dem staa med en versal-linje der gentager
+    // navnets foerste ord.
+    const par: [string, string][] = [
+      ["Coghlan's", "Coghlans Poncho For Kids Poncho"],
+      ["Columbia Sportswear", "Columbia Broad Spectrum II Booney"],
+      ["Membrane Solutions", "Membrane Solution Straw I Nocolor"],
+      ["Light My Fire", "Light My Fire FireSteel BIO"],
+      ["Haglöfs", "Haglöfs Tarius -5 Midnight Blue/Tangerine"],
+    ];
+    for (const [maerke, navn] of par) {
+      expect(foersteOrd(maerke)).toBe(foersteOrd(navn));
+    }
+  });
+
+  it("holder to forskellige maerker adskilt", () => {
+    expect(foersteOrd("Camelbak")).not.toBe(foersteOrd("Thrive Flip Straw 32oz"));
+    expect(foersteOrd("Primus")).not.toBe(foersteOrd("Nalgene Wide Mouth 500 ml"));
+  });
+
+  it("taaler tom streng og bare mellemrum", () => {
+    expect(foersteOrd("")).toBe("");
+    expect(foersteOrd("   ")).toBe("");
+  });
+
+  it("beholder danske bogstaver", () => {
+    expect(foersteOrd("Æblegaard Udstyr")).toBe("æblegaard");
   });
 });

@@ -5,6 +5,7 @@ import type { AffiliateProduct } from "@/lib/affiliate-products";
 import { rentMaerke, rentNavn } from "@/lib/produktnavn";
 import { trackAffiliateClick } from "@/lib/tracking";
 import { ProduktBillede } from "@/components/ProduktBillede";
+import { retailerNavn } from "@/lib/retailer-navn";
 
 function fireAffiliate(
   product: AffiliateProduct,
@@ -27,12 +28,7 @@ function fireAffiliate(
 export type GearCardVariant = "editorial" | "product" | "pill";
 
 function RetailerLabel({ retailer }: { retailer: AffiliateProduct["retailer"] }) {
-  const labels = {
-    outmore: "Outmore.dk",
-    backpackerlife: "Backpackerlife.dk",
-    outdoortid: "Outdoortid.dk",
-  };
-  return <>{labels[retailer]}</>;
+  return <>{retailerNavn(retailer)}</>;
 }
 
 function formatPrice(n: number): string {
