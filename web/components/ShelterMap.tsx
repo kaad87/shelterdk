@@ -452,10 +452,31 @@ interface ShelterMapProps {
    * huskede én det. En oplysning der skal videregives manuelt tolv steder
    * bliver glemt elleve.
    *
-   * Send en tom liste for bevidst at slaa laget fra, fx paa embed-kortet,
-   * der ligger paa partneres egne sites.
+   * Vil du slaa laget fra, saa brug `visBetalteOvernatninger={false}` frem
+   * for en tom liste: den siger hvorfor, og den er til at soege efter.
    */
   stays?: StayPin[];
+  /**
+   * Skal laget med betalte overnatninger med paa dette kort? Standard: ja.
+   *
+   * SAET DEN TIL FALSE PAA SIDER DER FILTRERER PAA EN EGENSKAB — hund,
+   * toilet, bruser, handicapvenlig, baalplads, strand, vand, familier,
+   * teltplads. `getPublishedStayPins` henter alle publicerede steder uden
+   * noget filter, og `nature_stays` har ingen felter for de egenskaber: paa
+   * de 15 publicerede steder indeholder `amenities` kun kilde, booking_slug,
+   * operator og verificeret. Vi kan hverken bekraefte eller afvise at et
+   * glampingsted tager imod hunde.
+   *
+   * Paa /shelter-med-hund stod der 21 markoerer, hvoraf de 15 var betalte.
+   * Sidens egne 17 hundevenlige shelters var klumpet i 6 markoerer, saa det
+   * betalte lag fyldte mere end indholdet, paa en side hvis overskrift lover
+   * en egenskab vi ikke kan stille for dem. Paa /handicapvenlige-shelters er
+   * det vaerre: dér planlaegger nogen efter tilgaengelighed.
+   *
+   * Geografiske sider — forside, by, region, omraade, soegning — paastaar
+   * ingen egenskab om det der ligger paa kortet, og dér bliver laget.
+   */
+  visBetalteOvernatninger?: boolean;
   className?: string;
   /** Kaldes når brugeren pan/zoomer – bruges til at hente shelters i det synlige område. */
   onBoundsChange?: (bounds: MapBounds) => void;
@@ -476,6 +497,7 @@ interface ShelterMapProps {
 export function ShelterMap({
   shelters,
   stays,
+  visBetalteOvernatninger = true,
   className = "",
   onBoundsChange,
   initialRegion,
@@ -494,6 +516,9 @@ export function ShelterMap({
   // og faar derfor pins med i foerste maling; de oevrige sider henter her.
   const [hentedeStays, setHentedeStays] = useState<StayPin[] | null>(null);
   useEffect(() => {
+    // Siden laget er fravalgt, skal opslaget heller ikke ske: et kald vi
+    // alligevel kaster vaek er spildt egress paa hver kortvisning.
+    if (!visBetalteOvernatninger) return;
     if (stays !== undefined) return;
     let afbrudt = false;
     fetch("/api/map/stays")
@@ -501,8 +526,10 @@ export function ShelterMap({
       .then((d) => { if (!afbrudt) setHentedeStays((d?.stays ?? []) as StayPin[]); })
       .catch(() => { if (!afbrudt) setHentedeStays([]); });
     return () => { afbrudt = true; };
-  }, [stays]);
-  const visteStays = stays ?? hentedeStays ?? undefined;
+  }, [stays, visBetalteOvernatninger]);
+  // Fravalget slaar igennem her og ikke kun i opslaget, saa en side der BAADE
+  // fravaelger laget og sender en liste med stadig ender uden pins.
+  const visteStays = visBetalteOvernatninger ? stays ?? hentedeStays ?? undefined : undefined;
   const regionView = initialRegion ? REGION_CENTER_ZOOM[initialRegion] : undefined;
   const toDisplay = initialRegion?.trim()
     ? shelters.filter((s) => (s.region || "").trim() === initialRegion.trim())

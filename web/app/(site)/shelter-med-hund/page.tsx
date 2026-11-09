@@ -148,7 +148,7 @@ export default async function ShelterMedHundPage() {
                 </div>
               </div>
               <div className="lg:sticky lg:top-24 lg:self-start rounded-xl overflow-hidden border border-primary/10 bg-primary/5 min-h-[280px] sm:min-h-[360px] lg:min-h-[420px] h-[50vh] sm:h-[60vh] lg:h-[calc(100vh-8rem)] lg:max-h-[720px] order-1 lg:order-2 mb-6 lg:mb-0 mx-4 sm:mx-6 lg:mx-0">
-                <ShelterMap shelters={toMapShelters(shelters)} className="w-full h-full" />
+                <ShelterMap shelters={toMapShelters(shelters)} visBetalteOvernatninger={false} className="w-full h-full" />
               </div>
             </div>
           </section>

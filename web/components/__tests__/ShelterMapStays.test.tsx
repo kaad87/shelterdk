@@ -58,3 +58,38 @@ describe("kortet henter selv de betalte steder", () => {
     expect(container.textContent).not.toContain("Betalt overnatning");
   });
 });
+
+describe("egenskabssider fravaelger de betalte steder", () => {
+  it("henter dem ikke, naar laget er fravalgt", async () => {
+    // Opslaget skal ogsaa springes over, ikke kun visningen: et kald vi
+    // alligevel kaster vaek er spildt egress paa hver kortvisning.
+    render(<ShelterMap shelters={shelters} visBetalteOvernatninger={false} />);
+    await new Promise((r) => setTimeout(r, 30));
+    expect(hent).not.toHaveBeenCalled();
+  });
+
+  it("viser ingen lag-knap, naar laget er fravalgt", async () => {
+    const { container } = render(<ShelterMap shelters={shelters} visBetalteOvernatninger={false} />);
+    await new Promise((r) => setTimeout(r, 30));
+    expect(container.textContent).not.toContain("Betalt overnatning");
+  });
+
+  it("fravalget vinder over en liste sendt med", async () => {
+    // En side der baade fravaelger laget og sender pins med skal ende uden
+    // pins. Ellers ville et fravalg vaere stille afhaengigt af kaldestedet.
+    const pins = [{ id: 1, slug: "x", name: "Thy Glamping", type: "glamping", lat: 56.7, lng: 8.3,
+      price_from: null, image_url: null, booking_url: "https://b.dk/x", link_source: "booking_com" }];
+    const { container } = render(
+      <ShelterMap shelters={shelters} stays={pins as never[]} visBetalteOvernatninger={false} />
+    );
+    await new Promise((r) => setTimeout(r, 30));
+    expect(container.textContent).not.toContain("Betalt overnatning");
+  });
+
+  it("viser laget som foer, naar intet er fravalgt", async () => {
+    // Geografiske sider — forside, by, region, omraade, soegning — paastaar
+    // ingen egenskab om det kortet viser, og dér bliver laget.
+    const { container } = render(<ShelterMap shelters={shelters} />);
+    await waitFor(() => expect(container.textContent).toContain("Betalt overnatning"));
+  });
+});

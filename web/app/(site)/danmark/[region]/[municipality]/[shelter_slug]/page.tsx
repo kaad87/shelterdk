@@ -15,6 +15,7 @@ import {
 } from "@/lib/danmark-silo";
 import { segmentSlugToName } from "@/lib/slug";
 import { canonicalRegionSlug } from "@/lib/cross-page-config";
+import { canonicalMunicipalityHref } from "@/lib/municipality-by-redirects";
 import { getPublishedGuestReviews } from "@/lib/guest-reviews";
 import type { Shelter } from "@/types/shelter";
 import {
@@ -247,7 +248,13 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
     // canonicalRegionSlug her gik hvert eneste breadcrumb-link gennem en
     // 308-redirect, og hubben fik næsten ingen direkte interne links.
     { label: displayRegionName, href: `/danmark/${canonicalRegionSlug(displayRegionName)}` },
-    { label: displayMunicipalityName, href: `/danmark/${regionSlug}/${municipalitySlug}` },
+    // Kommuner hvis kommuneside 308'er til /by/<kommune> linkes direkte til
+    // by-siden, saa breadcrumbet (og BreadcrumbList-JSON-LD'en) ikke peger paa
+    // en redirect og by-siden faar de interne links.
+    {
+      label: displayMunicipalityName,
+      href: canonicalMunicipalityHref(`/danmark/${regionSlug}/${municipalitySlug}`),
+    },
     { label: shelter.title },
   ];
 

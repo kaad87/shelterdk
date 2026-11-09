@@ -156,7 +156,7 @@ export async function CollectionPage({
           {count > 0 && (
             <section className="mb-10">
               <div className="mb-4 h-[280px] overflow-hidden rounded-xl border border-primary/10 bg-primary/5 sm:h-[360px]">
-                <ShelterMap shelters={toMapShelters(shelters)} className="h-full w-full" />
+                <ShelterMap shelters={toMapShelters(shelters)} visBetalteOvernatninger={false} className="h-full w-full" />
               </div>
             </section>
           )}
