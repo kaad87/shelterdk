@@ -2,7 +2,7 @@
 
 import { ExternalLink } from "lucide-react";
 import type { AffiliateProduct } from "@/lib/affiliate-products";
-import { rentMaerke, rentNavn } from "@/lib/produktnavn";
+import { maerketStaarINavnet, rentMaerke, rentNavn } from "@/lib/produktnavn";
 import { trackAffiliateClick } from "@/lib/tracking";
 import { ProduktBillede } from "@/components/ProduktBillede";
 import { retailerNavn } from "@/lib/retailer-navn";
@@ -82,7 +82,10 @@ function EditorialVariant({ product, className }: { product: AffiliateProduct; c
 function ProductVariant({ product, className }: { product: AffiliateProduct; className?: string }) {
   const outOfStock = !product.in_stock;
   const navn = rentNavn(product);
-  const maerke = rentMaerke(product);
+  // Maerket vises kun naar det ikke allerede staar som optakt til navnet.
+  // 307 af de 362 varer i publicerede guider gentog det ordret
+  // ("Light My Fire" over "Light My Fire FireSteel BIO").
+  const maerke = maerketStaarINavnet(rentMaerke(product), navn) ? null : rentMaerke(product);
   return (
     <div className={`relative overflow-hidden rounded-xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.06)] flex flex-row md:flex-col ${className ?? ""}`}>
       {product.discount_pct != null && (

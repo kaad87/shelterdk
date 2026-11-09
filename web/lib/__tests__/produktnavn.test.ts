@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { rentNavn, rentMaerke, navnBehoeverHaand, foersteOrd } from "../produktnavn";
+import { rentNavn, rentMaerke, navnBehoeverHaand, foersteOrd, maerketStaarINavnet } from "../produktnavn";
 
 // Alle navne herunder er rigtige produktnavne fra kataloget 1. november 2026.
 // Ingen af dem er opdigtet: udledningen skal maales mod det feedene faktisk
@@ -233,5 +233,30 @@ describe("foersteOrd", () => {
 
   it("beholder danske bogstaver", () => {
     expect(foersteOrd("Æblegaard Udstyr")).toBe("æblegaard");
+  });
+});
+
+describe("maerketStaarINavnet", () => {
+  it("fanger de to former for gentagelse katalogets varer har", () => {
+    // Ordret optakt (307 af 362 varer) ...
+    expect(maerketStaarINavnet("Light My Fire", "Light My Fire FireSteel BIO")).toBe(true);
+    expect(maerketStaarINavnet("Nalgene", "Nalgene Wide Mouth 500 ml")).toBe(true);
+    // ... og de otte med en stavevariant imellem.
+    expect(maerketStaarINavnet("Coghlan's", "Coghlans Poncho For Kids Poncho")).toBe(true);
+    expect(maerketStaarINavnet("Columbia Sportswear", "Columbia Broad Spectrum II Booney")).toBe(true);
+    expect(maerketStaarINavnet("Membrane Solutions", "Membrane Solution Straw I Nocolor")).toBe(true);
+  });
+
+  it("lader maerket staa naar det ikke er i navnet", () => {
+    // Den dag et feed leverer et navn uden maerket, er maerket netop den
+    // oplysning laeseren mangler, og linjen skal frem igen.
+    expect(maerketStaarINavnet("Camelbak", "Thrive Flip Straw 32oz Oxford")).toBe(false);
+    expect(maerketStaarINavnet("Primus", "Classic Light Vacuum Bottle 0.5 L")).toBe(false);
+  });
+
+  it("er falsk uden maerke, saa kaldestedet ikke skjuler noget der ikke findes", () => {
+    expect(maerketStaarINavnet(null, "Nalgene Wide Mouth")).toBe(false);
+    expect(maerketStaarINavnet(undefined, "Nalgene Wide Mouth")).toBe(false);
+    expect(maerketStaarINavnet("", "Nalgene Wide Mouth")).toBe(false);
   });
 });

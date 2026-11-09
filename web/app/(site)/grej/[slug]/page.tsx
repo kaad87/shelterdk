@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProduktBySlug, getProduktSlugs } from "@/lib/produktside";
 import { produktSlug } from "@/lib/produkt-slug";
-import { rentNavn } from "@/lib/produktnavn";
+import { maerketStaarINavnet, rentNavn } from "@/lib/produktnavn";
 import { formatScore } from "@/lib/buying-guides-score";
 import { samlBeskrivelse } from "@/lib/produkt-meta";
 import { retailerLabel } from "@/lib/affiliate-retailer";
@@ -169,7 +169,11 @@ export default async function ProduktPage({ params }: { params: { slug: string }
         </div>
 
         <div className="order-1 min-w-0 md:order-2">
-          {maerke && (
+          {/* Optakten over overskriften vises kun naar maerket ikke allerede
+              staar i navnet. Fakta-tabellen laengere nede beholder sin
+              "Mærke"-raekke: dér er det et datafelt med egen etiket, ikke en
+              gentagelse af linjen under. */}
+          {maerke && !maerketStaarINavnet(maerke, navn) && (
             <p className="text-[11px] font-bold uppercase tracking-widest text-accent-dark">{maerke}</p>
           )}
           <h1 className="mt-1 font-serif text-3xl font-semibold leading-tight text-primary md:text-4xl">

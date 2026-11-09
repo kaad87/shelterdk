@@ -439,3 +439,23 @@ export function navnBehoeverHaand(p: {
 export function foersteOrd(s: string): string {
   return (s.trim().split(/\s+/)[0] ?? "").toLowerCase().replace(/[^a-z0-9æøå]/g, "");
 }
+
+/**
+ * Staar maerket allerede i navnet, saa en selvstaendig maerkelinje kun ville
+ * gentage det?
+ *
+ * Bruges af de tre steder der viser et maerke SOM OPTAKT til navnet:
+ * annoncekortet i shelter-grid'et, produktkortet i guiderne og overskriften
+ * paa /grej-siderne. Et "LIGHT MY FIRE" hen over "Light My Fire FireSteel
+ * BIO" er stoej: det bruger en linje paa at sige noget, laeseren laeser igen
+ * en halv centimeter laengere nede.
+ *
+ * Gaelder IKKE de steder hvor maerket er et selvstaendigt datafelt med sin
+ * egen etiket. Fakta-tabellen paa /grej har en "Mærke"-raekke, og den skal
+ * blive staaende: en spec-tabel der springer maerket over, fordi det ogsaa
+ * staar i titlen, er en daarligere tabel. Samme for brand i JSON-LD.
+ */
+export function maerketStaarINavnet(maerke: string | null | undefined, navn: string): boolean {
+  if (!maerke) return false;
+  return foersteOrd(maerke) === foersteOrd(navn);
+}

@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { ExternalLink } from "lucide-react";
 import { ProduktBillede } from "@/components/ProduktBillede";
-import { foersteOrd } from "@/lib/produktnavn";
+import { maerketStaarINavnet } from "@/lib/produktnavn";
 import { retailerNavn } from "@/lib/retailer-navn";
 import { useInView } from "@/lib/useInView";
 import { trackAffiliateClick, trackInFeedSeen } from "@/lib/tracking";
@@ -96,7 +96,7 @@ export function AffiliateInFeedCard({
   // Det betyder at linjen aldrig vises for det nuvaerende katalog. Den bliver
   // staaende alligevel: et feed kan sagtens levere "Thrive Flip Straw 32oz"
   // med maerket Camelbak, og saa er maerket den oplysning man mangler.
-  const visMaerke = vare.maerke != null && foersteOrd(vare.maerke) !== foersteOrd(vare.navn);
+  const visMaerke = vare.maerke != null && !maerketStaarINavnet(vare.maerke, vare.navn);
 
   return (
     <aside
