@@ -23,6 +23,7 @@ import { GuideTeaser } from "@/components/GuideTeaser";
 import { resolveGuideLinks, stedKandidater } from "@/lib/guide-links";
 import { hentInFeedAnnonce } from "@/lib/infeed-annonce";
 import { slugifySegment } from "@/lib/slug";
+import { canonicalMunicipalityHref } from "@/lib/municipality-by-redirects";
 import { canonicalRegionSlug } from "@/lib/cross-page-config";
 
 interface PageProps {
@@ -308,7 +309,9 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
                     {topMunicipalities.map((municipality) => (
                       <Link
                         key={municipality.slug}
-                        href={`/danmark/${municipality.regionSlug}/${municipality.slug}`}
+                        href={canonicalMunicipalityHref(
+                          `/danmark/${municipality.regionSlug}/${municipality.slug}`
+                        )}
                         className="rounded-full border border-primary/10 bg-primary/[0.02] px-4 py-2 text-sm font-medium text-primary hover:border-accent/30 hover:text-accent transition-colors"
                       >
                         {municipality.name}

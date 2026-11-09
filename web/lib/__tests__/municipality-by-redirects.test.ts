@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   MUNICIPALITY_BY_REDIRECTS,
   REDIRECTING_MUNICIPALITY_NAMES,
+  canonicalMunicipalityHref,
 } from "@/lib/municipality-by-redirects";
 import { PRIORITY_BY_CITY_NAMES } from "@/lib/danmark-silo";
 import { slugifySegment } from "@/lib/slug";
@@ -64,6 +65,42 @@ describe("kommunesiden må ikke redirecte i render", () => {
       // Eksakt path: et wildcard ville også ramme shelter-detaljesiderne under
       // /danmark/:region/:kommune/:slug.
       expect(rule!.source).not.toMatch(/[:*]/);
+    }
+  });
+});
+
+describe("canonicalMunicipalityHref", () => {
+  it("peger de redirectende kommunesider direkte paa /by/<kommune>", () => {
+    for (const { from, to } of MUNICIPALITY_BY_REDIRECTS) {
+      expect(canonicalMunicipalityHref(from)).toBe(to);
+    }
+  });
+
+  it("lader almindelige kommunesider vaere i fred", () => {
+    expect(canonicalMunicipalityHref("/danmark/fyn/assens")).toBe("/danmark/fyn/assens");
+    expect(canonicalMunicipalityHref("/danmark/bornholm/roenne")).toBe("/danmark/bornholm/roenne");
+    // Shelter-detaljesider er tre segmenter og maa aldrig omskrives.
+    expect(canonicalMunicipalityHref("/danmark/jylland/silkeborg/et-shelter-123")).toBe(
+      "/danmark/jylland/silkeborg/et-shelter-123"
+    );
+  });
+
+  // Hvert sted der bygger et link til en kommuneside skal gaa gennem helperen,
+  // ellers peger linket paa en 308 og by-siden faar ingen direkte interne links.
+  it("bruges paa alle kendte kaldesteder der linker til en kommuneside", () => {
+    const callSites = [
+      "app/(site)/danmark/[region]/[municipality]/[shelter_slug]/page.tsx",
+      "app/(site)/by/[by_slug]/page.tsx",
+      "app/(site)/danmark/[region]/page.tsx",
+      "app/(site)/fri-teltning/page.tsx",
+      "app/(site)/omraade/[slug]/page.tsx",
+      "components/CrossFilterRegionPage.tsx",
+    ];
+    for (const rel of callSites) {
+      const source = readFileSync(path.join(REPO_WEB_ROOT, rel), "utf8");
+      expect(source, `${rel} linker til en kommuneside uden canonicalMunicipalityHref`).toContain(
+        "canonicalMunicipalityHref("
+      );
     }
   });
 });

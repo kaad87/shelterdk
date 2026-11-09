@@ -12,6 +12,7 @@ import { toMapShelters } from "@/lib/map-shelter";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
 import { buildQuickAnswer } from "@/lib/quick-answer";
 import { slugifySegment } from "@/lib/slug";
+import { canonicalMunicipalityHref } from "@/lib/municipality-by-redirects";
 import { canonicalRegionSlug } from "@/lib/cross-page-config";
 import { regionDisplayName } from "@/data/region-content";
 import { isStructuredBookable } from "@shared/lib/shelter-detail";
@@ -189,7 +190,9 @@ export async function CrossFilterRegionPage({
                       <tr key={row.kommune} className="border-b border-primary/5">
                         <td className="py-2 pr-4 text-sm text-primary">
                           <Link
-                            href={`/danmark/${regionSlug}/${slugifySegment(row.kommune)}`}
+                            href={canonicalMunicipalityHref(
+                              `/danmark/${regionSlug}/${slugifySegment(row.kommune)}`
+                            )}
                             className="hover:text-accent transition-colors"
                           >
                             {row.kommune}

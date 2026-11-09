@@ -12,6 +12,7 @@ import { loadFriTeltningIndex, groupByRegion, formatHa, summarize } from "@/lib/
 import { canonicalRegionSlug, REGION_SHORT_NAMES } from "@/lib/cross-page-config";
 import { prepositionForRegionName } from "@/lib/area-db";
 import { slugifySegment } from "@/lib/slug";
+import { canonicalMunicipalityHref } from "@/lib/municipality-by-redirects";
 import { GuideTeaser } from "@/components/GuideTeaser";
 import { temaKandidater, resolveGuideLinks } from "@/lib/guide-links";
 
@@ -203,7 +204,12 @@ export default async function FriTeltningPage() {
                           {a.kommune && (
                             <>
                               {" · "}
-                              <Link href={`/danmark/${slugifySegment(region)}/${slugifySegment(a.kommune)}`} className="text-accent hover:underline">
+                              <Link
+                                href={canonicalMunicipalityHref(
+                                  `/danmark/${slugifySegment(region)}/${slugifySegment(a.kommune)}`
+                                )}
+                                className="text-accent hover:underline"
+                              >
                                 Shelters i {a.kommune}
                               </Link>
                             </>

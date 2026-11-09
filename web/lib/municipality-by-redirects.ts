@@ -33,3 +33,23 @@ export const MUNICIPALITY_BY_REDIRECTS: readonly MunicipalityByRedirect[] =
 export const REDIRECTING_MUNICIPALITY_NAMES: ReadonlySet<string> = new Set(
   MUNICIPALITY_BY_REDIRECTS.map((entry) => entry.kommune)
 );
+
+const REDIRECTING_MUNICIPALITY_PATHS: ReadonlyMap<string, string> = new Map(
+  MUNICIPALITY_BY_REDIRECTS.map((entry) => [entry.from, entry.to])
+);
+
+/**
+ * Kanonisk href til en kommuneside: `/by/<kommune>` for de kommuner hvis
+ * kommuneside 308'er dertil, ellers stien uændret.
+ *
+ * Interne links skal pege direkte på målet. Ellers går hvert link gennem en
+ * 308, og netop den side vi samler autoriteten på får ingen direkte interne
+ * links — præcis samme grund som `canonicalRegionSlug` bruges i breadcrumbet
+ * på shelter-detaljesiderne.
+ *
+ * Tager den færdigbyggede sti (fx "/danmark/jylland/silkeborg"), fordi
+ * kaldestederne har regions- og kommunenavnet i forskellige former.
+ */
+export function canonicalMunicipalityHref(municipalityPath: string): string {
+  return REDIRECTING_MUNICIPALITY_PATHS.get(municipalityPath) ?? municipalityPath;
+}

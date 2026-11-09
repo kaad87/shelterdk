@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { getDistinctRegions, slugifySegment, NO_KOMMUNE_SLUG, getMunicipalitiesWithCounts } from "@/lib/danmark-silo";
 import { createPublicClient } from "@/utils/supabase/server-public";
 import { segmentSlugToName } from "@/lib/slug";
+import { canonicalMunicipalityHref } from "@/lib/municipality-by-redirects";
 import { getSheltersPage, SOEG_PAGE_SIZE, type SoegFilters, type MapBbox } from "@/lib/soeg-db";
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 import { prepositionForRegionName } from "@/lib/area-db";
@@ -358,7 +359,9 @@ export default async function DanmarkRegionPage({ params, searchParams }: PagePr
                   <Link
                     key={m.name}
                     prefetch={false}
-                    href={`/danmark/${childRegionSlug}/${slugifySegment(m.name)}`}
+                    href={canonicalMunicipalityHref(
+                      `/danmark/${childRegionSlug}/${slugifySegment(m.name)}`
+                    )}
                     className="flex items-center justify-between rounded-lg border border-primary/10 bg-white px-3 py-2.5 text-sm hover:border-accent/30 hover:shadow-sm transition-all group"
                   >
                     <span className="text-primary group-hover:text-accent transition-colors font-medium truncate">

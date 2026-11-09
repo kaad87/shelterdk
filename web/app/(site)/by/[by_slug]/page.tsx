@@ -13,6 +13,7 @@ import {
 } from "@/lib/danmark-silo";
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 import { segmentSlugToName } from "@/lib/slug";
+import { canonicalMunicipalityHref } from "@/lib/municipality-by-redirects";
 import { ByShelterExplorer } from "@/components/ByShelterExplorer";
 import { slimSheltersForList } from "@shared/lib/shelter-list-slim";
 import { getWater, getToilet } from "@/lib/shelter-detail";
@@ -186,7 +187,10 @@ function ByProse({
           Se også de tilhørende kommune-oversigter for{" "}
           {kommuneLinks.map((k, i) => (
             <span key={k.slug}>
-              <Link href={`/danmark/${k.regionSlug}/${k.slug}`} className="text-accent hover:underline">
+              <Link
+                href={canonicalMunicipalityHref(`/danmark/${k.regionSlug}/${k.slug}`)}
+                className="text-accent hover:underline"
+              >
                 {k.name} Kommune
               </Link>
               {i < kommuneLinks.length - 1 ? ", " : ""}
