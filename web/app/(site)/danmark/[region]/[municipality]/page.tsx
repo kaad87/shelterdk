@@ -41,6 +41,26 @@ export const dynamicParams = false;
 /** ISR: cache og revalider hver 24. time. */
 export const revalidate = 86400;
 
+/**
+ * Kommunesiden SERVERES fra 1 shelter, men INDEKSERES foerst fra 2.
+ *
+ * Foer byggede generateStaticParams sine params af getRegionKommunePairs(2),
+ * og da ruten har dynamicParams = false gav en kommune med kun 1 shelter en
+ * 404. Men der blev linket derhen alligevel — shelter-sidens breadcrumb
+ * (baade <a href> og BreadcrumbList-JSON-LD), region-hubben og /fri-teltning.
+ * Maalt 9/11 2026 var det 5 kommuner i Sjaelland og Oeerne (dragoer,
+ * glostrup, hoersholm, ishoej, solroed), linket fra bl.a. /danmark/sjaelland.
+ * Baade brugere og Google ramte altsaa en blindgyde.
+ *
+ * Taersklen fandtes for at holde thin content ude af indekset. Det goer
+ * robots-noindex nedenfor i stedet, saa siden kan svare 200 uden at blive
+ * indekseret. app/sitemap.ts har sin EGEN getRegionKommunePairs(2) og lister
+ * derfor fortsat kun de tykke sider — saet ikke de to taerskler i afhaengighed
+ * af hinanden, de svarer med vilje paa to forskellige spoergsmaal.
+ */
+const MIN_SHELTERE_FOR_SIDE = 1;
+const MIN_SHELTERE_FOR_INDEKSERING = 2;
+
 async function getMunicipalityPageContext(
   regionName: string,
   municipalityName: string | null
@@ -67,7 +87,7 @@ async function getMunicipalityPageContext(
 }
 
 export async function generateStaticParams() {
-  const pairs = await getRegionKommunePairs(2);
+  const pairs = await getRegionKommunePairs(MIN_SHELTERE_FOR_SIDE);
   return pairs.map(({ region, kommune }) => ({
     region: slugifySegment(region),
     municipality: kommune ? slugifySegment(kommune) : NO_KOMMUNE_SLUG,
@@ -80,7 +100,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const regions = [...new Set(pairs.map((p) => p.region))];
   const regionName = segmentSlugToName(regionSlug, regions);
   if (!regionName) return { title: { absolute: "Region ikke fundet" } };
-  const municipalities = await getMunicipalitiesInRegion(regionName, 2);
+  const municipalities = await getMunicipalitiesInRegion(regionName, MIN_SHELTERE_FOR_SIDE);
   const municipalityName =
     municipalitySlug === NO_KOMMUNE_SLUG
       ? "Ukendt kommune"
@@ -119,7 +139,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       // OG-billedet genereres dynamisk af ./opengraph-image.tsx (branded kort
       // med kommune + shelter-antal) i stedet for at hotlinke et generisk foto.
     },
-    ...(shelters.length === 0 && { robots: { index: false, follow: true } }),
+    ...(shelters.length < MIN_SHELTERE_FOR_INDEKSERING && {
+      robots: { index: false, follow: true },
+    }),
   };
 }
 
@@ -240,7 +262,7 @@ export default async function DanmarkMunicipalityPage({ params }: PageProps) {
   const regionName = segmentSlugToName(regionSlug, regions);
   if (!regionName) notFound();
 
-  const municipalities = await getMunicipalitiesInRegion(regionName, 2);
+  const municipalities = await getMunicipalitiesInRegion(regionName, MIN_SHELTERE_FOR_SIDE);
   const municipalityName =
     municipalitySlug === NO_KOMMUNE_SLUG
       ? null

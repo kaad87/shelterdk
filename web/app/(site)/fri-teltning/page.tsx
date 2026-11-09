@@ -13,6 +13,7 @@ import { canonicalRegionSlug, REGION_SHORT_NAMES } from "@/lib/cross-page-config
 import { prepositionForRegionName } from "@/lib/area-db";
 import { slugifySegment } from "@/lib/slug";
 import { canonicalMunicipalityHref } from "@/lib/municipality-by-redirects";
+import { getRegionKommunePairs, getDistinctByLandingPages } from "@/lib/danmark-silo";
 import { GuideTeaser } from "@/components/GuideTeaser";
 import { temaKandidater, resolveGuideLinks } from "@/lib/guide-links";
 
@@ -67,6 +68,34 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 // async for at kunne hente guide-titlerne. Siden prerendres stadig statisk.
+/**
+ * Fri-teltning-datasaettet har sin EGEN region-gruppering, og den passer ikke
+ * altid med shelter-tabellens (region, kommune)-par. Byggede vi linket af
+ * gruppens region, fik vi stier der ikke findes — maalt 9/11 2026 gav
+ * /danmark/sjaelland-og-oeerne/bornholm og .../koebenhavn 404, fordi de to
+ * kommuner hoerer under andre regioner i shelter-tabellen.
+ *
+ * Derfor slaar vi kommunens FAKTISKE region op i siloen. Kender siloen ikke
+ * kommunen, findes der ingen kommuneside, og saa linker vi slet ikke — det er
+ * kun kommune-navnet der ryger, ikke omraadet.
+ */
+function municipalityHrefForKommune(
+  kommune: string,
+  regionSlugByKommune: ReadonlyMap<string, string>,
+  byPageSlugs: ReadonlySet<string>
+): string | null {
+  const kommuneSlug = slugifySegment(kommune);
+  const regionSlug = regionSlugByKommune.get(kommuneSlug);
+  if (regionSlug) {
+    return canonicalMunicipalityHref(`/danmark/${regionSlug}/${kommuneSlug}`);
+  }
+  // Ingen kommuneside, men der kan stadig vaere en by-side: Koebenhavn har
+  // ingen shelters paa kommune-niveau, mens /by/koebenhavn er en levende side.
+  // Uden dette fald-tilbage mistede vi et internt link til den.
+  if (byPageSlugs.has(kommuneSlug)) return `/by/${kommuneSlug}`;
+  return null;
+}
+
 export default async function FriTeltningPage() {
   // Temasiden har ét konkret emne, saa koblingen til guiderne er
   // redaktionel og ikke en udfyldningsblok. Listen bor i lib/guide-links.
@@ -77,6 +106,16 @@ export default async function FriTeltningPage() {
   const areas = loadFriTeltningIndex();
   const { count, totalHa, kommuner } = summarize(areas);
   const groups = groupByRegion(areas);
+  // Taerskel 1: samme liste som kommuneruten bygger sine params af, saa et link
+  // kun findes naar siden findes.
+  const regionSlugByKommune = new Map(
+    (await getRegionKommunePairs(1))
+      .filter((p) => p.kommune)
+      .map((p) => [slugifySegment(p.kommune as string), slugifySegment(p.region)] as const)
+  );
+  const byPageSlugs = new Set(
+    (await getDistinctByLandingPages(1)).map(({ place }) => slugifySegment(place))
+  );
   const lastVerified = getSitePageModified("/fri-teltning");
   const faqJsonLd = JSON.stringify(faqToJsonLd(FAQ));
 
@@ -170,7 +209,11 @@ export default async function FriTeltningPage() {
                   </Link>
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {list.map((a) => (
+                  {list.map((a) => {
+                    const kommuneHref = a.kommune
+                      ? municipalityHrefForKommune(a.kommune, regionSlugByKommune, byPageSlugs)
+                      : null;
+                    return (
                     <details key={a.slug} id={`omraade-${a.slug}`} className="group rounded-xl border border-primary/10 bg-white/60 p-4">
                       <summary className="cursor-pointer list-none flex items-start justify-between gap-3">
                         <span>
@@ -201,13 +244,11 @@ export default async function FriTeltningPage() {
                               </a>
                             </>
                           )}
-                          {a.kommune && (
+                          {kommuneHref && (
                             <>
                               {" · "}
                               <Link
-                                href={canonicalMunicipalityHref(
-                                  `/danmark/${slugifySegment(region)}/${slugifySegment(a.kommune)}`
-                                )}
+                                href={kommuneHref}
                                 className="text-accent hover:underline"
                               >
                                 Shelters i {a.kommune}
@@ -217,7 +258,8 @@ export default async function FriTeltningPage() {
                         </p>
                       </div>
                     </details>
-                  ))}
+                    );
+                  })}
                 </div>
               </section>
             );
