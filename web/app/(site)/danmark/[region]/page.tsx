@@ -152,6 +152,18 @@ export default async function DanmarkRegionPage({ params, searchParams }: PagePr
   const urlParams = await searchParams;
   const regions = await getDistinctRegions();
   const regionName = resolveRegionName(regionSlug, regions);
+  // MAA kunne naa at saette 404: segmentet havde foer en route-level
+  // loading.tsx, og den laegger en Suspense-graense om siden, saa svaret var
+  // begyndt at streame naar notFound() blev kaldt. Next kunne ikke saette
+  // status laengere, og /danmark/<noget-opdigtet> svarede 200 med kun layoutet
+  // (ingen <h1>) — en soft-404 for Google. dynamicParams = false raekker ikke,
+  // for siden laeser searchParams og er derfor ikke ren statisk; den renderes
+  // for enhver slug, og title'en "Region ikke fundet" kom herfra.
+  //
+  // loading.tsx er derfor fjernet. Genindfoer den ikke, og laeg heller ikke
+  // valideringen i et layout: maalt gav notFound() fra et layout korrekt 404,
+  // men en helt tom 404-side (app/not-found.tsx rendrede ikke). Soestersiden
+  // [municipality] har heller ingen loading.tsx og svarer korrekt 404.
   if (!regionName) notFound();
   const canonicalRegionSlug = resolveCanonicalRegionSlug(regionName, regionSlug);
   // Kommune- og shelter-ruterne genereres under slugifySegment(regionName)
