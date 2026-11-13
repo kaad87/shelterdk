@@ -14,10 +14,10 @@ import { useAdSlot } from "@/lib/useAdSlot";
  * for availableWidth=0" — 184 uhåndterede fejl på 30 dage, flest på forsiden.
  *
  * Mærket "Annonce" er usynligt (opacity, ikke display) indtil AdSense melder
- * pladsen fyldt, og hele boksen fjernes hvis svaret er "unfilled". Uden det
- * stod mærket over tom, reserveret plads i ~1 sekund på hver indlæsning — og
- * for altid, hvis pladsen aldrig blev fyldt. Opacity frem for display, så
- * højden ikke ændrer sig undervejs og skubber indholdet under annoncen.
+ * pladsen fyldt. Uden det stod mærket over tom, reserveret plads i ~1 sekund
+ * på hver indlæsning. Opacity frem for display, så højden ikke ændrer sig
+ * undervejs og skubber indholdet under annoncen. Bliver pladsen aldrig fyldt,
+ * skjuler globals.css hele blokken på data-ad-status="unfilled".
  */
 export function AdBanner({ slot = "1359693016", className }: { slot?: string; className?: string }) {
   const { boxRef, ready, filled } = useAdSlot();
@@ -25,7 +25,7 @@ export function AdBanner({ slot = "1359693016", className }: { slot?: string; cl
   return (
     <aside
       ref={boxRef}
-      className={`my-10 ${filled === false ? "hidden" : ""} ${className ?? ""}`}
+      className={`my-10 ${className ?? ""}`}
       aria-label="Annonce"
     >
       <p

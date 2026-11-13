@@ -46,7 +46,7 @@ export function AdInFeed({ className }: { className?: string }) {
       ref={boxRef}
       className={`flex flex-col overflow-hidden rounded-xl border border-primary/10 bg-primary/[0.02] ${
         tooNarrow ? "col-span-full" : ""
-      } ${filled === false ? "hidden" : ""} ${className ?? ""}`}
+      } ${className ?? ""}`}
       aria-label="Annonce"
     >
       <p

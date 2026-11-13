@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, act } from "@testing-library/react";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { useAdSlot, AD_MIN_WIDTH } from "../useAdSlot";
 
 /**
@@ -205,23 +207,23 @@ describe("useAdSlot – bredde", () => {
   });
 });
 
-describe("useAdSlot – fyldt eller ej", () => {
+describe("useAdSlot – er der faktisk en annonce", () => {
   // Maalt paa /koeb-shelter: <ins> faar sin reserverede hoejde efter 258 ms,
   // men AdSense fylder den foerst efter 1.277 ms. I det sekund stod maerket
   // "Annonce" over 280 px tomhed og lignede en fejl. `filled` lader
   // kaldestedet skjule maerket indtil der faktisk er en annonce.
 
-  it("ved ingenting før AdSense har svaret — og tomhed er ikke det samme som nej", async () => {
-    // null, ikke false. Et for tidligt false ville fjerne boksen mens
-    // annoncen stadig var på vej.
+  it("siger nej indtil AdSense har fyldt pladsen", () => {
+    // Det er hele pointen: <ins> er i DOM'en og har reserveret hoejde, men
+    // der er endnu ingen annonce — og saa maa maerket ikke staa der.
     setWidth(600);
     const c = render(<Probe />);
     scrollIntoView();
     expect(state(c).hasIns).toBe(true);
-    expect(state(c).filled).toBe("null");
+    expect(state(c).filled).toBe("false");
   });
 
-  it("melder fyldt når AdSense sætter status", async () => {
+  it("siger ja naar AdSense melder filled", async () => {
     setWidth(600);
     const c = render(<Probe />);
     scrollIntoView();
@@ -229,40 +231,43 @@ describe("useAdSlot – fyldt eller ej", () => {
     expect(state(c).filled).toBe("true");
   });
 
-  it("melder tom når AdSense ikke havde noget at vise", async () => {
-    // Kaldestedet skjuler hele boksen på false — ellers står der et tomt,
-    // mærket felt tilbage for altid.
+  it("siger nej igen hvis status senere skifter til unfilled", async () => {
     setWidth(600);
     const c = render(<Probe />);
     scrollIntoView();
+    await adSenseSvarer(c, "filled");
+    expect(state(c).filled).toBe("true");
     await adSenseSvarer(c, "unfilled");
     expect(state(c).filled).toBe("false");
   });
 
-  it("ignorerer andre attributændringer på <ins>", async () => {
-    // AdSense roder en del i elementet undervejs (style, data-adsbygoogle-status).
-    // Kun data-ad-status må flytte tilstanden.
+  it("ignorerer andre attributaendringer paa <ins>", async () => {
+    // AdSense roder en del i elementet undervejs (style,
+    // data-adsbygoogle-status). Kun data-ad-status maa flytte tilstanden.
     setWidth(600);
     const c = render(<Probe />);
     scrollIntoView();
+    await adSenseSvarer(c, "filled");
     await act(async () => {
       c.getByTestId("ins").setAttribute("data-adsbygoogle-status", "done");
       c.getByTestId("ins").setAttribute("style", "height: 280px");
       await Promise.resolve();
     });
-    expect(state(c).filled).toBe("null");
-  });
-
-  it("fanger et svar der allerede var der da observeren koblede på", async () => {
-    // Race: AdSense kan naa at saette attributten i samme oejeblik <ins>
-    // kommer i DOM'en. Derfor laeses status ogsaa én gang med det samme.
-    setWidth(600);
-    const c = render(<Probe />);
-    scrollIntoView();
-    await adSenseSvarer(c, "filled");
     expect(state(c).filled).toBe("true");
-    // Og den skifter med, hvis AdSense senere melder noget andet.
-    await adSenseSvarer(c, "unfilled");
-    expect(state(c).filled).toBe("false");
+  });
+});
+
+describe("den tomme plads skjules i CSS, ikke i hook'en", () => {
+  it("globals.css har stadig unfilled-reglen", () => {
+    // useAdSlot skjuler BEVIDST ikke selv boksen ved "unfilled" — det goer
+    // denne regel. Forsvinder den, staar en tom, maerket kasse tilbage paa
+    // hver side hvor Google intet havde, og intet andet fanger det.
+    const css = readFileSync(
+      path.resolve(__dirname, "..", "..", "app", "globals.css"),
+      "utf8"
+    );
+    expect(css).toMatch(
+      /aside\[aria-label="Annonce"\]:has\(\s*ins[^)]*data-ad-status="unfilled"[^)]*\)/
+    );
   });
 });

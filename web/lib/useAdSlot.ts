@@ -56,7 +56,7 @@ export function useAdSlot(minWidth: number = AD_MIN_WIDTH) {
   const boxRef = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
   const [tooNarrow, setTooNarrow] = useState(false);
-  const [filled, setFilled] = useState<boolean | null>(null);
+  const [filled, setFilled] = useState(false);
   const readyRef = useRef(false);
   const widened = useRef(false);
   const pushed = useRef(false);
@@ -129,25 +129,23 @@ export function useAdSlot(minWidth: number = AD_MIN_WIDTH) {
   }, [ready]);
 
   /**
-   * FYLDT ELLER EJ. AdSense saetter `data-ad-status` paa <ins> naar svaret er
-   * kommet: "filled" eller "unfilled". Maalt paa /koeb-shelter faar <ins> sin
+   * ER DER FAKTISK EN ANNONCE? AdSense saetter `data-ad-status="filled"` paa
+   * <ins> naar den har fyldt pladsen. Maalt paa /koeb-shelter faar <ins> sin
    * reserverede hoejde efter 258 ms, men fyldes foerst efter 1.277 ms — et
-   * helt sekund hvor maerket "Annonce" staar over 280 px tomhed og ligner en
-   * fejl. Og bliver pladsen aldrig fyldt, bliver hullet staaende for altid.
+   * helt sekund hvor maerket "Annonce" stod over 280 px tomhed og lignede en
+   * fejl. Kaldestedet skal derfor skjule MAERKET indtil `filled`, og med
+   * opacity frem for display: aendrer hoejden sig undervejs, hopper layoutet.
    *
-   * `null` betyder "svar ikke kommet endnu", ikke "tom". Kaldestedet skal
-   * skjule MAERKET indtil true (uden at aendre hoejden, ellers hopper
-   * layoutet) og foerst fjerne selve BOKSEN ved false.
+   * DEN TOMME PLADS haandteres IKKE her. `app/globals.css` skjuler hele
+   * blokken med `aside[aria-label="Annonce"]:has(ins[data-ad-status=
+   * "unfilled"])`. To mekanismer for samme ting ville kun betyde at nogen
+   * fjerner den ene i den tro at den var den eneste.
    */
   useEffect(() => {
     if (!ready) return;
     const ins = boxRef.current?.querySelector("ins.adsbygoogle");
     if (!ins) return;
-    const laes = () => {
-      const status = ins.getAttribute("data-ad-status");
-      if (status === "filled") setFilled(true);
-      else if (status === "unfilled") setFilled(false);
-    };
+    const laes = () => setFilled(ins.getAttribute("data-ad-status") === "filled");
     laes();
     const mo = new MutationObserver(laes);
     mo.observe(ins, { attributes: true, attributeFilter: ["data-ad-status"] });
