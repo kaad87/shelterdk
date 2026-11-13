@@ -205,6 +205,14 @@ export default async function ShelterTilFamilierPage() {
             </ul>
 
             <p>
+              Er sheltertur blevet en fast tradition hos jer, bygger mange familier deres eget i
+              haven. Vi har samlet{" "}
+              <Link href="/koeb-shelter" className="text-accent hover:underline">hvad et shelter koster i de forskellige prisklasser</Link>{" "}
+              og{" "}
+              <Link href="/byggetilladelse-til-shelter" className="text-accent hover:underline">hvornår du skal søge byggetilladelse</Link>.
+            </p>
+
+            <p>
               Se også:{" "}
               <Link href="/shelter-med-toilet" className="text-accent hover:underline">shelter med toilet</Link>
               {" · "}

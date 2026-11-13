@@ -172,6 +172,14 @@ export default async function ShelterMedBaalpladsPage() {
             Beredskabsstyrelsens aktuelle regler og lokal skiltning inden du tænder bål. Brug altid
             den opstillede bålplads og hav vand klar til at slukke bålet, inden du forlader pladsen.
           </p>
+          <p>
+            Vil du have bålplads og læ i egen have, er en{" "}
+            <Link href="/baalhytte" className="text-accent hover:underline">bålhytte</Link> den
+            overdækkede løsning — tag over bålet, så pladsen også kan bruges i regnvejr. Se{" "}
+            <Link href="/koeb-shelter" className="text-accent hover:underline">hvad et shelter og en bålhytte koster</Link>{" "}
+            og{" "}
+            <Link href="/byggetilladelse-til-shelter" className="text-accent hover:underline">hvornår kommunen skal spørges</Link>.
+          </p>
 
           <h2 className="font-serif text-xl font-bold text-primary">
             Find shelter med bålplads i hele Danmark
