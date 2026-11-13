@@ -560,7 +560,7 @@ export function SoegContent({
             </p>
             <SortSelect value={sortMode} onChange={setSortMode} />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6">
+            <div className="grid grid-flow-row-dense grid-cols-1 sm:grid-cols-2 gap-4 pb-6">
               {sortedShelters.slice(0, listDisplayCount).flatMap((shelter, i, arr) => [
                 ...(showInFeedAdAt(i, arr.length) ? [<InFeedSlot key={`infeed-ad-${inFeedAdIndex(i)}`} nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />] : []),
                 <ShelterCard key={shelter.id} shelter={shelter} availabilityState={availabilityMap?.[shelter.id] ?? null} activeDate={effectiveFilters?.date ?? null} />,
@@ -613,7 +613,7 @@ export function SoegContent({
             </p>
             <SortSelect value={sortMode} onChange={setSortMode} />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-flow-row-dense grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {sortedAllShelters.flatMap((shelter, i) => [
               ...(showInFeedAdAt(i, sortedAllShelters.length) ? [<InFeedSlot key={`infeed-ad-${inFeedAdIndex(i)}`} nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />] : []),
               <ShelterCard key={shelter.id} shelter={shelter} availabilityState={availabilityMap?.[shelter.id] ?? null} activeDate={effectiveFilters?.date ?? null} />,

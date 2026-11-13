@@ -1,5 +1,9 @@
+import { readFileSync, readdirSync } from "node:fs";
+import path from "node:path";
 import { describe, it, expect } from "vitest";
 import { showInFeedAdAt, inFeedAdIndex } from "../adsense";
+
+const WEB_ROOT = path.resolve(__dirname, "..", "..");
 
 /** Hvilke shelter-indeks får en annonce indsat før sig i en liste med `total` kort. */
 function adPositions(total: number): number[] {
@@ -67,5 +71,62 @@ describe("showInFeedAdAt", () => {
     // Hele pointen med at flytte dem op: annoncer længere nede end det bliver
     // ikke set. In-feed-enheden målte 11,89 % viewability med start på plads 6.
     expect(Math.max(...adPositions(200))).toBeLessThanOrEqual(15);
+  });
+});
+
+describe("gitre med in-feed-annoncer taaler et element i fuld bredde", () => {
+  // <AdInFeed> udvider sig til col-span-full naar kolonnen er under
+  // AD_MIN_WIDTH. Lander udvidelsen paa en ulige celle, rykker browseren den
+  // ned til naeste raekkestart og efterlader et hul ved siden af det
+  // foregaaende kort. Beslutningen traeffes af en maaling i browseren, saa
+  // hverken pladsens nummer eller hullet kan beregnes serverside: det kan kun
+  // undgaas med dense i gitteret.
+  //
+  // Testen laeser kilden, fordi jsdom ikke layouter grid og derfor ikke kan
+  // se hullet. Den fanger det der faktisk gaar galt: at et NYT gitter
+  // tilfoejes uden klassen.
+  const DENSE = "grid-flow-row-dense";
+
+  function gitreMedInFeedSlot(): { fil: string; linje: number; klasser: string }[] {
+    const rod = WEB_ROOT;
+    const fundet: { fil: string; linje: number; klasser: string }[] = [];
+    const gaa = (dir: string) => {
+      for (const e of readdirSync(dir, { withFileTypes: true })) {
+        if (e.name === "node_modules" || e.name === ".next" || e.name.startsWith(".")) continue;
+        const p = path.join(dir, e.name);
+        if (e.isDirectory()) { gaa(p); continue; }
+        if (!e.name.endsWith(".tsx")) continue;
+        const kilde = readFileSync(p, "utf8");
+        // Kun filer der faktisk RENDRER pladsen. Uden importkravet ville en
+        // omtale af <InFeedSlot> i en kommentar (fx i AdInFeed) taelle med.
+        if (!kilde.includes('from "@/components/InFeedSlot"')) continue;
+        const linjer = kilde.split("\n");
+        const maal = new Set<number>();
+        linjer.forEach((l, n) => {
+          if (!l.includes("<InFeedSlot")) return;
+          for (let i = n; i >= Math.max(0, n - 15); i--) {
+            if (linjer[i].includes("grid-cols")) { maal.add(i); return; }
+          }
+          throw new Error(`${p}:${n + 1} rendrer <InFeedSlot> uden et gitter over sig`);
+        });
+        for (const i of maal) {
+          fundet.push({ fil: path.relative(rod, p), linje: i + 1, klasser: linjer[i].trim() });
+        }
+      }
+    };
+    gaa(path.join(rod, "app"));
+    gaa(path.join(rod, "components"));
+    return fundet;
+  }
+
+  it("findes der overhovedet nogen at tjekke", () => {
+    // Uden den her ville testen bestaa tavst hvis soegningen holdt op med at
+    // finde noget, fx efter en omlaegning af mappestrukturen.
+    expect(gitreMedInFeedSlot().length).toBeGreaterThanOrEqual(15);
+  });
+
+  it("har dense paa hvert eneste af dem", () => {
+    const uden = gitreMedInFeedSlot().filter((g) => !g.klasser.includes(DENSE));
+    expect(uden.map((g) => `${g.fil}:${g.linje}`)).toEqual([]);
   });
 });

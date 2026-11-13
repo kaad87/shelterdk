@@ -167,7 +167,7 @@ export async function CollectionPage({
                 ? `De ${visible.length} bedst bedømte af ${count} pladser`
                 : `Alle ${count} pladser`}
             </h2>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-flow-row-dense grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {visible.map((shelter, i) => (
                 <Fragment key={shelter.id}>
                   {showInFeedAdAt(i, visible.length) && <InFeedSlot nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />}

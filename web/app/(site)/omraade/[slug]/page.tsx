@@ -345,7 +345,7 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
             </div>
 
             {featuredShelters.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+              <div className="grid grid-flow-row-dense grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                 {featuredShelters.map((shelter, i) => (
                   <Fragment key={shelter.id}>
                     {showInFeedAdAt(i, featuredShelters.length) && <InFeedSlot nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />}

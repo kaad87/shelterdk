@@ -137,7 +137,7 @@ export default async function ShelterMedVandPage() {
                 <p className="text-primary/70 text-sm mb-4 sticky top-0 bg-background/95 py-2 z-10">
                   {shelters.length} shelter{shelters.length !== 1 ? "s" : ""} med vand · scroll for flere
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6">
+                <div className="grid grid-flow-row-dense grid-cols-1 sm:grid-cols-2 gap-4 pb-6">
                   {shelters.map((shelter, i) => (
                     <Fragment key={shelter.id}>
                       {showInFeedAdAt(i, shelters.length) && <InFeedSlot nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />}

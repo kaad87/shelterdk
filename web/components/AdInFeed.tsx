@@ -26,6 +26,17 @@ const IN_FEED_LAYOUT_KEY = "-6x+d2-2i-2d+ng";
  * beholderen først (useAdSlot), og er den
  * for smal spænder annoncen over hele grid-rækken i stedet — så bliver den
  * bred nok og pladsen går ikke tabt. <ins> renderes først når bredden er god.
+ *
+ * DET GITTER DER HOLDER PLADSEN SKAL HAVE `grid-flow-row-dense`. Et element der
+ * spænder over hele rækken kan ikke starte midt i en række: lander udvidelsen
+ * på en ulige celle, rykker browseren den ned til næste rækkestart og efterlader
+ * et synligt hul ved siden af det foregående kort. Det skete på
+ * `/shelter-til-familier`, hvor listekolonnen er 249,5 px bred — en halv pixel
+ * under AD_MIN_WIDTH — så BEGGE AdSense-pladser udvider sig, og den anden af
+ * dem landede ulige. Med dense fylder det næste kort hullet. Pladsens nummer
+ * kan ikke beregnes serverside, for det afhænger af en måling i browseren, så
+ * hullet kan kun undgås i gitteret. `lib/__tests__/adsense-placement.test.ts`
+ * holder øje med at alle gitre der renderer <InFeedSlot> har klassen.
  */
 export function AdInFeed({ className }: { className?: string }) {
   const { boxRef, ready, tooNarrow } = useAdSlot();

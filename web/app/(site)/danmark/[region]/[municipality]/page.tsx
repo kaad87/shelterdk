@@ -377,7 +377,7 @@ export default async function DanmarkMunicipalityPage({ params }: PageProps) {
         />
 
         <section className="mb-12">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-flow-row-dense grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {shelters.map((shelter, i) => (
               <Fragment key={shelter.id}>
                 {showInFeedAdAt(i, shelters.length) && <InFeedSlot nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />}

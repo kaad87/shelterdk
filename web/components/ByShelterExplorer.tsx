@@ -405,7 +405,7 @@ export function ByShelterExplorer({
                 <option value="reviews">Flest anmeldelser</option>
               </select>
             </div>
-            <div className="grid grid-cols-1 gap-4 pb-6 sm:grid-cols-2">
+            <div className="grid grid-flow-row-dense grid-cols-1 gap-4 pb-6 sm:grid-cols-2">
               {/* Stabil key på annoncen: listen re-sorteres/filtreres live, og uden
                   den ville <InFeedSlot> unmounte+remounte ved hver ændring = gentagne
                   AdSense-kald på samme slot. */}
@@ -448,7 +448,7 @@ export function ByShelterExplorer({
               <option value="reviews">Flest anmeldelser</option>
             </select>
           </div>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-flow-row-dense grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {sortedAllShelters.flatMap((shelter, i) => [
               ...(showInFeedAdAt(i, sortedAllShelters.length) ? [<InFeedSlot key={`infeed-ad-${inFeedAdIndex(i)}`} nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />] : []),
               <ShelterCard key={shelter.id} shelter={shelter} href={shelterHref(shelter)} />,
