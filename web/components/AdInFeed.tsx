@@ -39,17 +39,21 @@ const IN_FEED_LAYOUT_KEY = "-6x+d2-2i-2d+ng";
  * holder øje med at alle gitre der renderer <InFeedSlot> har klassen.
  */
 export function AdInFeed({ className }: { className?: string }) {
-  const { boxRef, ready, tooNarrow } = useAdSlot();
+  const { boxRef, ready, tooNarrow, filled } = useAdSlot();
 
   return (
     <aside
       ref={boxRef}
       className={`flex flex-col overflow-hidden rounded-xl border border-primary/10 bg-primary/[0.02] ${
         tooNarrow ? "col-span-full" : ""
-      } ${className ?? ""}`}
+      } ${filled === false ? "hidden" : ""} ${className ?? ""}`}
       aria-label="Annonce"
     >
-      <p className="px-3 pt-2.5 text-[11px] uppercase tracking-wide text-primary/40">
+      <p
+        className={`px-3 pt-2.5 text-[11px] uppercase tracking-wide text-primary/40 transition-opacity duration-300 ${
+          filled ? "opacity-100" : "opacity-0"
+        }`}
+      >
         Annonce
       </p>
       {ready && (

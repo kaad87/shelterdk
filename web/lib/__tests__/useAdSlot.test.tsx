@@ -77,12 +77,27 @@ afterEach(() => {
 });
 
 function Probe({ minWidth }: { minWidth?: number }) {
-  const { boxRef, ready, tooNarrow } = useAdSlot(minWidth);
+  const { boxRef, ready, tooNarrow, filled } = useAdSlot(minWidth);
   return (
-    <div ref={boxRef} data-testid="box" data-ready={String(ready)} data-narrow={String(tooNarrow)}>
+    <div
+      ref={boxRef}
+      data-testid="box"
+      data-ready={String(ready)}
+      data-narrow={String(tooNarrow)}
+      data-filled={String(filled)}
+    >
       {ready && <ins data-testid="ins" className="adsbygoogle" />}
     </div>
   );
+}
+
+/** Lader AdSense svare, som den gør ved at sætte data-ad-status på <ins>. */
+async function adSenseSvarer(c: ReturnType<typeof render>, status: string) {
+  await act(async () => {
+    c.getByTestId("ins").setAttribute("data-ad-status", status);
+    // MutationObserver leverer i en microtask, ikke synkront.
+    await Promise.resolve();
+  });
 }
 
 const state = (c: ReturnType<typeof render>) => {
@@ -91,6 +106,7 @@ const state = (c: ReturnType<typeof render>) => {
     ready: box.getAttribute("data-ready") === "true",
     tooNarrow: box.getAttribute("data-narrow") === "true",
     hasIns: !!c.queryByTestId("ins"),
+    filled: box.getAttribute("data-filled"),
   };
 };
 
@@ -186,5 +202,67 @@ describe("useAdSlot – bredde", () => {
     flushResize();
     const after = (window as unknown as { adsbygoogle?: unknown[] }).adsbygoogle?.length ?? 0;
     expect(after).toBe(before);
+  });
+});
+
+describe("useAdSlot – fyldt eller ej", () => {
+  // Maalt paa /koeb-shelter: <ins> faar sin reserverede hoejde efter 258 ms,
+  // men AdSense fylder den foerst efter 1.277 ms. I det sekund stod maerket
+  // "Annonce" over 280 px tomhed og lignede en fejl. `filled` lader
+  // kaldestedet skjule maerket indtil der faktisk er en annonce.
+
+  it("ved ingenting før AdSense har svaret — og tomhed er ikke det samme som nej", async () => {
+    // null, ikke false. Et for tidligt false ville fjerne boksen mens
+    // annoncen stadig var på vej.
+    setWidth(600);
+    const c = render(<Probe />);
+    scrollIntoView();
+    expect(state(c).hasIns).toBe(true);
+    expect(state(c).filled).toBe("null");
+  });
+
+  it("melder fyldt når AdSense sætter status", async () => {
+    setWidth(600);
+    const c = render(<Probe />);
+    scrollIntoView();
+    await adSenseSvarer(c, "filled");
+    expect(state(c).filled).toBe("true");
+  });
+
+  it("melder tom når AdSense ikke havde noget at vise", async () => {
+    // Kaldestedet skjuler hele boksen på false — ellers står der et tomt,
+    // mærket felt tilbage for altid.
+    setWidth(600);
+    const c = render(<Probe />);
+    scrollIntoView();
+    await adSenseSvarer(c, "unfilled");
+    expect(state(c).filled).toBe("false");
+  });
+
+  it("ignorerer andre attributændringer på <ins>", async () => {
+    // AdSense roder en del i elementet undervejs (style, data-adsbygoogle-status).
+    // Kun data-ad-status må flytte tilstanden.
+    setWidth(600);
+    const c = render(<Probe />);
+    scrollIntoView();
+    await act(async () => {
+      c.getByTestId("ins").setAttribute("data-adsbygoogle-status", "done");
+      c.getByTestId("ins").setAttribute("style", "height: 280px");
+      await Promise.resolve();
+    });
+    expect(state(c).filled).toBe("null");
+  });
+
+  it("fanger et svar der allerede var der da observeren koblede på", async () => {
+    // Race: AdSense kan naa at saette attributten i samme oejeblik <ins>
+    // kommer i DOM'en. Derfor laeses status ogsaa én gang med det samme.
+    setWidth(600);
+    const c = render(<Probe />);
+    scrollIntoView();
+    await adSenseSvarer(c, "filled");
+    expect(state(c).filled).toBe("true");
+    // Og den skifter med, hvis AdSense senere melder noget andet.
+    await adSenseSvarer(c, "unfilled");
+    expect(state(c).filled).toBe("false");
   });
 });

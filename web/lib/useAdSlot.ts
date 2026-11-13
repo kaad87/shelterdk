@@ -56,6 +56,7 @@ export function useAdSlot(minWidth: number = AD_MIN_WIDTH) {
   const boxRef = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
   const [tooNarrow, setTooNarrow] = useState(false);
+  const [filled, setFilled] = useState<boolean | null>(null);
   const readyRef = useRef(false);
   const widened = useRef(false);
   const pushed = useRef(false);
@@ -127,5 +128,31 @@ export function useAdSlot(minWidth: number = AD_MIN_WIDTH) {
     pushed.current = pushAd();
   }, [ready]);
 
-  return { boxRef, ready, tooNarrow };
+  /**
+   * FYLDT ELLER EJ. AdSense saetter `data-ad-status` paa <ins> naar svaret er
+   * kommet: "filled" eller "unfilled". Maalt paa /koeb-shelter faar <ins> sin
+   * reserverede hoejde efter 258 ms, men fyldes foerst efter 1.277 ms — et
+   * helt sekund hvor maerket "Annonce" staar over 280 px tomhed og ligner en
+   * fejl. Og bliver pladsen aldrig fyldt, bliver hullet staaende for altid.
+   *
+   * `null` betyder "svar ikke kommet endnu", ikke "tom". Kaldestedet skal
+   * skjule MAERKET indtil true (uden at aendre hoejden, ellers hopper
+   * layoutet) og foerst fjerne selve BOKSEN ved false.
+   */
+  useEffect(() => {
+    if (!ready) return;
+    const ins = boxRef.current?.querySelector("ins.adsbygoogle");
+    if (!ins) return;
+    const laes = () => {
+      const status = ins.getAttribute("data-ad-status");
+      if (status === "filled") setFilled(true);
+      else if (status === "unfilled") setFilled(false);
+    };
+    laes();
+    const mo = new MutationObserver(laes);
+    mo.observe(ins, { attributes: true, attributeFilter: ["data-ad-status"] });
+    return () => mo.disconnect();
+  }, [ready]);
+
+  return { boxRef, ready, tooNarrow, filled };
 }
