@@ -19,12 +19,18 @@ import {
  * irrelevant tilfaelde kommer tilbage, og hvis et maalt klik ville blive
  * filtreret vaek.
  */
+/** En URL der kan virke. fjernStoej luger varer uden brugbart billede. */
+const BILLEDE_OK = "https://backpackerlife.dk/wp-content/uploads/2023/10/Stol-1.jpg";
+/** Raat mellemrum: filen kan ikke findes. Se lib/affiliate-billede.ts. */
+const BILLEDE_UMULIGT =
+  "https://backpackerlife.dk/wp-content/uploads/2025/06/Vandrestave- - -Highlander-Mull-4.jpg";
+
 const v = (
   product_name: string,
   category_mapped: string | null = null,
   brand: string | null = null,
   id = product_name
-) => ({ id, brand, product_name, category_mapped });
+) => ({ id, brand, product_name, category_mapped, image_url: BILLEDE_OK });
 
 const g = (
   slug: string,
@@ -402,8 +408,8 @@ describe("relevanteTilbud: én boernevare slukker ikke vaernet", () => {
 });
 
 describe("fjernStoej", () => {
-  const v = (id: string, brand: string | null, navn: string) =>
-    ({ id, brand, product_name: navn, category_mapped: null });
+  const v = (id: string, brand: string | null, navn: string, billede = BILLEDE_OK) =>
+    ({ id, brand, product_name: navn, category_mapped: null, image_url: billede });
 
   it("folder farve- og stoerrelsesvarianter af samme vare sammen", () => {
     // Tre varianter af den samme troeje stod som tre tilbud paa fleece.
@@ -439,6 +445,30 @@ describe("fjernStoej", () => {
     ]);
     expect(ud).toHaveLength(2);
   });
+
+  it("luger varer hvis billed-URL ikke kan virke", () => {
+    // Et tilbudskort ER et billede med en pris paa. Fundet fordi en vare, der
+    // lige var fjernet fra /bedste/gamacher for sit doede billede, straks kom
+    // igen som "aktuelt tilbud" laengere nede paa SAMME side.
+    const ud = fjernStoej([
+      v("1", "Montane", "Gaiters - Montane Cetus Gaiter"),
+      v("2", "Black Diamond", "Gaiters - Black Diamond Frontpoint GTX V2", BILLEDE_UMULIGT),
+    ]);
+    expect(ud.map((x) => x.id)).toEqual(["1"]);
+  });
+
+  it("luger ogsaa varer helt uden billede", () => {
+    expect(fjernStoej([v("1", "X", "Telt - High Peak Narvik", "")])).toEqual([]);
+    expect(fjernStoej([v("2", "X", "Telt - High Peak Narvik", null as unknown as string)])).toEqual([]);
+  });
+
+  it("beholder varer med et billede der kan virke", () => {
+    // Modproeven. Uden den ville en for haard regel tomme hele tilbudsblokken
+    // uden at nogen test sagde fra.
+    const ud = fjernStoej([v("1", "Montane", "Gaiters - Montane Cetus Gaiter")]);
+    expect(ud).toHaveLength(1);
+  });
+
 });
 
 describe("erStoej: varer der ikke er friluftsgrej", () => {

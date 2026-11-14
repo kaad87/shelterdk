@@ -39,6 +39,7 @@
 import { ALDRIG, guidenHandlerOmBoern } from "./feed-kategori-filter";
 import { ENGROS } from "./kategori-fra-navn";
 import { FARVE, STOERRELSE } from "./feed-udvalg";
+import { brugbartBillede } from "./affiliate-billede";
 
 /**
  * Tilbehoer og reservedele.
@@ -259,6 +260,12 @@ export interface TilbudsVare {
   brand: string | null;
   product_name: string;
   category_mapped: string | null;
+  /**
+   * OBLIGATORISK med vilje. Gjorde vi den valgfri, ville en kalder der holdt
+   * op med at hente image_url faa billedfilteret i fjernStoej til at holde op
+   * med at virke, uden at noget sagde fra. Begge kaldere henter den i dag.
+   */
+  image_url: string | null;
 }
 
 export interface GuideKontekst {
@@ -330,9 +337,19 @@ export function enPrVare<T extends TilbudsVare>(varer: T[]): T[] {
  * beskyttelse: maalt 27. oktober 2026 var 4 af de 40 varer paa /tilbud en
  * cykellygte og TRE varianter af den samme Point Virgule-proptraekker, og en
  * ekstern SEO-audit noterede det som "mange irrelevante produkter".
+ *
+ * VARER UDEN BRUGBART BILLEDE ryger ud samme sted. Et tilbudskort ER et
+ * billede med en pris paa; uden foto er det bare stoej af en anden slags.
+ * Maalt 14. november 2026 havde 79 af backpackerlifes varer en billed-URL der
+ * ikke kan virke (se lib/affiliate-billede.ts). Fundet fordi en vare, der lige
+ * var fjernet fra /bedste/gamacher netop for sit doede billede, straks dukkede
+ * op igen laengere nede paa SAMME side som "aktuelt tilbud" — tilbudsblokken
+ * slaar op efter kategori og ved intet om guidens opstilling.
  */
 export function fjernStoej<T extends TilbudsVare>(varer: T[]): T[] {
-  return enPrVare(varer.filter((v) => !erStoej(v.product_name ?? "")));
+  return enPrVare(
+    varer.filter((v) => !erStoej(v.product_name ?? "") && brugbartBillede(v.image_url))
+  );
 }
 
 /**
