@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { ImageOff } from "lucide-react";
 import { useState } from "react";
+import { brugbartBillede } from "@/lib/affiliate-billede";
 
 /**
  * Produktbillede med reserve, naar feedets billed-URL ikke svarer.
@@ -44,7 +45,11 @@ export function ProduktBillede({
   height?: number;
 }) {
   const [fejlet, setFejlet] = useState(false);
-  const url = (src ?? "").trim();
+  // brugbartBillede frem for en ren trim: en URL med mellemrum er garanteret
+  // 404, og uden den her ville vi sende en forespoergsel af sted og foerst
+  // vise reserven naar onError kom tilbage — et synligt glimt. Reglen staar
+  // ogsaa i synken, men den her fanger de raekker der allerede ligger gemt.
+  const url = brugbartBillede(src);
 
   if (!url || fejlet) {
     return (

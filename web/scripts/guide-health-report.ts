@@ -17,6 +17,7 @@ import { createClient } from "@supabase/supabase-js";
 import { guideHealth, type GuideHealth, type HealthEntry } from "../lib/guide-health";
 import { tildelProduktSlugs, type SlugVare } from "../lib/produkt-slug";
 import { rentNavn } from "../lib/produktnavn";
+import { brugbartBillede } from "../lib/affiliate-billede";
 
 // Samme mønster som sync-affiliate-products.ts: i GitHub kommer nøglerne fra
 // workflowets env, lokalt fra .env.local.
@@ -146,9 +147,18 @@ async function main() {
   // Browseren koder selv mellemrum og ikke-ASCII i stien; fetch goer ikke,
   // og uden kodningen meldes fire velfungerende billeder som doede.
   const doedeBilleder = new Set<string>();
-  const skalTjekkes = [...produkter.values()].filter(
-    (p) => iUdgivneGuider.has(p.id) && (p.image_url ?? "").trim()
-  );
+  const iGuider = [...produkter.values()].filter((p) => iUdgivneGuider.has(p.id));
+  // En URL med raat mellemrum peger paa en fil der aldrig har eksisteret, og
+  // det kan afgoeres uden at spoerge. Maalt 14/11-2026 var 79 af 79 saadanne
+  // backpackerlife-URL'er 404, mod 0 af 100 uden mellemrum — se
+  // lib/affiliate-billede.ts. Det sparer ikke bare opslagene: en timeout
+  // meldes med vilje IKKE nedenfor, saa uden den her regel kunne en doed vare
+  // slippe igennem rapporten paa en daarlig nat.
+  for (const p of iGuider) {
+    const raa = (p.image_url ?? "").trim();
+    if (raa && !brugbartBillede(raa)) doedeBilleder.add(p.id);
+  }
+  const skalTjekkes = iGuider.filter((p) => brugbartBillede(p.image_url));
   for (let i = 0; i < skalTjekkes.length; i += 20) {
     await Promise.all(
       skalTjekkes.slice(i, i + 20).map(async (p) => {

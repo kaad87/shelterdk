@@ -337,6 +337,11 @@ async function syncRetailer(
       shipping_cost: p.shipping_cost,
       in_stock: p.in_stock,
       stock_count: p.stock_count,
+      // GEMMES RAAT, med vilje. En URL med mellemrum kan ikke virke (se
+      // lib/affiliate-billede.ts), men kasserer vi den her, kan guide-
+      // monitoren bagefter ikke skelne "feedet sendte noget ubrugeligt" fra
+      // "feedet sendte ingenting" — og saa ville guiderne stille miste deres
+      // produktfotos uden at nogen fik besked. Forbrugerne filtrerer i stedet.
       image_url: p.image_url,
       affiliate_url: p.affiliate_url,
       ean: p.ean,
