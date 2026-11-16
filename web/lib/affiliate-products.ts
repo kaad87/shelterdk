@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { createClient } from "@supabase/supabase-js";
+import { anvendPrisfaldSikkert } from "./prisfald-opslag";
 
 function getSupabaseClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -46,14 +47,12 @@ export interface AffiliateProduct {
    *              VORES tal (laveste pris vi har set før faldet), ikke feedets.
    *   null       slået op, intet fald. `price_original` og `discount_pct` er
    *              nulstillet, så ingen komponent kan vise butikkens påstand.
-   *   undefined  ikke slået op. Felterne er stadig feedets rå værdier.
-   *              Guiderne, tilbudsblokken, /tilbud og forsidens tilbud slår
-   *              op (lib/prisfald-opslag.ts). getProduct gør det IKKE, fordi
-   *              den kaldes pr. render på de dynamiske shelter-sider, og et
-   *              ekstra opslag dér er præcis den slags hot-path-forespørgsel
-   *              der før har givet egress-overforbrug. Grej-kortene på
-   *              shelter-sider, i blogindlæg og in-feed viser derfor stadig
-   *              feedets rabat.
+   *   undefined  ikke slået op. Felterne er stadig feedets rå værdier og
+   *              må ikke vises som rabat. Alle loadere der giver varer til
+   *              visning slår op: getGuideBySlug, getTopDeals,
+   *              getKampagneTilbud, getGaveforslag, getShelterAlternatives,
+   *              getProduct og getProducts. In-feed-kortet har sin egen form
+   *              (lib/infeed-annonce.ts) og slår også op.
    */
   prisfald?: Prisfald | null;
 }
@@ -73,7 +72,10 @@ export const getProduct = cache(
       .select(SELECT_COLUMNS)
       .eq("id", id)
       .maybeSingle();
-    return (data as AffiliateProduct | null) ?? null;
+    if (!data) return null;
+    // Feedets foer-pris byttes ud med vores egen. Se lib/prisfald.ts.
+    const [vare] = await anvendPrisfaldSikkert([data as AffiliateProduct]);
+    return vare;
   }
 );
 
@@ -89,8 +91,12 @@ export const getProducts = cache(
       .from("affiliate_products")
       .select(SELECT_COLUMNS)
       .in("id", ids);
+    // Grej-kort i blogindlaeg, guidetekst og FAQ. Kun kaldt naar teksten
+    // faktisk har ::gear-blokke, saa opslaget koster intet paa de mange sider
+    // uden. Se lib/prisfald.ts.
+    const rows = await anvendPrisfaldSikkert((data as AffiliateProduct[]) ?? []);
     const result = new Map<string, AffiliateProduct>();
-    for (const row of (data as AffiliateProduct[]) ?? []) result.set(row.id, row);
+    for (const row of rows) result.set(row.id, row);
     return result;
   }
 );

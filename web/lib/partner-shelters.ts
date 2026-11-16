@@ -19,14 +19,22 @@ const PARTNER_ID = "19557";
 const BANNER_ID = "110103";
 
 /** Dato hvor priserne sidst er verificeret mod annoncørens site. */
-export const PRICES_CHECKED = "2026-09-21";
+export const PRICES_CHECKED = "2026-11-16";
 
 export interface PartnerShelter {
   /** Produktnavn som annoncøren kalder det. */
   name: string;
   url: string;
   priceDkk: number;
-  /** Før-pris når varen er på tilbud hos annoncøren. */
+  /**
+   * Før-pris når varen er på tilbud hos annoncøren.
+   *
+   * Udfyldes KUN med en pris vi selv har set varen til inden for de 30 dage
+   * før nedsættelsen, samme regel som resten af sitet (lib/prisfald.ts).
+   * Annoncørens egen før-pris er ikke nok: 16/11 2026 viste Sølund Huse
+   * "før 22.199" på Shelter 2, som vi aldrig havde set til den pris (21/9
+   * stod den til 20.799).
+   */
   priceOriginalDkk?: number;
   areaM2?: number;
   /** Kort, faktuel beskrivelse — ingen superlativer vi ikke kan bakke op. */
@@ -40,15 +48,14 @@ export const PARTNER_SHELTERS: PartnerShelter[] = [
   {
     name: "Shelter 1 – 3,6 m² samlesæt",
     url: "https://solundhuse.dk/produkt/shelter-1-samlesaet-36-m2/",
-    priceDkk: 18999,
+    priceDkk: 15999,
     areaM2: 3.6,
     note: "Samlesæt i træ til to personer. Tilskårne dele og vejledning følger med.",
   },
   {
     name: "Shelter 2 – 6,6 m² samlesæt",
     url: "https://solundhuse.dk/produkt/shelter-udeliv/",
-    priceDkk: 20799,
-    priceOriginalDkk: 22199,
+    priceDkk: 19999,
     areaM2: 6.6,
     note: "Større model med plads til en familie. Samme samlesæt-princip.",
   },

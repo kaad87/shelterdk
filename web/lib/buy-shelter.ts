@@ -1,5 +1,6 @@
 import { createPublicClient } from "@/utils/supabase/server-public";
 import type { AffiliateProduct } from "@/lib/affiliate-products";
+import { anvendPrisfaldSikkert } from "@/lib/prisfald-opslag";
 
 /**
  * Produkter til /koeb-shelter.
@@ -84,8 +85,10 @@ export async function getShelterAlternatives(limit = 3): Promise<AffiliateProduc
         seen.add(key);
         list.push(p);
       }
-      if (list.length > 0) cache = { products: list, expires: Date.now() + TTL_MS };
-      return list;
+      // Feedets foer-pris byttes ud med vores egen, foer listen caches.
+      const medFald = await anvendPrisfaldSikkert(list);
+      if (medFald.length > 0) cache = { products: medFald, expires: Date.now() + TTL_MS };
+      return medFald;
     } catch (err) {
       console.error("Supabase error (shelter alternatives):", err);
       return [];

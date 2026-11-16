@@ -1,4 +1,4 @@
-import { anvendPrisfald } from "./prisfald-opslag";
+import { anvendPrisfald, anvendPrisfaldSikkert } from "./prisfald-opslag";
 import { createClient } from "@supabase/supabase-js";
 import { fjernStoej } from "./deal-relevans";
 import { getWhitelistedCategories } from "./affiliate-deals";
@@ -335,7 +335,9 @@ export async function getGaveforslag(
       .from("affiliate_products")
       .select(SELECT_COLUMNS)
       .in("id", ids.slice(i, i + 200));
-    for (const p of (data as AffiliateProduct[]) ?? []) varer.set(p.id, p);
+    // Gavekortene viser pris og evt. rabat, saa feedets foer-pris byttes ud
+    // med vores egen. Se lib/prisfald.ts.
+    for (const p of await anvendPrisfaldSikkert((data as AffiliateProduct[]) ?? [])) varer.set(p.id, p);
   }
 
   const kandidater: Gaveforslag[] = [];

@@ -5,6 +5,15 @@ vi.mock("@/utils/supabase/server-public", () => ({
   createPublicClient: () => ({ from: () => ({ select }) }),
 }));
 
+// Prisfaldene slaas op i lib/prisfald-opslag. Uden en mock ville hver test
+// her forsoege at naa Supabase. `fald` styrer svaret pr. test.
+let fald: Map<string, { foer: number; nu: number; pct: number; siden: string }> | Error = new Map();
+const hentPrisfald = vi.fn(async () => {
+  if (fald instanceof Error) throw fald;
+  return fald;
+});
+vi.mock("@/lib/prisfald-opslag", () => ({ hentPrisfald: (...a: unknown[]) => hentPrisfald(...(a as [])) }));
+
 import {
   IN_FEED_ARME,
   _nulstilInFeedCache,
@@ -43,6 +52,8 @@ function svar(raekker: unknown[]) {
 beforeEach(() => {
   _nulstilInFeedCache();
   select.mockReset();
+  hentPrisfald.mockClear();
+  fald = new Map();
 });
 
 describe("vaelgArm", () => {
@@ -242,5 +253,50 @@ describe("hentInFeedAnnonce", () => {
     const ud = await hentInFeedAnnonce(sti, [{ slug: "sovepose", reason: "Til vinteren" }]);
     expect(ud.vare?.begrundelse).toBe("Til vinteren");
     expect(ud.vare?.guideSlug).toBe("sovepose");
+  });
+});
+
+describe("hentGuideVarer og prisfald", () => {
+  it("bruger vores foer-pris, ikke feedets", async () => {
+    svar([
+      { slug: "sovepose", buying_guide_entries: [
+        { rank: 0, affiliate_products: produkt({ id: "faldet", price: 495, price_original: 899, discount_pct: 45 }) },
+        { rank: 1, affiliate_products: produkt({ id: "staaende", price: 495, price_original: 899, discount_pct: 45 }) },
+      ] },
+    ]);
+    fald = new Map([["faldet", { foer: 739, nu: 495, pct: 33, siden: "2026-11-14" }]]);
+    const [a, b] = (await hentGuideVarer()).get("sovepose")!;
+    expect([a.foerPris, a.rabatPct]).toEqual([739, 33]);
+    // Feedet siger 45 % paa begge. Vi har kun set den ene falde.
+    expect([b.foerPris, b.rabatPct]).toEqual([null, null]);
+    expect(harRabat(b)).toBe(false);
+  });
+
+  it("viser ingen rabat, naar prisfaldene ikke kan slaas op", async () => {
+    svar([
+      { slug: "sovepose", buying_guide_entries: [
+        { rank: 0, affiliate_products: produkt({ price: 495, price_original: 899, discount_pct: 45 }) },
+      ] },
+    ]);
+    fald = new Error("timeout");
+    const stille = vi.spyOn(console, "error").mockImplementation(() => {});
+    const [v] = (await hentGuideVarer()).get("sovepose")!;
+    stille.mockRestore();
+    expect(v.foerPris).toBeNull();
+    expect(harRabat(v)).toBe(false);
+  });
+
+  it("proever prisfaldene igen efter en fejl i stedet for at gemme den en time", async () => {
+    svar([{ slug: "sovepose", buying_guide_entries: [{ rank: 0, affiliate_products: produkt({ id: "x", price: 495 }) }] }]);
+    fald = new Error("timeout");
+    const stille = vi.spyOn(console, "error").mockImplementation(() => {});
+    await hentGuideVarer();
+    stille.mockRestore();
+    fald = new Map([["x", { foer: 739, nu: 495, pct: 33, siden: "2026-11-14" }]]);
+    const tid = Date.now();
+    vi.spyOn(Date, "now").mockReturnValue(tid + 6 * 60 * 1000);
+    const [v] = (await hentGuideVarer()).get("sovepose")!;
+    vi.restoreAllMocks();
+    expect(v.foerPris).toBe(739);
   });
 });

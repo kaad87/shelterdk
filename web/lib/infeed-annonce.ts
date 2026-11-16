@@ -29,6 +29,8 @@
  * tallene her rangerer arme indbyrdes og er ikke en omsaetning.
  */
 import { createPublicClient } from "@/utils/supabase/server-public";
+import { hentPrisfald } from "@/lib/prisfald-opslag";
+import type { Prisfald } from "@/lib/prisfald";
 import { rentMaerke, rentNavn } from "@/lib/produktnavn";
 import type { GuideKandidat } from "@/lib/guide-links";
 
@@ -130,6 +132,8 @@ export function harRabat(v: Pick<GuideVare, "pris" | "foerPris">): boolean {
 }
 
 const TTL_MS = 60 * 60 * 1000;
+/** Naar prisfaldene ikke kunne slaas op. Se hentGuideVarer. */
+const FEJL_TTL_MS = 5 * 60 * 1000;
 let cache: { guider: Map<string, GuideVare[]>; expires: number } | null = null;
 let inflight: Promise<Map<string, GuideVare[]>> | null = null;
 
@@ -194,7 +198,26 @@ export async function hentGuideVarer(): Promise<Map<string, GuideVare[]>> {
         if (varer.length) guider.set(raekke.slug, varer);
       }
 
-      cache = { guider, expires: Date.now() + TTL_MS };
+      // Feedets foer-pris byttes ud med vores egen (lib/prisfald.ts), saa
+      // tilbudsarmen kun kalder en vare nedsat, naar vi selv har set den
+      // falde. Kan faldene ikke slaas op, vises ingen rabat, og varerne
+      // gemmes kun fem minutter, saa naeste forsoeg kommer hurtigt.
+      let fald: Map<string, Prisfald> | null = null;
+      try {
+        const alle = [...guider.values()].flat().map((v) => ({ id: v.produktId, price: v.pris }));
+        fald = await hentPrisfald(alle);
+      } catch (err) {
+        console.error(`[in-feed] prisfald kunne ikke slaas op: ${err instanceof Error ? err.message : String(err)}`);
+      }
+      for (const varer of guider.values()) {
+        for (const v of varer) {
+          const f = fald?.get(v.produktId) ?? null;
+          v.foerPris = f ? f.foer : null;
+          v.rabatPct = f ? f.pct : null;
+        }
+      }
+
+      cache = { guider, expires: Date.now() + (fald ? TTL_MS : FEJL_TTL_MS) };
       return guider;
     } catch (error) {
       // Samme valg som resolveGuideLinks: en nede database skal give en side

@@ -95,3 +95,24 @@ export async function anvendPrisfald<
   const fald = await hentPrisfald(varer);
   return varer.map((v) => medPrisfald(v, fald.get(v.id) ?? null));
 }
+
+/**
+ * Som anvendPrisfald, men kaster aldrig: kan prisfaldene ikke slaas op, faar
+ * ALLE varerne `prisfald: null`, altsaa ingen rabat.
+ *
+ * Til de flader hvor rabatten er en bisag: grej-kort i tekst, /julegaver,
+ * /koeb-shelter. Dér er en side uden rabatmaerker bedre end en side der ikke
+ * kan bygges, og meget bedre end en side der falder tilbage paa feedets tal.
+ * Guiderne og /black-friday bruger anvendPrisfald og lader fejlen slippe
+ * igennem, saa ISR beholder den forrige side.
+ */
+export async function anvendPrisfaldSikkert<
+  T extends { id: string; price: number; price_original: number | null; discount_pct: number | null }
+>(varer: T[]): Promise<(T & { prisfald: Prisfald | null })[]> {
+  try {
+    return await anvendPrisfald(varer);
+  } catch (err) {
+    console.error(`[prisfald] viser ingen rabat: ${err instanceof Error ? err.message : String(err)}`);
+    return varer.map((v) => medPrisfald(v, null));
+  }
+}
