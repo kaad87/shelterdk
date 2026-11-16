@@ -12,7 +12,7 @@ import { KATEGORI_GUIDE } from "@/lib/kategori-labels";
 export const revalidate = 3600;
 
 const DESCRIPTION =
-  "Vi viser kun grej, hvor før-prisen faktisk er højere end prisen i dag. Se de reelle prisfald på soveposer, telte, pandelamper og vandregrej, og hvad der er værd at vente på.";
+  "Vi viser kun grej, hvor vi selv har set prisen falde. Se de ægte prisfald på soveposer, telte, pandelamper og vandregrej, målt mod den laveste pris de 30 dage før.";
 
 /**
  * Aarstallet staar IKKE i en konstant paa modulniveau.
@@ -45,7 +45,7 @@ function byggFaq(status: ReturnType<typeof blackFridayStatus>) {
   {
     question: "Er rabatterne på Black Friday ægte?",
     answer:
-      "Nogle af dem. Problemet er, at langt de fleste produktfeeds sender den samme pris i både før-feltet og nu-feltet, så en vare kan stå med en rabatprocent uden at være sat ned. Vi viser derfor kun varer, hvor før-prisen er højere end prisen i dag, og vi regner rabatten ud af de to priser i stedet for at stole på forhandlerens eget rabatfelt.",
+      "Nogle af dem. En butik kan skrive en høj før-pris på en vare, hvis pris ikke har rørt sig i ugevis, og så står der en rabatprocent, uden at noget er sat ned. Vi gemmer derfor selv varernes priser hver dag og viser kun varer, der er blevet billigere. Før-prisen på siden er den laveste pris, vi har registreret i op til 30 dage før prisfaldet, ikke butikkens egen.",
   },
   {
     question: "Hvilket outdoor-grej bliver typisk sat mest ned?",
@@ -55,7 +55,7 @@ function byggFaq(status: ReturnType<typeof blackFridayStatus>) {
   {
     question: "Hvad tjener ShelterDK på siden her?",
     answer:
-      "Alle links til forhandlere er affiliate-links, så vi får en andel, hvis du køber. Det ændrer ikke rækkefølgen: siden sorterer efter det faktiske prisfald, og vi skriver kun, hvad tallene i feedet kan bære.",
+      "Alle links til forhandlere er affiliate-links, så vi får en andel, hvis du køber. Det ændrer ikke rækkefølgen: siden sorterer efter det prisfald, vi selv har målt.",
   },
   ];
 }
@@ -117,7 +117,7 @@ export default async function BlackFridayPage() {
           <p className="mt-4 max-w-2xl text-primary/70">
             {status.erIGang
               ? "Her er de største reelle prisfald på outdoor-grej hos vores danske partnere lige nu."
-              : `Vi opdaterer siden hver time frem mod dagen. Indtil da står her det grej, der faktisk er sat ned i forvejen, og der er mere end nok at tage af: ${kandidater} varer hos vores partnere har lige nu en før-pris, der er højere end prisen i dag.`}
+              : `Vi opdaterer siden hver time frem mod dagen. Flere butikker er begyndt før tid, så her står det grej, der allerede er sat ned: ${kandidater} varer hos vores partnere er lige nu billigere end den laveste pris, vi så på dem de 30 dage før.`}
           </p>
         </header>
 
@@ -130,16 +130,16 @@ export default async function BlackFridayPage() {
           </h2>
           <div className="mt-3 space-y-3 text-sm text-primary/75">
             <p>
-              Næsten alle produktfeeds sender den samme pris i både før-feltet og
-              nu-feltet. En vare kan derfor stå med en rabatprocent, uden at prisen er
-              faldet én krone. Det er ikke snyd fra forhandlerens side, det er bare
-              felter, der bliver udfyldt automatisk, men resultatet er det samme for dig,
-              der skal købe.
+              En før-pris er butikkens egen oplysning. Den kan stå uændret ved siden af
+              en pris, der ikke har rørt sig i ugevis, og så viser varen en rabatprocent,
+              uden at prisen er faldet én krone. Da vi målte det i november 2026, gjaldt
+              det hver tredje vare med mindst 25 % rabat.
             </p>
             <p>
-              <strong className="text-primary">Vi viser kun varer, hvor før-prisen er højere end prisen i dag</strong>, og vi
-              regner rabatten ud af de to priser frem for at bruge forhandlerens eget
-              rabatfelt. Det er grunden til, at listen herunder er kortere end dem, du
+              <strong className="text-primary">Vi viser kun varer, hvor vi selv har set prisen falde.</strong>{" "}
+              Vi gemmer priserne hver dag, og før-prisen på kortene er den laveste pris,
+              vi har registreret i op til 30 dage før faldet. Datoen på kortet er dagen,
+              prisen faldt. Det er grunden til, at listen herunder er kortere end dem, du
               finder andre steder.
             </p>
             <p>
@@ -156,8 +156,8 @@ export default async function BlackFridayPage() {
           <div className="rounded-xl bg-primary/5 py-16 text-center">
             <h2 className="font-serif text-xl text-primary">Ingen reelle prisfald lige nu</h2>
             <p className="mx-auto mt-2 max-w-md text-primary/60">
-              Der er i øjeblikket ingen varer hos vores partnere med en før-pris, der er
-              højere end dagsprisen. Siden opdaterer sig selv, så kig forbi igen.
+              Der er i øjeblikket ingen varer hos vores partnere, som vi har set falde i
+              pris. Siden opdaterer sig selv, så kig forbi igen.
             </p>
             <Link href="/bedste" className="mt-4 inline-block text-sm text-accent underline">
               Se vores købsguider imens
@@ -169,9 +169,10 @@ export default async function BlackFridayPage() {
               De største prisfald lige nu
             </h2>
             <p className="mt-2 text-sm text-primary/60">
-              {varer.length} varer fra {kategorier.length} kategorier. Alt på listen er sat
-              mindst {minRabat} % ned i forhold til forhandlerens egen før-pris. Højst tre
-              varer pr. kategori, så siden ikke bliver én lang række soveposer.
+              {varer.length} varer fra {kategorier.length} kategorier. Alt på listen er
+              mindst {minRabat} % billigere end den laveste pris, vi så de 30 dage før
+              prisfaldet. Højst tre varer pr. kategori, så siden ikke bliver én lang række
+              soveposer.
             </p>
 
             <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">

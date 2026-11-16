@@ -190,6 +190,11 @@ export function trackGuideView(args: { guideSlug: string; fra?: string }) {
   push("guide_view", { guide_slug: args.guideSlug, ...(args.fra ? { fra: args.fra } : {}) });
 }
 
+/** Klik paa baandet over headeren. Stien kommer med fra sendServerEvent. */
+export function trackKampagneBaandClick() {
+  push("kampagne_baand_click", { kampagne: "black-friday" });
+}
+
 export function trackCommunitySubmit(type: "comment" | "photo" | "facilities") {
   push("community_submit", { submission_type: type });
 }

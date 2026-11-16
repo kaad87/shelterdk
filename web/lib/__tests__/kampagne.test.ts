@@ -4,6 +4,7 @@ import {
   blackFridayDato,
   blackFridayStatus,
   blackFridaySaeson,
+  blackWeekBaand,
   formatBlackFridayDato,
   dageTil,
   rabatPct,
@@ -280,5 +281,23 @@ describe("GAVE_TRIN", () => {
     for (let i = 1; i < GAVE_TRIN.length; i++) {
       expect(GAVE_TRIN[i].fra).toBe(GAVE_TRIN[i - 1].til);
     }
+  });
+});
+
+describe("blackWeekBaand", () => {
+  // Black Friday 2026 er 27. november.
+  it("taender 14 dage foer Black Friday", () => {
+    expect(blackWeekBaand(new Date("2026-11-12T12:00:00Z"))).toBeNull();
+    expect(blackWeekBaand(new Date("2026-11-13T12:00:00Z"))).toEqual({ aar: 2026 });
+  });
+
+  it("bliver staaende til og med Cyber Monday", () => {
+    expect(blackWeekBaand(new Date("2026-11-27T12:00:00Z"))).toEqual({ aar: 2026 });
+    expect(blackWeekBaand(new Date("2026-11-30T23:00:00Z"))).toEqual({ aar: 2026 });
+  });
+
+  it("slukker dagen efter Cyber Monday og bliver slukket resten af aaret", () => {
+    expect(blackWeekBaand(new Date("2026-12-01T01:00:00Z"))).toBeNull();
+    expect(blackWeekBaand(new Date("2027-03-01T12:00:00Z"))).toBeNull();
   });
 });

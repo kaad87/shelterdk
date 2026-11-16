@@ -1,3 +1,4 @@
+import { anvendPrisfald } from "./prisfald-opslag";
 import { createClient } from "@supabase/supabase-js";
 import { fjernStoej } from "./deal-relevans";
 import { getWhitelistedCategories } from "./affiliate-deals";
@@ -103,6 +104,31 @@ export function blackFridaySaeson(idag: Date): BlackFridayStatus | null {
   return s.dage <= SAESON_DAGE ? s : null;
 }
 
+/** Hvor mange dage foer Black Friday baandet over headeren taendes. */
+const BAAND_DAGE = 14;
+
+/**
+ * Skal baandet over headeren vises i dag?
+ *
+ * Fra 14 dage foer Black Friday til og med Cyber Monday. Butikkerne begynder
+ * foer ugen: backpackerlife satte 848 af 2.475 varer ned 14. november 2026,
+ * 13 dage foer dagen.
+ *
+ * Kun datoen afgoer det, ikke antallet af prisfald. Baandet staar i layoutet
+ * og dermed paa hver eneste side, ogsaa de dynamiske shelter-sider, og et
+ * databaseopslag pr. sidevisning er den slags hot-path-forespoergsel der foer
+ * har givet egress-overforbrug. /black-friday har selv en tom tilstand.
+ *
+ * Returnerer KUN aarstallet, med vilje. De fleste sider er statiske og kan
+ * blive serveret timer eller dage efter de blev bygget (se BlackFridayNote),
+ * saa baandet maa ikke indeholde noget der bliver forkert af at vaere
+ * gammelt: ingen nedtaelling, intet antal, ingen "i dag".
+ */
+export function blackWeekBaand(idag: Date): { aar: number } | null {
+  const s = blackFridayStatus(idag);
+  return s.dage <= BAAND_DAGE ? { aar: s.aar } : null;
+}
+
 /**
  * Datoen skrevet ud paa dansk, i UTC.
  *
@@ -202,7 +228,15 @@ export async function getKampagneTilbud(
     .order("discount_pct", { ascending: false })
     .limit(400);
 
-  return vaelgKampagneTilbud(fjernStoej((data as AffiliateProduct[]) ?? []), {
+  // Feedets foer-pris byttes ud med vores egen, FOER udvalget. aegteRabat og
+  // rabatPct nedenfor laeser `price_original`, saa de maaler herefter mod den
+  // laveste pris vi selv har set, og en vare vi ikke har set falde har ingen
+  // foer-pris og falder fra. Se lib/prisfald.ts.
+  //
+  // Fejler opslaget, kastes der. Siden er ISR, saa den forrige udgave bliver
+  // staaende; en tom Black Friday-side i en time midt i ugen ville vaere vaerre.
+  const medFald = await anvendPrisfald(fjernStoej((data as AffiliateProduct[]) ?? []));
+  return vaelgKampagneTilbud(medFald, {
     maalAntal: opts.maalAntal ?? 36,
     maxPrKategori: opts.maxPrKategori ?? 3,
   });

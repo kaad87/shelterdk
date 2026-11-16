@@ -33,20 +33,18 @@ export function BlackFridayNote({ variant }: { variant: "hub" | "guide" }) {
   const indhold = status.erIGang ? (
     <>
       <strong className="text-primary">Black Friday er i gang.</strong> Vi viser kun grej, hvor
-      før-prisen faktisk er højere end prisen i dag, så du kan se hvad der reelt er sat ned:{" "}
-      {link}.
+      vi selv har set prisen falde, så du kan se hvad der reelt er sat ned: {link}.
     </>
   ) : variant === "hub" ? (
     <>
       <strong className="text-primary">Black Friday {status.aar}</strong> falder{" "}
-      {formatBlackFridayDato(status.dato)}. Næsten alle produktfeeds sender den samme pris i både
-      før-feltet og nu-feltet, så vi viser kun grej, hvor før-prisen faktisk er højere end prisen i
-      dag: {link}.
+      {formatBlackFridayDato(status.dato)}. Butikkens egen før-pris siger ikke, om en vare er sat
+      ned, så vi viser kun grej, hvor vi selv har set prisen falde: {link}.
     </>
   ) : (
     <>
       Overvejer du at vente med at købe? {link} falder {formatBlackFridayDato(status.dato)}, og
-      siden viser kun varer, hvor før-prisen faktisk er højere end prisen i dag.
+      siden viser kun varer, hvor vi selv har set prisen falde.
     </>
   );
 

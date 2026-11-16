@@ -15,7 +15,7 @@ function kaede(tabel: string) {
     maybeSingle: async () => ({ data: (tabeller[tabel] ?? [])[0] ?? null, error: null }),
     then: (ok: (v: typeof svar) => unknown) => Promise.resolve(svar).then(ok),
   };
-  for (const m of ["select", "eq", "not", "gte", "in", "order", "limit", "range"]) k[m] = () => k;
+  for (const m of ["select", "eq", "not", "gte", "gt", "in", "order", "limit", "range"]) k[m] = () => k;
   return k;
 }
 
@@ -28,6 +28,7 @@ vi.mock("../prisfald-opslag", () => ({ anvendPrisfald: (...a: unknown[]) => anve
 
 import { getTopDeals } from "../affiliate-deals";
 import { getGuideBySlug } from "../buying-guides";
+import { getKampagneTilbud } from "../kampagne";
 import { medPrisfald, type Prisfald } from "../prisfald";
 
 const vare = (id: string, navn: string, ekstra: Record<string, unknown> = {}) => ({
@@ -136,5 +137,29 @@ describe("getGuideBySlug", () => {
     tabeller.affiliate_products = [vare("a", "Stormkøkken Trangia 25-3")];
     anvendPrisfald.mockRejectedValue(new Error("timeout"));
     await expect(getGuideBySlug("stormkoekken")).rejects.toThrow("timeout");
+  });
+});
+
+describe("getKampagneTilbud (/black-friday)", () => {
+  it("viser kun varer vi selv har set falde, med vores tal", async () => {
+    tabeller.affiliate_products = [
+      vare("a", "Stormkøkken Trangia 25-3"),
+      vare("b", "Stormkøkken Trangia 27-1", { discount_pct: 70, price_original: 1650 }),
+    ];
+    medFald({ a: fald(33), b: null });
+
+    const ud = await getKampagneTilbud();
+    expect(ud.varer.map((p) => p.id)).toEqual(["a"]);
+    expect(ud.varer[0].price_original).toBe(739);
+    expect(ud.kandidater).toBe(1);
+    expect(ud.minRabat).toBe(33);
+  });
+
+  it("lader fejlen slippe igennem, saa ISR beholder den forrige side", async () => {
+    // En tom Black Friday-side i en time midt i ugen er vaerre end en side
+    // der er en time gammel.
+    tabeller.affiliate_products = [vare("a", "Stormkøkken Trangia 25-3")];
+    anvendPrisfald.mockRejectedValue(new Error("timeout"));
+    await expect(getKampagneTilbud()).rejects.toThrow("timeout");
   });
 });

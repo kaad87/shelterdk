@@ -37,6 +37,7 @@ export const TRACKABLE_EVENTS = new Set([
   "guide_teaser_click",
   "guide_view",
   "infeed_seen",
+  "kampagne_baand_click",
   "community_submit",
   "book_button_clicked",
   "wishlist_changed",
@@ -79,6 +80,11 @@ export const INTERNAL_EVENTS = new Set([
   // er reelt nedsat, og det sker ofte, fordi rabatterne sidder i de billige
   // varer. Uden dette event ville den arm se ud som om den ikke virker.
   "infeed_seen",
+  // Baandet over headeren i Black Week. Det staar paa alle sider, saa `path`
+  // paa raekken er hele maalingen: hvilke sidetyper sender folk videre til
+  // /black-friday. Linket har med vilje ingen ?fra=-parameter (tusindvis af
+  // interne links til en dublet-URL), saa uden dette event var baandet umaalt.
+  "kampagne_baand_click",
 ]);
 
 /** Parametre der aldrig må logges, uanset hvor de kommer fra. */

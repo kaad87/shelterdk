@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { Navbar } from "@/components/Navbar";
+import { KampagneBaand } from "@/components/KampagneBaand";
 import { Footer } from "@/components/Footer";
 import { ShelterTipModalProvider } from "@/components/ShelterTipModalProvider";
 import { ShelterTipModal } from "@/components/ShelterTipModal";
@@ -11,6 +12,7 @@ export default function SiteLayout({
 }) {
   return (
     <ShelterTipModalProvider>
+      <KampagneBaand />
       <Suspense fallback={<header className="h-16 border-b border-primary/10" />}>
         <Navbar />
       </Suspense>
