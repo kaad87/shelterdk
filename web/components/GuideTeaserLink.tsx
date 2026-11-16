@@ -5,6 +5,7 @@ import { ChevronRight } from "lucide-react";
 import { trackGuideTeaserClick } from "@/lib/tracking";
 import { guideHref } from "@/lib/guide-links";
 import type { GuideKilde, GuideLink } from "@/lib/guide-links";
+import { PrisfaldMaerke } from "@/components/PrisfaldMaerke";
 
 /**
  * Ét link i en guide-blok. Klientkomponent udelukkende for at kunne maale
@@ -25,7 +26,7 @@ export function GuideTeaserLink({
   variant?: "liste" | "kort";
 }) {
   const spor = () =>
-    trackGuideTeaserClick({ guideSlug: guide.slug, kilde, reason: guide.reason });
+    trackGuideTeaserClick({ guideSlug: guide.slug, kilde, reason: guide.reason, prisfald: guide.prisfald ?? 0 });
 
   if (variant === "kort") {
     return (
@@ -34,6 +35,7 @@ export function GuideTeaserLink({
         onClick={spor}
         className="group flex h-full flex-col rounded-xl border border-primary/10 bg-white p-5 transition-all hover:border-accent/30 hover:shadow-md"
       >
+        {guide.prisfald ? <PrisfaldMaerke antal={guide.prisfald} className="mb-2 self-start" /> : null}
         <h3 className="font-serif text-lg font-bold text-primary transition-colors group-hover:text-accent">
           {guide.title}
         </h3>
@@ -56,6 +58,7 @@ export function GuideTeaserLink({
         <span className="block text-xs font-semibold text-accent-dark group-hover:underline">
           {guide.title}
         </span>
+        <PrisfaldMaerke antal={guide.prisfald} className="mt-1.5" />
       </span>
       <ChevronRight
         className="h-4 w-4 shrink-0 text-accent-dark/70 transition-transform group-hover:translate-x-0.5"

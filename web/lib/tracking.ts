@@ -139,11 +139,14 @@ export function trackGearSuggestionClick(args: {
   guideSlug: string;
   shelterSlug: string;
   reason: string;
+  /** Antal prisfald paa linkets maerke, 0 uden maerke. Se PrisfaldMaerke. */
+  prisfald?: number;
 }) {
   push("gear_suggestion_click", {
     guide_slug: args.guideSlug,
     shelter_slug: args.shelterSlug,
     reason: args.reason,
+    ...(args.prisfald != null ? { prisfald: args.prisfald } : {}),
   });
 }
 
@@ -174,11 +177,14 @@ export function trackGuideTeaserClick(args: {
   guideSlug: string;
   kilde: string;
   reason: string;
+  /** Antal prisfald paa linkets maerke, 0 uden maerke. Se PrisfaldMaerke. */
+  prisfald?: number;
 }) {
   push("guide_teaser_click", {
     guide_slug: args.guideSlug,
     kilde: args.kilde,
     reason: args.reason,
+    ...(args.prisfald != null ? { prisfald: args.prisfald } : {}),
   });
 }
 

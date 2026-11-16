@@ -5,6 +5,8 @@ import { hasPublishedStayGuides } from "@/lib/nature-stays";
 import { groupGuides } from "@/lib/buying-guides-hub";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { BlackFridayNote } from "@/components/BlackFridayNote";
+import { PrisfaldMaerke } from "@/components/PrisfaldMaerke";
+import { getGuidePrisfaldAntal } from "@/lib/guide-prisfald";
 
 export const revalidate = 3600;
 
@@ -17,7 +19,12 @@ export const metadata: Metadata = {
 
 export default async function BuyingGuidesIndexPage() {
   const guides = await getPublishedGuides();
-  const teasers = await getGuideTeasers(guides.map((g) => g.id));
+  // Hubben er ISR, saa den maa gerne vente det fulde opslag ud: en side
+  // bygget uden maerker ville staa saadan en time. Se lib/guide-prisfald.ts.
+  const [teasers, prisfald] = await Promise.all([
+    getGuideTeasers(guides.map((g) => g.id)),
+    getGuidePrisfaldAntal({ ventMs: 10_000 }),
+  ]);
   const showStays = await hasPublishedStayGuides().catch(() => false);
 
   // Saetningen nedenfor lovede "6-8 udvalgte produkter". Det holdt, da den blev
@@ -149,6 +156,7 @@ export default async function BuyingGuidesIndexPage() {
                         href={`/bedste/${g.slug}`}
                         className="rounded-2xl border border-primary/10 bg-white p-5 shadow-sm transition-transform hover:scale-[1.01]"
                       >
+                        <PrisfaldMaerke antal={prisfald.get(g.slug)} className="mb-2" />
                         <h3 className="font-serif text-lg font-bold text-primary">{g.title}</h3>
                         {g.intro && (
                           <p className="mt-1 line-clamp-2 text-sm text-primary/70">{g.intro}</p>

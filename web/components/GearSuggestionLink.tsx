@@ -5,6 +5,7 @@ import { ChevronRight } from "lucide-react";
 import { trackGearSuggestionClick } from "@/lib/tracking";
 import { gearSuggestionHref } from "@/lib/gear-suggestions";
 import type { GuideLink } from "@/lib/gear-suggestions";
+import { PrisfaldMaerke } from "@/components/PrisfaldMaerke";
 
 /**
  * Ét grej-forslag. Klientkomponent udelukkende for at kunne måle klikket —
@@ -20,7 +21,14 @@ export function GearSuggestionLink({ guide, shelterSlug }: { guide: GuideLink; s
     <Link
       href={gearSuggestionHref(guide.slug)}
       className="group flex items-center gap-3 rounded-lg border border-accent/20 bg-white px-3.5 py-3 shadow-sm transition-colors hover:border-accent/50 hover:bg-accent/[0.04]"
-      onClick={() => trackGearSuggestionClick({ guideSlug: guide.slug, shelterSlug, reason: guide.reason })}
+      onClick={() =>
+        trackGearSuggestionClick({
+          guideSlug: guide.slug,
+          shelterSlug,
+          reason: guide.reason,
+          prisfald: guide.prisfald ?? 0,
+        })
+      }
     >
       <span className="min-w-0 flex-1">
         <span className="block text-sm font-medium text-primary">
@@ -29,6 +37,7 @@ export function GearSuggestionLink({ guide, shelterSlug }: { guide: GuideLink; s
         <span className="block text-xs font-semibold text-accent-dark group-hover:underline">
           {guide.title}
         </span>
+        <PrisfaldMaerke antal={guide.prisfald} className="mt-1.5" />
       </span>
       <ChevronRight
         className="h-4 w-4 shrink-0 text-accent-dark/70 transition-transform group-hover:translate-x-0.5"

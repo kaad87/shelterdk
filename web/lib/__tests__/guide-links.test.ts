@@ -5,6 +5,9 @@ vi.mock("@/utils/supabase/server-public", () => ({
   createPublicClient: () => ({ from: () => ({ select }) }),
 }));
 
+let prisfald = new Map<string, number>();
+vi.mock("@/lib/guide-prisfald", () => ({ getGuidePrisfaldAntal: async () => prisfald }));
+
 import {
   FORSIDE_GUIDER,
   TEMA_KANDIDATER,
@@ -28,6 +31,7 @@ function svar(slugs: string[]) {
 beforeEach(() => {
   _nulstilGuideTitelCache();
   select.mockReset();
+  prisfald = new Map();
 });
 
 describe("guideHref", () => {
@@ -328,5 +332,18 @@ describe("ruteKandidater", () => {
         expect(() => guideHref(k.slug, "rute")).not.toThrow();
       }
     }
+  });
+});
+
+describe("resolveGuideLinks og prisfald", () => {
+  it("haenger antallet af prisfald paa de guider der har nogen", async () => {
+    svar(["sovepose", "vandfilter"]);
+    prisfald = new Map([["sovepose", 3]]);
+    const ud = await resolveGuideLinks([
+      { slug: "sovepose", reason: "a" },
+      { slug: "vandfilter", reason: "b" },
+    ]);
+    expect(ud[0].prisfald).toBe(3);
+    expect("prisfald" in ud[1]).toBe(false);
   });
 });

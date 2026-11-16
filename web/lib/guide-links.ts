@@ -1,10 +1,16 @@
 import { createPublicClient } from "@/utils/supabase/server-public";
+import { getGuidePrisfaldAntal } from "@/lib/guide-prisfald";
 
 export interface GuideLink {
   slug: string;
   title: string;
   /** Hvorfor netop denne guide er relevant netop her. */
   reason: string;
+  /**
+   * Antal koebbare varer i guiden med aegte prisfald (lib/guide-prisfald.ts).
+   * Mangler, naar der ingen er, eller naar optaellingen ikke kunne naas.
+   */
+  prisfald?: number;
 }
 
 /** Hvor i sitet linket staar. Foelger med ind i affiliate_clicks.path. */
@@ -115,7 +121,10 @@ export async function resolveGuideLinks(
   kandidater: GuideKandidat[],
   limit = 3
 ): Promise<GuideLink[]> {
-  const titles = await getPublishedGuideTitles();
+  // Begge er proces-cachet en time, saa det koster ingen opslag pr. render.
+  // Prisfaldene venter hoejst 1,5 s og kaster aldrig; uden dem er linket det
+  // samme som foer, bare uden maerke.
+  const [titles, prisfald] = await Promise.all([getPublishedGuideTitles(), getGuidePrisfaldAntal()]);
   if (titles.size === 0) return [];
 
   const out: GuideLink[] = [];
@@ -127,7 +136,8 @@ export async function resolveGuideLinks(
     const title = titles.get(k.slug);
     if (!title) continue;
     seen.add(k.slug);
-    out.push({ slug: k.slug, title, reason: k.reason });
+    const antal = prisfald.get(k.slug);
+    out.push({ slug: k.slug, title, reason: k.reason, ...(antal ? { prisfald: antal } : {}) });
   }
   return out;
 }
