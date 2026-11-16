@@ -92,7 +92,7 @@ export const KATEGORI_GUIDE: Record<string, { slug: string; label: string }> = {
   navigation: { slug: "kompas", label: "kompasser" },
   oekse: { slug: "oekse", label: "økser og save" },
   pandelampe: { slug: "pandelampe", label: "pandelamper" },
-  prepping: { slug: "taendstaal", label: "tændstål" },
+  prepping: { slug: "noedpakke", label: "nødpakker" },
   regntoj: { slug: "regntoj", label: "regnjakker" },
   rygsaek: { slug: "vandrerygsaek", label: "vandrerygsække" },
   siddeunderlag: { slug: "siddeunderlag", label: "siddeunderlag" },

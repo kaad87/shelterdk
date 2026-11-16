@@ -21,6 +21,14 @@ describe("groupGuides", () => {
     const out = groupGuides([g("sovepose", "sovepose")]);
     expect(out.every((s) => s.guides.length > 0)).toBe(true);
   });
+  it("samler beredskabsguiderne i egen gruppe, saa de linker til hinanden", () => {
+    // noedpakke og noedradio har category "prepping". Uden gruppen landede de
+    // i "Andet", og "Se ogsaa" fandt ingen soeskende.
+    const out = groupGuides([g("noedpakke", "prepping"), g("noedradio", "prepping"), g("kniv", "kniv")]);
+    expect(out.find((s) => s.group === "Beredskab")!.guides.map((x) => x.slug)).toEqual(["noedpakke", "noedradio"]);
+    const rel = relatedGuides("noedradio", [g("noedpakke", "prepping"), g("noedradio", "prepping"), g("kniv", "kniv")]);
+    expect(rel[0].slug).toBe("noedpakke");
+  });
   it("ukendt kategori havner i 'Andet' (falder ikke ud)", () => {
     const out = groupGuides([g("x", "ukendt-kat")]);
     expect(out.flatMap((s) => s.guides).map((x) => x.slug)).toContain("x");

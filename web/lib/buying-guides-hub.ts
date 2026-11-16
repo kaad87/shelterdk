@@ -21,6 +21,11 @@ export const HUB_GROUPS: { group: string; categories: string[] }[] = [
   // en kategori uden gruppe havner i hub-sidens "Andet" uden søskende-links.
   { group: "Tøj & lag-på-lag", categories: ["uldundertoj", "fleece", "dunjakke", "regntoj", "vandrebukser", "sokker", "fodtoj", "vandresandal", "gamacher", "handsker", "hue", "solhat"] },
   { group: "Sikkerhed & hygiejne", categories: ["foerstehjaelp", "hygiejne"] },
+  // Hjemmeberedskab: nødpakke og nødradio (november 2026). Nødradio er
+  // også elektronik, men den søges som beredskab ("nødradio" 18.100
+  // søgninger i oktober 2026 mod "powerbank" langt lavere), og søskende-
+  // linkene skal gå mellem beredskabsguiderne, ikke til kikkert og kompas.
+  { group: "Beredskab", categories: ["prepping"] },
 ];
 /**
  * Gruppe for kategorier der ikke er nævnt ovenfor.
