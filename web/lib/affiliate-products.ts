@@ -7,6 +7,8 @@ function getSupabaseClient() {
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
+import type { Prisfald } from "./prisfald";
+
 export interface AffiliateProduct {
   id: string;
   retailer: "outmore" | "backpackerlife" | "outdoortid";
@@ -36,6 +38,24 @@ export interface AffiliateProduct {
   updated_at?: string;
   /** Sættes til now() ved hver feed-sync — den ærlige "pris/lager tjekket"-dato. */
   last_seen_at?: string;
+  /**
+   * Vores eget, målte prisfald. Se lib/prisfald.ts.
+   *
+   * Tre tilstande, og forskellen betyder noget:
+   *   objekt     prisen er faldet, og `price_original`/`discount_pct` er
+   *              VORES tal (laveste pris vi har set før faldet), ikke feedets.
+   *   null       slået op, intet fald. `price_original` og `discount_pct` er
+   *              nulstillet, så ingen komponent kan vise butikkens påstand.
+   *   undefined  ikke slået op. Felterne er stadig feedets rå værdier.
+   *              Guiderne, tilbudsblokken, /tilbud og forsidens tilbud slår
+   *              op (lib/prisfald-opslag.ts). getProduct gør det IKKE, fordi
+   *              den kaldes pr. render på de dynamiske shelter-sider, og et
+   *              ekstra opslag dér er præcis den slags hot-path-forespørgsel
+   *              der før har givet egress-overforbrug. Grej-kortene på
+   *              shelter-sider, i blogindlæg og in-feed viser derfor stadig
+   *              feedets rabat.
+   */
+  prisfald?: Prisfald | null;
 }
 
 const SELECT_COLUMNS =

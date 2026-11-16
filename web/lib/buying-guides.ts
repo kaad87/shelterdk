@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { AffiliateProduct } from "@/lib/affiliate-products";
 import { rentNavn } from "@/lib/produktnavn";
+import { anvendPrisfald } from "@/lib/prisfald-opslag";
 
 function getServiceClient() {
   return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
@@ -170,7 +171,12 @@ export async function getGuideBySlug(
   if (ids.length === 0) return { guide: guide as BuyingGuide, entries: [] };
 
   const { data: products } = await sb.from("affiliate_products").select(PRODUCT_COLS).in("id", ids);
-  const byId = new Map(((products ?? []) as GuideEntryWithProduct["product"][]).map((p) => [p.id, p]));
+  // Feedets foer-pris byttes ud med vores egen her, ved laesning, saa
+  // overblik, tabel, produktkort og /grej-siderne alle viser det samme og
+  // ingen af dem kan vise butikkens paastand. Maalt 16/11 2026: 40 af 360
+  // guidekort viste en rabat vi aldrig havde set opstaa. Se lib/prisfald.ts.
+  const medFald = await anvendPrisfald((products ?? []) as GuideEntryWithProduct["product"][]);
+  const byId = new Map<string, GuideEntryWithProduct["product"]>(medFald.map((p) => [p.id, p]));
 
   const entries: GuideEntryWithProduct[] = (rawEntries ?? [])
     .map((e) => {

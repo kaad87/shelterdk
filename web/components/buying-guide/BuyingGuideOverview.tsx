@@ -83,6 +83,7 @@ export function BuyingGuideOverview({
                   price={e.product.price}
                   priceOriginal={e.product.price_original}
                   discountPct={e.product.discount_pct}
+                  faldetSiden={e.product.prisfald?.siden}
                   shippingCost={e.product.shipping_cost}
                 />
               </div>

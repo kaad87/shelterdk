@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { FEED_KATEGORIER } from "./feed-kategori-filter";
 import { fjernStoej } from "./deal-relevans";
 import { navneKategorier } from "./kategori-fra-navn";
+import { anvendPrisfald } from "./prisfald-opslag";
 import type { AffiliateProduct } from "./affiliate-products";
 
 /**
@@ -32,7 +33,11 @@ function filterKategorier(): string[] {
 }
 
 export interface DealsFilter {
-  minDiscount?: number; // default 25
+  /**
+   * Default 25. Gaelder VORES maalte prisfald, ikke feedets `discount_pct`.
+   * Feedets tal bruges kun til at snaevre opslaget ind i databasen.
+   */
+  minDiscount?: number;
   retailer?: string;
   category?: string;
   sort?: "discount" | "price-asc" | "price-desc";
@@ -138,7 +143,28 @@ export async function getTopDeals(
   // fyldt med varer der duer. Laa foer kun i guidernes tilbudsblok, saa
   // /tilbud var ubeskyttet: 4 af de 40 viste varer var en cykellygte og tre
   // varianter af den samme proptraekker.
-  const products = fjernStoej((data as AffiliateProduct[]) ?? []);
+  const rene = fjernStoej((data as AffiliateProduct[]) ?? []);
+  // Et tilbud er en vare der er blevet billigere, ikke en vare butikken har
+  // skrevet en hoej foer-pris paa. Maalt 16/11 2026 paa de live guider: 28 af
+  // tilbudsblokkenes 104 pladser var staaende foer-priser, hvor prisen ikke
+  // havde roert sig i de 14 dage vi havde kigget, mens 550 aegte fald hos
+  // backpackerlife stod klar til at tage pladserne. Efter anvendPrisfald er
+  // `discount_pct` vores eget tal, saa sortering og maerker foelger med.
+  //
+  // Kan historikken ikke laeses, vises ingen tilbud. Forsiden og /tilbud
+  // kalder herfra, og ingen af dem maa vaelte paa et opslag der kun skal
+  // bekraefte en rabat. Det omvendte, at falde tilbage paa feedets tal, ville
+  // vise praecis de paastande denne funktion er til for at fjerne.
+  const mindst = filter.minDiscount ?? 25;
+  let products: AffiliateProduct[];
+  try {
+    products = (await anvendPrisfald(rene)).filter(
+      (p) => p.prisfald != null && p.prisfald.pct >= mindst
+    );
+  } catch (e) {
+    console.error(`[tilbud] prisfald kunne ikke slaas op: ${e instanceof Error ? e.message : String(e)}`);
+    return [];
+  }
   // Only re-sort by retailer priority when sorting by discount (default)
   const sorted =
     filter.sort === "price-asc" || filter.sort === "price-desc"

@@ -5,7 +5,8 @@ import type { GuideEntryWithProduct } from "@/lib/buying-guides";
 
 /**
  * "På tilbud lige nu"-modul til købsguide-sider: viser op til 3 aktuelle tilbud
- * (≥25 % rabat, på lager) fra samme kategori som guidens produkter — ekskl.
+ * (på lager, og mindst 25 % under den laveste pris vi selv har set før faldet,
+ * se lib/prisfald.ts) fra samme kategori som guidens produkter — ekskl.
  * produkter der allerede er med i guiden. Kategorien udledes af guidens egne
  * entries (hyppigste category_mapped), så guide-kategori vs. produkt-taksonomi
  * (fx campingstol → campingmobler) matcher automatisk. Renderer intet når der
@@ -57,9 +58,12 @@ export async function GuideDeals({
         På tilbud lige nu
       </h2>
       <p className="mb-4 text-xs text-primary/50">
-        Aktuelle nedsættelser i samme kategori — priser og lager opdateres dagligt.
+        Varer i samme kategori, hvor vi selv har set prisen falde. Før-prisen er den
+        laveste pris, vi har registreret i op til 30 dage før faldet, ikke butikkens egen.
       </p>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      {/* md og ikke sm: kortene ligger ned indtil md. Tre kolonner fra 640 px
+          gav hvert liggende kort 200 px, og rabatmærket lå oven på varenavnet. */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {deals.map((p) => (
           <GearCardView key={p.id} product={p} variant="product" />
         ))}

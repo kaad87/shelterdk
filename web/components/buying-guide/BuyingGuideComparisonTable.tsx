@@ -69,6 +69,7 @@ export function BuyingGuideComparisonTable({ entries }: { entries: GuideEntryWit
                     price={e.product.price}
                     priceOriginal={e.product.price_original}
                     discountPct={e.product.discount_pct}
+                    faldetSiden={e.product.prisfald?.siden}
                     shippingCost={e.product.shipping_cost}
                   />
                 </td>
@@ -104,6 +105,7 @@ export function BuyingGuideComparisonTable({ entries }: { entries: GuideEntryWit
                 price={e.product.price}
                 priceOriginal={e.product.price_original}
                 discountPct={e.product.discount_pct}
+                faldetSiden={e.product.prisfald?.siden}
                 shippingCost={e.product.shipping_cost}
               />
             </div>

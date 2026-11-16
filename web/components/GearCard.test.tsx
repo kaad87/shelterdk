@@ -127,3 +127,30 @@ describe("GearCard fallback states", () => {
     expect(container).not.toBeEmptyDOMElement();
   });
 });
+
+describe("GearCard og vores eget prisfald", () => {
+  const faldet: AffiliateProduct = {
+    ...mockProduct,
+    price: 495,
+    price_original: 739,
+    discount_pct: 33,
+    prisfald: { foer: 739, nu: 495, pct: 33, siden: "2026-11-14" },
+  };
+
+  it("daterer faldet paa produktkortet", () => {
+    render(<GearCardView product={faldet} variant="product" />);
+    expect(screen.getByText("Faldet 14. nov.")).toBeInTheDocument();
+  });
+
+  it("daterer faldet paa det redaktionelle kort", () => {
+    render(<GearCardView product={faldet} variant="editorial" />);
+    expect(screen.getByText("Faldet 14. nov.")).toBeInTheDocument();
+  });
+
+  it("skriver ingen dato paa en vare der ikke er slaaet op", () => {
+    // mockProduct har feedets rabat og intet `prisfald`. Kortet maa ikke
+    // opfinde en dato til den.
+    render(<GearCardView product={mockProduct} variant="product" />);
+    expect(screen.queryByText(/Faldet/)).toBeNull();
+  });
+});

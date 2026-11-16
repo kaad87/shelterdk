@@ -6,6 +6,7 @@ import { maerketStaarINavnet, rentMaerke, rentNavn } from "@/lib/produktnavn";
 import { trackAffiliateClick } from "@/lib/tracking";
 import { ProduktBillede } from "@/components/ProduktBillede";
 import { retailerNavn } from "@/lib/retailer-navn";
+import { kortDato } from "@/lib/prisfald";
 
 function fireAffiliate(
   product: AffiliateProduct,
@@ -29,6 +30,22 @@ export type GearCardVariant = "editorial" | "product" | "pill";
 
 function RetailerLabel({ retailer }: { retailer: AffiliateProduct["retailer"] }) {
   return <>{retailerNavn(retailer)}</>;
+}
+
+/**
+ * "Faldet 14. nov." under prisen, når vi selv har set prisen falde.
+ *
+ * Vises kun når `prisfald` er sat, altså kun for varer der er slået op i
+ * lib/prisfald-opslag.ts. Datoen er det, der gør rabatmærket til noget
+ * læseren kan efterprøve i stedet for noget butikken påstår.
+ */
+function FaldetLinje({ product, className }: { product: AffiliateProduct; className?: string }) {
+  if (!product.prisfald) return null;
+  return (
+    <p className={`text-[11px] md:text-xs text-primary/60 ${className ?? ""}`}>
+      Faldet {kortDato(product.prisfald.siden)}
+    </p>
+  );
 }
 
 function formatPrice(n: number): string {
@@ -57,6 +74,7 @@ function EditorialVariant({ product, className }: { product: AffiliateProduct; c
             </>
           )}
         </div>
+        <FaldetLinje product={product} className="mt-0.5" />
         {outOfStock ? (
           <div className="mt-2 text-sm text-primary/60">Udsolgt lige nu</div>
         ) : (
@@ -107,6 +125,7 @@ function ProductVariant({ product, className }: { product: AffiliateProduct; cla
             <span className="text-xs md:text-sm text-primary/40 line-through">{formatPrice(product.price_original)}</span>
           )}
         </div>
+        <FaldetLinje product={product} className="mt-0.5 md:mt-1" />
         <div className="mt-auto pt-2 md:pt-4">
           {outOfStock ? (
             <div className="flex min-h-11 items-center justify-center rounded-lg bg-primary/5 px-3 md:px-4 py-2 md:py-2.5 text-center text-xs md:text-sm font-medium text-primary/50">Udsolgt lige nu</div>
