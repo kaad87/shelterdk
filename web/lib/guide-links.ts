@@ -122,8 +122,8 @@ export async function resolveGuideLinks(
   limit = 3
 ): Promise<GuideLink[]> {
   // Begge er proces-cachet en time, saa det koster ingen opslag pr. render.
-  // Prisfaldene venter hoejst 1,5 s og kaster aldrig; uden dem er linket det
-  // samme som foer, bare uden maerke.
+  // Prisfaldene kaster aldrig; uden dem er linket det samme som foer, bare
+  // uden maerke. Se VENT_MS i lib/guide-prisfald.ts for ventetiden.
   const [titles, prisfald] = await Promise.all([getPublishedGuideTitles(), getGuidePrisfaldAntal()]);
   if (titles.size === 0) return [];
 

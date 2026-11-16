@@ -42,9 +42,17 @@ export function taelPrisfald(
 const TTL_MS = 60 * 60 * 1000;
 /**
  * Saa laenge venter en side paa et koldt opslag. Bagefter renderes den uden
- * maerker, og opslaget koerer videre og fylder cachen til naeste visning.
+ * maerker, og opslaget koerer videre og fylder cachen.
+ *
+ * Laenge, med vilje. Var 1,5 s, ud fra en antagelse om at shelter-siderne
+ * var dynamiske. Det er de ikke: ALLE sider med guide-links er ISR med
+ * revalidate = 86400. Foerste visning efter deployet 16/11 2026 ramte en kold
+ * server, optaellingen naaede ikke at blive faerdig, og forsiden blev gemt
+ * uden et eneste maerke i et doegn. En ISR-side genbygges i baggrunden mens
+ * den gamle vises, saa ventetiden rammer naesten aldrig en bruger, mens en
+ * for kort graense rammer alle i 24 timer.
  */
-const VENT_MS = 1500;
+const VENT_MS = 10_000;
 
 let cache: { antal: Map<string, number>; expires: number } | null = null;
 let inflight: Promise<Map<string, number> | null> | null = null;

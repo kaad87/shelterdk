@@ -19,11 +19,9 @@ export const metadata: Metadata = {
 
 export default async function BuyingGuidesIndexPage() {
   const guides = await getPublishedGuides();
-  // Hubben er ISR, saa den maa gerne vente det fulde opslag ud: en side
-  // bygget uden maerker ville staa saadan en time. Se lib/guide-prisfald.ts.
   const [teasers, prisfald] = await Promise.all([
     getGuideTeasers(guides.map((g) => g.id)),
-    getGuidePrisfaldAntal({ ventMs: 10_000 }),
+    getGuidePrisfaldAntal(),
   ]);
   const showStays = await hasPublishedStayGuides().catch(() => false);
 

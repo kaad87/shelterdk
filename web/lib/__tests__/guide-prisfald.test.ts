@@ -141,3 +141,19 @@ describe("getGuidePrisfaldAntal", () => {
     expect(hentPrisfald).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("ventetiden", () => {
+  it("venter laenge nok til et koldt opslag paa en ISR-side", async () => {
+    // Alle sider med guide-links caches i 24 timer. Et maerkeloest svar
+    // efter 1,5 s blev staaende paa forsiden et doegn.
+    vi.useFakeTimers();
+    let svar!: (m: Map<string, typeof fald>) => void;
+    hentPrisfald.mockReturnValue(new Promise((r) => (svar = r)));
+    const p = getGuidePrisfaldAntal();
+    await vi.advanceTimersByTimeAsync(5000);
+    svar(new Map([["a", fald]]));
+    await vi.advanceTimersByTimeAsync(0);
+    expect((await p).get("stormkoekken")).toBe(1);
+    vi.useRealTimers();
+  });
+});
