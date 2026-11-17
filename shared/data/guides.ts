@@ -300,7 +300,7 @@ Hvis du bare vil have den korte version, så pak mindst:
 - En [sovepude og lagenpose](/bedste/sovepude) til bedre søvn og et par graders ekstra varme
 - Varmt **tøj i lag** + ekstra sokker
 - **Mad og vand** til hele turen — i en god [drikkedunk](/bedste/drikkedunk)
-- **Pandelygte** eller lommelygte
+- **Pandelygte** eller [lommelygte](/bedste/lommelygte)
 - Tandbørste, toiletpapir og **håndsprit**
 - Telefon + **powerbank**
 - Lille **førstehjælpskit**
@@ -417,7 +417,7 @@ Pak ekstra til vinter:
 - Varmere sovepose eller kombination af sovepose + inderpose
 - Isolerende liggeunderlag med høj R-værdi
 - Uldundertøj, varm hue og tørre sokker kun til natten — se [bedste uldundertøj](/bedste/uldundertoj) og [bedste vandresokker](/bedste/vandresokker)
-- Termokande med varmt vand eller te
+- [Termokande](/bedste/termokande) med varmt vand eller te
 - Ekstra handsker og evt. håndvarmere
 - Tørpose til tøj og elektronik
 
@@ -926,7 +926,7 @@ Selv det bedste grej fejler, hvis du bruger det forkert. De vigtigste vinter-van
 Vinterture brænder langt flere kalorier end sommerture. Planlæg mad, der er hurtig, fed og varm: havregrød med smør og rosiner til morgen, og en one-pot-ret til aften. Husk at:
 
 - Vand fryser — opbevar flasken med bunden i vejret (isen lægger sig i toppen, så låget ikke fryser fast) eller inde i rygsækken
-- En termokande med te eller bouillon er guld værd ved ankomst, før bålet er i gang
+- En [termokande](/bedste/termokande) med te eller bouillon er guld værd ved ankomst, før bålet er i gang
 - Gasblus mister tryk i frost — læg gasdåsen i soveposen om natten, eller brug vinterblanding
 
 ## Sikkerhed og vejr

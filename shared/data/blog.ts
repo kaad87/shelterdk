@@ -742,7 +742,7 @@ Temperaturen varierer dog kraftigt i foråret. Om dagen kan det være 15 grader 
 - **Sovepose med comfort-temperatur på 0–5 grader** – nætterne er køligere end man tror
 - **Lag-på-lag tøj** – let at tilpasse til skiftende temperaturer
 - **Vandtæt jakke** – aprilbyger er uforudsigelige
-- **Termokande med varm drik** – en kop kaffe eller te i en kold morgen er luksus
+- **Termokande med varm drik** – en kop kaffe eller te i en kold morgen er luksus ([se vores termokande-guide](/bedste/termokande))
 
 Foråret er perfekt til den, der vil undgå masser af andre besøgende. Shelters er sjældent fuldt booket i marts og april, så du har gode chancer for at have pladsen for dig selv.
 
@@ -866,7 +866,7 @@ En god hovedlygte er et must. Du har begge hænder fri til at lave mad, samle br
 - Mindst 8 timers batteritid
 - Vandtæt (IPX4 eller højere)
 
-Medbring altid ekstra batterier. Der er intet værre end at stå i bælgmørke med en død lygte.
+Medbring altid ekstra batterier. Der er intet værre end at stå i bælgmørke med en død lygte. En [lommelygte på almindelige batterier](/bedste/lommelygte) er en god reserve.
 
 ## Rygsæk – den rigtige størrelse
 
@@ -1025,7 +1025,7 @@ Regn indbyder til en anden slags sheltertur – langsommere, mere meditativ:
 - **Lytten** – regn på shelteret tag er en af naturens mest beroligende lyde. Luk øjnene og vær til stede
 - **Læsning** – medbring en god bog (i vandtæt pose). Der er få bedre steder at læse end under et tag med regnen som lydkulisse
 - **Kortspil** – en pakke kort vejer ingenting og giver timers underholdning
-- **Varm drik** – kakao, kaffe eller te. Fyld termokannen inden turen og nyd den i tørvejr under taget
+- **Varm drik** – kakao, kaffe eller te. Fyld [termokanden](/bedste/termokande) inden turen og nyd den i tørvejr under taget
 - **Naturobservation** – mange dyr er mere aktive i regnvejr. Snegle, salamandre og fugle kommer frem
 
 ## Grej der gør regnture bedre
