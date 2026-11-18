@@ -4,6 +4,8 @@
 [build]
   command = "npm run build"
   # Publish udelades – @netlify/plugin-nextjs håndterer output
+  # Spring bygget over, når en commit hverken rører web/ eller shared/ (sparer credits).
+  ignore = "bash scripts/netlify-ignore.sh"
 
 [build.environment]
   NODE_VERSION = "20"
