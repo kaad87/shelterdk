@@ -146,6 +146,14 @@ def fetch_existing_identifiers():
     print(f"  → {len(slugs)} eksisterende slugs, {len(source_ids)} source_ids i DB.")
     return slugs, source_ids
 
+# Officielle kommunekoder, kun dem GeoFA har sendt uden navn. Bruges til titlen,
+# naar facilitetens navn mangler. Udvid ved behov; ukendte koder giver "Shelter".
+KOMMUNEKODER = {
+    "270": "Gribskov", "540": "Sønderborg", "550": "Tønder", "773": "Morsø",
+    "791": "Viborg", "820": "Vesthimmerlands", "851": "Aalborg",
+    "530": "Billund", "756": "Ikast-Brande",
+}
+
 # ── Hent GeoFA-data ─────────────────────────────────────────────────────────
 
 def fetch_geofa():
@@ -234,11 +242,21 @@ def main():
         # Beregn slug + source_id
         navn = _get_prop(props, "navn", "name", "facilitetnavn")
         if navn:
-            title = navn
+            # GeoFA-navne kan have en hale af mellemrum (set 17/11 2026 paa
+            # "Shelterplads Nord - Kaer Vestermark"). Slug'en paavirkes ikke.
+            title = re.sub(r"\s+", " ", navn).strip()
         else:
-            bel = _get_prop(props, "beliggenhedskommune")
-            obj_id = _get_prop(props, "objekt_id")
-            title = f"Shelter, {bel}" if bel else (f"Shelter ({obj_id})" if obj_id else "Ukendt Shelter")
+            bel = str(_get_prop(props, "beliggenhedskommune") or "").strip()
+            # GeoFA sender kommuneKODEN her ("791"), ikke navnet. Uden
+            # oversaettelsen fik shelteren titlen "Shelter, 791" (fanget i
+            # toerkoerslen 17/11 2026). En ukendt kode giver "Shelter" frem for
+            # et tal i titlen; kommunen udfyldes alligevel bagefter af
+            # backfill_kommune_region_scoped.py.
+            if bel.isdigit():
+                bel = KOMMUNEKODER.get(bel, "")
+            # Hverken navn eller kendt kode: "Shelter". objekt_id er et UUID og
+            # gav titler som "Shelter (1eec079a-1813-...)" (18/11 2026).
+            title = f"Shelter, {bel}" if bel else "Shelter"
 
         base_slug = slugify(title)
         slug = f"{base_slug}-{str(lon)[:6].replace('.', '')}"

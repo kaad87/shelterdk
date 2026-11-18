@@ -23,13 +23,20 @@ from supabase import create_client
 from backfill_kommune_from_geo import reverse_geocode
 from backfill_region_from_kommune import kommune_to_landsdel
 
-# GeoFA-importen 2026-10-03. slug -> (lat, lon)
+# GeoFA-importen 2026-11-17. slug -> (lat, lon)
 TARGETS = {
-    "kalo-hovedgard-shelter-nr-3-ikke-bookbar-10499": (56.29722, 10.49989),
-    "shelter-ved-foreningshus-11978": (55.32893, 11.97888),
-    "shelter-ved-poppelvej-88797": (56.74869, 8.87973),
-    "shelterplads-ved-skovsoen-i-farvang-97345": (56.26173, 9.73458),
-    "udsigtsshelter-ved-albaek-10167": (56.48458, 10.16785),
+    "shelter-ikast-brande-94073": (55.96596, 9.40739),
+    "shelter-billund-90940": (55.62321, 9.09403),
+    "tingdal-plantage-86743": (55.00585, 8.67437),
+    "shelterplads-nord-kaer-vestermark-97656": (54.93566, 9.76564),
+    "shelterplads-syd-kaer-vestermark-97659": (54.93296, 9.76596),
+    "madpakkehus-med-shelter-og-balsted-94347": (56.66446, 9.43477),
+    "shelter-2-12175": (55.98367, 12.17537),
+    "shelter-1-12175": (55.98395, 12.17575),
+    "vestbjerg-natur-og-klimapark-99640": (57.12518, 9.96401),
+    "shelter-viborg-92388": (56.51471, 9.23890),
+    "shelter-93936": (56.56126, 9.39365),
+    "shelter-ved-stjernen-i-ljorslev-87808": (56.73756, 8.78087),
 }
 
 # Kanoniske regionsnavne i DB: Jylland (1086), Sjælland og Øerne (406), Fyn (181),
@@ -46,6 +53,8 @@ KODE_TIL_KOMMUNE = {
     "573": "Varde", "580": "Aabenraa", "707": "Norddjurs", "760": "Ringkøbing-Skjern",
     "791": "Viborg", "540": "Sønderborg", "420": "Assens", "306": "Kalundborg", "316": "Holbæk", "326": "Ringsted",
     "706": "Norddjurs", "320": "Faxe", "779": "Skive", "740": "Silkeborg", "730": "Randers",
+    "550": "Tønder", "820": "Vesthimmerlands", "270": "Gribskov", "851": "Aalborg", "773": "Morsø",
+    "530": "Billund", "756": "Ikast-Brande",
 }
 
 

@@ -8,14 +8,22 @@ import os, time, requests
 from supabase import create_client
 from fetch_udinaturen_images import extract_image_urls, _fetch_images_playwright, HEADERS
 
-# Opdateret til GeoFA-importen 2026-10-03 (5 nye shelters).
-# Forhåndstestet mod udinaturen: alle 5 har billeder via ren HTTP (17 i alt).
+# Opdateret til GeoFA-importen 2026-11-17 (12 nye shelters; 2 kom til i GeoFA natten til 18/11).
+# Forhåndstestet mod udinaturen: 7 af 10 har billeder via ren HTTP (35 i alt);
+# de sidste 3 har heller ingen via Playwright.
 NEW_SLUGS = [
-    "kalo-hovedgard-shelter-nr-3-ikke-bookbar-10499",
-    "shelter-ved-foreningshus-11978",
-    "shelter-ved-poppelvej-88797",
-    "shelterplads-ved-skovsoen-i-farvang-97345",
-    "udsigtsshelter-ved-albaek-10167",
+    "shelter-ikast-brande-94073",
+    "shelter-billund-90940",
+    "tingdal-plantage-86743",
+    "shelterplads-nord-kaer-vestermark-97656",
+    "shelterplads-syd-kaer-vestermark-97659",
+    "madpakkehus-med-shelter-og-balsted-94347",
+    "shelter-2-12175",
+    "shelter-1-12175",
+    "vestbjerg-natur-og-klimapark-99640",
+    "shelter-viborg-92388",
+    "shelter-93936",
+    "shelter-ved-stjernen-i-ljorslev-87808",
 ]
 
 url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
