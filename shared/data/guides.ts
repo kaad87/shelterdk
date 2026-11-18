@@ -432,6 +432,7 @@ Husk:
 - Pandelygte til alle + ekstra batterier – se [bedste pandelampe](/bedste/pandelampe)
 - Evt. en [lanterne](/bedste/lanterne) til selve shelteret. En pandelygte lyser kun derhen hvor du kigger, og det bliver trættende når I sidder og spiser
 - Powerbank til telefon - se [bedste powerbank](/bedste/powerbank)
+- Skal I et sted uden mobildækning, kan en lille [nødradio](/bedste/noedradio) med FM give jer radioens vejrudsigt og lidt strøm til telefonen
 - Kort eller offline kort på mobilen, og gerne et [kompas](/bedste/kompas) der ikke løber tør for strøm
 
 ::gear[outmore-9328389030533]
@@ -935,6 +936,7 @@ Hold ekstra øje med:
 
 - Vejrudsigter (vind, nedbør, temperatur)
 - Varsler om sne, is eller storm
+- Er der dårlig mobildækning ved shelteret, kan en lille [nødradio](/bedste/noedradio) med FM holde dig opdateret via radioen
 
 Hav altid en **plan B**:
 
