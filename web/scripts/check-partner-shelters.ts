@@ -8,6 +8,10 @@
  *   npx tsx scripts/check-partner-shelters.ts
  *
  * Exit 1 hvis et link er dødt eller en pris afviger.
+ *
+ * Henter KUN annoncørens egne sider. Partner-ads-linket kontrolleres offline
+ * (det skilles ad, ikke klikkes): et rigtigt klik gennem partner-ads registreres
+ * som et klik hos annoncøren og forurener provisions-statistikken.
  */
 import { PARTNER_SHELTERS, PRICES_CHECKED, partnerAdsLink, isPriceStale } from "../lib/partner-shelters";
 
@@ -21,6 +25,26 @@ function pricesOnPage(html: string): number[] {
     found.add(Number(m[1].replace(/\./g, "")));
   }
   return [...found];
+}
+
+/** Returnerer en fejltekst, eller null når linket peger på produktet. */
+export function partnerAdsLinkFejl(link: string, produktUrl: string): string | null {
+  let u: URL;
+  try {
+    u = new URL(link);
+  } catch {
+    return `ugyldig URL: ${link}`;
+  }
+  if (u.host !== "www.partner-ads.com" || u.pathname !== "/dk/klikbanner.php") {
+    return `forkert vært eller sti: ${u.host}${u.pathname}`;
+  }
+  if (!u.searchParams.get("partnerid") || !u.searchParams.get("bannerid")) {
+    return "mangler partnerid eller bannerid";
+  }
+  if (u.searchParams.get("htmlurl") !== produktUrl) {
+    return `htmlurl peger på ${u.searchParams.get("htmlurl")}, ikke ${produktUrl}`;
+  }
+  return null;
 }
 
 async function main() {
@@ -46,10 +70,17 @@ async function main() {
     );
     if (!match) problems++;
 
-    // Deep linket skal stadig lande på produktet.
-    const click = await fetch(partnerAdsLink(p.url), { headers: { "User-Agent": UA }, redirect: "follow" });
-    if (!click.ok || !click.url.includes(new URL(p.url).pathname)) {
-      console.error(`       affiliate-link fejler: ${click.status} → ${click.url}`);
+    // Produktet skal stadig ligge på sin egen adresse: Sølund sender udgåede
+    // varer videre (fx til forsiden), og det giver 200, ikke 404.
+    if (new URL(res.url).pathname !== new URL(p.url).pathname) {
+      console.error(`       produktet omdirigeres: ${p.url} → ${res.url}`);
+      problems++;
+    }
+
+    // Affiliate-linket skilles ad i stedet for at blive klikket (se toppen).
+    const fejl = partnerAdsLinkFejl(partnerAdsLink(p.url), p.url);
+    if (fejl) {
+      console.error(`       affiliate-link: ${fejl}`);
       problems++;
     }
   }
@@ -58,7 +89,10 @@ async function main() {
   process.exit(problems === 0 ? 0 : 1);
 }
 
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+// Kun når filen køres direkte, så testen kan importere partnerAdsLinkFejl.
+if (process.argv[1]?.includes("check-partner-shelters")) {
+  main().catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });
+}
