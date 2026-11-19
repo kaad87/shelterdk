@@ -5,6 +5,8 @@ import {
   blackFridayStatus,
   blackFridaySaeson,
   blackWeekBaand,
+  julegaveSaeson,
+  kampagneBaand,
   formatBlackFridayDato,
   dageTil,
   rabatPct,
@@ -262,6 +264,55 @@ describe("blackFridaySaeson", () => {
     }
     // 40 dage foer, selve dagen og de tre dage efter.
     expect(aabne).toBe(44);
+  });
+});
+
+describe("julegaveSaeson", () => {
+  const d = (s: string) => new Date(`${s}T12:00:00Z`);
+
+  it("er aaben fra 1. november til og med 21. december", () => {
+    expect(julegaveSaeson(d("2026-10-31"))).toBe(false);
+    expect(julegaveSaeson(d("2026-11-01"))).toBe(true);
+    expect(julegaveSaeson(d("2026-12-21"))).toBe(true);
+    expect(julegaveSaeson(d("2026-12-22"))).toBe(false);
+  });
+
+  it("laeser datoen i UTC", () => {
+    // 21. december 23:30 dansk tid er stadig den 21. i UTC; den 22. kl. 00:30
+    // dansk tid er den 21. kl. 23:30 UTC. Begge maa give samme svar som UTC.
+    expect(julegaveSaeson(new Date("2026-12-21T23:30:00Z"))).toBe(true);
+    expect(julegaveSaeson(new Date("2026-12-22T00:00:00Z"))).toBe(false);
+  });
+});
+
+describe("kampagneBaand", () => {
+  const d = (s: string) => kampagneBaand(new Date(`${s}T12:00:00Z`));
+
+  it("viser intet foer Black Week, selv om julegaverne er i saeson", () => {
+    expect(d("2026-11-05")).toBeNull();
+    expect(d("2026-11-12")).toBeNull();
+  });
+
+  it("peger paa Black Friday fra 14 dage foer til og med Cyber Monday", () => {
+    expect(d("2026-11-13")).toEqual({ kampagne: "black-friday", aar: 2026 });
+    expect(d("2026-11-30")).toEqual({ kampagne: "black-friday", aar: 2026 });
+  });
+
+  it("skifter til julegaver tirsdagen efter Cyber Monday", () => {
+    expect(d("2026-12-01")).toEqual({ kampagne: "julegaver", aar: 2026 });
+    expect(d("2026-12-21")).toEqual({ kampagne: "julegaver", aar: 2026 });
+  });
+
+  it("slukker efter 21. december og resten af aaret", () => {
+    expect(d("2026-12-22")).toBeNull();
+    expect(d("2027-01-15")).toBeNull();
+    expect(d("2027-06-01")).toBeNull();
+  });
+
+  it("virker ogsaa i et aar, hvor Black Friday falder sent", () => {
+    // 2025: fredag 28. november, Cyber Monday 1. december.
+    expect(d("2025-12-01")?.kampagne).toBe("black-friday");
+    expect(d("2025-12-02")?.kampagne).toBe("julegaver");
   });
 });
 

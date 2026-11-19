@@ -120,13 +120,59 @@ const BAAND_DAGE = 14;
  * har givet egress-overforbrug. /black-friday har selv en tom tilstand.
  *
  * Returnerer KUN aarstallet, med vilje. De fleste sider er statiske og kan
- * blive serveret timer eller dage efter de blev bygget (se BlackFridayNote),
+ * blive serveret timer eller dage efter de blev bygget (se KampagneNote),
  * saa baandet maa ikke indeholde noget der bliver forkert af at vaere
  * gammelt: ingen nedtaelling, intet antal, ingen "i dag".
  */
 export function blackWeekBaand(idag: Date): { aar: number } | null {
   const s = blackFridayStatus(idag);
   return s.dage <= BAAND_DAGE ? { aar: s.aar } : null;
+}
+
+/**
+ * Sidste dag i december, hvor det giver mening at pege paa /julegaver.
+ * Forhandlerne sender 1 til 3 hverdage efter bestilling (se FAQ'en paa
+ * siden), saa en gave bestilt efter den 21. naar sjaeldent frem til jul.
+ */
+const JUL_SIDSTE_DAG = 21;
+
+/**
+ * Er det tid til at linke til /julegaver fra indholdet?
+ *
+ * Fra 1. november til og med 21. december. Linket skal staa i god tid,
+ * fordi Google skal naa at finde siden igen, foer soegningerne topper i
+ * december. Det er de samme argumenter som for SAESON_DAGE ovenfor.
+ *
+ * Kun maaned og dag, ingen nedtaelling: siderne er statiske og kan blive
+ * serveret et doegn efter de blev bygget (se KampagneNote).
+ */
+export function julegaveSaeson(idag: Date): boolean {
+  const m = idag.getUTCMonth();
+  return m === 10 || (m === 11 && idag.getUTCDate() <= JUL_SIDSTE_DAG);
+}
+
+export type Kampagne = "black-friday" | "julegaver";
+
+/**
+ * Hvad baandet over headeren skal pege paa i dag, eller null.
+ *
+ * Black Friday har forrang i sine 14 dage og til og med Cyber Monday. Fra
+ * tirsdagen efter tager julegaverne over til og med 21. december. Foer Black
+ * Week staar der intet baand, ogsaa selv om julegaveSaeson er aaben: et
+ * baand paa hver side er et stoerre indgreb end et link i indholdet, og det
+ * skal kun bruges, naar der er noget at handle paa nu.
+ *
+ * At Black Friday er overstaaet aflaeses af, at blackFridayStatus er rykket
+ * til naeste aar. Det er samme regel, som lukker Black Friday-siden ned.
+ */
+export function kampagneBaand(idag: Date): { kampagne: Kampagne; aar: number } | null {
+  const bf = blackWeekBaand(idag);
+  if (bf) return { kampagne: "black-friday", aar: bf.aar };
+  const aar = idag.getUTCFullYear();
+  if (julegaveSaeson(idag) && blackFridayStatus(idag).aar > aar) {
+    return { kampagne: "julegaver", aar };
+  }
+  return null;
 }
 
 /**

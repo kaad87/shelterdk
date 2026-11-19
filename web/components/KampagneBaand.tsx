@@ -1,8 +1,9 @@
-import { blackWeekBaand } from "@/lib/kampagne";
+import { kampagneBaand } from "@/lib/kampagne";
 import { KampagneBaandLink } from "./KampagneBaandLink";
 
 /**
- * Smalt bånd over headeren i ugerne op til Black Friday.
+ * Smalt bånd over headeren i ugerne op til Black Friday og derefter frem
+ * til jul, hvor det peger på /julegaver (se kampagneBaand).
  *
  * Står i (site)/layout.tsx og dermed på alle sider. Det er pointen: guiderne
  * giver 92,6 % af grej-klikkene, men trafikken ligger på shelter-siderne og
@@ -18,7 +19,7 @@ import { KampagneBaandLink } from "./KampagneBaandLink";
  * selv ved hydrering.
  */
 export function KampagneBaand() {
-  const baand = blackWeekBaand(new Date());
+  const baand = kampagneBaand(new Date());
   if (!baand) return null;
-  return <KampagneBaandLink aar={baand.aar} />;
+  return <KampagneBaandLink kampagne={baand.kampagne} aar={baand.aar} />;
 }

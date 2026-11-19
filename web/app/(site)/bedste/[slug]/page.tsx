@@ -15,7 +15,7 @@ import { guideDom } from "@/lib/guide-dom";
 import { BuyingGuideComparisonTable } from "@/components/buying-guide/BuyingGuideComparisonTable";
 import { BuyingGuideSources } from "@/components/buying-guide/BuyingGuideSources";
 import { GuideDeals } from "@/components/buying-guide/GuideDeals";
-import { BlackFridayNote } from "@/components/BlackFridayNote";
+import { KampagneNote } from "@/components/KampagneNote";
 import { QuickAnswer } from "@/components/seo/QuickAnswer";
 import { formatScore } from "@/lib/buying-guides-score";
 import { rentNavn } from "@/lib/produktnavn";
@@ -303,7 +303,7 @@ export default async function BuyingGuidePage({
           {/* Aktuelle tilbud i samme kategori (ekskl. guidens egne produkter) */}
           <GuideDeals slug={guide.slug} entries={entries} />
 
-          <BlackFridayNote variant="guide" />
+          <KampagneNote variant="guide" />
 
           {/* Se også — relaterede guider */}
           <RelatedGuides guides={related} ialt={allGuides.length} />

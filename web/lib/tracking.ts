@@ -197,8 +197,8 @@ export function trackGuideView(args: { guideSlug: string; fra?: string }) {
 }
 
 /** Klik paa baandet over headeren. Stien kommer med fra sendServerEvent. */
-export function trackKampagneBaandClick() {
-  push("kampagne_baand_click", { kampagne: "black-friday" });
+export function trackKampagneBaandClick(kampagne: "black-friday" | "julegaver") {
+  push("kampagne_baand_click", { kampagne });
 }
 
 export function trackCommunitySubmit(type: "comment" | "photo" | "facilities") {

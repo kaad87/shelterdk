@@ -219,6 +219,10 @@ export default async function BlackFridayPage() {
               <Link href="/tilbud" className="text-accent underline">
                 Se alle tilbud året rundt
               </Link>
+              <span className="mx-2 text-primary/30">·</span>
+              <Link href="/julegaver" className="text-accent underline">
+                Julegaver til friluftsfolk
+              </Link>
             </p>
           </section>
         )}

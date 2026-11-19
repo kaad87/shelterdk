@@ -19,6 +19,7 @@ import { WeekendCTACard } from "@/components/WeekendCTACard";
 import { NyeSheltersStrip } from "@/components/NyeSheltersStrip";
 import { createPublicClient } from "@/utils/supabase/server-public";
 import { GuideTeaser } from "@/components/GuideTeaser";
+import { KampagneNote } from "@/components/KampagneNote";
 import { FORSIDE_GUIDER, resolveGuideLinks } from "@/lib/guide-links";
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
 import { getDistinctPlacesWithCounts } from "@/lib/danmark-silo";
@@ -641,6 +642,13 @@ export default async function HomePage() {
         intro="Vi scorer og prissammenligner udstyret, så du kan se hvad der er værd at tage med, og hvad du kan spare."
         visAlleLink
       />
+
+      {/* Saesonlinje til /black-friday og /julegaver. Forsiden er sitets
+          staerkeste interne link-kilde, og begge sider var kun linket fra
+          footeren og /tilbud. Renderer intet uden for saesonerne. */}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <KampagneNote variant="hub" />
+      </div>
 
       <section className="py-8 bg-background">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
