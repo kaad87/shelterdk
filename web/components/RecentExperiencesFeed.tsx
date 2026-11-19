@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { createPublicClient } from "@/utils/supabase/server-public";
+import { shelterHref } from "@/lib/shelter-href";
 
 const RECENT_EXPERIENCES_LIMIT = 8;
 
@@ -11,7 +12,14 @@ interface RecentExperienceFeedItem {
   photo_urls: string[];
   cover_photo_index: number;
   created_at: string;
-  shelter: { title: string; slug: string }[] | { title: string; slug: string } | null;
+  shelter: FeedShelter[] | FeedShelter | null;
+}
+
+interface FeedShelter {
+  title: string;
+  slug: string;
+  region: string | null;
+  kommune: string | null;
 }
 
 async function getRecentExperiences(
@@ -21,7 +29,7 @@ async function getRecentExperiences(
     const supabase = createPublicClient();
     const { data, error } = await supabase
       .from("shelter_experiences")
-      .select("id, author_name, body, photo_urls, cover_photo_index, created_at, shelter:shelters(title, slug)")
+      .select("id, author_name, body, photo_urls, cover_photo_index, created_at, shelter:shelters(title, slug, region, kommune)")
       .eq("status", "approved")
       .order("created_at", { ascending: false })
       .limit(limit);
@@ -55,7 +63,8 @@ export async function RecentExperiencesFeed() {
             return (
               <Link
                 key={exp.id}
-                href={shelter ? `/shelter/${shelter.slug}` : "/soeg"}
+                // Kanonisk sti: /shelter/[slug] svarer 308, når region kendes.
+                href={shelter ? shelterHref(shelter) : "/soeg"}
                 className="flex-shrink-0 w-52 rounded-xl overflow-hidden border border-primary/10 bg-white hover:shadow-md transition-shadow"
               >
                 {coverUrl ? (
