@@ -10,6 +10,8 @@ import {
   getOwner,
   getResolvedBookingModel,
   isBookable,
+  getResolvedPhotoUrls,
+  getResolvedDisplayImageUrl,
 } from "../shelter-detail";
 import type { Shelter } from "@/types/shelter";
 
@@ -165,5 +167,41 @@ describe("booking model", () => {
     expect(model.provider).toBe("naturstyrelsen");
     expect(model.linkMode).toBe("external_search");
     expect(model.fallbackHint).toBe("naturstyrelsen");
+  });
+});
+
+describe("getResolvedPhotoUrls (Google-billeder sidst)", () => {
+  // Google-billeder er døde i prod (19/11 2026): /api/google-photo svarer 503
+  // uden nøgle, photo_reference giver 400, og lagrede lh3 place-photos-URL'er
+  // giver 403. Et stabilt billede (GeoFA/udinaturen/bruger) skal derfor stå forrest.
+  const LH3 = "https://lh3.googleusercontent.com/place-photos/AL8-SNabc=s1600-w1200";
+  const GEOFA = "https://mapcentia-www.s3-eu-west-1.amazonaws.com/fkg/foto.jpg";
+  const REF = "ATCDNfUG_fJECsSdvz-gyJW1Sl3LHDzVF";
+  const PROXY = `/api/google-photo?ref=${REF}&maxwidth=1200`;
+
+  it("stabilt billede foran Google-proxy når begge findes", () => {
+    const s = mk({ image_urls: [LH3, GEOFA] });
+    expect(getResolvedPhotoUrls(s, REF)).toEqual([GEOFA, PROXY]);
+    expect(getResolvedDisplayImageUrl(s, REF)).toBe(GEOFA);
+  });
+
+  it("embedded photo_references giver samme rækkefølge", () => {
+    const s = mk({
+      image_urls: [LH3, GEOFA],
+      google_places: { photo_references: [REF] } as Shelter["google_places"],
+    });
+    expect(getResolvedPhotoUrls(s)[0]).toBe(GEOFA);
+  });
+
+  it("kun Google: proxy erstatter lh3 som før", () => {
+    expect(getResolvedPhotoUrls(mk({ image_urls: [LH3] }), REF)).toEqual([PROXY]);
+  });
+
+  it("uden ref: stabilt billede foran lh3", () => {
+    expect(getResolvedPhotoUrls(mk({ image_urls: [LH3, GEOFA] }))).toEqual([GEOFA, LH3]);
+  });
+
+  it("ikke-Google først: uændret", () => {
+    expect(getResolvedPhotoUrls(mk({ image_urls: [GEOFA, LH3] }), REF)).toEqual([GEOFA, LH3]);
   });
 });

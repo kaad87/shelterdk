@@ -713,18 +713,18 @@ export function getResolvedPhotoUrls(
   if (urls.length === 0) return urls;
   const first = urls[0];
   if (isGoogleImageUrl(first)) {
+    // Google-billeder er de mindst stabile: /api/google-photo kræver en nøgle
+    // (mangler i prod pr. 19/11 2026 → 503), photo_reference udløber (400) og
+    // lagrede lh3 place-photos-URL'er udløber (403). Et stabilt billede
+    // (GeoFA/udinaturen/bruger) står derfor forrest, så kortet ikke starter
+    // med et brækket billede; Google er kun sidste udvej.
     const stableFallback = urls.slice(1).find((url) => !isGoogleImageUrl(url));
-    if (derivedRef) {
-      const proxy = getGooglePhotoProxyUrl(derivedRef);
-      if (proxy) {
-        return stableFallback
-          ? [proxy, stableFallback, ...urls.slice(1).filter((url) => url !== stableFallback)]
-          : [proxy, ...urls.slice(1)];
-      }
-    }
+    const proxy = derivedRef ? getGooglePhotoProxyUrl(derivedRef) : "";
+    const googleFirst = proxy || first;
     if (stableFallback) {
-      return [stableFallback, first, ...urls.slice(1).filter((url) => url !== stableFallback)];
+      return [stableFallback, googleFirst, ...urls.slice(1).filter((url) => url !== stableFallback)];
     }
+    return [googleFirst, ...urls.slice(1)];
   }
   return urls;
 }
