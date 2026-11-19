@@ -40,7 +40,7 @@ import {
 } from "@/lib/shelter-detail";
 import { getShelterFaqItems, faqToJsonLd } from "@/lib/faq";
 import { chooseMetaDescription, normalizeSeoTitle, DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
-import { getAreaBySlug, prepositionForArea } from "@/lib/area-db";
+import { getAreaBySlugEllerNull, prepositionForArea } from "@/lib/area-db";
 import { getWeatherForecast } from "@/lib/weather";
 import { readOnsitePrice } from "@/lib/onsite-price";
 import { ShelterDetailContent } from "@/components/ShelterDetailContent";
@@ -175,7 +175,7 @@ export default async function DanmarkShelterPage({ params }: PageProps) {
   const [municipalitiesResult, reviews, area, bookableShelters, guestReviews, gearSuggestions] = await Promise.all([
     regionName ? getMunicipalitiesInRegion(regionName) : Promise.resolve([]),
     getReviews(shelter.google_place_id ?? null),
-    areaSlug ? getAreaBySlug(areaSlug) : Promise.resolve(null),
+    areaSlug ? getAreaBySlugEllerNull(areaSlug) : Promise.resolve(null),
     listBookableSheltersByShelterDbId(shelter.id).catch(() => []),
     getPublishedGuestReviews(shelter.id).catch(() => []),
     getGearSuggestions(shelter).catch(() => []),

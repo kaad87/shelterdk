@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { getSheltersPage, SOEG_PAGE_SIZE, type SoegFilters, type MapBbox } from "@/lib/soeg-db";
 import { enrichSheltersWithGooglePhotoRef } from "@/lib/google-photo";
-import { getAreaBySlug, prepositionForArea, prepositionForRegionName } from "@/lib/area-db";
+import { getAreaBySlugEllerNull, prepositionForArea, prepositionForRegionName } from "@/lib/area-db";
 import { fetchPostnummerBbox, lookupPostnummer } from "@/lib/postnummer";
 import { AreaFaq } from "@/components/AreaFaq";
 import { getAreaFaqItems, faqToJsonLd, type FaqItem } from "@/lib/faq";
@@ -51,7 +51,7 @@ export async function generateMetadata(props: {
 
   // Area pages already have good SEO metadata.
   if (areaSlug?.trim()) {
-    const area = await getAreaBySlug(areaSlug.trim());
+    const area = await getAreaBySlugEllerNull(areaSlug.trim());
     if (!area) return DEFAULT_METADATA;
     const prep = prepositionForArea(area);
     const title = `Shelters ${prep} ${area.name} – Se kort og liste | ShelterDK`;
@@ -165,7 +165,7 @@ export default async function SoegPage({ searchParams }: SoegPageProps) {
   // varerne er saesonens overnatningsgrej, og armen skifter hver time i
   // stedet for at foelge stien. Se armForTime.
   const [areaInfo, sheltersResult, inFeedAnnonce] = await Promise.all([
-    area?.trim() ? getAreaBySlug(area.trim()) : Promise.resolve(null),
+    area?.trim() ? getAreaBySlugEllerNull(area.trim()) : Promise.resolve(null),
     getSheltersPage(region, resolvedQ, 1, initialPageSize, Object.keys(filters).length ? filters : undefined, postalBbox, area),
     hentInFeedAnnonce("/soeg", [], { arm: armForTime() }),
   ]);
