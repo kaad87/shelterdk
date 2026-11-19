@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Fragment } from "react";
-import { ChevronRight, ExternalLink } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { ShelterListSchema } from "@/components/seo/ShelterListSchema";
 import { QuickAnswer } from "@/components/seo/QuickAnswer";
@@ -11,6 +11,7 @@ import { showInFeedAdAt, inFeedMaks, inFeedAdIndex } from "@/lib/adsense";
 import { toMapShelters } from "@/lib/map-shelter";
 import { buildQuickAnswer } from "@/lib/quick-answer";
 import { faqToJsonLd } from "@/lib/faq";
+import { RedaktionelleSektioner } from "@/components/RedaktionelleSektioner";
 import { GuideTeaser } from "@/components/GuideTeaser";
 import { temaKandidater, resolveGuideLinks } from "@/lib/guide-links";
 import { hentInFeedAnnonce } from "@/lib/infeed-annonce";
@@ -197,41 +198,7 @@ export async function CollectionPage({
             )}
           </section>
 
-          {config.sections?.map((sec) => (
-            <section key={sec.heading} className="mb-10">
-              <h2 className="font-serif text-2xl font-bold text-primary mb-4">{sec.heading}</h2>
-              {sec.paragraphs.map((t) => (
-                <p key={t.slice(0, 40)} className="text-primary/85 leading-relaxed mb-4">
-                  {t}
-                </p>
-              ))}
-              {sec.links && sec.links.length > 0 && (
-                <ul className="space-y-1 text-sm">
-                  {sec.links.map((l) =>
-                    l.external ? (
-                      <li key={l.href}>
-                        <a
-                          href={l.href}
-                          target="_blank"
-                          rel="noopener noreferrer nofollow"
-                          className="inline-flex items-center gap-1 text-accent hover:underline"
-                        >
-                          {l.label}
-                          <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-                        </a>
-                      </li>
-                    ) : (
-                      <li key={l.href}>
-                        <Link href={l.href} className="text-accent hover:underline">
-                          {l.label}
-                        </Link>
-                      </li>
-                    )
-                  )}
-                </ul>
-              )}
-            </section>
-          ))}
+          <RedaktionelleSektioner sections={config.sections} />
 
           <GuideTeaser
             guides={temaGuider}

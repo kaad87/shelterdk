@@ -9,6 +9,7 @@
  * kannibalisering og matcher det brugeren faktisk søger efter.
  */
 
+import type { RedaktionelSektion } from "@/components/RedaktionelleSektioner";
 import { createPublicClient } from "@/utils/supabase/server-public";
 import type { Shelter } from "@/types/shelter";
 import { getDisplayScore, hasAnyImage } from "@/lib/shelter-detail";
@@ -25,7 +26,6 @@ export type CollectionKey =
   | "teltplads"
   | "baalhytte"
   | "arla"
-  | "haervejen"
   | "gudenaaen";
 
 export interface CollectionConfig {
@@ -45,11 +45,7 @@ export interface CollectionConfig {
    * også fanger søgninger med anden intent end "find en plads" — fx købs-
    * intent på /baalhytte — så den intent får sit eget H2 i stedet for nul klik.
    */
-  sections?: {
-    heading: string;
-    paragraphs: string[];
-    links?: { label: string; href: string; external?: boolean }[];
-  }[];
+  sections?: RedaktionelSektion[];
 }
 
 /**
@@ -63,7 +59,6 @@ const FILTERS: Record<CollectionKey, (q: ReturnType<typeof baseQuery>) => Return
     q.or("geofa_raw->>teltplads.ilike.%ja%,title.ilike.%teltplads%,title.ilike.%lejrplads%"),
   baalhytte: (q) => q.or("title.ilike.%bålhytte%,title.ilike.%baalhytte%"),
   arla: (q) => q.ilike("title", "%arla%"),
-  haervejen: (q) => q.or("title.ilike.%hærvej%,description.ilike.%hærvejen%"),
   gudenaaen: (q) => q.or("title.ilike.%gudenå%,description.ilike.%gudenåen%"),
 };
 
@@ -159,7 +154,7 @@ export const COLLECTIONS: Record<CollectionKey, CollectionConfig> = {
     related: [
       { label: "Fri teltning – kort over 313 skove", href: "/fri-teltning", note: "telt uden plads og uden booking" },
       { label: "Bålhytter i Danmark", href: "/baalhytte", note: "overdækket bålsted" },
-      { label: "Shelters langs Hærvejen", href: "/haervejen", note: "til vandreturen" },
+      { label: "Shelters langs Hærvejen", href: "/omraade/haervejen", note: "til vandreturen" },
       { label: "Køb shelter", href: "/koeb-shelter", note: "priser og regler" },
     ],
   },
@@ -253,66 +248,6 @@ export const COLLECTIONS: Record<CollectionKey, CollectionConfig> = {
       { label: "Shelter med hund", href: "/shelter-med-hund", note: "hundevenlige pladser" },
     ],
   },
-  haervejen: {
-    key: "haervejen",
-    slug: "haervejen",
-    h1: "Shelters langs Hærvejen",
-    titleTemplate: (n) => `Shelter langs Hærvejen – ${n} pladser | ShelterDK`,
-    description: (n) =>
-      `${n} shelters og overnatningspladser langs Hærvejen. Planlæg etaperne på Danmarks ældste vandrerute med kort og faciliteter.`,
-    intro: (n) =>
-      `Hærvejen løber fra Padborg i syd til Viborg og videre mod Frederikshavn — Danmarks ældste færdselsåre og i dag en af landets mest brugte vandre- og cykelruter. Her er ${n} shelters og primitive overnatningspladser på eller tæt ved ruten, så du kan planlægge etaperne efter hvor du kan sove.`,
-    faq: [
-      {
-        question: "Hvor mange dage tager det at vandre Hærvejen?",
-        answer:
-          "Hele strækningen fra Padborg til Viborg er cirka 290 km og tager typisk 12-15 dage til fods. Mange går kortere etaper på 3-5 dage, fx Viborg-Jelling eller Jelling-Padborg.",
-      },
-      {
-        question: "Kan man overnatte gratis langs Hærvejen?",
-        answer:
-          "Ja. En stor del af pladserne langs ruten er primitive shelters og teltpladser i statsskov, som er gratis at bruge. Andre er herberger og lejrpladser med en mindre betaling.",
-      },
-      {
-        question: "Skal man booke shelters på Hærvejen?",
-        answer:
-          "De fleste primitive pladser er først-til-mølle. I højsæsonen (juni-august) kan det være svært at finde plads på de mest populære strækninger, så overvej at booke hvor det er muligt, eller medbring telt som alternativ.",
-      },
-    ],
-    related: [
-      { label: "Shelters ved Gudenåen", href: "/gudenaaen", note: "en anden klassisk rute" },
-      { label: "Vandreruter", href: "/ruteplanner", note: "alle ruter med shelters" },
-      { label: "Teltpladser i Danmark", href: "/teltplads", note: "hvis du har telt med" },
-    ],
-    // Ingen soeger paa "pakkeliste hærvejen" (GSC 180 dage, 19/11 2026), saa
-    // det er ikke en side for sig. Sektionen er her for dem, der allerede
-    // planlaegger turen: den giver siden indhold om selve vandringen og
-    // sender videre til guiderne, hvor koebsviljen er.
-    sections: [
-      {
-        heading: "Pakkeliste til Hærvejen",
-        paragraphs: [
-          "Hærvejen går man typisk i etaper på 15 til 25 km om dagen, og det er fødderne og rygsækkens vægt, der afgør, om turen bliver god. Pak efter, at du skal bære det hele hver dag: én sovepose, ét liggeunderlag og ét kogesæt, og lad det blive hjemme, du kun måske får brug for.",
-          "Gå skoene til hjemmefra, før du tager af sted, og pak vabelplaster og et par ekstra vandresokker. Ruten går for en stor del ad grusveje og små landeveje, så mange vælger lette vandresko frem for tunge støvler.",
-          "De fleste primitive shelters på ruten er først til mølle. Har du ikke booket, så pak en tarp eller et let telt som plan B, især fra juni til august. Shelteren har bund af træ og er åben til den ene side, så liggeunderlaget skal isolere, og soveposen skal passe til nattens temperatur, ikke dagens.",
-          "Tjek på den enkelte plads, om der er drikkevand, og hav plads til mindst 1,5 liter i rygsækken. Et vandfilter gør dig uafhængig af vandhanerne, hvis du fylder op fra sø eller å. Til madlavning er et lille stormkøkken og frysetørret mad det letteste at bære.",
-          "Der er sjældent stikkontakter ved de primitive pladser. Tag en pandelampe med og en powerbank til telefonen, som også er dit kort på turen.",
-        ],
-        links: [
-          { label: "Bedste vandresko", href: "/bedste/vandresko" },
-          { label: "Bedste vandrestøvler", href: "/bedste/vandrestovler" },
-          { label: "Bedste vandresokker", href: "/bedste/vandresokker" },
-          { label: "Bedste vandrerygsæk", href: "/bedste/vandrerygsaek" },
-          { label: "Bedste letvægtstelt", href: "/bedste/letvaegtstelt" },
-          { label: "Bedste tarp", href: "/bedste/tarp" },
-          { label: "Bedste vandfilter", href: "/bedste/vandfilter" },
-          { label: "Bedste stormkøkken", href: "/bedste/stormkoekken" },
-          { label: "Bedste powerbank", href: "/bedste/powerbank" },
-          { label: "Den fulde pakkeliste til sheltertur", href: "/guides/pakkeliste-til-sheltertur" },
-        ],
-      },
-    ],
-  },
   gudenaaen: {
     key: "gudenaaen",
     slug: "gudenaaen",
@@ -340,11 +275,11 @@ export const COLLECTIONS: Record<CollectionKey, CollectionConfig> = {
       },
     ],
     related: [
-      { label: "Shelters langs Hærvejen", href: "/haervejen", note: "Danmarks ældste vandrerute" },
+      { label: "Shelters langs Hærvejen", href: "/omraade/haervejen", note: "Danmarks ældste vandrerute" },
       { label: "Vandreruter", href: "/ruteplanner", note: "alle ruter med shelters" },
       { label: "Shelter nær vand", href: "/shelter-naer-vand", note: "søer, åer og kyst" },
     ],
-    // Samme grund som paa /haervejen: ingen egen efterspoergsel paa
+    // Samme grund som paa /omraade/haervejen: ingen egen efterspoergsel paa
     // pakkelisten, men de besoegende er i gang med at planlaegge en tur.
     sections: [
       {

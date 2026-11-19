@@ -74,7 +74,7 @@ describe("vaelgArm", () => {
     const stier = [
       "/shelter-med-baalplads", "/shelter-med-vand", "/shelter-naer-vand", "/shelter-med-hund",
       "/shelter-til-familier", "/shelter-til-cykeltur", "/fri-teltning", "/teltplads",
-      "/baalhytte", "/haervejen", "/gudenaaen", "/shelter-med-toilet", "/shelter-med-bruser",
+      "/baalhytte", "/omraade/haervejen", "/gudenaaen", "/shelter-med-toilet", "/shelter-med-bruser",
       "/shelter-med-strand", "/handicapvenlige-shelters", "/omraade/bornholm", "/by/koebenhavn",
       "/by/aarhus", "/by/odense", "/by/aalborg", "/danmark/fyn", "/danmark/sjaelland",
       "/danmark/jylland/vejle", "/danmark/fyn/odense", "/soeg", "/nye", "/arla-oeko-shelter",

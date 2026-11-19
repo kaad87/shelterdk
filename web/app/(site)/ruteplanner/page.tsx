@@ -82,7 +82,7 @@ export default function RutePlannerPage() {
           </h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Link
-              href="/haervejen"
+              href="/omraade/haervejen"
               className="group rounded-xl border border-primary/10 bg-white p-4 transition-colors hover:border-accent/30"
             >
               <span className="block font-medium text-primary group-hover:text-accent transition-colors">

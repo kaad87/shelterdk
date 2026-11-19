@@ -164,6 +164,11 @@ const nextConfig = {
       // plads 5,8 til 10,1. Nul sidevisninger i egen maaling i 30 dage.
       // Letvaegtsposen og sommervinklen er flyttet til oversigten foerst.
       { source: "/bedste/sommersovepose", destination: "/bedste/sovepose", permanent: true },
+      // Tre Hærvejen-sider konkurrerede om "shelter langs hærvejen" med hver
+      // sit antal (20/242/98). Omraadesiden havde 194 af de 211 klik over 180
+      // dage (til 16/11 2026), saa den er samlesiden. Indholdet er flyttet med
+      // til lib/area-content.ts. Ruteplanneren er bevaret som rutekort.
+      { source: "/haervejen", destination: "/omraade/haervejen", permanent: true },
       { source: "/danmark/jylland/ny-hammersholt", destination: "/danmark/jylland", permanent: true },
       { source: "/danmark/jylland/fons", destination: "/danmark/jylland", permanent: true },
       { source: "/danmark/fyn/dybbol", destination: "/danmark/fyn", permanent: true },

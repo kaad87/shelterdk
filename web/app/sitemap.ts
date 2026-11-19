@@ -89,7 +89,6 @@ const STATIC_PAGES: Array<{
   { path: "/byggetilladelse-til-shelter", source: "app/(site)/byggetilladelse-til-shelter/page.tsx", changeFrequency: "monthly", priority: 0.75 },
   { path: "/baalhytte", source: "app/(site)/baalhytte/page.tsx", changeFrequency: "weekly", priority: 0.8 },
   { path: "/arla-oeko-shelter", source: "app/(site)/arla-oeko-shelter/page.tsx", changeFrequency: "weekly", priority: 0.8 },
-  { path: "/haervejen", source: "app/(site)/haervejen/page.tsx", changeFrequency: "weekly", priority: 0.8 },
   { path: "/gudenaaen", source: "app/(site)/gudenaaen/page.tsx", changeFrequency: "weekly", priority: 0.8 },
   { path: "/saadan-vurderer-vi", source: "app/(site)/saadan-vurderer-vi/page.tsx", changeFrequency: "monthly", priority: 0.3 },
   { path: "/annoncer-og-partnere", source: "app/(site)/annoncer-og-partnere/page.tsx", changeFrequency: "monthly", priority: 0.3 },

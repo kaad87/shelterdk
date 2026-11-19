@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { RUTE_SAMLESIDE } from "@/lib/area-content";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import fs from "node:fs";
@@ -105,6 +106,7 @@ export default async function RouteDetailPage({ params }: PageProps) {
     4
   ).catch(() => []);
 
+  const samleside = RUTE_SAMLESIDE[slug] ?? null;
   const faqItems: FaqItem[] = [
     {
       question: `Hvor lang er ${route.name}?`,
@@ -112,7 +114,7 @@ export default async function RouteDetailPage({ params }: PageProps) {
     },
     {
       question: `Hvor mange shelters er der langs ${route.name}?`,
-      answer: `Der er ${shelters.length} shelters langs eller nær ${route.name}.${sheltersWithWater.length > 0 ? ` ${sheltersWithWater.length} har vand.` : ""}${sheltersWithToilet.length > 0 ? ` ${sheltersWithToilet.length} har toilet.` : ""}`,
+      answer: `Der er ${shelters.length} shelters langs eller nær ${route.name}.${sheltersWithWater.length > 0 ? ` ${sheltersWithWater.length} har vand.` : ""}${sheltersWithToilet.length > 0 ? ` ${sheltersWithToilet.length} har toilet.` : ""}${samleside ? ` Tallet tæller pladser tæt på selve rutelinjen. Vores samleside over shelters langs ${samleside.navn} tager også pladserne lidt længere fra ruten med.` : ""}`,
     },
     {
       question: `Er ${route.name} gratis at vandre?`,
@@ -211,8 +213,18 @@ export default async function RouteDetailPage({ params }: PageProps) {
           {shelters.length > 0 && (
             <section className="mb-10">
               <h2 className="font-serif text-xl font-bold text-primary mb-4">
-                Shelters langs {route.name}
+                {samleside ? "Shelters tæt på rutelinjen" : `Shelters langs ${route.name}`}
               </h2>
+              {samleside && (
+                <p className="mb-4 rounded-xl border border-accent/20 bg-accent/5 px-4 py-3 text-sm text-primary/80">
+                  Listen her er pladserne tættest på selve ruten. Den samlede oversigt med
+                  faciliteter, booking, spørgsmål og svar og en pakkeliste står på{" "}
+                  <Link href={samleside.href} className="font-medium text-accent hover:underline">
+                    alle shelters langs {samleside.navn}
+                  </Link>
+                  .
+                </p>
+              )}
               <div className="divide-y divide-primary/10 rounded-xl border border-primary/10 bg-white overflow-hidden">
                 {shelters.map((shelter, i) => (
                   <div key={shelter.id} className="flex items-center justify-between px-4 py-3 hover:bg-primary/[0.02] transition-colors">

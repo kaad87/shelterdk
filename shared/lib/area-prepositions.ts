@@ -7,8 +7,10 @@ const AREA_PREPOSITION: Record<string, string> = {
   fanoe: "på",
   samsoe: "på",
   laesoe: "på",
-  // Ruter/veje → "på"
-  haervejen: "på",
+  // Ruter/veje → "langs". "shelter langs hærvejen" er den mest soegte
+  // formulering (821 visninger mod 37 for "på hærvejen", GSC 180 dage til
+  // 16/11 2026).
+  haervejen: "langs",
   // Farvande/fjorde → "ved"
   limfjorden: "ved",
   vadehavet: "ved",

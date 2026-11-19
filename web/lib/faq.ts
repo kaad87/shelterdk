@@ -201,36 +201,53 @@ export function getShelterFaqItems(
   return items;
 }
 
-/** Byg area-specifikke FAQ-spørgsmål til områder/landsdele (fx \"Shelters på Bornholm\"). */
+/** Emnerne i områdeskabelonens FAQ, i den rækkefølge de vises. */
+export type AreaFaqEmne = "gratis" | "booking" | "faciliteter" | "baal";
+
+/**
+ * Byg area-specifikke FAQ-spørgsmål til områder/landsdele (fx "Shelters på Bornholm").
+ *
+ * `udelad` fjerner skabelonens spørgsmål om emner, et område selv har et
+ * konkret svar på (lib/area-content.ts), så siden ikke stiller det samme
+ * spørgsmål to gange med to forskellige svar.
+ */
 export function getAreaFaqItems(
   areaName: string,
-  preposition: string = "i"
+  preposition: string = "i",
+  udelad: readonly AreaFaqEmne[] = []
 ): FaqItem[] {
   const inArea = `${preposition} ${areaName}`;
   const onArea = `${preposition} ${areaName}`;
 
-  return [
+  const items: (FaqItem & { emne: AreaFaqEmne })[] = [
     {
+      emne: "gratis",
       question: `Er det gratis at sove i shelter ${inArea}?`,
       answer:
         `Mange shelters ${inArea} er gratis at benytte på først-til-mølle basis. Nogle pladser – især populære eller meget veludstyrede – kan dog kræve booking og et mindre gebyr. På hver shelterside kan du se, om pladsen er gratis eller betaling, og om der er et link til booking.`,
     },
     {
+      emne: "booking",
       question: `Kan man booke et shelter ${onArea}?`,
       answer:
         `Ja, udvalgte shelterpladser ${onArea} kan bookes i forvejen. Det gælder især shelters, der ejes eller forvaltes af Naturstyrelsen, kommuner eller private. Brug filtre som \"Bookbar\" i søgningen for kun at se shelters med bookingmulighed, og klik ind på den enkelte plads for at finde direkte bookinglink.`,
     },
     {
+      emne: "faciliteter",
       question: `Hvilke faciliteter har shelters ${inArea}?`,
       answer:
         `Faciliteterne varierer fra plads til plads ${inArea}. Nogle shelters har både bord/bænke, bålplads, vand og toilet, mens andre er mere primitive. På hver shelterside på ShelterDK kan du se et overblik over faciliteter som vand, toilet, adgangsforhold og booking – og ofte også billeder.`,
     },
     {
+      emne: "baal",
       question: `Må man tænde bål ved shelters ${inArea}?`,
       answer:
         `Ved mange shelters ${inArea} er der en godkendt bålplads, hvor du må tænde bål, så længe der ikke er udstedt bålforbud. Du skal altid følge lokale regler og skilte på pladsen, og kun bruge det brænde, der er stillet til rådighed – eller selv medbringe. Tjek beskrivelserne på den enkelte shelterside for detaljer om bål og brænde.`,
     },
   ];
+  return items
+    .filter((i) => !udelad.includes(i.emne))
+    .map(({ question, answer }) => ({ question, answer }));
 }
 
 /** JSON-LD FAQPage schema for a list of FAQ items. */

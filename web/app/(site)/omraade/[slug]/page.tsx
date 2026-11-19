@@ -20,6 +20,8 @@ import {
 } from "@/lib/area-db";
 import { faqToJsonLd, getAreaFaqItems } from "@/lib/faq";
 import { GuideTeaser } from "@/components/GuideTeaser";
+import { RedaktionelleSektioner } from "@/components/RedaktionelleSektioner";
+import { getAreaContent } from "@/lib/area-content";
 import { resolveGuideLinks, stedKandidater } from "@/lib/guide-links";
 import { hentInFeedAnnonce } from "@/lib/infeed-annonce";
 import { slugifySegment } from "@/lib/slug";
@@ -120,7 +122,12 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
   const shelters = await getCachedAreaShelters(slug);
   const prep = prepositionForArea(area);
   const { primaryName, secondaryName } = getAreaDisplayParts(area.name);
-  const faqItems = getAreaFaqItems(primaryName, prep);
+  // Omraadets egne spoergsmaal foerst; de generelle fra skabelonen bagefter.
+  const ekstra = getAreaContent(slug);
+  const faqItems = [
+    ...(ekstra?.faq ?? []),
+    ...getAreaFaqItems(primaryName, prep, ekstra?.faqErstatter),
+  ];
   const faqJsonLd = JSON.stringify(faqToJsonLd(faqItems));
   const capPrep = `${prep.charAt(0).toUpperCase()}${prep.slice(1)}`;
   const medVand = shelters.filter((s) => getWater(s) === true).length;
@@ -284,7 +291,7 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
               {topPlaces.length > 0 && (
                 <div className="rounded-2xl border border-primary/10 bg-white p-6 shadow-sm">
                   <h2 className="font-serif text-xl font-bold text-primary mb-3">
-                    Populære byer i {primaryName}
+                    Populære byer {prep} {primaryName}
                   </h2>
                   <div className="flex flex-wrap gap-2">
                     {topPlaces.map((place) => (
@@ -422,6 +429,8 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
             ) : null}
           </section>
 
+          <RedaktionelleSektioner sections={ekstra?.sections} />
+
           <div className="mb-12">
             <GuideTeaser
               guides={omraadeGuider}
@@ -442,6 +451,16 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
           <section className="mt-12 pt-8 border-t border-primary/10">
             <h2 className="font-serif text-xl font-bold text-primary mb-4">Læs mere</h2>
             <div className="flex flex-wrap gap-3">
+              {ekstra?.related?.map((r) => (
+                <Link
+                  key={r.href}
+                  href={r.href}
+                  title={r.note}
+                  className="text-sm bg-accent/10 text-accent font-medium px-4 py-2 rounded-full hover:bg-accent/20 transition-colors"
+                >
+                  {r.label}
+                </Link>
+              ))}
               <Link href="#alle-shelters" className="text-sm bg-accent/10 text-accent font-medium px-4 py-2 rounded-full hover:bg-accent/20 transition-colors">
                 Hele listen for {primaryName}
               </Link>

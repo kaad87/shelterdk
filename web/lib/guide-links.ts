@@ -342,11 +342,6 @@ export const TEMA_KANDIDATER: Record<string, GuideKandidat[]> = {
     { slug: "sovepose", reason: "Til overnatning i bålhytten", saeson: "varm" },
     { slug: "liggeunderlag", reason: "Isolering mod den kolde bund" },
   ],
-  haervejen: [
-    { slug: "vandrestovler", reason: "Du går langt på ruten" },
-    { slug: "sovepose", reason: "Til overnatning undervejs" },
-    { slug: "liggeunderlag", reason: "Isolering mod den kolde bund" },
-  ],
   gudenaaen: [
     { slug: "dry-bag", reason: "Grejet skal holdes tørt i kanoen" },
     { slug: "sovepose", reason: "Til overnatning undervejs" },
