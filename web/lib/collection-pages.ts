@@ -9,7 +9,10 @@
  * kannibalisering og matcher det brugeren faktisk søger efter.
  */
 
+import fs from "node:fs";
+import path from "node:path";
 import type { RedaktionelSektion } from "@/components/RedaktionelleSektioner";
+import { GUDENAA_RUTER } from "@/lib/area-content";
 import { createPublicClient } from "@/utils/supabase/server-public";
 import type { Shelter } from "@/types/shelter";
 import { getDisplayScore, hasAnyImage } from "@/lib/shelter-detail";
@@ -83,6 +86,36 @@ const TTL_MS = 60 * 60 * 1000;
 const cache = new Map<CollectionKey, { shelters: Shelter[]; expires: number }>();
 const inflight = new Map<CollectionKey, Promise<Shelter[]>>();
 
+/**
+ * Samlesider, der ogsaa tager pladserne fra ruteplannerens ruter med.
+ *
+ * /gudenaaen fandt kun 8 pladser ved tekstmatch, mens de tolv Gudenå-ruter
+ * har 33 shelters inden for 1,9 km af stien (19/11 2026). Samlesiden skal
+ * vaere den mest komplette side om emnet, ellers taber den til rutesiderne.
+ */
+const RUTE_MOENSTER: Partial<Record<CollectionKey, RegExp>> = {
+  gudenaaen: GUDENAA_RUTER,
+};
+
+/** Shelter-id'er fra de ruter i ruteplanneren, hvis slug matcher. */
+export function ruteShelterIds(moenster: RegExp): string[] {
+  try {
+    const dir = path.join(process.cwd(), "public/data");
+    const index: { slug: string }[] = JSON.parse(fs.readFileSync(path.join(dir, "curated-routes-index.json"), "utf-8"));
+    const data: Record<string, { shelters?: { id: string }[] }> = JSON.parse(
+      fs.readFileSync(path.join(dir, "curated-routes.json"), "utf-8")
+    );
+    const ids = new Set<string>();
+    for (const r of index) {
+      if (!moenster.test(r.slug)) continue;
+      for (const s of data[r.slug]?.shelters ?? []) if (s.id) ids.add(s.id);
+    }
+    return [...ids];
+  } catch {
+    return [];
+  }
+}
+
 export async function getCollectionShelters(key: CollectionKey): Promise<Shelter[]> {
   const hit = cache.get(key);
   if (hit && hit.expires > Date.now()) return hit.shelters;
@@ -100,10 +133,21 @@ export async function getCollectionShelters(key: CollectionKey): Promise<Shelter
         console.error(`Supabase error (collection ${key}):`, error);
         return [];
       }
+      const rows = ((data as unknown as Shelter[]) ?? []).slice();
+      const moenster = RUTE_MOENSTER[key];
+      if (moenster) {
+        const set = new Set(rows.map((s) => s.id));
+        const mangler = ruteShelterIds(moenster).filter((id) => !set.has(id));
+        if (mangler.length > 0) {
+          const res = await baseQuery().in("id", mangler);
+          if (res.error) console.error(`Supabase error (collection ${key} ruter):`, res.error);
+          else rows.push(...((res.data as unknown as Shelter[]) ?? []));
+        }
+      }
       // Slank FØR cachen: geofa_raw (~3 KB/shelter) skal hverken ligge i
         // proces-cachen eller sendes til browseren. Sortering og kort
         // bruger kun felter der overlever slankningen.
-        const list = slimSheltersForList(((data as unknown as Shelter[]) ?? []).slice());
+        const list = slimSheltersForList(rows);
       list.sort(sortByImageAndScore);
       if (list.length > 0) cache.set(key, { shelters: list, expires: Date.now() + TTL_MS });
       return list;
@@ -251,12 +295,16 @@ export const COLLECTIONS: Record<CollectionKey, CollectionConfig> = {
   gudenaaen: {
     key: "gudenaaen",
     slug: "gudenaaen",
-    h1: "Shelters ved Gudenåen",
-    titleTemplate: (n) => `Shelter ved Gudenåen – ${n} pladser | ShelterDK`,
+    // Titel og H1 siger "langs" og naevner Gudenåstien: "gudenåstien
+    // overnatning" (1.049 visninger) og "langs gudenåen" (421 i alt) er de
+    // stoerste soegninger, "ved gudenåen" (285) naestestoerst. GSC 180 dage
+    // til 16/11 2026. Holdes under 62 tegn med antal.
+    h1: "Shelters langs Gudenåen og Gudenåstien",
+    titleTemplate: (n) => `Shelter langs Gudenåen og Gudenåstien – ${n} pladser | ShelterDK`,
     description: (n) =>
-      `${n} shelters og lejrpladser ved Gudenåen. Overnat langs Danmarks længste å – ideelt til kano, kajak og vandreture.`,
+      `${n} shelters og lejrpladser ved Gudenåen og Gudenåstien. Find overnatning til kanoturen eller vandringen langs Danmarks længste å.`,
     intro: (n) =>
-      `Gudenåen er Danmarks længste vandløb og løber 160 km fra Tinnet Krat til Randers Fjord. Åen er et af landets mest populære kano- og kajakområder, og langs ruten ligger en række shelters og lejrpladser med bådebro eller nem adgang til vandet. Her er ${n} overnatningssteder ved åen.`,
+      `Gudenåen er Danmarks længste vandløb og løber 160 km fra Tinnet Krat til Randers Fjord, og Gudenåstien følger åen det meste af vejen. Åen er et af landets mest populære kano- og kajakområder, og langs vandet og stien ligger shelters og lejrpladser, mange med bådebro eller nem adgang til vandet. Her er ${n} overnatningssteder ved åen og langs Gudenåstien og Trækstien, samlet ét sted.`,
     faq: [
       {
         question: "Kan man sejle i kano på Gudenåen og overnate undervejs?",
@@ -269,14 +317,20 @@ export const COLLECTIONS: Record<CollectionKey, CollectionConfig> = {
           "Nogle af pladserne er gratis primitive shelters, mens de officielle kanolejrpladser typisk koster et mindre beløb per person per nat. Prisen fremgår af den enkelte plads.",
       },
       {
+        question: "Hvor kan man overnatte på Gudenåstien?",
+        answer:
+          "Langs Gudenåstien ligger der shelters og lejrpladser med få kilometers mellemrum, især på strækningen mellem Silkeborg og Randers, hvor stien følger den gamle trækrute langs åen. Listen her samler pladserne langs hele stien og åen. Rutesiderne i vores ruteplanner viser, hvilke pladser der ligger tættest på den enkelte etape.",
+      },
+      {
         question: "Hvor starter og slutter Gudenåstien?",
         answer:
           "Gudenåstien følger åen fra Tinnet Krat ved kilden til Randers, cirka 175 km. Den kan gås i etaper, og mange kombinerer vandring med overnatning i shelters undervejs.",
       },
     ],
     related: [
+      { label: "Rutekort over Gudenåstien", href: "/ruteplanner/gudenaastien-175-kilometer-lang-danmarks-laengste-aa", note: "hele stien på kortet" },
+      { label: "Trækstien", href: "/ruteplanner/traekstien-mellem-randers-og-silkeborg", note: "Randers til Silkeborg" },
       { label: "Shelters langs Hærvejen", href: "/omraade/haervejen", note: "Danmarks ældste vandrerute" },
-      { label: "Vandreruter", href: "/ruteplanner", note: "alle ruter med shelters" },
       { label: "Shelter nær vand", href: "/shelter-naer-vand", note: "søer, åer og kyst" },
     ],
     // Samme grund som paa /omraade/haervejen: ingen egen efterspoergsel paa

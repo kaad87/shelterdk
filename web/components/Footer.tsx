@@ -26,7 +26,7 @@ const contentLinks = [
   { label: "Regler for shelter og teltning", href: "/guides/regler-for-shelter-og-teltning-i-danmark" },
   { label: "Shelter for begyndere", href: "/guides/shelter-for-begyndere-forste-tur" },
   { label: "Shelters langs Hærvejen", href: "/omraade/haervejen" },
-  { label: "Shelters ved Gudenåen", href: "/gudenaaen" },
+  { label: "Shelters langs Gudenåen", href: "/gudenaaen" },
   { label: "Fakta om shelters", href: "/fakta" },
   { label: "Blog", href: "/blog" },
 ];

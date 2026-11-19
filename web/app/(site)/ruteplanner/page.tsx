@@ -97,7 +97,7 @@ export default function RutePlannerPage() {
               className="group rounded-xl border border-primary/10 bg-white p-4 transition-colors hover:border-accent/30"
             >
               <span className="block font-medium text-primary group-hover:text-accent transition-colors">
-                Shelters ved Gudenåen
+                Shelters langs Gudenåen
               </span>
               <span className="mt-0.5 block text-sm text-primary/55">
                 Danmarks længste å – til kano, kajak og vandreture

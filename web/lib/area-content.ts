@@ -46,7 +46,7 @@ export const AREA_CONTENT: Record<string, AreaContent> = {
     faqErstatter: ["gratis", "booking"],
     related: [
       { label: "Rutekort over Hærvejen", href: "/ruteplanner/haervejen", note: "hele ruten med etaper" },
-      { label: "Shelters ved Gudenåen", href: "/gudenaaen", note: "en anden klassisk rute" },
+      { label: "Shelters langs Gudenåen", href: "/gudenaaen", note: "en anden klassisk rute" },
       { label: "Shelter til cykeltur", href: "/shelter-til-cykeltur", note: "hvis du cykler Hærvejen" },
       { label: "Teltpladser i Danmark", href: "/teltplads", note: "hvis du har telt med" },
     ],
@@ -89,7 +89,20 @@ export function getAreaContent(slug: string): AreaContent | null {
  * rutekortet; samlesiden er der, hvor "shelter langs <rute>" skal lande.
  * Rutesiden linker derfor dertil og bruger ikke selv soegeordet som
  * overskrift over sin liste.
+ *
+ * Gudenåen har tolv rutesider (hele stien, etaper, Trækstien, Himmelbjerg-
+ * ruterne). Over 180 dage til 16/11 2026 sendte Google "gudenåstien
+ * overnatning" (1.049 visninger) til etape 10 paa 13,5 km. Den samlede side
+ * er /gudenaaen, som henter pladserne fra alle tolv ruter (GUDENAA_RUTER).
  */
-export const RUTE_SAMLESIDE: Record<string, { href: string; navn: string }> = {
-  haervejen: { href: "/omraade/haervejen", navn: "Hærvejen" },
-};
+export const GUDENAA_RUTER = /guden|traekstien/;
+
+const RUTE_SAMLESIDER: { moenster: RegExp; href: string; navn: string }[] = [
+  { moenster: /^haervejen$/, href: "/omraade/haervejen", navn: "Hærvejen" },
+  { moenster: GUDENAA_RUTER, href: "/gudenaaen", navn: "Gudenåen" },
+];
+
+export function samlesideForRute(ruteSlug: string): { href: string; navn: string } | null {
+  const hit = RUTE_SAMLESIDER.find((r) => r.moenster.test(ruteSlug));
+  return hit ? { href: hit.href, navn: hit.navn } : null;
+}

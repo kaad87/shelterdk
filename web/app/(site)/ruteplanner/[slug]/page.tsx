@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { RUTE_SAMLESIDE } from "@/lib/area-content";
+import { samlesideForRute } from "@/lib/area-content";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import fs from "node:fs";
@@ -106,7 +106,7 @@ export default async function RouteDetailPage({ params }: PageProps) {
     4
   ).catch(() => []);
 
-  const samleside = RUTE_SAMLESIDE[slug] ?? null;
+  const samleside = samlesideForRute(slug);
   const faqItems: FaqItem[] = [
     {
       question: `Hvor lang er ${route.name}?`,
@@ -114,7 +114,7 @@ export default async function RouteDetailPage({ params }: PageProps) {
     },
     {
       question: `Hvor mange shelters er der langs ${route.name}?`,
-      answer: `Der er ${shelters.length} shelters langs eller nær ${route.name}.${sheltersWithWater.length > 0 ? ` ${sheltersWithWater.length} har vand.` : ""}${sheltersWithToilet.length > 0 ? ` ${sheltersWithToilet.length} har toilet.` : ""}${samleside ? ` Tallet tæller pladser tæt på selve rutelinjen. Vores samleside over shelters langs ${samleside.navn} tager også pladserne lidt længere fra ruten med.` : ""}`,
+      answer: `Der er ${shelters.length} shelters langs eller nær ${route.name}.${sheltersWithWater.length > 0 ? ` ${sheltersWithWater.length} har vand.` : ""}${sheltersWithToilet.length > 0 ? ` ${sheltersWithToilet.length} har toilet.` : ""}${samleside ? ` Tallet tæller pladserne tæt på netop denne rutelinje. Alle shelters langs ${samleside.navn} står samlet på vores samleside.` : ""}`,
     },
     {
       question: `Er ${route.name} gratis at vandre?`,
@@ -217,7 +217,7 @@ export default async function RouteDetailPage({ params }: PageProps) {
               </h2>
               {samleside && (
                 <p className="mb-4 rounded-xl border border-accent/20 bg-accent/5 px-4 py-3 text-sm text-primary/80">
-                  Listen her er pladserne tættest på selve ruten. Den samlede oversigt med
+                  Listen her er pladserne tættest på netop denne rute. Den samlede oversigt med
                   faciliteter, booking, spørgsmål og svar og en pakkeliste står på{" "}
                   <Link href={samleside.href} className="font-medium text-accent hover:underline">
                     alle shelters langs {samleside.navn}

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { AREA_CONTENT, RUTE_SAMLESIDE, getAreaContent } from "../area-content";
+import { AREA_CONTENT, GUDENAA_RUTER, getAreaContent, samlesideForRute } from "../area-content";
+import { ruteShelterIds } from "../collection-pages";
 import { getAreaFaqItems } from "../faq";
 
 describe("area-content", () => {
@@ -29,12 +30,22 @@ describe("area-content", () => {
     expect(hrefs).not.toContain("/haervejen");
   });
 
-  it("peger rutesiden paa en omraadeside, der har indhold", () => {
-    for (const { href } of Object.values(RUTE_SAMLESIDE)) {
-      const m = href.match(/^\/omraade\/(.+)$/);
-      expect(m, href).not.toBeNull();
-      expect(getAreaContent(m![1]), href).not.toBeNull();
+  it("sender rutesiderne til den rigtige samleside", () => {
+    expect(samlesideForRute("haervejen")).toEqual({ href: "/omraade/haervejen", navn: "Hærvejen" });
+    for (const r of ["etape-10-gudenaastien", "gudenaastien-nordsiden", "traekstien-mellem-randers-og-silkeborg"]) {
+      expect(samlesideForRute(r)?.href, r).toBe("/gudenaaen");
     }
+    // Ingen samleside: rutesiden beholder sin egen overskrift.
+    expect(samlesideForRute("moen-rundt")).toBeNull();
+    // Hærvejens etaper og varianter er ikke selve Hærvejen.
+    expect(samlesideForRute("haervejen-etape-3")).toBeNull();
+  });
+
+  it("finder Gudenå-rutepladserne i ruteplannerens data", () => {
+    // 33 unikke pladser paa 12 ruter den 19/11 2026. Graensen er lav med
+    // vilje: testen skal fange en tom fil eller et brudt moenster, ikke at
+    // ruteplanneren faar en plads mere eller mindre.
+    expect(ruteShelterIds(GUDENAA_RUTER).length).toBeGreaterThan(20);
   });
 
   it("redirecter /haervejen permanent til samlesiden", async () => {
