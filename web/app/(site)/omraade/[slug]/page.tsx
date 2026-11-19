@@ -11,7 +11,7 @@ import { isStructuredBookable } from "@shared/lib/shelter-detail";
 import { AreaFaq } from "@/components/AreaFaq";
 import { ShelterCard } from "@/components/ShelterCard";
 import { InFeedSlot } from "@/components/InFeedSlot";
-import { showInFeedAdAt, inFeedAdIndex } from "@/lib/adsense";
+import { showInFeedAdAt, inFeedMaks, inFeedAdIndex } from "@/lib/adsense";
 import {
   getAllAreas,
   getAreaBySlug,
@@ -348,7 +348,7 @@ export default async function OmraadeSlugPage({ params }: PageProps) {
               <div className="grid grid-flow-row-dense grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                 {featuredShelters.map((shelter, i) => (
                   <Fragment key={shelter.id}>
-                    {showInFeedAdAt(i, featuredShelters.length) && <InFeedSlot nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />}
+                    {showInFeedAdAt(i, featuredShelters.length, inFeedMaks(inFeedAnnonce)) && <InFeedSlot nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />}
                     <ShelterCard
                       shelter={shelter}
                       href={shelterHref(

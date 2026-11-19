@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { describe, it, expect } from "vitest";
-import { showInFeedAdAt, inFeedAdIndex } from "../adsense";
+import { showInFeedAdAt, inFeedAdIndex, inFeedMaks } from "../adsense";
 
 const WEB_ROOT = path.resolve(__dirname, "..", "..");
 
@@ -62,6 +62,26 @@ describe("showInFeedAdAt", () => {
     // Hele pointen med at flytte dem op: annoncer længere nede end det bliver
     // ikke set. In-feed-enheden målte 11,89 % viewability med start på plads 6.
     expect(Math.max(...adPositions(200))).toBeLessThanOrEqual(15);
+  });
+});
+
+describe("inFeedMaks", () => {
+  const varer = (n: number) => Array.from({ length: n }, (_, i) => i);
+
+  // "Det er som om annoncerne kun bliver vist tre gange i soegningen."
+  it("fjerner loftet i en affiliate-arm med varer nok, saa der er et kort for hvert 5. shelter", () => {
+    const maks = inFeedMaks({ arm: "ren", varer: varer(12) });
+    const pos = Array.from({ length: 200 }, (_, i) => i).filter((i) => showInFeedAdAt(i, 200, maks));
+    expect(pos.slice(0, 5)).toEqual([1, 6, 11, 16, 21]);
+    expect(pos.length).toBeGreaterThan(30);
+    expect(200 - pos[pos.length - 1]).toBeGreaterThanOrEqual(2);
+  });
+
+  it("holder loftet paa 3 for AdSense, uden annonce og naar armen har for faa varer", () => {
+    expect(inFeedMaks({ arm: "adsense", varer: [] })).toBe(3);
+    expect(inFeedMaks(null)).toBe(3);
+    expect(inFeedMaks(undefined)).toBe(3);
+    expect(inFeedMaks({ arm: "tilbud", varer: varer(2) })).toBe(3);
   });
 });
 

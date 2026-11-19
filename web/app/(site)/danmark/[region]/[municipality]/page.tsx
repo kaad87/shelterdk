@@ -22,7 +22,7 @@ import { prepositionForRegionName } from "@/lib/area-db";
 import { Fragment } from "react";
 import { ShelterCard } from "@/components/ShelterCard";
 import { InFeedSlot } from "@/components/InFeedSlot";
-import { showInFeedAdAt, inFeedAdIndex } from "@/lib/adsense";
+import { showInFeedAdAt, inFeedMaks, inFeedAdIndex } from "@/lib/adsense";
 import { getWater, getToilet, getPetsAllowed } from "@/lib/shelter-detail";
 import { isStructuredBookable } from "@shared/lib/shelter-detail";
 import { generateMunicipalityPageFaq } from "@/lib/fakta-faq";
@@ -380,7 +380,7 @@ export default async function DanmarkMunicipalityPage({ params }: PageProps) {
           <div className="grid grid-flow-row-dense grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {shelters.map((shelter, i) => (
               <Fragment key={shelter.id}>
-                {showInFeedAdAt(i, shelters.length) && <InFeedSlot nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />}
+                {showInFeedAdAt(i, shelters.length, inFeedMaks(inFeedAnnonce)) && <InFeedSlot nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />}
                 <ShelterCard
                   shelter={shelter}
                   href={shelterHref(regionName, shelter.kommune ?? null, shelter.slug)}

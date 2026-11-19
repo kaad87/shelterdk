@@ -7,7 +7,7 @@ import { slugifySegment } from "@/lib/slug";
 import { Fragment } from "react";
 import { ShelterCard } from "@/components/ShelterCard";
 import { InFeedSlot } from "@/components/InFeedSlot";
-import { showInFeedAdAt, inFeedAdIndex } from "@/lib/adsense";
+import { showInFeedAdAt, inFeedMaks, inFeedAdIndex } from "@/lib/adsense";
 import { ShelterMap } from "@/components/ShelterMap";
 import { toMapShelters } from "@/lib/map-shelter";
 import { getToilet } from "@/lib/shelter-detail";
@@ -158,7 +158,7 @@ export default async function ShelterMedToiletPage() {
 
                     return (
                       <Fragment key={shelter.id}>
-                        {showInFeedAdAt(i, shelters.length) && <InFeedSlot nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />}
+                        {showInFeedAdAt(i, shelters.length, inFeedMaks(inFeedAnnonce)) && <InFeedSlot nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />}
                         <div className="relative">
                         <ShelterCard
                           shelter={shelter}

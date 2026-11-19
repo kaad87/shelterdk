@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { InFeedSlot } from "@/components/InFeedSlot";
 import type { InFeedAnnonce } from "@/lib/infeed-annonce";
-import { showInFeedAdAt, inFeedAdIndex } from "@/lib/adsense";
+import { showInFeedAdAt, inFeedMaks, inFeedAdIndex } from "@/lib/adsense";
 import { useRouter } from "next/navigation";
 import { useSafeSearchParams } from "@/lib/useSafeSearchParams";
 import {
@@ -402,7 +402,7 @@ export function ByShelterExplorer({
                   den ville <InFeedSlot> unmounte+remounte ved hver ændring = gentagne
                   AdSense-kald på samme slot. */}
               {sortedShelters.slice(0, listDisplayCount).flatMap((shelter, i, arr) => [
-                ...(showInFeedAdAt(i, arr.length) ? [<InFeedSlot key={`infeed-ad-${inFeedAdIndex(i)}`} nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />] : []),
+                ...(showInFeedAdAt(i, arr.length, inFeedMaks(inFeedAnnonce)) ? [<InFeedSlot key={`infeed-ad-${inFeedAdIndex(i)}`} nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />] : []),
                 <ShelterCard key={shelter.id} shelter={shelter} href={shelterHref(shelter)} />,
               ])}
             </div>
@@ -442,7 +442,7 @@ export function ByShelterExplorer({
           </div>
           <div className="grid grid-flow-row-dense grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {sortedAllShelters.flatMap((shelter, i) => [
-              ...(showInFeedAdAt(i, sortedAllShelters.length) ? [<InFeedSlot key={`infeed-ad-${inFeedAdIndex(i)}`} nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />] : []),
+              ...(showInFeedAdAt(i, sortedAllShelters.length, inFeedMaks(inFeedAnnonce)) ? [<InFeedSlot key={`infeed-ad-${inFeedAdIndex(i)}`} nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />] : []),
               <ShelterCard key={shelter.id} shelter={shelter} href={shelterHref(shelter)} />,
             ])}
           </div>

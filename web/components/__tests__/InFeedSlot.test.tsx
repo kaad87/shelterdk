@@ -24,6 +24,12 @@ describe("InFeedSlot", () => {
     }
   });
 
+  it("genbruger puljen i ring paa pladser ud over den", () => {
+    const annonce: InFeedAnnonce = { arm: "kontekst", varer: [vare("a"), vare("b"), vare("c")] };
+    render(<InFeedSlot nr={4} annonce={annonce} />);
+    expect(screen.getByTestId("kort").textContent).toBe("b@4");
+  });
+
   it("falder tilbage til AdSense paa en plads uden vare", () => {
     render(<InFeedSlot nr={2} annonce={{ arm: "tilbud", varer: [vare("a")] }} />);
     expect(screen.getByTestId("adsense")).toBeTruthy();

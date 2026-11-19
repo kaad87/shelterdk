@@ -8,7 +8,7 @@ import { SearchBar } from "@/components/SearchBar";
 import { ShelterCard } from "@/components/ShelterCard";
 import { InFeedSlot } from "@/components/InFeedSlot";
 import type { InFeedAnnonce } from "@/lib/infeed-annonce";
-import { showInFeedAdAt, inFeedAdIndex } from "@/lib/adsense";
+import { showInFeedAdAt, inFeedMaks, inFeedAdIndex } from "@/lib/adsense";
 import { ShelterMap, type MapBounds } from "@/components/ShelterMap";
 import type { Shelter } from "@/types/shelter";
 import type { SoegFilters, ShelterPin } from "@/lib/soeg-db";
@@ -562,7 +562,7 @@ export function SoegContent({
             </div>
             <div className="grid grid-flow-row-dense grid-cols-1 sm:grid-cols-2 gap-4 pb-6">
               {sortedShelters.slice(0, listDisplayCount).flatMap((shelter, i, arr) => [
-                ...(showInFeedAdAt(i, arr.length) ? [<InFeedSlot key={`infeed-ad-${inFeedAdIndex(i)}`} nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />] : []),
+                ...(showInFeedAdAt(i, arr.length, inFeedMaks(inFeedAnnonce)) ? [<InFeedSlot key={`infeed-ad-${inFeedAdIndex(i)}`} nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />] : []),
                 <ShelterCard key={shelter.id} shelter={shelter} availabilityState={availabilityMap?.[shelter.id] ?? null} activeDate={effectiveFilters?.date ?? null} />,
               ])}
             </div>
@@ -615,7 +615,7 @@ export function SoegContent({
           </div>
           <div className="grid grid-flow-row-dense grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {sortedAllShelters.flatMap((shelter, i) => [
-              ...(showInFeedAdAt(i, sortedAllShelters.length) ? [<InFeedSlot key={`infeed-ad-${inFeedAdIndex(i)}`} nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />] : []),
+              ...(showInFeedAdAt(i, sortedAllShelters.length, inFeedMaks(inFeedAnnonce)) ? [<InFeedSlot key={`infeed-ad-${inFeedAdIndex(i)}`} nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />] : []),
               <ShelterCard key={shelter.id} shelter={shelter} availabilityState={availabilityMap?.[shelter.id] ?? null} activeDate={effectiveFilters?.date ?? null} />,
             ])}
           </div>

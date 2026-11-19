@@ -316,8 +316,12 @@ export function vaelgVare(
   return vaelgVarer(kandidater, guider, arm, 1)[0] ?? null;
 }
 
-/** Pladser pr. liste. Samme loft som IN_FEED_MAX_PER_PAGE i lib/adsense.ts. */
-export const IN_FEED_PLADSER = 3;
+/**
+ * Varer i puljen pr. side. Affiliate-armene har intet loft paa pladser
+ * (inFeedMaks i lib/adsense.ts), og /soeg kan scrolles langt, saa puljen er
+ * stoerre end de tre pladser foer; InFeedSlot genbruger den i ring.
+ */
+export const IN_FEED_PLADSER = 12;
 
 /**
  * Alt kaldestedet behoever: armen og en vare pr. plads. En plads uden vare

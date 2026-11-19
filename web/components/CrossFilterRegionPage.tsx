@@ -2,7 +2,7 @@ import { Fragment } from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { InFeedSlot } from "@/components/InFeedSlot";
-import { showInFeedAdAt, inFeedAdIndex } from "@/lib/adsense";
+import { showInFeedAdAt, inFeedMaks, inFeedAdIndex } from "@/lib/adsense";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { ShelterListSchema } from "@/components/seo/ShelterListSchema";
 import { QuickAnswer } from "@/components/seo/QuickAnswer";
@@ -250,7 +250,7 @@ export async function CrossFilterRegionPage({
                   <div className="grid grid-flow-row-dense grid-cols-1 sm:grid-cols-2 gap-4 pb-6">
                     {shelters.map((s, i) => (
                       <Fragment key={s.id}>
-                        {showInFeedAdAt(i, shelters.length) && <InFeedSlot nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />}
+                        {showInFeedAdAt(i, shelters.length, inFeedMaks(inFeedAnnonce)) && <InFeedSlot nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />}
                         <ShelterCard shelter={s} href={shelterHref(s.region ?? null, s.kommune ?? null, s.slug)} />
                       </Fragment>
                     ))}

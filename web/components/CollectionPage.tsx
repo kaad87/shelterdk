@@ -7,7 +7,7 @@ import { QuickAnswer } from "@/components/seo/QuickAnswer";
 import { ShelterCard } from "@/components/ShelterCard";
 import { ShelterMap } from "@/components/ShelterMap";
 import { InFeedSlot } from "@/components/InFeedSlot";
-import { showInFeedAdAt, inFeedAdIndex } from "@/lib/adsense";
+import { showInFeedAdAt, inFeedMaks, inFeedAdIndex } from "@/lib/adsense";
 import { toMapShelters } from "@/lib/map-shelter";
 import { buildQuickAnswer } from "@/lib/quick-answer";
 import { faqToJsonLd } from "@/lib/faq";
@@ -170,7 +170,7 @@ export async function CollectionPage({
             <div className="grid grid-flow-row-dense grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {visible.map((shelter, i) => (
                 <Fragment key={shelter.id}>
-                  {showInFeedAdAt(i, visible.length) && <InFeedSlot nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />}
+                  {showInFeedAdAt(i, visible.length, inFeedMaks(inFeedAnnonce)) && <InFeedSlot nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />}
                   <ShelterCard
                     // blur_data_url fjernes for kort der ikke viser blur — ellers
                     // ligger de ~411 bytes stadig i RSC-payloaden uden at blive brugt.

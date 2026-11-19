@@ -7,7 +7,7 @@ import { slugifySegment } from "@/lib/slug";
 import { Fragment } from "react";
 import { ShelterCard } from "@/components/ShelterCard";
 import { InFeedSlot } from "@/components/InFeedSlot";
-import { showInFeedAdAt, inFeedAdIndex } from "@/lib/adsense";
+import { showInFeedAdAt, inFeedMaks, inFeedAdIndex } from "@/lib/adsense";
 import { ShelterMap } from "@/components/ShelterMap";
 import { toMapShelters } from "@/lib/map-shelter";
 import { faqToJsonLd, type FaqItem } from "@/lib/faq";
@@ -120,7 +120,7 @@ export default async function ShelterMedBaalpladsPage() {
                 <div className="grid grid-flow-row-dense grid-cols-1 sm:grid-cols-2 gap-4 pb-6">
                   {shelters.map((shelter, i) => (
                     <Fragment key={shelter.id}>
-                      {showInFeedAdAt(i, shelters.length) && <InFeedSlot nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />}
+                      {showInFeedAdAt(i, shelters.length, inFeedMaks(inFeedAnnonce)) && <InFeedSlot nr={inFeedAdIndex(i)} annonce={inFeedAnnonce} />}
                       <ShelterCard
                         shelter={shelter}
                         href={shelterHref(

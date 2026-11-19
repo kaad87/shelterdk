@@ -64,13 +64,34 @@ const IN_FEED_MIN_ITEMS = 5;
 /** Mindst så mange kort skal ligge UNDER annoncen — ellers virker den som footer. */
 const IN_FEED_MIN_TRAILING = 2;
 
-export function showInFeedAdAt(index: number, total: number): boolean {
+export function showInFeedAdAt(
+  index: number,
+  total: number,
+  maks: number = IN_FEED_MAX_PER_PAGE
+): boolean {
   if (total < IN_FEED_MIN_ITEMS) return false;
   if (index < IN_FEED_FIRST_INDEX) return false;
   if ((index - IN_FEED_FIRST_INDEX) % IN_FEED_INTERVAL !== 0) return false;
   if (total - index < IN_FEED_MIN_TRAILING) return false;
   const adNumber = (index - IN_FEED_FIRST_INDEX) / IN_FEED_INTERVAL;
-  return adNumber < IN_FEED_MAX_PER_PAGE;
+  return adNumber < maks;
+}
+
+/**
+ * Hvor mange in-feed-pladser en liste maa have.
+ *
+ * AdSense (og alt der falder tilbage til AdSense) holder loftet paa 3. I en
+ * affiliate-arm med varer nok er der intet loft: et produktkort for hvert
+ * IN_FEED_INTERVAL. shelter hele vejen ned, ogsaa naar /soeg henter flere
+ * (november 2026: "annoncerne vises kun tre gange i soegningen"). Typen er
+ * skrevet ud her i stedet for importeret fra lib/infeed-annonce, som traekker
+ * Supabase-klienten med; denne fil bruges i klientkomponenter.
+ */
+export function inFeedMaks(annonce?: { arm: string; varer: readonly unknown[] } | null): number {
+  if (annonce && annonce.arm !== "adsense" && annonce.varer.length >= IN_FEED_MAX_PER_PAGE) {
+    return Number.POSITIVE_INFINITY;
+  }
+  return IN_FEED_MAX_PER_PAGE;
 }
 
 /** Løbenummer for annoncen på et givet index — bruges til stabile React-keys. */
