@@ -9,8 +9,9 @@ import { slugifySegment } from "@/lib/slug";
 import { fetchAllShelterRows } from "@/lib/supabase-pagination";
 import { SEARCH_SYNONYMS } from "@/lib/search-synonyms";
 
-/** URL segment when kommune is null/empty in DB. */
-export const NO_KOMMUNE_SLUG = "ukendt-kommune";
+/** URL segment when kommune is null/empty in DB. Defineret i lib/shelter-href (klient-sikker). */
+import { NO_KOMMUNE_SLUG } from "@/lib/shelter-href";
+export { NO_KOMMUNE_SLUG };
 import type { Shelter } from "@/types/shelter";
 import { getLocationCoords, getDisplayScore, hasAnyImage } from "@/lib/shelter-detail";
 

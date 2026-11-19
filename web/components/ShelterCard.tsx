@@ -9,6 +9,7 @@ import { getCity, getResolvedPhotoUrls, isShelterPlace, isValidImageUrl, getWate
 import { ShelterPlaceholder } from "@/components/ShelterPlaceholder";
 import { netlifyImageLoader } from "@/lib/image-proxy";
 import { ImageCarousel } from "@/components/ImageCarousel";
+import { shelterHref } from "@/lib/shelter-href";
 
 interface ShelterCardProps {
   shelter: Shelter;
@@ -178,7 +179,10 @@ export function ShelterCard({ shelter, onImageError, href, priority, showBlur = 
     getCity(shelter) ||
     (shelter.region && shelter.region !== "Danmark" ? shelter.region : null);
 
-  const linkHref = href ?? `/shelter/${shelter.slug}`;
+  // Uden eksplicit href linker vi kanonisk: /shelter/[slug] svarer 308 til
+  // silo-URL'en, når region kendes, og interne links gennem en redirect
+  // spilder crawl-budget (forsidens "Udforsk shelters", /soeg).
+  const linkHref = href ?? shelterHref(shelter);
 
   // Mobile carousel for multi-image shelters.
   // disableCarousel slukker carousel'en selv ved multi-image — bruges når

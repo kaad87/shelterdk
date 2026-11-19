@@ -1,8 +1,7 @@
 import { slimSheltersForList } from "@shared/lib/shelter-list-slim";
 import type { Shelter } from "@/types/shelter";
 import { getDisplayImageUrl } from "@shared/lib/shelter-detail";
-import { slugifySegment } from "@/lib/slug";
-import { NO_KOMMUNE_SLUG } from "@/lib/danmark-silo";
+import { shelterHref } from "@/lib/shelter-href";
 import { createPublicClient } from "@/utils/supabase/server-public";
 
 /** Hvor mange dage et shelter regnes som "nyt" (til "Ny"-badge). */
@@ -42,13 +41,7 @@ export function isPresentableShelter(shelter: Shelter): boolean {
 }
 
 /** Korrekt detalje-URL: region tom/"Danmark" → /shelter/[slug], ellers silo-URL. */
-export function newShelterHref(shelter: Pick<Shelter, "slug" | "region" | "kommune">): string {
-  const region = (shelter.region ?? "").trim();
-  if (!region || region.toLowerCase() === "danmark") return `/shelter/${shelter.slug}`;
-  const r = slugifySegment(region);
-  const m = shelter.kommune && String(shelter.kommune).trim() ? slugifySegment(String(shelter.kommune)) : NO_KOMMUNE_SLUG;
-  return `/danmark/${r}/${m}/${shelter.slug}`;
-}
+export const newShelterHref = shelterHref;
 
 interface GetNewSheltersOpts {
   /** Begræns til shelters tilføjet inden for N dage (udeladt = ingen dato-grænse). */

@@ -30,6 +30,7 @@ import { getCapacity, getLocationCoords, getPetsAllowed, getToilet, getWater, ha
 import type { Shelter } from "@/types/shelter";
 import type { SoegFilters } from "@/lib/soeg-db";
 import { slugifySegment } from "@/lib/slug";
+import { shelterHref } from "@/lib/shelter-href";
 
 type ViewMode = "list" | "map" | "split";
 type SortMode = "standard" | "rating" | "reviews";
@@ -59,8 +60,6 @@ const FILTER_OPTIONS: {
   { key: "bord_baenk", label: "Bord/bænke", icon: <Armchair size={15} /> },
   { key: "anmeldelser", label: "Anmeldelser", icon: <Star size={15} /> },
 ];
-
-const NO_KOMMUNE_SLUG = "ukendt-kommune";
 
 function parseFiltersFromParams(sp: URLSearchParams): SoegFilters {
   const filters: SoegFilters = {};
@@ -160,13 +159,6 @@ function FloatingViewToggle({
       </button>
     </div>
   );
-}
-
-function shelterHref(shelter: Shelter): string {
-  if (!shelter.region) return `/shelter/${shelter.slug}`;
-  const regionSlug = slugifySegment(shelter.region);
-  const municipalitySlug = shelter.kommune ? slugifySegment(shelter.kommune) : NO_KOMMUNE_SLUG;
-  return `/danmark/${regionSlug}/${municipalitySlug}/${shelter.slug}`;
 }
 
 export function ByShelterExplorer({
