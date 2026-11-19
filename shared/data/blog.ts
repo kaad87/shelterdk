@@ -595,7 +595,6 @@ Bornholm fortjener sin egen omtale. Klippekyster, sprækkedale og en helt særli
 
 Møn byder på Møns Klint og de omkringliggende skove, mens Lolland-Falster har rolige skove og strande, der sjældent er overfyldte.
 
-![Kystlandskab med vandrerute](https://images.unsplash.com/photo-1500534314263-a3817d98e140?w=1200&q=80&auto=format&fit=crop)
 
 ## Find dit næste shelter
 
@@ -770,7 +769,7 @@ Tjek vores [regionguide](/blog/de-bedste-regioner) for at finde de bedste områd
 
 ## Hvad skal du pakke?
 
-Til lune nætter er en letvægts [sommersovepose](/bedste/sommersovepose) det oplagte valg — de bedste vejer under 1 kg og fylder ingenting i rygsækken. Se også den komplette [pakkeliste til sheltertur](/guides/pakkeliste-til-sheltertur), så intet bliver glemt.
+Til lune nætter er en letvægts [sommersovepose](/bedste/sovepose) det oplagte valg — de bedste vejer under 1 kg og fylder ingenting i rygsækken. Se også den komplette [pakkeliste til sheltertur](/guides/pakkeliste-til-sheltertur), så intet bliver glemt.
 
 Sommerpakkelisten er kortere end vinterens, men der er stadig vigtige ting at huske:
 
@@ -784,7 +783,6 @@ Sommerpakkelisten er kortere end vinterens, men der er stadig vigtige ting at hu
 
 Se vores komplette [pakkeliste til sheltertur](/guides/pakkeliste-til-sheltertur) for en detaljeret oversigt.
 
-![Vandring i dansk natur om foråret](https://images.unsplash.com/photo-1500534314263-a3817d98e140?w=1200&q=80&auto=format&fit=crop)
 
 ## Bookinger og planlægning
 
@@ -1016,7 +1014,6 @@ At tænde bål i regn er en udfordring, men absolut muligt med de rette teknikke
 
 Hvis shelteret har en overdækket bålplads, er du heldig. Ellers kan din tarp over bålpladsen gøre underværker – men hold altid god afstand mellem tarp og flammer.
 
-![Shelter med tarp i regnvejr](https://images.unsplash.com/photo-1500534314263-a3817d98e140?w=1200&q=80&auto=format&fit=crop)
 
 ## Aktiviteter i regnvejr
 
@@ -1130,7 +1127,6 @@ Ikke alle tidspunkter er lige gode til en romantisk sheltertur:
 
 Undgå ture i højsæsonen (juni–juli weekender), hvor chancen for andre besøgende er størst – og myggene er på deres værste.
 
-![Stjernehimmel over skov](https://images.unsplash.com/photo-1500534314263-a3817d98e140?w=1200&q=80&auto=format&fit=crop)
 
 ## Praktiske tips
 
