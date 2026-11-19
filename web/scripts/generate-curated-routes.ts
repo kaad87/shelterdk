@@ -16,6 +16,38 @@ import * as dotenv from "dotenv";
 import { haversineKm } from "../lib/haversine";
 import { slugifySegment } from "../lib/slug";
 
+/**
+ * GeoFA-spor, der er den samme rute som et andet spor under et andet navn.
+ * Maalt 19/11 2026: 87-100 % af punkterne ligger under 40 m fra det andet
+ * spor, og shelters er de samme. Hver dublet gav to sider om samme rute, der
+ * konkurrerede i Google. De gamle URL'er redirecter i next.config.js.
+ *
+ *   moen-rundt                  -> camoenoen-kongerigets-venligste-vandrerute
+ *   bindeballestien-2           -> bindeballestien
+ *   rundt-i-gribskov            -> gribskov-noedebo
+ *   naturnationalpark-fussingoe -> landskabshistorisk-vandrerute-i-naturnationalpark-fussingoe
+ *
+ * Noeglen er sporets GeoFA-id, ikke slug: "-2"-slugs afhaenger af raekkefoelgen.
+ */
+const DUBLET_SPOR = new Set<string>([
+  "aa608a62-bf36-11ed-8a08-06206ad47459", // Møn Rundt
+  "ba7514a2-9654-11eb-9bd9-06d09fa510f4", // Bindeballestien (2)
+  "6e840717-efb9-4427-b888-2023f68ac9b5", // Rundt i Gribskov
+  "ff054117-df30-482c-a135-6ad6906c0cac", // Naturnationalpark Fussingø
+]);
+
+/**
+ * Visningsnavn i stedet for GeoFA's navn. Slug'en bygges stadig af GeoFA-navnet,
+ * saa URL'en ikke flytter sig.
+ *
+ * Camønoen: GeoFA-navnet "Camønoen - Kongerigets venligste vandrerute" gav en
+ * titel paa 101 tegn uden ordet Møn, og Møn Rundt (samme spor) er lagt ind
+ * under den. "shelter møn" og "camønoen overnatning" skal begge kunne lande her.
+ */
+const RUTE_NAVN: Record<string, string> = {
+  "1b984697-3a15-4799-9b8a-34bc603f1012": "Camønoen på Møn",
+};
+
 dotenv.config({ path: path.resolve(__dirname, "../.env.local") });
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -243,10 +275,13 @@ async function main() {
   const indexEntries: any[] = [];
   const fullData: Record<string, any> = {};
   const usedSlugs = new Set<string>();
+  // Signatur (laengde + shelters) -> foerste slug, til at opdage nye dubletter.
+  const signaturer = new Map<string, string>();
 
   for (let i = 0; i < trails.length; i++) {
     const trail = trails[i];
     if (!trail.name || !trail.geometry) continue;
+    if (DUBLET_SPOR.has(trail.id)) continue;
 
     const trailPoints = sampleGeometryPoints(trail.geometry);
     if (trailPoints.length === 0) continue;
@@ -255,6 +290,7 @@ async function main() {
 
     if (nearbyShelters.length < MIN_SHELTERS) continue;
 
+    const navn = RUTE_NAVN[trail.id] ?? trail.name;
     let slug = slugifySegment(trail.name);
     if (!slug) slug = `rute-${trail.id.slice(0, 8)}`;
     // Ensure unique slugs
@@ -272,7 +308,7 @@ async function main() {
 
     indexEntries.push({
       id: trail.id,
-      name: trail.name,
+      name: navn,
       slug,
       description: "", // AI-generated in separate script (Task 4)
       region,
@@ -285,6 +321,14 @@ async function main() {
       geometry: trail.geometry,
       shelters: nearbyShelters,
     };
+
+    const signatur = `${Math.round(lengthKm)}|${nearbyShelters.map((s: { id: string }) => s.id).sort().join(",")}`;
+    const tidligere = signaturer.get(signatur);
+    if (tidligere) {
+      console.warn(`  ADVARSEL: ${slug} har samme laengde og shelters som ${tidligere}. Tjek om det er samme spor (DUBLET_SPOR).`);
+    } else {
+      signaturer.set(signatur, slug);
+    }
 
     if ((i + 1) % 500 === 0) {
       console.log(`  Processed ${i + 1}/${trails.length} trails (${indexEntries.length} matched so far)`);

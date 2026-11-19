@@ -169,6 +169,12 @@ const nextConfig = {
       // dage (til 16/11 2026), saa den er samlesiden. Indholdet er flyttet med
       // til lib/area-content.ts. Ruteplanneren er bevaret som rutekort.
       { source: "/haervejen", destination: "/omraade/haervejen", permanent: true },
+      // Samme GeoFA-spor under to navne gav to rutesider om samme rute. Se
+      // DUBLET_SPOR i scripts/generate-curated-routes.ts.
+      { source: "/ruteplanner/moen-rundt", destination: "/ruteplanner/camoenoen-kongerigets-venligste-vandrerute", permanent: true },
+      { source: "/ruteplanner/bindeballestien-2", destination: "/ruteplanner/bindeballestien", permanent: true },
+      { source: "/ruteplanner/rundt-i-gribskov", destination: "/ruteplanner/gribskov-noedebo", permanent: true },
+      { source: "/ruteplanner/naturnationalpark-fussingoe", destination: "/ruteplanner/landskabshistorisk-vandrerute-i-naturnationalpark-fussingoe", permanent: true },
       { source: "/danmark/jylland/ny-hammersholt", destination: "/danmark/jylland", permanent: true },
       { source: "/danmark/jylland/fons", destination: "/danmark/jylland", permanent: true },
       { source: "/danmark/fyn/dybbol", destination: "/danmark/fyn", permanent: true },

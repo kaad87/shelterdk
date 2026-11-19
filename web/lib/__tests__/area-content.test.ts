@@ -31,12 +31,13 @@ describe("area-content", () => {
   });
 
   it("sender rutesiderne til den rigtige samleside", () => {
-    expect(samlesideForRute("haervejen")).toEqual({ href: "/omraade/haervejen", navn: "Hærvejen" });
+    expect(samlesideForRute("haervejen")).toEqual({ href: "/omraade/haervejen", linktekst: "alle shelters langs Hærvejen" });
+    expect(samlesideForRute("oehavsstien-17")?.href).toBe("/omraade/sydfynske-oeehav");
     for (const r of ["etape-10-gudenaastien", "gudenaastien-nordsiden", "traekstien-mellem-randers-og-silkeborg"]) {
       expect(samlesideForRute(r)?.href, r).toBe("/gudenaaen");
     }
     // Ingen samleside: rutesiden beholder sin egen overskrift.
-    expect(samlesideForRute("moen-rundt")).toBeNull();
+    expect(samlesideForRute("marskstien")).toBeNull();
     // Hærvejens etaper og varianter er ikke selve Hærvejen.
     expect(samlesideForRute("haervejen-etape-3")).toBeNull();
   });
@@ -46,6 +47,21 @@ describe("area-content", () => {
     // vilje: testen skal fange en tom fil eller et brudt moenster, ikke at
     // ruteplanneren faar en plads mere eller mindre.
     expect(ruteShelterIds(GUDENAA_RUTER).length).toBeGreaterThan(20);
+  });
+
+  it("redirecter dublet-ruterne til den rute, der er beholdt", async () => {
+    const nextConfig = (await import("../../next.config.js")).default;
+    const redirects: { source: string; destination: string }[] = await nextConfig.redirects();
+    const fs = await import("node:fs");
+    const index: { slug: string }[] = JSON.parse(fs.readFileSync("public/data/curated-routes-index.json", "utf-8"));
+    const slugs = new Set(index.map((r) => r.slug));
+    for (const dublet of ["moen-rundt", "bindeballestien-2", "rundt-i-gribskov", "naturnationalpark-fussingoe"]) {
+      const r = redirects.find((x) => x.source === `/ruteplanner/${dublet}`);
+      expect(r, dublet).toBeDefined();
+      // Dubletten er ude af data, og maalet findes stadig.
+      expect(slugs.has(dublet), dublet).toBe(false);
+      expect(slugs.has(r!.destination.replace("/ruteplanner/", "")), r!.destination).toBe(true);
+    }
   });
 
   it("redirecter /haervejen permanent til samlesiden", async () => {

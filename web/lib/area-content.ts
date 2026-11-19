@@ -12,6 +12,9 @@ import type { RedaktionelSektion } from "@/components/RedaktionelleSektioner";
  * 11 og ruteplanneren 6, saa omraadesiden blev samlesiden. /haervejen
  * redirecter hertil (next.config.js), og dens FAQ, pakkeliste og relaterede
  * links er flyttet med. Ruteplanneren er bevaret som rutekort.
+ *
+ * Det Sydfynske Øhav har faaet spoergsmaal om Øhavsstien af samme grund:
+ * etape 17 i ruteplanneren fangede "øhavsstien shelter" (se RUTE_SAMLESIDER).
  */
 export interface AreaContent {
   /** Stilles foran de generelle omraade-spoergsmaal. */
@@ -78,6 +81,25 @@ export const AREA_CONTENT: Record<string, AreaContent> = {
       },
     ],
   },
+  "sydfynske-oeehav": {
+    faq: [
+      {
+        question: "Hvor kan man overnatte på Øhavsstien?",
+        answer:
+          "Øhavsstien går langs kysterne på Sydfyn, Tåsinge, Langeland og Ærø, og shelterne i Det Sydfynske Øhav ligger mange steder tæt ved stien. Listen her samler pladserne i hele øhavet. Brug kortet til at finde dem, der ligger nær den etape, du skal gå.",
+      },
+      {
+        question: "Skal man booke shelters på Øhavsstien?",
+        answer:
+          "Mange af shelterne i øhavet kan bookes, og det er en god idé i sommerferien, hvor pladserne ved kysten er populære. På den enkelte plads kan du se, om den kan bookes eller er først til mølle.",
+      },
+    ],
+    // Det konkrete booking-svar ovenfor dækker skabelonens.
+    faqErstatter: ["booking"],
+    related: [
+      { label: "Øhavsstien, etape 17 på kortet", href: "/ruteplanner/oehavsstien-17", note: "en etape af stien" },
+    ],
+  },
 };
 
 export function getAreaContent(slug: string): AreaContent | null {
@@ -97,12 +119,22 @@ export function getAreaContent(slug: string): AreaContent | null {
  */
 export const GUDENAA_RUTER = /guden|traekstien/;
 
-const RUTE_SAMLESIDER: { moenster: RegExp; href: string; navn: string }[] = [
-  { moenster: /^haervejen$/, href: "/omraade/haervejen", navn: "Hærvejen" },
-  { moenster: GUDENAA_RUTER, href: "/gudenaaen", navn: "Gudenåen" },
+export interface RuteSamleside {
+  href: string;
+  /** Linkteksten, med lille begyndelsesbogstav: "alle shelters langs Hærvejen". */
+  linktekst: string;
+}
+
+const RUTE_SAMLESIDER: (RuteSamleside & { moenster: RegExp })[] = [
+  { moenster: /^haervejen$/, href: "/omraade/haervejen", linktekst: "alle shelters langs Hærvejen" },
+  { moenster: GUDENAA_RUTER, href: "/gudenaaen", linktekst: "alle shelters langs Gudenåen" },
+  // Øhavsstien har kun etape 17 i ruteplanneren (10 km), men den fangede
+  // "øhavsstien shelter" (392 visninger, plads 15, 0 klik; GSC 180 dage til
+  // 16/11 2026). Stien gaar gennem hele øhavet, saa omraadesiden er svaret.
+  { moenster: /^oehavsstien/, href: "/omraade/sydfynske-oeehav", linktekst: "alle shelters i Det Sydfynske Øhav" },
 ];
 
-export function samlesideForRute(ruteSlug: string): { href: string; navn: string } | null {
+export function samlesideForRute(ruteSlug: string): RuteSamleside | null {
   const hit = RUTE_SAMLESIDER.find((r) => r.moenster.test(ruteSlug));
-  return hit ? { href: hit.href, navn: hit.navn } : null;
+  return hit ? { href: hit.href, linktekst: hit.linktekst } : null;
 }
