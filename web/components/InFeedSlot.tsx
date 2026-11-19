@@ -6,16 +6,14 @@ import type { InFeedAnnonce } from "@/lib/infeed-annonce";
  * Den ene in-feed-plads i et shelter-grid: enten AdSense som hidtil, eller
  * affiliate-produktkortet. Se lib/infeed-annonce.ts for forsoegets opbygning.
  *
- * KUN PLADS NUMMER 0 kan blive til et produktkort. Plads 1 og 2 bliver ved med
- * at vaere AdSense, saa annoncetaetheden paa siden er praecis som i dag og
- * indtjeningsgulvet bevares mens forsoeget koerer. Det er ogsaa derfor
- * sammenligningen mellem armene er ren: produktkortet staar altid samme sted,
- * og AdSense-armen staar det samme sted paa sin fjerdedel af siderne.
+ * ALLE TRE PLADSER kan blive til produktkort (november 2026; foer kun plads 0).
+ * AdSense gav naesten ingenting, saa i de tre affiliate-arme viser hver plads
+ * sin egen vare, og AdSense-armen viser AdSense paa alle tre som kontrol.
  *
- * `annonce` er null naar kaldestedet ikke har hentet en (en flade der endnu
- * ikke er med i forsoeget). Da viser pladsen AdSense, som foer. Det samme
- * gaelder naar armen er `adsense`, og naar armen er `tilbud` men ingen af
- * sidens matchede guider har en vare med reel foerpris.
+ * En plads viser AdSense naar `annonce` er null (en flade der ikke er med i
+ * forsoeget), naar armen er `adsense`, og naar der ikke er en vare til netop
+ * den plads, fx i tilbudsarmen naar for faa af sidens guider har en vare med
+ * reel foerpris.
  */
 export function InFeedSlot({
   nr,
@@ -27,9 +25,10 @@ export function InFeedSlot({
   annonce?: InFeedAnnonce | null;
   className?: string;
 }) {
-  if (nr === 0 && annonce?.vare && annonce.arm !== "adsense") {
+  const vare = annonce?.varer?.[nr];
+  if (vare && annonce && annonce.arm !== "adsense") {
     return (
-      <AffiliateInFeedCard vare={annonce.vare} arm={annonce.arm} className={className} />
+      <AffiliateInFeedCard vare={vare} arm={annonce.arm} plads={nr} className={className} />
     );
   }
   return <AdInFeed className={className} />;

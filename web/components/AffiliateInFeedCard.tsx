@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { ExternalLink } from "lucide-react";
+import { Backpack, ExternalLink } from "lucide-react";
 import { ProduktBillede } from "@/components/ProduktBillede";
 import { maerketStaarINavnet } from "@/lib/produktnavn";
 import { retailerNavn } from "@/lib/retailer-navn";
@@ -51,10 +51,13 @@ import type { InFeedArm, InFeedVare } from "@/lib/infeed-annonce";
 export function AffiliateInFeedCard({
   vare,
   arm,
+  plads = 0,
   className,
 }: {
   vare: InFeedVare;
   arm: Exclude<InFeedArm, "adsense">;
+  /** 0, 1 eller 2: hvilken in-feed-plads kortet staar paa. Sendes med i maalingen. */
+  plads?: number;
   className?: string;
 }) {
   const { ref, isInView } = useInView({ threshold: 0.5 });
@@ -66,8 +69,9 @@ export function AffiliateInFeedCard({
       guideSlug: vare.guideSlug,
       produktId: vare.produktId,
       priceDkk: vare.pris,
+      plads,
     });
-  }, [isInView, arm, vare.guideSlug, vare.produktId, vare.pris]);
+  }, [isInView, arm, vare.guideSlug, vare.produktId, vare.pris, plads]);
 
   // Samme betingelse inline som i GearCardClient, og med vilje IKKE et kald til
   // harRabat i lib/infeed-annonce: den fil importerer Supabase-klienten, og et
@@ -102,7 +106,7 @@ export function AffiliateInFeedCard({
     <aside
       ref={ref}
       aria-label="Annonce"
-      className={`group flex flex-col overflow-hidden rounded-xl border border-accent/30 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md focus-within:ring-2 focus-within:ring-accent focus-within:ring-offset-2 ${className ?? ""}`}
+      className={`group flex flex-col overflow-hidden rounded-xl border-2 border-accent/60 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md focus-within:ring-2 focus-within:ring-accent focus-within:ring-offset-2 ${className ?? ""}`}
     >
       <a
         href={vare.url}
@@ -121,6 +125,15 @@ export function AffiliateInFeedCard({
         }
         className="flex flex-1 flex-col focus:outline-none"
       >
+        {/* Kortet skal kunne skelnes fra shelterne ved foerste blik (november
+            2026: "goer dem mere tydelige"). Rammen i accentfarven og denne
+            linje goer det uden at kortet skifter form, saa raekken stadig
+            flugter. Annonce-chippen paa billedet bliver: linjen her er en
+            overskrift, ikke maerkningen. */}
+        <span className="flex items-center gap-1.5 bg-accent/10 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-accent-dark">
+          <Backpack className="h-3.5 w-3.5" aria-hidden="true" />
+          Grej til turen
+        </span>
         <div className="relative h-44 shrink-0 bg-background sm:aspect-[4/3] sm:h-auto">
           <ProduktBillede
             src={vare.billede}

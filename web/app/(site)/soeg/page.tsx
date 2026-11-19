@@ -23,6 +23,7 @@ const MissingShelterBanner = dynamic(
  * 200 (sparede ~300 KB gzippet HTML på mobil). */
 const MAP_VIEW_PAGE_SIZE = 48;
 import { SoegContent } from "@/components/SoegContent";
+import { armForTime, hentInFeedAnnonce } from "@/lib/infeed-annonce";
 import { DEFAULT_OG_IMAGE } from "@/lib/seo-meta";
 
 export const revalidate = 3600; // ISR: revalider søgesiden hver time
@@ -160,9 +161,13 @@ export default async function SoegPage({ searchParams }: SoegPageProps) {
     }
   }
 
-  const [areaInfo, sheltersResult] = await Promise.all([
+  // In-feed-kortene (lib/infeed-annonce.ts). /soeg har intet emne, saa
+  // varerne er saesonens overnatningsgrej, og armen skifter hver time i
+  // stedet for at foelge stien. Se armForTime.
+  const [areaInfo, sheltersResult, inFeedAnnonce] = await Promise.all([
     area?.trim() ? getAreaBySlug(area.trim()) : Promise.resolve(null),
     getSheltersPage(region, resolvedQ, 1, initialPageSize, Object.keys(filters).length ? filters : undefined, postalBbox, area),
+    hentInFeedAnnonce("/soeg", [], { arm: armForTime() }),
   ]);
   const { shelters: rawShelters, hasMore: initialHasMore, availabilityMap: initialAvailabilityMap } = sheltersResult;
   const initialShelters = await enrichSheltersWithGooglePhotoRef(rawShelters);
@@ -253,6 +258,7 @@ export default async function SoegPage({ searchParams }: SoegPageProps) {
             initialFilters={filters}
             initialAvailabilityMap={initialAvailabilityMap}
             view={view}
+            inFeedAnnonce={inFeedAnnonce}
           />
         </Suspense>
 

@@ -50,10 +50,17 @@ export function ensureAdsenseScript() {
  * Prøvede først start 3 (hul med det samme på /by/billund), derefter start 4
  * med interval 6 — som kun flyttede hullet ned til annonce nummer to.
  */
-const IN_FEED_FIRST_INDEX = 4;
+// November 2026: flyttet fra 4 til 1, saa foerste plads er kort nummer 2.
+// Affiliate-kortet paa plads 5 blev set 172 gange paa ti dage; de fleste
+// scroller ikke saa langt. Pariteten nedenfor holder ikke laengere (pladserne
+// lander paa 1, 7, 13), og det er i orden: alle gitre der renderer
+// <InFeedSlot> har grid-flow-row-dense (haandhaevet af
+// adsense-placement.test.ts), saa en AdSense-blok i fuld bredde paa en ulige
+// celle rykker ned, og det naeste kort udfylder hullet.
+const IN_FEED_FIRST_INDEX = 1;
 const IN_FEED_INTERVAL = 5;
 const IN_FEED_MAX_PER_PAGE = 3;
-const IN_FEED_MIN_ITEMS = 8;
+const IN_FEED_MIN_ITEMS = 5;
 /** Mindst så mange kort skal ligge UNDER annoncen — ellers virker den som footer. */
 const IN_FEED_MIN_TRAILING = 2;
 

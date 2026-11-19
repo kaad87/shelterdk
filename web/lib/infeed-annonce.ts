@@ -32,7 +32,7 @@ import { createPublicClient } from "@/utils/supabase/server-public";
 import { hentPrisfald } from "@/lib/prisfald-opslag";
 import type { Prisfald } from "@/lib/prisfald";
 import { rentMaerke, rentNavn } from "@/lib/produktnavn";
-import type { GuideKandidat } from "@/lib/guide-links";
+import { standardKandidater, type GuideKandidat } from "@/lib/guide-links";
 
 /**
  * De fire arme i forsoeget.
@@ -233,70 +233,129 @@ export async function hentGuideVarer(): Promise<Map<string, GuideVare[]>> {
 }
 
 /**
- * Vaelger varen for en arm blandt kandidaternes guider.
+ * Vaelger op til `antal` forskellige varer for en arm blandt kandidaternes guider.
  *
  * Kandidaterne kommer fra temaKandidater/stedKandidater og er allerede
- * filtreret paa aarstid og sidens tal. Vi tager den foerste guide der har en
- * brugbar vare, saa raekkefoelgen i kandidatlisten er prioriteringen.
+ * filtreret paa aarstid og sidens tal. Raekkefoelgen i kandidatlisten er
+ * prioriteringen.
  *
- * `tilbud` kan returnere null selv om der findes varer. Det er med vilje:
- * maalt 8. november 2026 var der NUL soveposer over 500 kr. med reel foerpris
- * i kataloget og kun to liggeunderlag, saa rabatterne sidder i de billige
- * varer. Et tilbudskort der falder tilbage til fuld pris ville maale noget
- * andet end det, armen handler om. Kaldestedet viser AdSense i stedet.
+ * VARERNE FORDELES PAA GUIDERNE, én runde ad gangen: foerst hver guides bedste
+ * vare, saa hver guides naestbedste, og saa videre. Med kun én plads i
+ * forsoegets foerste version viste 146 af 172 visninger en sovepose, fordi
+ * sovepose stod foerst paa naesten alle sider. Tre pladser med varer fra tre
+ * forskellige guider giver baade mere at vaelge imellem og et ærligere maal
+ * for, hvad der faktisk bliver klikket paa.
+ *
+ * `tilbud` tager kun varer med reel foerpris og den stoerste rabat foerst
+ * inden for hver guide. Den kan derfor give faerre varer end der er pladser.
+ * Det er med vilje: et tilbudskort der falder tilbage til fuld pris ville
+ * maale noget andet end det, armen handler om. Pladsen viser da AdSense.
  */
+export function vaelgVarer(
+  kandidater: GuideKandidat[],
+  guider: Map<string, GuideVare[]>,
+  arm: InFeedArm,
+  antal: number
+): InFeedVare[] {
+  if (arm === "adsense" || antal <= 0) return [];
+
+  const koeer: { k: GuideKandidat; varer: GuideVare[] }[] = [];
+  const setGuider = new Set<string>();
+  for (const k of kandidater) {
+    if (k.when === false || setGuider.has(k.slug)) continue;
+    const alle = guider.get(k.slug);
+    if (!alle?.length) continue;
+    const varer =
+      arm === "tilbud"
+        ? [...alle].filter(harRabat).sort((a, b) => (b.rabatPct ?? 0) - (a.rabatPct ?? 0))
+        : alle;
+    if (!varer.length) continue;
+    setGuider.add(k.slug);
+    koeer.push({ k, varer });
+  }
+
+  const ud: InFeedVare[] = [];
+  const setVarer = new Set<string>();
+  for (let runde = 0; ud.length < antal; runde++) {
+    let fandt = false;
+    for (const { k, varer } of koeer) {
+      if (ud.length >= antal) break;
+      const v = varer[runde];
+      if (!v) continue;
+      fandt = true;
+      // Samme vare kan staa i to guider (fx en sovepose i baade sovepose og
+      // dunsovepose). To ens kort paa én side ligner en fejl.
+      if (setVarer.has(v.produktId)) continue;
+      setVarer.add(v.produktId);
+      ud.push({
+        produktId: v.produktId,
+        navn: v.navn,
+        maerke: v.maerke,
+        pris: v.pris,
+        foerPris: v.foerPris,
+        rabatPct: v.rabatPct,
+        billede: v.billede,
+        url: v.url,
+        retailer: v.retailer,
+        kategori: v.kategori,
+        begrundelse: k.reason,
+        guideSlug: k.slug,
+      });
+    }
+    if (!fandt) break;
+  }
+  return ud;
+}
+
+/** Den foerste vare armen ville vise. Se vaelgVarer. */
 export function vaelgVare(
   kandidater: GuideKandidat[],
   guider: Map<string, GuideVare[]>,
   arm: InFeedArm
 ): InFeedVare | null {
-  if (arm === "adsense") return null;
-
-  for (const k of kandidater) {
-    if (k.when === false) continue;
-    const varer = guider.get(k.slug);
-    if (!varer?.length) continue;
-
-    const valgt =
-      arm === "tilbud"
-        ? [...varer].filter(harRabat).sort((a, b) => (b.rabatPct ?? 0) - (a.rabatPct ?? 0))[0]
-        : varer[0];
-    if (!valgt) continue;
-
-    return {
-      produktId: valgt.produktId,
-      navn: valgt.navn,
-      maerke: valgt.maerke,
-      pris: valgt.pris,
-      foerPris: valgt.foerPris,
-      rabatPct: valgt.rabatPct,
-      billede: valgt.billede,
-      url: valgt.url,
-      retailer: valgt.retailer,
-      kategori: valgt.kategori,
-      begrundelse: k.reason,
-      guideSlug: k.slug,
-    };
-  }
-  return null;
+  return vaelgVarer(kandidater, guider, arm, 1)[0] ?? null;
 }
 
+/** Pladser pr. liste. Samme loft som IN_FEED_MAX_PER_PAGE i lib/adsense.ts. */
+export const IN_FEED_PLADSER = 3;
+
 /**
- * Alt kaldestedet behoever: armen og varen. Null-vare betyder "vis AdSense",
- * uanset om det er fordi armen er `adsense`, eller fordi ingen guide kunne
- * levere en vare armen kan bruge.
+ * Alt kaldestedet behoever: armen og en vare pr. plads. En plads uden vare
+ * viser AdSense, uanset om det er fordi armen er `adsense`, eller fordi
+ * guiderne ikke kunne levere nok varer armen kan bruge.
  */
 export interface InFeedAnnonce {
   arm: InFeedArm;
-  vare: InFeedVare | null;
+  /** Varerne til plads 0, 1 og 2, i den raekkefoelge. */
+  varer: InFeedVare[];
+}
+
+/**
+ * Armen for en side uden en stabil sti at hashe paa, i praksis /soeg.
+ *
+ * /soeg er én sti, saa vaelgArm ville laase hele sitets mest besoegte
+ * listeside fast i én arm. Her skifter armen hver hele time i stedet. Det er
+ * stadig stabilt inden for en render og en ISR-periode (siden revaliderer hver
+ * time), og maalingen klarer sig uden stien: infeed_seen baerer armen i
+ * params, og klikkets placement hedder infeed_<arm>.
+ */
+export function armForTime(nu: Date = new Date()): InFeedArm {
+  return IN_FEED_ARME[Math.floor(nu.getTime() / 3_600_000) % IN_FEED_ARME.length];
 }
 
 export async function hentInFeedAnnonce(
   sti: string,
-  kandidater: GuideKandidat[]
+  kandidater: GuideKandidat[],
+  opts: { arm?: InFeedArm; nu?: Date } = {}
 ): Promise<InFeedAnnonce> {
-  const arm = vaelgArm(sti);
-  if (arm === "adsense" || kandidater.length === 0) return { arm, vare: null };
+  const arm = opts.arm ?? vaelgArm(sti);
+  if (arm === "adsense") return { arm, varer: [] };
+  // En side uden egne emne-guider (smaa stedssider, /soeg) fik foer AdSense.
+  // Nu faar den saesonens overnatningsgrej, som er relevant paa enhver liste
+  // over shelters.
+  // Sidens egne kandidater staar foerst, saa de vinder pladserne; saesonens
+  // fylder op, naar siden har faerre guider end der er pladser.
+  const brugte = [...kandidater, ...standardKandidater((opts.nu ?? new Date()).getMonth() + 1)];
   const guider = await hentGuideVarer();
-  return { arm, vare: vaelgVare(kandidater, guider, arm) };
+  return { arm, varer: vaelgVarer(brugte, guider, arm, IN_FEED_PLADSER) };
 }

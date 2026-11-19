@@ -254,11 +254,14 @@ export function trackInFeedSeen(args: {
   guideSlug: string;
   produktId: string;
   priceDkk: number;
+  /** In-feed-pladsen (0-2). Fra november 2026 kan alle tre vaere produktkort. */
+  plads?: number;
 }) {
   push("infeed_seen", {
     infeed_arm: args.arm,
     guide_slug: args.guideSlug,
     product_id: args.produktId,
     value: args.priceDkk,
+    infeed_plads: args.plads ?? 0,
   });
 }

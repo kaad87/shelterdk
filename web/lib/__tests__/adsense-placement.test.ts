@@ -19,39 +19,30 @@ function adGridSlots(total: number): number[] {
 }
 
 describe("showInFeedAdAt", () => {
-  it("placerer første annonce efter 4 kort, ikke 6", () => {
-    // Aug 2026: flyttet fra 6 til 4. På mobil er grid'et én kolonne, så plads 6
-    // lå ~1.800 px nede — in-feed-enheden målte 11,89 % viewability mod
-    // bannerets 36,99 %.
-    expect(adPositions(60)[0]).toBe(4);
+  it("placerer første plads som kort nummer 2", () => {
+    // Nov 2026: flyttet fra 4 til 1. Affiliate-kortet paa plads 5 blev set 172
+    // gange paa ti dage; de fleste scroller ikke saa langt. Aug 2026 var det
+    // flyttet fra 6 til 4 af samme grund (11,89 % viewability paa plads 6).
+    expect(adPositions(60)[0]).toBe(1);
   });
 
   it("holder loftet på 3 annoncer uanset listelængde", () => {
-    expect(adPositions(60)).toEqual([4, 9, 14]);
+    expect(adPositions(60)).toEqual([1, 6, 11]);
     expect(adPositions(500)).toHaveLength(3);
   });
 
-  it("lander på LIGE grid-pladser, ellers opstår der huller i 2-kolonners grids", () => {
-    // Regression, to runder. Er kolonnen smallere end 250 px spænder annoncen
-    // over hele rækken, og et 2-kolonners element kan ikke starte midt i en
-    // række — det skubbes ned og efterlader et tomt felt hvor der skulle have
-    // været et shelter-kort (set på /by/billund).
-    //
-    // Første forsøg var start 3: hul med det samme. Andet forsøg var start 4 med
-    // interval 6, som så rigtigt ud for første annonce men flyttede hullet til
-    // nummer to — for annoncerne optager SELV en plads, så den n'te annonce står
-    // på grid-plads shelterIndex + n. Derfor måles pariteten på grid-pladsen.
-    expect(adGridSlots(60)).toEqual([4, 10, 16]);
-    for (const total of [10, 16, 20, 60, 200]) {
-      for (const slot of adGridSlots(total)) {
-        expect(slot % 2).toBe(0);
-      }
-    }
+  it("lander paa ulige grid-pladser, og det er gitrenes dense-flow der forhindrer huller", () => {
+    // Foer 13/11 2026 skulle pladserne staa paa LIGE celler, ellers efterlod
+    // en AdSense-blok i fuld bredde et hul i 2-kolonners gitre. Siden har alle
+    // gitre grid-flow-row-dense (testen nedenfor), og saa udfylder det naeste
+    // kort hullet. Den test er nu det der beskytter layoutet, ikke pariteten.
+    expect(adGridSlots(60)).toEqual([1, 7, 13]);
   });
 
   it("viser ingen annoncer i korte lister", () => {
-    expect(adPositions(7)).toEqual([]);
+    expect(adPositions(4)).toEqual([]);
     expect(adPositions(0)).toEqual([]);
+    expect(adPositions(5)).toEqual([1]);
   });
 
   it("lader aldrig en annonce stå som sidste eller næstsidste element", () => {
@@ -92,7 +83,9 @@ describe("gitre med in-feed-annoncer taaler et element i fuld bredde", () => {
     const fundet: { fil: string; linje: number; klasser: string }[] = [];
     const gaa = (dir: string) => {
       for (const e of readdirSync(dir, { withFileTypes: true })) {
-        if (e.name === "node_modules" || e.name === ".next" || e.name.startsWith(".")) continue;
+        // __tests__ springes over: en komponenttest rendrer pladsen alene,
+        // uden et gitter, og det er ikke et layout nogen besoegende ser.
+        if (e.name === "node_modules" || e.name === ".next" || e.name === "__tests__" || e.name.startsWith(".")) continue;
         const p = path.join(dir, e.name);
         if (e.isDirectory()) { gaa(p); continue; }
         if (!e.name.endsWith(".tsx")) continue;

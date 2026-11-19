@@ -180,6 +180,32 @@ export const FORSIDE_GUIDER: GuideKandidat[] = [
   { slug: "liggeunderlag", reason: "Isolering mod den kolde bund" },
 ];
 
+/**
+ * Saesonens overnatningsgrej til lister uden et emne: /soeg og stedssider
+ * under MIN_STEDSTOERRELSE.
+ *
+ * Bruges af in-feed-kortene (lib/infeed-annonce.ts), ikke af guide-blokkene.
+ * En guide-blok paa en side uden emne ville vaere den samme tekst overalt; et
+ * annoncekort er en annonce og maa gerne vaere det. Udvalget er de guider der
+ * baerer klikkene i saesonen (se FORSIDE_GUIDER), plus pandelampe om vinteren,
+ * hvor det er moerkt ved ankomst, og myggenet om sommeren.
+ */
+export function standardKandidater(maaned: number): GuideKandidat[] {
+  return erKoldSaeson(maaned)
+    ? [
+        { slug: "sovepose-til-vinter", reason: "Til nætter under frysepunktet" },
+        { slug: "liggeunderlag-til-vinter", reason: "Kulden kommer nedefra om vinteren" },
+        { slug: "pandelampe", reason: "Det er mørkt, før du når frem" },
+        { slug: "vandfilter", reason: "Når der ikke er vand på pladsen" },
+      ]
+    : [
+        { slug: "sovepose", reason: "Til overnatning i shelter" },
+        { slug: "liggeunderlag", reason: "Isolering mod de hårde brædder" },
+        { slug: "vandfilter", reason: "Når der ikke er vand på pladsen" },
+        { slug: "myggenet", reason: "Til de stille sommeraftener" },
+      ];
+}
+
 export interface StedFakta {
   /** Antal shelters paa siden. */
   antal: number;

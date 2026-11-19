@@ -21,8 +21,10 @@ import {
   hentGuideVarer,
   hentInFeedAnnonce,
   stiHash,
+  armForTime,
   vaelgArm,
   vaelgVare,
+  vaelgVarer,
   type InFeedArm,
 } from "@/lib/infeed-annonce";
 import type { GuideKandidat } from "@/lib/guide-links";
@@ -228,31 +230,112 @@ describe("vaelgVare", () => {
   });
 });
 
+describe("vaelgVarer", () => {
+  const vare = (produktId: string, over: Record<string, unknown> = {}) => ({
+    produktId, rank: 0, navn: produktId, maerke: null as string | null,
+    pris: 500, foerPris: null as number | null, rabatPct: null as number | null,
+    billede: "i", url: "u", retailer: "backpackerlife", kategori: null as string | null, ...over,
+  });
+  const guider = new Map([
+    ["sovepose", [vare("s1"), vare("s2"), vare("s3")]],
+    ["vandfilter", [vare("v1"), vare("v2")]],
+    ["pandelampe", [vare("p1", { foerPris: 600, rabatPct: 17 })]],
+  ]);
+  const k = (slug: string): GuideKandidat => ({ slug, reason: slug });
+
+  // Forsoegets foerste version: 146 af 172 visninger var en sovepose.
+  it("fordeler pladserne paa guiderne foer den tager naestbedste fra samme guide", () => {
+    const ud = vaelgVarer([k("sovepose"), k("vandfilter"), k("pandelampe")], guider, "ren", 3);
+    expect(ud.map((v) => v.produktId)).toEqual(["s1", "v1", "p1"]);
+  });
+
+  it("fylder op fra samme guide naar der er faerre guider end pladser", () => {
+    const ud = vaelgVarer([k("sovepose"), k("vandfilter")], guider, "ren", 3);
+    expect(ud.map((v) => v.produktId)).toEqual(["s1", "v1", "s2"]);
+  });
+
+  it("viser aldrig samme vare to gange, heller ikke fra to guider", () => {
+    const dobbelt = new Map([["a", [vare("x"), vare("y")]], ["b", [vare("x")]]]);
+    expect(vaelgVarer([k("a"), k("b")], dobbelt, "ren", 3).map((v) => v.produktId)).toEqual(["x", "y"]);
+  });
+
+  it("bruger kun nedsatte varer i tilbudsarmen, ogsaa naar det giver faerre end pladserne", () => {
+    const ud = vaelgVarer([k("sovepose"), k("vandfilter"), k("pandelampe")], guider, "tilbud", 3);
+    expect(ud.map((v) => v.produktId)).toEqual(["p1"]);
+  });
+
+  it("giver ingen varer i adsense-armen", () => {
+    expect(vaelgVarer([k("sovepose")], guider, "adsense", 3)).toEqual([]);
+  });
+
+  it("tager kun en guide én gang, selv om den staar to gange i kandidaterne", () => {
+    const ud = vaelgVarer([k("vandfilter"), k("vandfilter")], guider, "ren", 2);
+    expect(ud.map((v) => v.produktId)).toEqual(["v1", "v2"]);
+  });
+});
+
+describe("armForTime", () => {
+  it("er stabil inden for en time og skifter til naeste time", () => {
+    const t = Date.UTC(2026, 10, 19, 10, 0, 0);
+    expect(armForTime(new Date(t + 59 * 60_000))).toBe(armForTime(new Date(t)));
+    expect(armForTime(new Date(t + 60 * 60_000))).not.toBe(armForTime(new Date(t)));
+  });
+
+  it("rammer alle fire arme over et doegn", () => {
+    const t = Date.UTC(2026, 10, 19);
+    const set = new Set(Array.from({ length: 24 }, (_, h) => armForTime(new Date(t + h * 3_600_000))));
+    expect(set).toEqual(new Set(IN_FEED_ARME));
+  });
+});
+
 describe("hentInFeedAnnonce", () => {
+  const STIER = ["/a", "/b", "/c", "/d", "/e", "/f", "/g", "/h"];
+
   it("slaar ikke op i basen naar armen er adsense", async () => {
-    const sti = IN_FEED_ARME.length
-      ? ["/a", "/b", "/c", "/d", "/e", "/f", "/g", "/h"].find((s) => vaelgArm(s) === "adsense")!
-      : "/a";
+    const sti = STIER.find((s) => vaelgArm(s) === "adsense")!;
     const ud = await hentInFeedAnnonce(sti, [{ slug: "sovepose", reason: "x" }]);
     expect(ud.arm).toBe("adsense");
-    expect(ud.vare).toBeNull();
+    expect(ud.varer).toEqual([]);
     expect(select).not.toHaveBeenCalled();
   });
 
-  it("slaar ikke op naar siden ingen kandidater har", async () => {
-    const sti = ["/a", "/b", "/c", "/d", "/e", "/f", "/g", "/h"].find((s) => vaelgArm(s) !== "adsense")!;
-    const ud = await hentInFeedAnnonce(sti, []);
-    expect(ud.vare).toBeNull();
-    expect(select).not.toHaveBeenCalled();
-  });
-
-  it("henter en vare naar armen kan bruge en", async () => {
+  it("henter varer med kandidatens begrundelse naar armen kan bruge dem", async () => {
     svar([{ slug: "sovepose", buying_guide_entries: [{ rank: 0, affiliate_products: produkt() }] }]);
-    const sti = ["/a", "/b", "/c", "/d", "/e", "/f", "/g", "/h"]
-      .find((s) => vaelgArm(s) === "ren" || vaelgArm(s) === "kontekst")!;
+    const sti = STIER.find((s) => vaelgArm(s) === "ren" || vaelgArm(s) === "kontekst")!;
     const ud = await hentInFeedAnnonce(sti, [{ slug: "sovepose", reason: "Til vinteren" }]);
-    expect(ud.vare?.begrundelse).toBe("Til vinteren");
-    expect(ud.vare?.guideSlug).toBe("sovepose");
+    expect(ud.varer[0]?.begrundelse).toBe("Til vinteren");
+    expect(ud.varer[0]?.guideSlug).toBe("sovepose");
+  });
+
+  // Foer gav en side uden kandidater AdSense. Nu faar den saesonens grej.
+  it("bruger saesonens grej naar siden ingen egne kandidater har", async () => {
+    svar([
+      { slug: "sovepose-til-vinter", buying_guide_entries: [{ rank: 0, affiliate_products: produkt({ id: "vinter" }) }] },
+      { slug: "sovepose", buying_guide_entries: [{ rank: 0, affiliate_products: produkt({ id: "sommer" }) }] },
+    ]);
+    const vinter = await hentInFeedAnnonce("/soeg", [], { arm: "ren", nu: new Date(Date.UTC(2026, 10, 19)) });
+    expect(vinter.varer.map((v) => v.produktId)).toEqual(["vinter"]);
+    _nulstilInFeedCache();
+    const sommer = await hentInFeedAnnonce("/soeg", [], { arm: "ren", nu: new Date(Date.UTC(2026, 6, 1)) });
+    expect(sommer.varer.map((v) => v.produktId)).toEqual(["sommer"]);
+  });
+
+  it("lader sidens egne kandidater vinde pladserne foer saesonens", async () => {
+    svar([
+      { slug: "vandfilter", buying_guide_entries: [{ rank: 0, affiliate_products: produkt({ id: "filter" }) }] },
+      { slug: "sovepose-til-vinter", buying_guide_entries: [{ rank: 0, affiliate_products: produkt({ id: "vinter" }) }] },
+    ]);
+    const ud = await hentInFeedAnnonce("/x", [{ slug: "vandfilter", reason: "Ingen vand" }], {
+      arm: "kontekst",
+      nu: new Date(Date.UTC(2026, 10, 19)),
+    });
+    expect(ud.varer.map((v) => v.produktId)).toEqual(["filter", "vinter"]);
+  });
+
+  it("lader en arm-parameter gaa forud for stien", async () => {
+    const ud = await hentInFeedAnnonce("/soeg", [], { arm: "adsense" });
+    expect(ud.arm).toBe("adsense");
+    expect(select).not.toHaveBeenCalled();
   });
 });
 
