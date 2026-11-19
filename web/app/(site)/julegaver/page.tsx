@@ -16,7 +16,7 @@ export const revalidate = 86400;
 // handel for et tal, ingen soeger paa.
 const TITLE = "Julegaver til friluftsfolk: gaveideer under 1.000 kr.";
 const DESCRIPTION =
-  "Gaveideer til ham eller hende, der sover i shelter. Hvert forslag er det bedst scorede grej fra vores egne købsguider, delt op efter pris: under 200, 200 til 500 og 500 til 1.000 kr.";
+  "Gaveideer til dem, der sover i shelter: det bedst scorede grej fra vores egne købsguider, delt op i under 200, 200 til 500 og 500 til 1.000 kr.";
 
 export const metadata: Metadata = {
   title: TITLE,
